@@ -8,7 +8,7 @@ I'm suggesting that the code be provided in a Github repository, which has some 
 
 * Ease of updating code for individual book sections to cope with changes in R, JAGS and packages.
 * Update history is displayed on the Github web page, easy to check for recent changes.
-* Users can download individual files, or a zip file with everything using the "Clone or Download" button.
+* Users can download a zip file with everything using the "Clone or Download" button (unfortunately can't download individual R files).
 * The Issues section can be used to discuss changes needed.
 * Users can make pull requests with modified code.
 
