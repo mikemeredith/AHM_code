@@ -80,8 +80,9 @@ backTransform(fm0.haz, type="lambda")
 
 backTransform(fm0.haz, type="det")
 
-plot(1:300, gxhaz(1:300, shape = exp(5.13), scale=1.59), frame = F, type = "l", xlab = "Distance Wagtail–Observer (metres)", ylab = "Detection probability", lwd=3)
-
+# plot(1:300, gxhaz(1:300, shape = exp(5.13), scale=1.59), frame = F, type = "l", xlab = "Distance Wagtail–Observer (metres)", ylab = "Detection probability", lwd=3)
+plot(1:300, gxhaz(1:300, shape = exp(5.13), scale=exp(1.59)), frame = F, type = "l", xlab = "Distance Wagtail–Observer (metres)", ylab = "Detection probability", lwd=3)
+# See errata, 8 Nov 2018
 
 # Model with time-dependent phi
 fm1 <- gdistsamp(lambdaformula = ~1, phiformula = ~rep-1,
