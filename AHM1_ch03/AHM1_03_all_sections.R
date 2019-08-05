@@ -154,10 +154,7 @@ summary(fm10a <- glm(mites ~ pop-1 + wing, offset = log(body), family = poisson)
 
 
 # 3.3.3 Overdispersion and underdispersion (no code)
-# ------------------------------------------------------------------------
-
 # 3.3.4 Zero-inflation (no code)
-# ------------------------------------------------------------------------
 
 # 3.3.5 Bernoulli GLM: logistic regression for a binary response
 # ------------------------------------------------------------------------
@@ -176,7 +173,6 @@ summary(fm12 <- glm(cbind(damage, 4-damage) ~ pop + body -1, family = binomial))
 
 
 # 3.3.8 The GLM as the quintessential statistical model (no code)
-# ------------------------------------------------------------------------
 
 # 3.4 Random effects (mixed) models
 # =================================
@@ -212,7 +208,6 @@ summary(lmm2 <- lmer(wing ~ body + (1|pop) + (0+body|pop)))
 summary(glmm <- glmer(mites ~ body + (1|pop), family = poisson))
 
 # 3.5 Summary and outlook (no code)
-# =================================
 
 # 3.6 Exercises
 # =============

@@ -112,4 +112,3 @@ str(data)            # Look at the object
 attach(data)         # Make objects inside of 'data' accessible directly
 
 detach(data)         # Make clean up
-

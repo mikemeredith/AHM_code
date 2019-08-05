@@ -5,12 +5,9 @@
 # Chapter 1 Distribution, abundance and species richness in ecology
 # =========================================================================
 
-library(AHMbook)
-
 
 # 1.1 Point processes, distribution, abundance and species richness
 # ------------------------------------------------------------------------
-
 
 sim.fn(quad.size = 10, cell.size = 1, intensity = 1)
 

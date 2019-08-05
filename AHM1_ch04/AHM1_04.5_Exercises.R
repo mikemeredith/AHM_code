@@ -9,7 +9,6 @@
 # 4.5 Exercises
 # =============
 
-
 # Generate data set and fit Poisson and Bernoulli models
 data <- data.fn(M = 267, J = 1, mean.lambda = 2, beta1 = -2, beta2 = 2, beta3 = 1, mean.detection = 1, show.plot = FALSE)
 summary(fmPois <- glm(C ~ elev*forest, family = poisson, data = data))

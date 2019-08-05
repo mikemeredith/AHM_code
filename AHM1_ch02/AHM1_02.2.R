@@ -22,7 +22,7 @@ f <- function(x, mu, sigma){
 integrate(f, lower = 180, upper = 200, mu = 190, sigma = 10)
 
 
-# 2.2.1 Statistical models (no code)
+# 2.2.1 Statistical models
 # ------------------------------------------------------------------------
 
 # 2.2.2 Joint, marginal, and conditional distributions
@@ -55,5 +55,4 @@ round(YgivenX, 2)
 
 
 # 2.2.3 Statistical inference (no code)
-# ------------------------------------------------------------------------
 

@@ -123,4 +123,3 @@ sum(apply(C, 1, max))    # 'Observed' total abundance (all sites)
 
 sum(N>0)                 # True number of occupied sites
 sum(apply(C, 1, max)>0)  # 'Observed' number of occupied sites
-
