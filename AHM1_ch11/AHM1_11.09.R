@@ -5,8 +5,28 @@
 # Chapter 11. Hierarchical models for communities
 # =========================================================================
 
+library(AHMbook)
+
+# ~~~~ For this we need out10 and the 'all10' matrix from section 7 ~~~~~~~~~~~~~
+load("AHM1_11.07_out10.RData")
+out101 <- out10
+load("AHM1_11.07_all10.RData")
+# ~~~~~~ and this code from section 11.5 ~~~~~~~~~~
+data(MHB2014)
+# Quadrat elevation and forest cover
+orig.ele <- MHB2014$sites$elev
+(mean.ele <- mean(orig.ele, na.rm = TRUE))
+(sd.ele <- sd(orig.ele, na.rm = TRUE))
+# ele <- (orig.ele - mean.ele) / sd.ele
+orig.forest <- MHB2014$sites$forest
+(mean.forest <- mean(orig.forest, na.rm = TRUE))
+(sd.forest <- sd(orig.forest, na.rm = TRUE))
+# forest <- (orig.forest - mean.forest) / sd.forest
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 # 11.9 Species richness maps and species accumulation curves
-# ------------------------------------------------------------------------
+# ==========================================================
 
 
 # Get Swiss landscape data and standardise covariates as for model 10
@@ -23,11 +43,28 @@ nsamp <- length(select.samp)    # new sample size 50
 
 # Create posterior predictive distribution for Z for Swiss landscape
 str( zCH <- array(NA, dim = c(nkm2, 215, nsamp)) ) # BIG array !
-W <- all10[,1722:1936]          # Grab MCMC samples from w
-LPSI <- all10[,1507:1721]       # Grab MCMC samples from logit(psi)
-BETALPSI1 <- all10[,646:860]    # Grab MCMC samples from betalpsi1
-BETALPSI2 <- all10[,861:1075]   # Grab MCMC samples from betalpsi2
-BETALPSI3 <- all10[,1076:1290]  # Grab MCMC samples from betalpsi3
+# ~~~~~ the order of the columns in all10 is different ~~~~~~~~~~~~~~~~~~~~~
+# jagsUI::jags.basic returns the parameters in alphabetical order, not the order
+#   in 'params', unlike jagsUI::jags.
+# Use parameter names and grep instead
+nms <- colnames(all10)
+
+# W <- all10[,1722:1936]          # Grab MCMC samples from w
+# LPSI <- all10[,1507:1721]       # Grab MCMC samples from logit(psi)
+# BETALPSI1 <- all10[,646:860]    # Grab MCMC samples from betalpsi1
+# BETALPSI2 <- all10[,861:1075]   # Grab MCMC samples from betalpsi2
+# BETALPSI3 <- all10[,1076:1290]  # Grab MCMC samples from betalpsi3
+W <- all10[,grep("^w", nms)]          # Grab MCMC samples from w
+LPSI <- all10[,grep("^lpsi", nms)]       # Grab MCMC samples from logit(psi)
+BETALPSI1 <- all10[,grep("^betalpsi1", nms)]    # Grab MCMC samples from betalpsi1
+BETALPSI2 <- all10[,grep("^betalpsi2", nms)]    # Grab MCMC samples from betalpsi2
+BETALPSI3 <- all10[,grep("^betalpsi3", nms)]    # Grab MCMC samples from betalpsi3
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# ~~~~ this code will not work on my laptop ~~~~~~~~~~~~~~~~~~~~~~
+# Error: cannot allocate vector of size 1.7 Gb
+# See below for code to create the pmSR and sdSR vectors directly
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 for(i in 1:nkm2){               # takes about 5 mins !
    cat(paste("\nQuadrat", i, "\n"))
    for(u in 1:length(select.samp)){
@@ -44,6 +81,22 @@ SR <- apply(zCH, c(1,3), sum)   # posterior distribution
 pmSR <- apply(SR, 1, mean)      # posterior mean
 sdSR <- apply(SR, 1, sd)        # posterior standard deviation
 
+# ~~~~ code using less memory ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# We create the PPD for z for each pixel in turn and keep only the posterior mean and sd.
+pmSR <- sdSR <- numeric(nkm2) # posterior mean and sd of species richness for each quadrat
+tmp.sr <- numeric(nsamp) # posterior species richness for 1 quadrat (reused)
+for(i in 1:nkm2){
+  for(u in 1:nsamp){
+      psi <- W[select.samp[u],] * plogis(LPSI[select.samp[u],] +
+         BETALPSI1[select.samp[u],] * ELE[i] +
+         BETALPSI2[select.samp[u],] * ELE[i]^2 +
+         BETALPSI3[select.samp[u],] * FOREST[i] )
+      tmp.sr[u] <- sum(rbinom(215, 1, psi))
+   }
+   pmSR[i] <- mean(tmp.sr)
+   sdSR[i] <- sd(tmp.sr)
+}
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 library(raster)
 library(rgdal)
@@ -55,12 +108,14 @@ elev[elev > 2250] <- NA         # Mask areas > 2250 m a.s.l.
 r1 <- mask(r1, elev)
 mapPalette <- colorRampPalette(c("grey", "yellow", "orange", "red"))
 plot(r1, col = mapPalette(100), axes = F, box = FALSE, main ="")
-lakes <- readOGR(".", "lakes")
-rivers <- readOGR(".", "rivers")
-border <- readOGR(".", "border")
-plot(rivers, col = "dodgerblue", add = TRUE)
-plot(border, col = "transparent", lwd = 1.5, add = TRUE)
-plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
+# ~~~~ these shape files not available ~~~~~~~~~~~~~~~~~~~~~~
+# lakes <- readOGR(".", "lakes")
+# rivers <- readOGR(".", "rivers")
+# border <- readOGR(".", "border")
+# plot(rivers, col = "dodgerblue", add = TRUE)
+# plot(border, col = "transparent", lwd = 1.5, add = TRUE)
+# plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Posterior standard deviation map
 r1 <- rasterFromXYZ(data.frame(x = ch$x, y = ch$y, z = sdSR))
@@ -69,12 +124,14 @@ elev[elev > 2250] <- NA         # Mask areas > 2250 m a.s.l.
 r1 <- mask(r1, elev)
 mapPalette <- colorRampPalette(c("grey", "yellow", "orange", "red"))
 plot(r1, col = mapPalette(100), axes = F, box = FALSE, main ="")
-lakes <- readOGR(".", "lakes")
-rivers <- readOGR(".", "rivers")
-border <- readOGR(".", "border")
-plot(rivers, col = "dodgerblue", add = TRUE)
-plot(border, col = "transparent", lwd = 1.5, add = TRUE)
-plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
+# ~~~~ these shape files not available ~~~~~~~~~~~~~~~~~~~~~~
+# lakes <- readOGR(".", "lakes")
+# rivers <- readOGR(".", "rivers")
+# border <- readOGR(".", "border")
+# plot(rivers, col = "dodgerblue", add = TRUE)
+# plot(border, col = "transparent", lwd = 1.5, add = TRUE)
+# plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 # Get 3,000 posterior samples of omega, and the mean and sd hyperparameters

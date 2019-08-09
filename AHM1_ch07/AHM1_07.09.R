@@ -5,8 +5,10 @@
 # Chapter 7. Modeling abundance using multinomial N-mixture models
 # =========================================================================
 
+library(unmarked)
+
 # 7.9 Example 3: Jays in the Swiss MHB
-# ------------------------------------------------------------------------
+# ====================================
 
 
 data(jay)        # Load data
@@ -259,9 +261,11 @@ head(CH)
 gelev <- CH[,"elevation"] # Median elevation of quadrat
 gforest <- CH[,"forest"]
 grid <- CH[,c("x", "y")]
-lakes <- readOGR(".", "lakes")
-rivers <- readOGR(".", "rivers")
-border <- readOGR(".", "border")
+# ~~~~~ these shape files are not available ~~~~~~~~~~~~
+# lakes <- readOGR(".", "lakes")
+# rivers <- readOGR(".", "rivers")
+# border <- readOGR(".", "border")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Draw two maps of Swiss elevation and forest cover (Fig. 7-10)
 par(mfrow = c(1,2), mar = c(1,2,3,5))
@@ -270,14 +274,14 @@ mapPalette2 <- colorRampPalette(c("grey", "lightgreen", "darkgreen"))
 r1 <- rasterFromXYZ(cbind(x = CH$x, y = CH$y, z = CH$elevation))
 r2 <- rasterFromXYZ(cbind(x = CH$x, y = CH$y, z = CH$forest))
 plot(r1, col = mapPalette1(100), axes = FALSE, box = FALSE, main = "Elevation (m a.s.l.)", zlim = c(0, 4000))
-plot(rivers, col = "dodgerblue", add = TRUE)
-plot(border, col = "transparent", lwd = 1.5, add = TRUE)
-plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
+# plot(rivers, col = "dodgerblue", add = TRUE)
+# plot(border, col = "transparent", lwd = 1.5, add = TRUE)
+# plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
 
 plot(r2, col = mapPalette2(100), axes = FALSE, box = FALSE, main = "Forest cover (%)", zlim = c(0, 100))
-plot(rivers, col = "dodgerblue", add = TRUE)
-plot(border, col = "transparent", lwd = 1.5, add = TRUE)
-plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
+# plot(rivers, col = "dodgerblue", add = TRUE)
+# plot(border, col = "transparent", lwd = 1.5, add = TRUE)
+# plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
 
 
 # Standardize elevation for all grid cells using the mean at sample plots
@@ -291,7 +295,7 @@ forest.sd <- attr(siteCovs(mhb.umf)$forest, "scaled:scale")
 gforest <- (gforest - forest.mean) / forest.sd
 
 
-# Form predictions for Swiss landscape
+# Form predictions for Swiss landscape (slooow!)
 newL <- data.frame(elev=gelev, forest=gforest, iLength=1/5.1)
 newH <- data.frame(elev=gelev, forest=gforest, iLength=0)
 pred.mhb.NB.Low <- predict(fm17NB, type="lambda", newdata=newL, appendData=T)
@@ -308,13 +312,13 @@ r2 <- mask(r2, elev)
 # Draw maps of jay density and standard error of density (Fig. 7–11)
 par(mfrow = c(1,2), mar = c(1,2,3,5))
 plot(r1, col = mapPalette1(100), axes = FALSE, box = FALSE, main = "Density of European Jay", zlim = c(0, 10))
-plot(rivers, col = "dodgerblue", add = TRUE)
-plot(border, col = "transparent", lwd = 1.5, add = TRUE)
-plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
+# plot(rivers, col = "dodgerblue", add = TRUE)
+# plot(border, col = "transparent", lwd = 1.5, add = TRUE)
+# plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
 plot(r2, col = mapPalette1(100), axes = FALSE, box = FALSE, main = "Standard errors of density", zlim = c(0, 1.5))
-plot(rivers, col = "dodgerblue", add = TRUE)
-plot(border, col = "transparent", lwd = 1.5, add = TRUE)
-plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
+# plot(rivers, col = "dodgerblue", add = TRUE)
+# plot(border, col = "transparent", lwd = 1.5, add = TRUE)
+# plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
 
 
 

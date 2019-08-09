@@ -5,8 +5,21 @@
 # Chapter 5. Fitting models using the Bayesian modeling software BUGS and JAGS
 # =========================================================================
 
+library(AHMbook)
+library(R2WinBUGS)
+bugs.dir <- "C:/WinBUGS14/"          # Place where your WinBUGS installed
+library(jagsUI)
+
+# ~~~~~ this section requires the following code from section 5.3 ~~~~~~~~~~
+# Generate data with data.fn from chapter 4
+set.seed(24)
+data <- data.fn(show.plot=FALSE)
+attach(data)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 # 5.13 Random-effects Poisson GLM (Poisson GLMM)
-# ----------------------------------------------
+# ==============================================
 
 
 # Bundle data

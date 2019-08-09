@@ -6,7 +6,7 @@
 # =========================================================================
 
 # 10.9 Distribution modeling and mapping of Swiss red squirrels
-# ------------------------------------------------------------------------
+# =============================================================
 ## Code modified to use the file "SwissSquirrels.txt" included in the AHMbook package
 
 # Read in data set, select squirrels and harvest data
@@ -45,8 +45,6 @@ dur[is.na(dur)] <- 0
 library(unmarked)
 umf <- unmarkedFrameOccu(y = y, siteCovs = data.frame(elev = elev, forest = forest), obsCovs = list(time = time, date = date, dur = dur))
 summary(umf)
-
-We want to identify a model that is useful for inference, specifically for prediction of squirrel distribution to the whole of Switzerland. We do some step-wise model selection first on the detection part, then on the occupancy part, while keeping the detection part as identified in the first step.
 
 # Fit a series of models for detection first and do model selection
 summary(fm1 <- occu(~1 ~1, data=umf))
@@ -196,20 +194,24 @@ r1 <- mask(r1, elev)
 par(mfrow = c(1,2), mar = c(1,2,2,5))
 mapPalette <- colorRampPalette(c("grey", "yellow", "orange", "red"))
 plot(r1, col = mapPalette(100), axes = F, box = F, main = "Red squirrel distribution in 2007")
-lakes <- readOGR(".", "lakes")
-rivers <- readOGR(".", "rivers")
-border <- readOGR(".", "border")
-plot(rivers, col = "dodgerblue", add = TRUE)
-plot(border, col = "transparent", lwd = 1.5, add = TRUE)
-plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
+# ~~~~~ shape files not available ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# lakes <- readOGR(".", "lakes")
+# rivers <- readOGR(".", "rivers")
+# border <- readOGR(".", "border")
+# plot(rivers, col = "dodgerblue", add = TRUE)
+# plot(border, col = "transparent", lwd = 1.5, add = TRUE)
+# plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Plot SE of the species distrbution map (Fig. 10-14 right)
 r2 <- rasterFromXYZ(data.frame(x = CH$x, y = CH$y, z = predCH$SE))
 r2 <- mask(r2, elev)
 plot(r2, col = mapPalette(100), axes = F, box = F, main = "Uncertainty map 2007")
-plot(rivers, col = "dodgerblue", add = TRUE)
-plot(border, col = "transparent", lwd = 1.5, add = TRUE)
-plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
+# ~~~~~ shape files not available ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# plot(rivers, col = "dodgerblue", add = TRUE)
+# plot(border, col = "transparent", lwd = 1.5, add = TRUE)
+# plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 points(data$coordx, data$coordy, pch = "+", cex = 0.8)
 
 

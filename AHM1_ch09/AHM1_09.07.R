@@ -5,9 +5,10 @@
 # Chapter 9. Advanced Hierarchical Distance Sampling
 # =========================================================================
 
-# 9.7 Open HDS models: modelling population dynamics
-# ------------------------------------------------------------------------
+library(AHMbook)
 
+# 9.7 Open HDS models: modelling population dynamics
+# ==================================================
 
 # 9.7.1 Simulating the ISSJ data over multiple years
 # ------------------------------------------------------------------------
@@ -312,7 +313,7 @@ inits <-function(){list(N=yin, beta0=runif(1), beta1=runif(1), beta2=runif(1),
    R=Rin, S=Sin) }
 params <- c('beta0', 'beta1', 'beta2', 'beta3', 'alpha0', 'alpha1', 'phi',
    'gamma', 'Ntot', 'D', 'r')
-ni <- 152000   ;   nb <- 2000   ;   nt <- 10   ;   nc <- 5
+ni <- 152000   ;   nb <- 2000   ;   nt <- 10   ;   nc <- 3
 
 # Run JAGS, look at convergence and summarize the results
 library(jagsUI)
@@ -339,16 +340,7 @@ parms <- c(betaFall, dparm)
 round(post <- cbind(parms, Independent=open1$summary[c(1:4,6,7),1],
        Partial=open2$summary[1:6,1], Full=open3$summary[1:6,1]), 3)
 
-                      parms Independent Partial   Full
-lambda(Int)             0.827       0.990   0.971  0.949
-lambda(chaparral)       1.432       1.755   1.783  1.806
-lambda(elevation)      -0.227      -0.509  -0.519 -0.523
-lambda(I(chaparral^2)) -0.376      -0.343  -0.317 -0.323
-p(Int)                  4.679       4.682   4.672  4.680
-p(chaparral)           -0.199      -0.194  -0.187 -0.192
-
 
 
 # 9.7.2.4 Summary remarks on modelling populations over time (no code)
-# ------------------------------------------------------------------------
 

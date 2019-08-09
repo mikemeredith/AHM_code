@@ -5,8 +5,11 @@
 # Chapter 9. Advanced Hierarchical Distance Sampling
 # =========================================================================
 
+library(AHMbook)
+library(jagsUI)
+
 # 9.3 Time-removal and distance sampling combined
-# ------------------------------------------------------------------------
+# ===============================================
 
 
 # 9.3.1 The four-part hierarchical model
@@ -122,5 +125,6 @@ traceplot(out2a)   ;   print(out2a, 3)
 
 sum(temp$M)
 
-print(out2b,3)
+# print(out2b,3)  # ~~~ should surely be...
+print(out2a,3)
 

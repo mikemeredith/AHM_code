@@ -6,8 +6,11 @@
 #    in closed populations: binomial N-mixture models
 # =========================================================================
 
+library(AHMbook)
+library(unmarked)
+
 # 6.7 Study of some assumption violations using function simNmix
-# --------------------------------------------------------------
+# ==============================================================
 
 
 simreps <- 1000                   # Number of data sets created/analysed

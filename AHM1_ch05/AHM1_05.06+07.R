@@ -5,9 +5,24 @@
 # Chapter 5. Fitting models using the Bayesian modeling software BUGS and JAGS
 # =========================================================================
 
+library(AHMbook)
+library(R2WinBUGS)
+bugs.dir <- "C:/WinBUGS14/"          # Place where your WinBUGS installed
+library(jagsUI)
+
+# ~~~~~ this section requires the following code from section 5.3 ~~~~~~~~~~
+# Generate data with data.fn from chapter 4
+set.seed(24)
+data <- data.fn(show.plot=FALSE)
+attach(data)
+
+# Summarize data by taking mean at each site and plot
+Cmean <- apply(C, 1, mean)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 # 5.6 Linear model with normal response (normal GLM): analysis of covariance (ANCOVA)
 # -----------------------------------------------------------------------------------
-
 
 # Generate factor and plot raw data in boxplot as function of factor A
 facFor <- as.numeric(forest < -0.5)         # Factor level 1
@@ -147,4 +162,31 @@ text(-2.2, 0.8, "C", cex = 2)
 mean(diff.vs3[,1] > 1)
 mean(diff.vs3[,2] > 1)
 mean(diff.vs3[,4] > 1)
+
+# 5.7 Proportion of variance explained (R2)
+# =========================================
+
+cat(file = "Model0.txt","
+model {
+# Priors
+mu ~ dnorm(0, 1.0E-06)
+tau <- pow(sd, -2)
+sd ~ dunif(0, 1000)
+# Likelihood
+for (i in 1:M){
+   Cmean[i] ~ dnorm(mu, tau)
+}
+}
+")
+inits <- function() list(mu = rnorm(1))
+params <- c("mu", "sd")
+ni <- 6000   ;   nt <- 1   ;   nb <- 1000   ;  nc <- 3
+out0 <- jags(win.data, inits, params, "Model0.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
+
+print(out0)
+
+# Compute R2 from BUGS analysis
+(total.var <- mean(out0$sims.list$sd^2))       # Total variance around the mean
+(unexplained.var <- mean(out3$sims.list$sd^2)) # Not explained by the ANCOVA
+(prop.explained <- (total.var - unexplained.var)/total.var)
 

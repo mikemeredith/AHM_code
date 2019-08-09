@@ -6,8 +6,12 @@
 #    in closed populations: binomial N-mixture models
 # =========================================================================
 
+library(AHMbook)
+library(unmarked)
+library(jagsUI)
+
 # 6.8 Goodness of fit
-# -------------------
+# ===================
 
 
 # Case 1: Test GoF of correct model

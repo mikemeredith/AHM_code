@@ -5,8 +5,12 @@
 # Chapter 10. Modeling static occurrence and species distributions using site-occupancy models
 # =========================================================================
 
+library(AHMbook)
+library(R2WinBUGS)
+bd <- "C:/WinBUGS14"
+
 # 10.10 Multi-scale occupancy models
-# ------------------------------------------------------------------------
+# ==================================
 
 
 data <- sim3Occ()       # Execute function with default args

@@ -6,10 +6,10 @@
 #    in closed populations: binomial N-mixture models
 # =========================================================================
 
+library(jagsUI)
+
 # 6.4 A slightly more complex N-mixture model with covariates
-# ------------------------------------------------------------------------
-
-
+# ===========================================================
 
 # Choose sample sizes and prepare obs. data array y
 set.seed(1)                   # So we all get same data set

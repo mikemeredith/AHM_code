@@ -6,9 +6,10 @@
 #    in closed populations: binomial N-mixture models
 # =========================================================================
 
-# 6.12 Time-for-space substitution
-# ------------------------------------------------------------------------
+library(AHMbook)
 
+# 6.12 Time-for-space substitution
+# ================================
 
 simpleNmix(nyear = 12, nrep = 4, beta0 = 2, beta1 = 0.1, alpha0 = 0.5, alpha1 = -0.1, alpha2 = 1)
 
@@ -43,7 +44,7 @@ return(list(nyear=nyear, nrep=nrep, beta0=beta0, beta1=beta1, alpha0=alpha0, alp
 
 
 library(unmarked)
-simrep <- 2500                  # Number of simreps
+simrep <- 2500                  # Number of simreps # ca 25 mins
 results <- array(NA, dim = c(simrep, 8)) # Array for results
 for(i in 1:simrep){
   cat("Simrep", i, "\n")

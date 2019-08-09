@@ -5,10 +5,14 @@
 # Chapter 11. Hierarchical models for communities
 # =========================================================================
 
+library(AHMbook)
+
+# ~~~~~~ this section requires the data prepared in section 11.3 ~~~~~~~~~~
+source("AHM1_11.03.R")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 # 11.5 Community models that ignore species identity
-# ------------------------------------------------------------------------
-
-
+# ==================================================
 
 # 11.5.1 Simple Poisson regression for the observed community size
 # ------------------------------------------------------------------------

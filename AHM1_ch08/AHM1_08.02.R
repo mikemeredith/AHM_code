@@ -6,8 +6,7 @@
 # =========================================================================
 
 # 8.2 Conventional Distance Sampling (CDS)
-# ------------------------------------------------------------------------
-
+# ========================================
 
 # 8.2.1 The full likelihood (no code)
 # 8.2.2 Models of detection probability (no code)
@@ -53,7 +52,8 @@ return(list(N = N, sigma = sigma, xall = xall, x = x))
 set.seed(2015)               # If you want to get same results
 tmp <- sim.ldata(sigma = 30) # Execute function and assign results to 'tmp'
 attach(tmp)
-
+# ~~~~~ 'sigma' in the Global environment masks tmp$sigma
+rm(sigma)
 
 # Conditional likelihood
 Lcond <- function(lsigma){  # Define conditional nll
@@ -89,8 +89,7 @@ n0hat<- exp(5.01)
 # 8.2.4 Binned data
 # ------------------------------------------------------------------------
 
-# 8.2.4.1 Conditional and other likelihoods for binned data
-# ------------------------------------------------------------------------
+# 8.2.4.1 Conditional and other likelihoods for binned data (no code)
 
 # 8.2.4.2 Simulating binned distance sampling data
 # ------------------------------------------------------------------------
@@ -200,6 +199,9 @@ ring.area <- diff(c(0, area))
 # Pr(detection| in ring)*Pr(in ring)
 cp <- p.x* ring.area/sum(ring.area)
 
+# ~~~~ clean up! ~~~~~~~~~
+detach(tmp)
+# ~~~~~~~~~~~~~~~~~~~~~~~~
 
 # 8.2.5.1 Simulating point transect data
 # ------------------------------------------------------------------------
@@ -250,7 +252,9 @@ return(list(N=N, sigma=sigma, B=B, u1=u1, u2=u2, d=d, y=y, N.real=N.real))
 set.seed(1234)
 tmp <-sim.pdata(N=1000, sigma=1, keep.all=FALSE, B=3)
 attach(tmp)
-
+# ~~~~ remove objects that mask 'tmp' ~~~~~~~~~~~
+rm(B, N, sigma, y)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Bin the data and tabulate the bin frequencies. Be sure to pad the 0s!
 delta <- 0.5                   # width of distance bins
@@ -385,5 +389,4 @@ sqrt(apply(simout, 2, var))
 
 
 # 8.2.7 Spatial sampling (no code)
-# ------------------------------------------------------------------------
 

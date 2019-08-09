@@ -5,9 +5,11 @@
 # Chapter 9. Advanced Hierarchical Distance Sampling
 # =========================================================================
 
-# 9.5 Open HDS models: temporary emigration
-# ------------------------------------------------------------------------
+library(AHMbook)
+library(unmarked)
 
+# 9.5 Open HDS models: temporary emigration
+# =========================================
 
 # 9.5.1 Data and model structure (no code)
 # 9.5.2 Cautionary note on temporary emigration processes (no code)
@@ -222,7 +224,6 @@ legend(0.5, 140, c("DATE", "HOUR"), col=c("black", "red"), lty=1, lwd=3, cex=1.2
 # 9.5.4 Fitting temporary emigration HDS models in BUGS
 # ------------------------------------------------------------------------
 
-
 # 9.5.4.1 Simulating a temporary emigration system
 # ------------------------------------------------------------------------
 simHDSopen(type="line", nsites = 100, mean.lam = 2, beta.lam = 0, mean.sig = 1, beta.sig = 0, B = 3, discard0=TRUE, nreps=2, phi=0.7, nyears=5, beta.trend = 0)
@@ -249,7 +250,13 @@ for(yr in 1:nyears){
     dclass <- data[,"d"]%/%delta + 1
     ndclass <- B%/%delta
     dclass <- factor(dclass, levels= 1:ndclass)
-    y4d[1:nsites,1:nD,rep,yr] <- table(site, dclass)
+# ~~~~~ this cannot work ~~~~~~~~~~
+    # y4d[1:nsites,1:nD,rep,yr] <- table(site, dclass)
+# ~~~~~ use this instead ~~~~~~~~~~~
+    ttt <- table(site, dclass)
+    siteID <- as.numeric(rownames(ttt))
+    y4d[siteID,1:nD,rep,yr] <- ttt
+
   }
 }
 
@@ -319,7 +326,7 @@ params <- c("sigma", "phi", "beta0", "mean.lam", "beta1", "Mtot", "Ntot")
 ni <- 60000   ;   nb <- 10000   ;   nt <- 5   ;   nc <- 3
 
 # Run WinBUGS or JAGS
-library("R2WinBUGS")
+# library("R2WinBUGS")
 library("jagsUI")  # JAGS works but WinBUGS does not!
 # bd <- "c:/WinBUGS14/"
 # out1 <- bugs(data, inits, parameters, "model.txt", n.thin=nthin,

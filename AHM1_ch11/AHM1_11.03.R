@@ -5,8 +5,10 @@
 # Chapter 11. Hierarchical models for communities
 # =========================================================================
 
+library(AHMbook)
+
 # 11.3 Metacommunity data from the Swiss breeding bird survey MHB
-# ------------------------------------------------------------------------
+# ===============================================================
 
 ## Code modified to use the built-in data set MHB2014 instead of the file "MHB_2014.csv"
 data(MHB2014)

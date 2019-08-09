@@ -5,6 +5,19 @@
 # Chapter 5. Fitting models using the Bayesian modeling software BUGS and JAGS
 # =========================================================================
 
+library(AHMbook)
+library(R2WinBUGS)
+bugs.dir <- "C:/WinBUGS14/"          # Place where your WinBUGS installed
+library(jagsUI)
+
+# ~~~~~ this section requires the following code from section 5.3 ~~~~~~~~~~
+# Generate data with data.fn from chapter 4
+set.seed(24)
+data <- data.fn(show.plot=FALSE)
+attach(data)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 # 5.14 Random-effects binomial GLM (binomial GLMM)
 # ================================================
 
@@ -52,8 +65,10 @@ params <- c("mu.alpha0", "sd.alpha0", "alpha0", "alpha", "mu.alpha4", "sd.alpha4
 ni <- 30000 ; nt <- 25 ; nb <- 5000 ; nc <- 3                 # MCMC settings
 
 # Call WinBUGS from R .... and crash !
-out9 <- bugs(win.data, inits, params, "RE.Bernoulli.txt", n.chains = nc,
-n.thin = nt, n.iter = ni, n.burnin = nb, debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+# ~~~~~~~ ...and hence commented out! ~~~~~~~~~~~~~~~~~~~~~~~~
+# out9 <- bugs(win.data, inits, params, "RE.Bernoulli.txt", n.chains = nc,
+# n.thin = nt, n.iter = ni, n.burnin = nb, debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Call JAGS from R (ART 2.5 min)
 out9 <- jags(win.data, inits, params, "RE.Bernoulli.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)

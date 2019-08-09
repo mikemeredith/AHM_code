@@ -5,8 +5,58 @@
 # Chapter 5. Fitting models using the Bayesian modeling software BUGS and JAGS
 # =========================================================================
 
+library(AHMbook)
+library(R2WinBUGS)
+bugs.dir <- "C:/WinBUGS14/"          # Place where your WinBUGS installed
+library(jagsUI)
+
+# ~~~~~ this section requires the following code from section 5.3 ~~~~~~~~~~
+# Generate data with data.fn from chapter 4
+set.seed(24)
+data <- data.fn(show.plot=FALSE)
+attach(data)
+
+# Summarize data by taking mean at each site and plot
+Cmean <- apply(C, 1, mean)
+
+# Write text file with model description in BUGS language
+cat(file = "multiple_linear_regression_model.txt",
+"   # --- Code in BUGS language starts with this quotation mark ---
+model {
+
+# Priors
+alpha0 ~ dnorm(0, 1.0E-06)           # Prior for intercept
+alpha1 ~ dnorm(0, 1.0E-06)           # Prior for slope of elev
+alpha2 ~ dnorm(0, 1.0E-06)           # Prior for slope of forest
+alpha3 ~ dnorm(0, 1.0E-06)           # Prior for slope of interaction
+tau <- pow(sd, -2)                   # Precision tau = 1/(sd^2)
+sd ~ dunif(0, 1000)                  # Prior for dispersion on sd scale
+
+# Likelihood
+for (i in 1:M){
+   Cmean[i] ~ dnorm(mu[i], tau)      # dispersion tau is precision (1/variance)
+   mu[i] <- alpha0 + alpha1*elev[i] + alpha2*forest[i] + alpha3*elev[i]*forest[i]
+}
+
+# Derived quantities
+for (i in 1:M){
+   resi[i] <- Cmean[i] - mu[i]
+}
+}"#  --- Code in BUGS language ends on this line ---
+)
+
+# Initial values (have to give for at least some estimands)
+inits <- function() list(alpha0 = rnorm(1,0,10), alpha1 = rnorm(1,0,10), alpha2 = rnorm(1,0,10), alpha3 = rnorm(1,0,10))
+
+# MCMC settings
+ni <- 6000   ;   nt <- 1   ;   nb <- 1000   ;  nc <- 3
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
 # 5.5 Missing values in a Bayesian analysis
-# ------------------------------------------------------------------------
+# =========================================
 
 
 # 5.5.1 Some responses missing
@@ -152,7 +202,7 @@ ni <- 6000   ;   nt <- 1   ;   nb <- 1000   ;  nc <- 3
 # Call WinBUGS from R (ART <1 min)
 out1.4 <- bugs(win.data, inits, params, "missing_cov_imputation_model_2.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
 
-
+graphics.off() # ~~~~~~~ start new plot ~~~~~~~~~~~~~~~
 par(cex = 1.5, lwd = 2)
 plot(elev[1:10]-0.01, out1.3$summary[6:15,1], ylim = c(-10, 10), col = "red", xlab = "True value of covariate", ylab = "Estimate (with 95% CRI)", frame.plot =F)
 segments(elev[1:10]-0.01, out1.3$summary[6:15,3], elev[1:10]-0.01, out1.3$summary[6:15,7], col = "red")

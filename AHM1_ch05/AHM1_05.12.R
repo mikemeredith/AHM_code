@@ -5,8 +5,19 @@
 # Chapter 5. Fitting models using the Bayesian modeling software BUGS and JAGS
 # =========================================================================
 
+library(AHMbook)
+library(jagsUI)
+
+# ~~~~~ this section requires the following code from section 5.3 ~~~~~~~~~~
+# Generate data with data.fn from chapter 4
+set.seed(24)
+data <- data.fn(show.plot=FALSE)
+attach(data)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 # 5.12 Moment-matching in a binomial GLM to accommodate underdispersion
-# ---------------------------------------------------------------------
+# =====================================================================
 
 
 # Bundle data
@@ -33,7 +44,7 @@ for (i in 1:M){
 
 # Initial values
 inits <- function() list(alpha = 1.7, beta = -1.2)          # works always
-inits <- function() list(alpha = runif(1), beta = runif(1)) # works sometimes
+# inits <- function() list(alpha = runif(1), beta = runif(1)) # works sometimes
 
 # Parameters monitored
 params <- c("alpha", "beta", "mu")

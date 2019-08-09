@@ -5,8 +5,46 @@
 # Chapter 11. Hierarchical models for communities
 # =========================================================================
 
+library(jagsUI)
+
+# ~~~~~~ this section requires the data prepared in section 11.3 ~~~~~~~~~~
+source("AHM1_11.03.R")
+# ~~~~~~ and this code from section 11.5 ~~~~~~~~~~
+# Quadrat elevation and forest cover
+orig.ele <- MHB2014$sites$elev
+(mean.ele <- mean(orig.ele, na.rm = TRUE))
+(sd.ele <- sd(orig.ele, na.rm = TRUE))
+ele <- (orig.ele - mean.ele) / sd.ele
+orig.forest <- MHB2014$sites$forest
+(mean.forest <- mean(orig.forest, na.rm = TRUE))
+(sd.forest <- sd(orig.forest, na.rm = TRUE))
+forest <- (orig.forest - mean.forest) / sd.forest
+# Survey date (this is Julian date, with day 1 being April 1)
+orig.DAT <- MHB2014$date
+(mean.date <- mean(orig.DAT, na.rm = TRUE))
+(sd.date <- sd(c(orig.DAT), na.rm = TRUE))
+DAT <- (orig.DAT - mean.date) / sd.date      # scale
+DAT[is.na(DAT)] <- 0                         # impute missings
+# Survey duration (in minutes)
+orig.DUR <- MHB2014$dur
+(mean.dur <- mean(orig.DUR, na.rm = TRUE))
+(sd.dur <- sd(c(orig.DUR), na.rm = TRUE))
+DUR <- (orig.DUR - mean.dur) / sd.dur        # scale
+DUR[is.na(DUR)] <- 0                         # mean impute missings
+# ~~~~ and this from section 7 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+o.ele <- seq(200, 2500,,500)               # Get covariate values for prediction
+o.for <- seq(0, 100,,500)
+o.dat <- seq(15, 120,,500)
+o.dur <- seq(100, 420,,500)
+ele.pred <- (o.ele - mean.ele) / sd.ele
+for.pred <- (o.for - mean.forest) / sd.forest
+dat.pred <- (o.dat - mean.date) / sd.date
+dur.pred <- (o.dur - mean.dur) / sd.dur
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 # 11.10 Community N-mixture models
-# ------------------------------------------------------------------------
+# ================================
 
 # Organize counts in 3D array: site x rep x species
 Yc <- MHB2014$counts
@@ -127,25 +165,28 @@ Nst <- Nst
 inits <- function()list(a = ast, N = Nst)
 
 # OR: use inits at earlier solutions (greatly speeds up convergence)
-pm <- out11$mean     # Pull out posterior means from earlier run
-inits <- function() list(a = ast, N = Nst, alpha0 = rnorm(nspec), beta0 = rnorm(nspec), alpha = matrix(rnorm(n = nspec*3), ncol = 3), beta = matrix(rnorm(n = nspec*3), ncol = 3), mu.beta0 = pm$mu.beta0, sd.beta0 = pm$sd.beta0, mu.beta = pm$mu.beta, sd.beta = pm$sd.beta, mu.alpha0 = pm$mu.alpha0, sd.alpha0 = pm$sd.alpha0, mu.alpha = pm$mu.alpha, sd.alpha = pm$sd.alpha )
+# pm <- out11$mean     # Pull out posterior means from earlier run
+# inits <- function() list(a = ast, N = Nst, alpha0 = rnorm(nspec), beta0 = rnorm(nspec), alpha = matrix(rnorm(n = nspec*3), ncol = 3), beta = matrix(rnorm(n = nspec*3), ncol = 3), mu.beta0 = pm$mu.beta0, sd.beta0 = pm$sd.beta0, mu.beta = pm$mu.beta, sd.beta = pm$sd.beta, mu.alpha0 = pm$mu.alpha0, sd.alpha0 = pm$sd.alpha0, mu.alpha = pm$mu.alpha, sd.alpha = pm$sd.alpha )
 
 # Parameters monitored
 params <- c("phi", "mp", "mlambda", "alpha0", "beta0", "alpha", "beta", "mu.beta0", "sd.beta0", "mu.beta", "sd.beta", "mu.alpha0", "sd.alpha0", "mu.alpha", "sd.alpha", "Nsite")
 
 # MCMC settings
-ni <- 60000   ;   nt <- 30   ;   nb <- 30000   ;   nc <- 3
+ni <- 60000   ;   nt <- 30   ;   nb <- 30000   ;   nc <- 3 # 6 hrs
 
 # Call JAGS from R (BRT XXX min), check convergence and summarize posteriors
 out11 <- jags(win.data, inits, params, "model11.txt", n.chains = nc,
-n.thin = nt, n.iter = ni, n.burnin = nb, parallel = FALSE)
+# n.thin = nt, n.iter = ni, n.burnin = nb, parallel = FALSE)
+n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 par(mfrow = c(3,3))   ;    traceplot(out11, c("mu.beta0", "sd.beta0", "mu.beta", "sd.beta", "mu.alpha0", "sd.alpha0", "mu.alpha", "sd.alpha") )
 print(out11, 2)
+# ~~~~~ suggest saving for use later ~~~~~~~~~~~~~
+save(out11, file="AHM1_11.10_out11.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 summary(p.sample <- plogis(rnorm(10^6, mean = -1.170, sd = 0.980)) )
 hist(p.sample, breaks = 50, col = "grey", xlab = "Per-individual detection probability", freq = FALSE)
-
 
 # Predict detection for date and duration and occupancy for elevation and forest
 # for each of the 145 observed species

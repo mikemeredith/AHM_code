@@ -5,8 +5,10 @@
 # Chapter 10. Modeling static occurrence and species distributions using site-occupancy models
 # =========================================================================
 
+library(AHMbook)
+
 # 10.5 A general data-simulation function for static occupancy models: simOcc()
-# -----------------------------------------------------------------------------
+# =============================================================================
 
 
 simOcc(M = 267, J = 3, mean.occupancy = 0.6, beta1 = -2, beta2 = 2, beta3 = 1, mean.detection = 0.3, time.effects = c(-1, 1), alpha1 = -1, alpha2 = -3, alpha3 = 0, sd.lp = 0.5, b = 2, show.plot = TRUE)
@@ -31,7 +33,7 @@ tmp <- simOcc(mean.occ=1)   ;   str(tmp)
 # p = 1 (i.e., species is always detected when it occurs)
 tmp <- simOcc(mean.det=1)   ;   str(tmp)
 
-Other potentially interesting settings include these:
+# Other potentially interesting settings include these:
 simOcc(J = 2)                 # Only 2 surveys
 simOcc(M = 1, J = 100)        # No spatial replicates, but 100 measurements
 simOcc(beta3 = 1)             # Including interaction elev-wind on p

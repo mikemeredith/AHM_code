@@ -5,8 +5,27 @@
 # Chapter 5. Fitting models using the Bayesian modeling software BUGS and JAGS
 # =========================================================================
 
+library(AHMbook)
+library(R2WinBUGS)
+bugs.dir <- "C:/WinBUGS14/"          # Place where your WinBUGS installed
+library(jagsUI)
+
+# ~~~~~ this section requires the following code from section 5.3 ~~~~~~~~~~
+# Generate data with data.fn from chapter 4
+set.seed(24)
+data <- data.fn(show.plot=FALSE)
+attach(data)
+# ~~~~~ and this bit from section 5.6 ~~~~~~~~~~
+# Generate factor and plot raw data in boxplot as function of factor A
+facFor <- as.numeric(forest < -0.5)         # Factor level 1
+facFor[forest < 0 & forest > -0.5] <- 2     # Factor level 2
+facFor[forest < 0.5 & forest > 0] <- 3      # Factor level 3
+facFor[forest > 0.5] <- 4                   # Factor level 4
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 # 5.11 Binomial generalised linear model (binomial GLM, logistic regression)
-# --------------------------------------------------------------------------
+# ==========================================================================
 
 
 # Quantize counts from first survey and describe

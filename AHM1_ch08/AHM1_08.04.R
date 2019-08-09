@@ -5,6 +5,8 @@
 # Chapter 8. Modeling abundance using hierarchical distance sampling (HDS)
 # =========================================================================
 
+library(AHMbook)
+
 # 8.4 Hierarchical Distance Sampling
 # ==================================
 
@@ -95,7 +97,6 @@ fall$C2E.C
 
 # Check out the goodness-of-fit of this model
 (pb.try2 <- parboot(fall$C2E.C, fitstats, nsim=1000, report=5))
-Call: parboot(object = fall$C2E.C, statistic = fitstats, nsim = 1000, report = 5)
 
 # Express the magnitude of lack of fit by an overdispersion factor
 (c.hat <- pb.try2@t0[2] / mean(pb.try2@t.star[,2]))  #    Chisq

@@ -6,9 +6,11 @@
 #    in closed populations: binomial N-mixture models
 # =========================================================================
 
-# 6.5 A very general data simulation function for N-mixture models: simNmix
-# -------------------------------------------------------------------------
+library(AHMbook)
+library(unmarked)
 
+# 6.5 A very general data simulation function for N-mixture models: simNmix
+# =========================================================================
 
 # Execute function and inspect results
 data <- simNmix()                   # Default arguments

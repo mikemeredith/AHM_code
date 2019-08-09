@@ -5,10 +5,10 @@
 # Chapter 7. Modeling abundance using multinomial N-mixture models
 # =========================================================================
 
+library(AHMbook)
+
 # 7.3 Simulating multinomial observations in R
-# ------------------------------------------------------------------------
-
-
+# ============================================
 
 rmultinom(10, 5, c(0.1, 0.2, 0.7))
 

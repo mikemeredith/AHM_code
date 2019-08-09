@@ -168,14 +168,16 @@ sqrt(diag(solve(opt.out$hessian)))
 
 # 2.4.6.2 A continuous latent variable
 # ------------------------------------------------------------------------
-marg <- rep(NA, J+1)
-for(j in 0:J){
-marg[j] <- integrate(
-   function(x){
-      dbinom(j, J, plogis(x)) * dnorm(x, mu, sigma)},
-      lower=-Inf,upper=Inf)$value
-   }
-}
+# ~~~~ Following code not executable as is: ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# marg <- rep(NA, J+1)
+# for(j in 0:J){
+# marg[j] <- integrate(
+   # function(x){
+      # dbinom(j, J, plogis(x)) * dnorm(x, mu, sigma)},
+      # lower=-Inf,upper=Inf)$value
+   # }
+# }
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # nx = encounter frequencies, number inds. encountered 1, 2, ..., 14 times
 nx <- c(34, 16, 10, 4, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0)

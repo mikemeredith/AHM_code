@@ -5,8 +5,11 @@
 # Chapter 10. Modeling static occurrence and species distributions using site-occupancy models
 # =========================================================================
 
+library(AHMbook)
+library(jagsUI)
+
 # 10.11 Space-for-time substitution
-# ------------------------------------------------------------------------
+# =================================
 
 
 # 10.11.1 A magical covariate
@@ -119,6 +122,14 @@ for(i in 1:simreps){
    rm(data, UMmle)
 }
 )
+
+# ~~~~~ the following code won't work because the 'data' object was 'rm'ed in the loop ~~~~~~
+# Create a new one with the same arguments
+   data <- sim3Occ(nunit = 500, nsubunit = 5, nrep = 1, mean.psi = 0.8,
+      beta.Xpsi = 1, sd.logit.psi = 0.4, mean.theta = 0.6,
+      theta.time.range = c(-1, 1), beta.Xtheta = 0, sd.logit.theta = 0.6,
+      mean.p = 0.4, p.time.range = c(0,0), beta.Xp = 0, sd.logit.p = 0.8)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Visualize results
 par(mfrow = c(1,3), mar = c(5,5,3,2), cex.lab = 1.5, cex.axis = 1.5, cex.main = 1.5)

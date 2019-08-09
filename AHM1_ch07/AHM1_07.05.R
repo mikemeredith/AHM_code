@@ -5,8 +5,11 @@
 # Chapter 7. Modeling abundance using multinomial N-mixture models
 # =========================================================================
 
+library(AHMbook)
+library(unmarked)
+
 # 7.5 Example 1: Bird point counts based on removal sampling
-# ------------------------------------------------------------------------
+# ==========================================================
 
 
 data(ovendata)

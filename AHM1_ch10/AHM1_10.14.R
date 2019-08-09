@@ -5,8 +5,18 @@
 # Chapter 10. Modeling static occurrence and species distributions using site-occupancy models
 # =========================================================================
 
+library(AHMbook) # Requires version ‘0.1.4.9088’ or later
+library(jagsUI)
+
+# ~~~~~ Use the old buggy RNG for 'sample' for compatibility ~~~~~~~~~
+# The function 'wigglyOcc' uses 'sample' internally.
+if(getRversion() >= '3.6.0')
+  RNGkind(sample.kind = "Rounding")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 # 10.14 Modeling wiggly covariate relationships: penalized splines in hierarchical models
-# ------------------------------------------------------------------------
+# =======================================================================================
 
 
 # Execute the function and inspect file produced
@@ -117,7 +127,7 @@ ni <- 100000   ;   nb <- 10000   ;   nt <- 90   ;   nc <- 3
 
 # Call JAGS from R (ART 95 min) and summarize posteriors
 system.time(fhm <- jags(win.data, inits, params, "hypermodel.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE))
-traceplot(fhm)   ;   print(fhm, 3)
+# traceplot(fhm)   ;   print(fhm, 3)  # ~~~~ remove for testing
 print(fhm$summary[c(1:6, 2957:2965, 3926),], 3)  # Compare some key estimands
 
 # Plot prediction of psi and p

@@ -5,25 +5,23 @@
 # Chapter 9. Advanced Hierarchical Distance Sampling
 # =========================================================================
 
-# 9.8 Spatial Distance Sampling: Modelling within-unit variation in density
-# ------------------------------------------------------------------------
+library(AHMbook)
+library(unmarked)
 
+# ~~~~~ Use the old buggy RNG for 'sample' for compatibility ~~~~~~~~~
+# The functions 'sim.spatialDS' and 'sim.spatialHDS' use 'sample' internally.
+if(getRversion() >= '3.6.0')
+  RNGkind(sample.kind = "Rounding")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# 9.8 Spatial Distance Sampling: Modelling within-unit variation in density
+# =========================================================================
 
 # 9.8.1 Distance sampling with location of encounter
 # ------------------------------------------------------------------------
 # Simulate a data set and harvest the output
 set.seed(1234)
 str(tmp <- sim.pdata(N=200,sigma=1,keep.all=FALSE,B=3))
-
-List of 8
- $ N     : num 200
- $ sigma : num 1
- $ B     : num 3
- $ u1    : num [1:37] 3.73 3.66 3.27 1.72 3.32 ...
- $ u2    : num [1:37] 3.17 1.9 1.68 3.83 2.54 ...
- $ d     : num [1:37] 0.753 1.276 1.345 1.529 0.557 ...
- $ y     : int [1:200] 0 1 1 0 0 0 0 0 0 0 ...
- $ N.real: int 152
 
 # Harvest some data objects
 B <- tmp$B
@@ -80,14 +78,13 @@ inits <- function(){
 params <- c("sigma", "N", "psi")
 
 # Execute jags and summarize the posterior distributions
-out1 <- jags (data, inits, parameters, "model1.txt", n.thin=nthin,
+# out1 <- jags (data, inits, parameters, "model1.txt", n.thin=nthin,  # ~~~ oops!
+out1 <- jags (data, inits, params, "model1.txt", n.thin=nthin,
    n.chains=nc, n.burnin=nb,n.iter=ni, parallel = FALSE)
 par(mfrow = c(2,2))   ;   traceplot(out1)
 print(out1, 2)
 
-# 9.8.2 The line transect case
-# ------------------------------------------------------------------------
-
+# 9.8.2 The line transect case (no code)
 
 # 9.8.3 Modelling spatial covariates
 # ------------------------------------------------------------------------
@@ -231,7 +228,7 @@ params <- c("sigma", "N", "psi", "beta", "D")
 # Run JAGS, check convergence and summarize posteriors
 out2 <- jags (data, inits, params, "spatialDS.txt", n.thin=nthin,
    n.chains=nc, n.burnin=nb, n.iter=ni, parallel = TRUE)
-par(mfrow = c(2,3)   ;   traceplot(out2)
+par(mfrow = c(2,3))   ;   traceplot(out2)
 print(out2, 2)
 
 
@@ -260,7 +257,10 @@ title("Posterior mean density")
 # 9.8.4 Spatial HDS models in unmarked using the pcount function
 # ------------------------------------------------------------------------
 ## see errata; here we use the "logit" detection function; the results will be different
-##  but not 'nonsense'
+##  but not 'nonsense'.
+# ~~~~ Use the sim.spatialDS function in the AHMbook package for this. ~~~~~~~
+rm(sim.spatialDS)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Simulate a data set, N = 600 for the population size
 set.seed(1234)
 tmp <-sim.spatialDS(N=600, sigma=1.5, keep.all=FALSE, B=3, model= "logit")
@@ -412,6 +412,9 @@ for(s in 1:nsites){
 zst <- Ymat
 inits <- function(){ list (sigma=1.5, z = zst, beta0 = -5, beta1=1 ) }
 params <- c("sigma", "Ntotal", "beta1", "beta0", "D", "lam0")
+# ~~~~~ to do the plots below, you need to add "N" to params ~~~~~~~~~~~~~~~~~
+params <- c("sigma", "Ntotal", "beta1", "beta0", "D", "lam0", "N")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # MCMC settings
 ni <- 12000   ;   nb <- 2000   ;   nthin <- 2   ;   nc <- 3
@@ -426,3 +429,6 @@ Nhat <- out3$summary[7:106,1]
 plot(Ntrue, Nhat, xlab="Local population size, N, for each site", ylab="Posterior mean N for each site", pch=20)
 abline(0, 1, lwd=2)
 
+# ~~~~~ these were long runs, so maybe save ~~~~~~~~~~
+save(out1, out2, out3, file="AHM1_09.08_JAGSoutput.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -5,8 +5,20 @@
 # Chapter 11. Hierarchical models for communities
 # =========================================================================
 
+library(jagsUI)
+
+# ~~~~~~ this section requires the data prepared in section 11.3 ~~~~~~~~~~
+source("AHM1_11.03.R")
+# ~~~~~~ and this code from section 11.5 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+orig.ele <- MHB2014$sites$elev
+(mean.ele <- mean(orig.ele, na.rm = TRUE))
+(sd.ele <- sd(orig.ele, na.rm = TRUE))
+ele <- (orig.ele - mean.ele) / sd.ele
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 # 11.6 Community models that retain species identity
-# ------------------------------------------------------------------------
+# ==================================================
 
 
 # 11.6.1 Simplest community occupancy model: n-fold single species
@@ -70,6 +82,7 @@ ni <- 2500   ;   nt <- 2   ;   nb <- 500   ;   nc <- 3
 # Call JAGS from R (ART 2.1 min)
 out5 <- jags(win.data, inits, params, "model5.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 par(mfrow = c(4,4))   ;   traceplot(out5)   ;   print(out5, dig = 3)
+par(mfrow = c(1,1)) # ~~~~~~~~~~ clean up!
 
 # Compare observed and estimated site species richness
 par(cex = 1.3)
@@ -168,6 +181,7 @@ ni <- 20000   ;   nt <- 15   ;   nb <- 5000   ;   nc <- 3
 # Call JAGS from R (ART 12 min), check traceplots and summarize posteriors
 out6 <- jags(win.data, inits, params, "model6.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 par(mfrow = c(3,3))   ;   traceplot(out6, c('mu.eta', 'probs', 'Sigma', 'rho'))
+par(mfrow = c(1,1)) # ~~~~~~~~~~ clean up!
 print(out6, 3)
 
 # Graphically compare some estimates between fixed- and random-effects model
@@ -264,6 +278,7 @@ ni <- 6000   ;   nt <- 2   ;   nb <- 2000   ;   nc <- 3
 # Call JAGS from R (ART 6 min), look at convergence and summarize posteriors
 out7 <- jags(win.data, inits, params, "model7.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 par(mfrow = c(3,3))   ;   traceplot(out7)
+par(mfrow = c(1,1)) # ~~~~~~~~~~ clean up!
 print(out7, dig = 3)
 
 
@@ -346,8 +361,12 @@ ni <- 12000   ;   nt <- 2   ;   nb <- 2000   ;   nc <- 3
 out8 <- jags(win.data, inits, params, "model8.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 par(mfrow = c(3,3))
 traceplot(out8, c('delta0.lpsi', 'delta1.lpsi', 'delta0.lp', 'delta1.lp', 'phi0.lpsi', 'phi1.lpsi', 'phi0.lp', 'phi1.lp'))
+par(mfrow = c(1,1)) # ~~~~~~~~~~ clean up!
 print(out8, dig = 3)
 
+# ~~~~~ suggest saving for use later ~~~~~~~~~~~~~
+save(out5, out6, out7, out8, file="AHM1_11.06_JAGSoutput.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Get covariate values for prediction
 predm <- seq(10, 10000,,500)        # Predict for mass of 10g to 10 kg
@@ -391,7 +410,6 @@ elev <- MHB2014$sites$elev
 plot(elev, N.pm, xlab = "Altitude (m a.s.l.)", ylab = "Estimated avian species richness", ylim = c(0, 70), frame = F)
 segments(elev, N.cri[,1], elev, N.cri[,2], col = "grey")
 lines(smooth.spline(N.pm ~ elev, w = 1 / N.psd), col = "grey", lwd = 3)
-
 
 # Bundle and summarize data set
 pred.ele <- (seq(200, 2750,5) - mean.ele) / sd.ele # elevation standardised

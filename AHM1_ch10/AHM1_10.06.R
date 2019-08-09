@@ -5,8 +5,11 @@
 # Chapter 10. Modeling static occurrence and species distributions using site-occupancy models
 # =========================================================================
 
+library(AHMbook)
+library(jagsUI)
+
 # 10.6 A model with lots of covariates: use of R function model.matrix with BUGS
-# ------------------------------------------------------------------------------
+# ==============================================================================
 
 
 set.seed(148)

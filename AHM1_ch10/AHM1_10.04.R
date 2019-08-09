@@ -5,8 +5,11 @@
 # Chapter 10. Modeling static occurrence and species distributions using site-occupancy models
 # =========================================================================
 
+library(R2WinBUGS)
+bugs.dir <- "C:/WinBUGS14"
+
 # 10.4 A slightly more complex site-occupancy model with covariates
-# ------------------------------------------------------------------------
+# =================================================================
 
 
 # Choose sample sizes and prepare obs. data array y

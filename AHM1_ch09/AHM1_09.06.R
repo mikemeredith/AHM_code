@@ -5,8 +5,11 @@
 # Chapter 9. Advanced Hierarchical Distance Sampling
 # =========================================================================
 
+library(AHMbook)
+library(jagsUI)
+
 # 9.6 Open HDS models: Implicit Dynamics
-# ------------------------------------------------------------------------
+# ======================================
 
 
 # Obtain a data set
@@ -30,7 +33,12 @@ for(yr in 1:nyears){
     dclass <- data[,"d"]%/%delta + 1
     ndclass <- B%/%delta
     dclass <- factor(dclass, levels=  1:ndclass)
-    y4d[1:nsites,1:nD,rep,yr] <- table(site, dclass)
+# ~~~~~ this cannot work ~~~~~~~~~~
+    # y4d[1:nsites,1:nD,rep,yr] <- table(site, dclass)
+# ~~~~~ use this instead ~~~~~~~~~~~
+    ttt <- table(site, dclass)
+    siteID <- as.numeric(rownames(ttt))
+    y4d[siteID,1:nD,rep,yr] <- ttt
   }
 }
 

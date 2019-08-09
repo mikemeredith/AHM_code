@@ -6,8 +6,10 @@
 #    in closed populations: binomial N-mixture models
 # =========================================================================
 
+library(AHMbook)
+
 # 6.13 The Royle-Nichols model and other non-standard N-mixture models
-# ------------------------------------------------------------------------
+# ====================================================================
 
 
 # 6.13.1 The Royle-Nichols or Poisson/Bernoulli N-mixture model
@@ -95,7 +97,8 @@ date <- SwissTits$date[keep, , '2013']  # Survey date
 dur <- SwissTits$dur[keep, , '2013']    # Survey duration
 
 # 'Degrade' counts to mere detection/nondetection data
-y3DRN <- y ; y3DRN[y3DRN > 1] <- 1  # Overwrite any count >1 with 1 (for RN model)
+# y3DRN <- y ; y3DRN[y3DRN > 1] <- 1  # ~~~~~~~~~ this is wrong
+y3DRN <- y3D ; y3DRN[y3DRN > 1] <- 1  # Overwrite any count >1 with 1 (for RN model)
 
 ( spec.names <- paste0(SwissTits$species$name, "s") )
 

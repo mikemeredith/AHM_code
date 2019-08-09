@@ -5,8 +5,27 @@
 # Chapter 7. Modeling abundance using multinomial N-mixture models
 # =========================================================================
 
+library(unmarked)
+library(AHMbook)
+
+# ~~~~~~~~~~ section 7.8.5 uses the first data set from section 7.3 ~~~~~~~~~~~
+set.seed(2014)
+data <- simNmix(mean.lam = exp(1), beta3.lam = 1, mean.p = plogis(0),
+       sigma.p.visit = 1, show.plot=FALSE)
+str(data)
+# Get detection history frequencies for each site (for exactly 3 surveys)
+dhfreq <- array(NA, dim = c(data$nsite, 7),
+  dimnames = list(NULL, c("100", "010", "001", "110", "101", "011", "111")))
+for(i in 1:data$nsite){
+  dhfreq[i,] <- table(factor(paste(data$DH[i,1,], data$DH[i,2,],
+  data$DH[i,3,], sep = ""),
+  levels = c("100", "010", "001", "110", "101", "011", "111")))
+}
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 # 7.8 Spatially Stratified Capture-Recapture Models
-# ------------------------------------------------------------------------
+# =================================================
 
 
 crPiFun <- function(p) {
@@ -237,8 +256,8 @@ out <- jagsUI(data, inits, parameters, "model.txt", n.thin = nt,
 print(out, digits = 3)
 
 
-7.8.5 Example 2: analysis of data simulated with the simNmix data function
-# ------------------------------------------------------------------------
+# 7.8.5 Example 2: analysis of data simulated with the simNmix data function
+# --------------------------------------------------------------------------
 # Fit model in unmarked
 library(unmarked)
 time <- matrix(as.character(1:3), data$nsite, 3, byrow = T)
@@ -262,7 +281,8 @@ crPiFun <- function(p) {
 o2y <- matrix(1, 3, 7)
 
 # Create unmarked frame and fit couple of models
-umf <- unmarkedFrameMPois(y = dhfreq, siteCovs = data.frame(cov3 = data$site.cov[,3]), obsCovs = list(time = time), obsToY = o2y, piFun = "crPiFun")
+umf <- unmarkedFrameMPois(y = dhfreq, siteCovs = data.frame(cov3 = data$site.cov[,3]),
+  obsCovs = list(time = time), obsToY = o2y, piFun = "crPiFun")
 fm1 <- multinomPois(~1 ~1, umf)    # detection model before abundance model
 fm2 <- multinomPois(~time-1 ~1, umf)
 fm3 <- multinomPois(~1 ~cov3, umf)
@@ -307,7 +327,8 @@ fm1 <- multinomPois(~1 ~1, umf)    # Detection model before abundance model
 (fm4 <- multinomPois(~cov3 + obs.cov ~cov2 + cov3, umf))
 
 print(c(log(data$mean.lam), data$beta2.lam, data$beta3.lam,
-       logit(data$mean.p), data$beta3.p, data$beta.p.survey))
+       # logit(data$mean.p), data$beta3.p, data$beta.p.survey))
+       qlogis(data$mean.p), data$beta3.p, data$beta.p.survey))
 
 
 # Simulate detection frequency data  from back in section 7.3.1

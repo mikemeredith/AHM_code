@@ -5,9 +5,13 @@
 # Chapter 10. Modeling static occurrence and species distributions using site-occupancy models
 # =========================================================================
 
+library(AHMbook)
+library(R2WinBUGS)
+bd <- "C:/WinBUGS14"
+
 # 10.12 Models for data along transects: Poisson, exponential,
 #       Weibull and removal observation models
-# ------------------------------------------------------------------------
+# ============================================================
 
 
 # 10.12.1 Occupancy models with "survival model" observation process:

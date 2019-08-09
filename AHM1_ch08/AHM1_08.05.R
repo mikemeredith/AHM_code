@@ -5,8 +5,12 @@
 # Chapter 8. Modeling abundance using hierarchical distance sampling (HDS)
 # =========================================================================
 
+library(AHMbook)
+library(R2WinBUGS)
+bd <- "C:/WinBUGS14" # Never forget this for WinBUGS
+
 # 8.5 Bayesian HDS
-# ------------------------------------------------------------------------
+# ================
 
 
 # 8.5.1 Simulating some HDS data
@@ -89,7 +93,7 @@ params <- c("alpha0", "alpha1", "beta0", "beta1", "psi", "Ntotal", "D")
 ni <- 12000   ;   nb <- 2000   ;   nt <- 2   ;   nc <- 3
 
 # Call BUGS (ART 33 min) ...
-bd <- "c:/Program Files/WinBUGS14/" # Never forget this for WinBUGS
+# bd <- "c:/Program Files/WinBUGS14/" # Never forget this for WinBUGS
 out1 <- bugs(win.data, inits, params, "model1.txt", n.thin=nt,
    n.chains=nc, n.burnin=nb, n.iter=ni, debug=TRUE, bugs.dir = bd)
 

@@ -5,6 +5,10 @@
 # Chapter 2. What are hierarchical models and how do we analyze them?
 # =========================================================================
 
+# ~~~~~~~ This requires results from section 2.4 ~~~~~~~~~~~~~~~~~~~~
+source("AHM1_02.4.R")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 # 2.8 Assessment of model fit
 # ===========================
 

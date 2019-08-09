@@ -5,9 +5,29 @@
 # Chapter 5. Fitting models using the Bayesian modeling software BUGS and JAGS
 # =========================================================================
 
-# 5.10 Goodness of fit assessment: posterior predictive checks and the parametric bootstrap
-# -----------------------------------------------------------------------------------------
+library(AHMbook)
+library(R2WinBUGS)
+bugs.dir <- "C:/WinBUGS14/"          # Place where your WinBUGS installed
+library(jagsUI)
 
+# ~~~~~ this section requires the following code from section 5.3 ~~~~~~~~~~
+# Generate data with data.fn from chapter 4
+set.seed(24)
+data <- data.fn(show.plot=FALSE)
+attach(data)
+# ~~~~~ and this bit from section 5.6 ~~~~~~~~~~
+# Generate factor and plot raw data in boxplot as function of factor A
+facFor <- as.numeric(forest < -0.5)         # Factor level 1
+facFor[forest < 0 & forest > -0.5] <- 2     # Factor level 2
+facFor[forest < 0.5 & forest > 0] <- 3      # Factor level 3
+facFor[forest > 0.5] <- 4                   # Factor level 4
+# ~~~~~ and this from section 5.9 ~~~~~~~~~~
+# Summarize data by taking max at each site
+Cmax <- apply(C, 1, max)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# 5.10 Goodness of fit assessment: posterior predictive checks and the parametric bootstrap
+# =========================================================================================
 
 # Bundle data
 win.data <- list(Cmax = Cmax, M = length(Cmax), elev = elev, facFor = facFor, e = 0.0001)
@@ -81,7 +101,8 @@ chi2.obs <- sum((observed - expected)^2 / (expected + 0.0001)) # fit stat 1
 range.obs <- diff(range(observed))                             # fit stat 2
 
 # Generate reference distribution of fit stat under a fitting model
-simrep <- 100000      # Might want to try 1000 first
+# simrep <- 100000      # Might want to try 1000 first, takes a looong time!
+simrep <- 1000
 chi2vec <- rangevec <- numeric(simrep)  # vectors for chi2 and maximum
 for(i in 1:simrep){
  cat(paste(i, "\n"))

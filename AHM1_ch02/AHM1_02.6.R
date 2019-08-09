@@ -5,11 +5,14 @@
 # Chapter 2. What are hierarchical models and how do we analyze them?
 # =========================================================================
 
+# ~~~~~~~ This requires results from section 2.4 ~~~~~~~~~~~~~~~~~~~~
+source("AHM1_02.4.R")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 # 2.6 Basic Markov chain Monte Carlo (MCMC)
 # =========================================
 
 # 2.6.1 Metropolis-Hastings algorithm (no code)
-# ------------------------------------------------------------------------
 
 # 2.6.2 Illustration: using MH for a binomial model
 # ------------------------------------------------------------------------

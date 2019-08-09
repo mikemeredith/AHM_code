@@ -5,8 +5,25 @@
 # Chapter 5. Fitting models using the Bayesian modeling software BUGS and JAGS
 # =========================================================================
 
+library(AHMbook)
+library(R2WinBUGS)
+bugs.dir <- "C:/WinBUGS14/"          # Place where your WinBUGS installed
+library(jagsUI)
+
+# ~~~~~ this section requires the following code from section 5.3 ~~~~~~~~~~
+set.seed(24)
+data <- data.fn(show.plot=FALSE)
+attach(data)
+# ~~~~~ and the following code from section 5.6 ~~~~~~~~~~
+# Generate factor and plot raw data in boxplot as function of factor A
+facFor <- as.numeric(forest < -0.5)         # Factor level 1
+facFor[forest < 0 & forest > -0.5] <- 2     # Factor level 2
+facFor[forest < 0.5 & forest > 0] <- 3      # Factor level 3
+facFor[forest > 0.5] <- 4                   # Factor level 4
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 # 5.9 Poisson generalized linear model (Poisson GLM)
-# --------------------------------------------------
+# ==================================================
 
 
 # Summarize data by taking max at each site
@@ -81,7 +98,8 @@ sorted.y1 <- out5$summary[9:275,][facFor == 1,][order(elev[facFor == 1]),]
 
 # Plot A
 par(mfrow = c(1, 3), mar = c(5,5,3,2), cex.lab = 1.5, cex.axis = 1.5)
-plot(elev[facFor == 1], jitter(Cmax[facFor ==1]), ylab = "Maximum count", xlab = "Elevation (scaled)", frame.plot=F), ylim = c(0, 6))
+# plot(elev[facFor == 1], jitter(Cmax[facFor ==1]), ylab = "Maximum count", xlab = "Elevation (scaled)", frame.plot=F), ylim = c(0, 6)) # ~~~~ extra ")"
+plot(elev[facFor == 1], jitter(Cmax[facFor ==1]), ylab = "Maximum count", xlab = "Elevation (scaled)", frame.plot=F, ylim = c(0, 6))
 lines(sorted.ele1, sorted.y1[,1], col = "blue", lwd = 2) # Post. mean
 lines(sorted.ele1, sorted.y1[,3], col = "grey", lwd = 2) # Lower 95% CL
 lines(sorted.ele1, sorted.y1[,7], col = "grey", lwd = 2) # Upper 95% CL

@@ -6,8 +6,11 @@
 #    in closed populations: binomial N-mixture models
 # =========================================================================
 
+library(AHMbook)
+library(unmarked)
+
 # 6.9 Abundance mapping of Swiss Great tits with unmarked
-# ------------------------------------------------------------------------
+# =======================================================
 
 
 # 6.9.1 Set up of the analysis
@@ -113,14 +116,41 @@ summary(fm5ZIP)                      # AIC = 3636.058
 
 cbind(rbind("Poisson" = exp(coef(fm5)[1]), "NegBin" = exp(coef(fm5NB)[1]), "ZIP" = exp(coef(fm5ZIP)[1])), rbind(plogis(coef(fm5)[15:17]), plogis(coef(fm5NB)[15:17]), plogis(coef(fm5ZIP)[15:17])))
 
-
-
 # 6.9.3 Model criticism and goodness of fit
 # ------------------------------------------------------------------------
 library(AICcmodavg)
-system.time(gof.P <- Nmix.gof.test(fm5, nsim=100))      # 65 min
-system.time(gof.NB <- Nmix.gof.test(fm5NB, nsim=100))   # 131 min
-system.time(gof.ZIP <- Nmix.gof.test(fm5ZIP, nsim=100)) # 69 min
+system.time(gof.P <- Nmix.gof.test(fm5, nsim=100))      # 12 mins in parallel << 65 min
+# ~~~~~~~~~~ changes in AICcmodavg::Nmix.gof.test wef 2.2-0 (25 February 2019) ~~~~~~~
+# Nmix.gof.test now has a 'parallel' argument with default TRUE. The fm5NB and fm5ZIP models
+#  using formula=fm5@formula will not work in parallel. With parallel=FALSE they work:
+
+# system.time(gof.NB <- Nmix.gof.test(fm5NB, nsim=100, parallel=FALSE))   # 131 min
+# system.time(gof.ZIP <- Nmix.gof.test(fm5ZIP, nsim=100, parallel=FALSE)) # 69 min
+
+# Alternatively, rerun fm5NB and fm5ZIP with the formula specified in full:
+fm5NB <- pcount(~(elev+I(elev^2)) * (date+I(date^2)) * (dur+I(dur^2)) + time-1
+      - elev:date:dur - elev:date:I(dur^2) - elev:I(date^2):dur
+      - elev:I(date^2):I(dur^2) - I(elev^2):date:dur - I(elev^2):date:I(dur^2)
+      - I(elev^2):I(date^2):dur - I(elev^2):I(date^2):I(dur^2)
+      - I(elev^2):I(date^2) - I(elev^2):I(dur^2) - I(date^2):I(dur^2)
+      - elev:I(date^2) - I(date^2):dur
+      ~ (elev+I(elev^2)) * (forest+I(forest^2))+ iLength
+      - I(elev^2):forest - I(elev^2):I(forest^2), starts = c(coef(fm5),0),
+      umf, control=list(trace=TRUE, REPORT=5), mixture = "NB")
+
+fm5ZIP <- pcount(~(elev+I(elev^2)) * (date+I(date^2)) * (dur+I(dur^2)) + time-1
+      - elev:date:dur - elev:date:I(dur^2) - elev:I(date^2):dur
+      - elev:I(date^2):I(dur^2) - I(elev^2):date:dur - I(elev^2):date:I(dur^2)
+      - I(elev^2):I(date^2):dur - I(elev^2):I(date^2):I(dur^2)
+      - I(elev^2):I(date^2) - I(elev^2):I(dur^2) - I(date^2):I(dur^2)
+      - elev:I(date^2) - I(date^2):dur
+      ~ (elev+I(elev^2)) * (forest+I(forest^2))+ iLength
+      - I(elev^2):forest - I(elev^2):I(forest^2), starts = c(coef(fm5),0),
+      umf, control=list(trace=TRUE, REPORT=5), mixture = "ZIP")
+system.time(gof.NB <- Nmix.gof.test(fm5NB, nsim=100, parallel=TRUE))   # 25 min << 131 min
+system.time(gof.ZIP <- Nmix.gof.test(fm5ZIP, nsim=100, parallel=TRUE)) # 14 min << 69 min
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 gof.P   ;   gof.NB   ;   gof.ZIP                        # print results
 
 
@@ -278,19 +308,21 @@ dur.orig <- seq(90, 420, length.out=100)   # Survey duration from 90 - 420 min
 (dur.sd <- sd(dur, na.rm = TRUE))
 durp <- (dur.orig - dur.mean) / dur.sd     # Standardised for prediction
 
+# ~~~~~~~ modavgPred now returns a list with 7 elements; for the plots we need [2:3] ~~~~~
 # Do predictions along single covariate gradient
 newData1 <- data.frame(elev=ep, forest=0, iLength=0, date=0, dur=0, time = factor("2", levels = c("1", "2", "3")))
 pred1 <- predictSE(fm5ZIP, newdata=newData1, c.hat = 2.47)
-pred2 <- modavgPred(cand.set = list(fm5ZIP), newdata=newData1, parm.type = "detect", type = "response", c.hat = 2.47)
+# pred2 <- modavgPred(cand.set = list(fm5ZIP), newdata=newData1, parm.type = "detect", type = "response", c.hat = 2.47)
+pred2 <- modavgPred(cand.set = list(fm5ZIP), newdata=newData1, parm.type = "detect", type = "response", c.hat = 2.47)[2:3] # ~~~~~
 newData3 <- data.frame(elev=0, forest=fp, iLength=0, date=0, dur=0, time = factor("2", levels = c("1", "2", "3")))
 pred3 <- predictSE(fm5ZIP, newdata=newData3, c.hat = 2.47)
 newData4 <- data.frame(elev=0, forest=0, iLength=0, date=datep, dur=0, time = factor("2", levels = c("1", "2", "3")))
-pred4 <- modavgPred(cand.set = list(fm5ZIP), newdata=newData4, parm.type = "detect", type = "response", c.hat = 2.47)
+pred4 <- modavgPred(cand.set = list(fm5ZIP), newdata=newData4, parm.type = "detect", type = "response", c.hat = 2.47)[2:3] # ~~~~~
 newData5 <- data.frame(elev=0, forest=0, iLength=0, date=0, dur=durp, time = factor("2", levels = c("1", "2", "3")))
-pred5 <- modavgPred(cand.set = list(fm5ZIP), newdata=newData5, parm.type = "detect", type = "response", c.hat = 2.47)
+pred5 <- modavgPred(cand.set = list(fm5ZIP), newdata=newData5, parm.type = "detect", type = "response", c.hat = 2.47)[2:3] # ~~~~~
 newData6 <- data.frame(elev=0, forest=0, iLength=0, date=0, dur=0,
 time = c("1", "2", "3"))
-pred6 <- modavgPred(cand.set = list(fm5ZIP), newdata=newData6, parm.type = "detect", type = "response", c.hat = 2.47)
+pred6 <- modavgPred(cand.set = list(fm5ZIP), newdata=newData6, parm.type = "detect", type = "response", c.hat = 2.47)[2:3] # ~~~~~
 
 # Plot these predictions along single covariate gradient
 par(mfrow = c(3,2), mar = c(5,5,3,2), cex.lab = 1.3, cex.axis = 1.3)
@@ -403,13 +435,14 @@ mapPalette <- colorRampPalette(c("grey", "yellow", "orange", "red"))
 # Map expected abundance of great tits in Switzerland in 2013
 par(mfrow = c(1,2), mar = c(1,1,2,4))
 plot(r1, col = mapPalette(100), axes = F, box = FALSE, main ="")
-lakes <- readOGR(".", "lakes")
-rivers <- readOGR(".", "rivers")
-border <- readOGR(".", "border")
-plot(rivers, col = "dodgerblue", add = TRUE)
-plot(border, col = "transparent", lwd = 1.5, add = TRUE)
-plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
-
+# ~~~~~ these shape files were not distributed ~~~~~~~~~~~~~~
+# lakes <- readOGR(".", "lakes")
+# rivers <- readOGR(".", "rivers")
+# border <- readOGR(".", "border")
+# plot(rivers, col = "dodgerblue", add = TRUE)
+# plot(border, col = "transparent", lwd = 1.5, add = TRUE)
+# plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Prepare raster with prediction SEs
 r2 <- rasterFromXYZ(data.frame(x = CH$x, y = CH$y, z = predCH[,2]))
@@ -419,18 +452,19 @@ r2 <- mask(r2, elev)
 
 # Map prediction SEs of expected abundance
 plot(r2, col = mapPalette(100), axes = F, box = FALSE, main ="")
-lakes <- readOGR(".", "lakes")
-rivers <- readOGR(".", "rivers")
-border <- readOGR(".", "border")
-plot(rivers, col = "dodgerblue", add = TRUE)
-plot(border, col = "transparent", lwd = 1.5, add = TRUE)
-plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
+# ~~~~~ these shape files were not distributed ~~~~~~~~~~~~~~
+# lakes <- readOGR(".", "lakes")
+# rivers <- readOGR(".", "rivers")
+# border <- readOGR(".", "border")
+# plot(rivers, col = "dodgerblue", add = TRUE)
+# plot(border, col = "transparent", lwd = 1.5, add = TRUE)
+# plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-# Predictions for p with overdispersion
+# Predictions for p with overdispersion (very slow!)
 newData <- data.frame(elev = (CH$elev-elev.mean)/elev.sd, date=0, dur=0, time = factor("2", levels = c("1", "2", "3")))
 predCHp <- modavgPred(cand.set = list(fm5ZIP), newdata = newData, parm.type = "detect", type = "response", c.hat = 2.47)
-
 
 (N <- sum(predCH[-which(CH$elev > 2250),1]))    # Nat'l population size
 
@@ -466,8 +500,11 @@ Nhat <- function(fm = fm5ZIP, iLength = 0, area = 1) {
 (Nest <- Nhat(fm5ZIP, 1/10))      # For 10 km routes
 
 # Launch the bootstrap (takes about 30h)
-system.time(pb.N <- parboot(fm5ZIP, Nhat, nsim = 2500, report=5))
-
+# ~~~~~~~~~~ changes in unmarked::parboot wef 0.12-0  ~~~~~~~
+# parboot also has a 'parallel' argument with default TRUE. Unfortunately the 'Nhat' function
+#  defined above won't work  in parallel, so need to specify parallel = FALSE.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+system.time(pb.N <- parboot(fm5ZIP, Nhat, nsim = 2500, report=5, parallel=FALSE))
 
 bs <- pb.N@t.star[,3]             # Extract the bootstrapped vals of N3
 
@@ -493,3 +530,26 @@ c.hat <- gof.ZIP$c.hat.est
 
 # 6.9.5 Conclusions on the analysis with unmarked (no code)
 # ------------------------------------------------------------------------
+
+# 6.10 The issue of space, or: what is your effective sample area ?
+# =================================================================
+
+AHR <- seq(0.001, 100, 0.1)         # Area home range (in km2): 0.1-100
+RHR <- sqrt(AHR/pi)                 # Translate to home range radius (in km)
+ESA <- (1 + 2*RHR)^2                # Eff. sample area for 1km2 nominal area
+par(mfrow = c(1,2), mar = c(5,5,3,2), cex.lab = 1.3, cex.axis = 1.3)
+plot(AHR, ESA, xlab = "Home range size (km2)", ylab = "Effective sample area (km2)", type = "l", lwd = 3, frame = F)
+abline(h = 1, col = "red", lwd = 3) # Nominal sample area
+abline(h = 0, col = "grey", lwd = 3)
+
+
+GT.HR <- seq(0.003, 0.1,,1000)     # Great tit home ranges in km2
+GT.rad <- sqrt(GT.HR/pi)           # Great tit home range radius (in km)
+ESA.GT <- (1 + 2*GT.rad)^2         # Effective sample area for Great tit
+NTOT <- numeric(length(ESA.GT))    # Adjusted national total population
+for(i in 1:length(NTOT)){
+   NTOT[i] <- Nhat(fm5ZIP, 0, ESA.GT[i])[3]
+}
+plot(100*GT.HR, NTOT, xlab = "Great tit home-range (ha)", ylab = "Adjusted national total (pairs)", type = "l", lwd = 3, frame = F)
+
+

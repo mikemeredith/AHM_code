@@ -5,8 +5,10 @@
 # Chapter 10. Modeling static occurrence and species distributions using site-occupancy models
 # =========================================================================
 
+library(AHMbook)
+
 # 10.7 Study design, and bias and precision of site-occupancy estimators
-# ------------------------------------------------------------------------
+# ======================================================================
 
 
 # Do simulation with 1000 reps

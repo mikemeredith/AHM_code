@@ -5,10 +5,18 @@
 # Chapter 5. Fitting models using the Bayesian modeling software BUGS and JAGS
 # =========================================================================
 
+# ~~~~~ this section requires the following code from section 5.3 ~~~~~~~~~~
+library(AHMbook)
+# Generate data with data.fn from chapter 4
+set.seed(24)
+data <- data.fn(show.plot=FALSE)
+attach(data)
+# Summarize data by taking mean at each site and plot
+Cmean <- apply(C, 1, mean)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 # 5.8 Fitting a model with non-standard likelihood using the zeros or the ones tricks
-# ------------------------------------------------------------------------------------
-
-
+# ===================================================================================
 
 # Package the data needed in a bundle
 win.data <- list(Cmean1 = Cmean, Cmean2 = Cmean, zeros = rep(0, M), ones = rep(1, M), M = length(Cmean), elev = elev, forest = forest) # note 2 copies of response

@@ -5,8 +5,43 @@
 # Chapter 11. Hierarchical models for communities
 # =========================================================================
 
+library(jagsUI)
+
+# ~~~~~~ this section requires the data prepared in section 11.3 ~~~~~~~~~~
+source("AHM1_11.03.R")
+# ~~~~~~ and this code from section 11.6 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Collapse 3D detection/nondetection data to 2D detection frequencies
+ysum <- apply(y, c(1,3), sum, na.rm = T) # Collapse to detection frequency
+ysum[NAsites,] <- NA                     # Have to NA out sites with NA data
+# ~~~~~~ and this code from section 11.5 ~~~~~~~~~~
+# Quadrat elevation and forest cover
+orig.ele <- MHB2014$sites$elev
+(mean.ele <- mean(orig.ele, na.rm = TRUE))
+(sd.ele <- sd(orig.ele, na.rm = TRUE))
+ele <- (orig.ele - mean.ele) / sd.ele
+orig.forest <- MHB2014$sites$forest
+(mean.forest <- mean(orig.forest, na.rm = TRUE))
+(sd.forest <- sd(orig.forest, na.rm = TRUE))
+forest <- (orig.forest - mean.forest) / sd.forest
+
+# Get survey date and survey duration and standardise both
+# Survey date (this is Julian date, with day 1 being April 1)
+orig.DAT <- MHB2014$date
+(mean.date <- mean(orig.DAT, na.rm = TRUE))
+(sd.date <- sd(c(orig.DAT), na.rm = TRUE))
+DAT <- (orig.DAT - mean.date) / sd.date      # scale
+DAT[is.na(DAT)] <- 0                         # impute missings
+# Survey duration (in minutes)
+orig.DUR <- MHB2014$dur
+(mean.dur <- mean(orig.DUR, na.rm = TRUE))
+(sd.dur <- sd(c(orig.DUR), na.rm = TRUE))
+DUR <- (orig.DUR - mean.dur) / sd.dur        # scale
+DUR[is.na(DUR)] <- 0                         # mean impute missings
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 # 11.7 The Dorazio-Royle (DR) community occupancy model with data augmentation
-# ----------------------------------------------------------------------------
+# ============================================================================
 
 
 # 11.7.1 The simplest DR community model with data augmentation
@@ -90,7 +125,9 @@ ni <- 22000   ;   nt <- 2   ;   nb <- 2000   ;   nc <- 3
 out9 <- jags(win.data, inits, params, "model9.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 par(mfrow = c(2,2)) ; traceplot(out9, c('mu.lpsi', 'sd.lpsi', 'mu.lp', 'sd.lp'))
 print(out9, dig = 3)
-
+# ~~~~~ suggest saving for use later ~~~~~~~~~~~~~
+save(out9, file="AHM1_11.07_out9.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Plot posterior distribution of site-specific species richness (Nsite)
 par(mfrow = c(3,3), mar = c(5,4,3,2))
@@ -100,7 +137,7 @@ for(i in 1:267){
    xlim = c((min(C[i], out9$sims.list$Nsite[,i], na.rm = T)-2),
    max(out9$sims.list$Nsite[,i]) ))
    abline(v = C[i], col = "grey", lwd = 4)
-   browser()
+   # browser()
 }
 
 # Plot it only for a selection of sites
@@ -112,7 +149,7 @@ for(i in c(9, 32, 162, 12, 27, 30, 118, 159, 250)){
    max(out9$sims.list$Nsite[,i]) ))
    abline(v = C[i], col = "grey", lwd = 4)
 }
-
+graphics.off()  # ~~~~~ clean up!
 
 # Plot posterior distribution of total species richness (Ntotal)
 plot(table(out9$sims.list$Ntotal), main = "", ylab = "", xlab = "Avian metacommunity size in Swiss MHB survey (267 1km2 quadrats)", frame = F, xlim = c(144, 245))
@@ -254,21 +291,31 @@ ni <- 15000   ;   nt <- 10   ;   nb <- 5000   ;   nc <- 3
 out101 <- jags(win.data, inits, params1, "model10.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 par(mfrow = c(2, 2))
 traceplot(out101, c(c("omega", "mu.lpsi", "sd.lpsi", "mu.betalpsi1", "sd.betalpsi1", "mu.betalpsi2", "sd.betalpsi2", "mu.betalpsi3", "sd.betalpsi3", "mu.lp", "sd.lp", "mu.betalp1", "sd.betalp1", "mu.betalp2", "sd.betalp2", "mu.betalp3", "sd.betalp3", "Ntotal")) )
+# ~~~~~ save for use in sections 11.8 and 11.9 ~~~~~~~~~~~~~
+out10 <- out101
+save(out10, file="AHM1_11.07_out10.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Set 2
 params2 <- c("mu.lpsi", "sd.lpsi", "mu.betalpsi1", "sd.betalpsi1", "mu.betalpsi2", "sd.betalpsi2", "mu.betalpsi3", "sd.betalpsi3", "lpsi", "betalpsi1", "betalpsi2", "betalpsi3", "lp", "betalp1", "betalp2", "betalp3", "z", "w")
-ni <- 12000   ;   nt <- 20   ;   nb <- 2000   ;   nc <- 3
+ni <- 12000   ;   nt <- 20   ;   nb <- 2000   ;   nc <- 3  # 3 hrs
 out102 <- jags.basic(win.data, inits, params2, "model10.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 library(coda)
 all10 <- as.matrix(out102) # Put output from 3 chains into a matrix
-summary(out102)            # May take a loooong time
-gelman.diag(out102)        # ditto
+# ~~~~~ save for use in sections 11.8 and 11.9 ~~~~~~~~~~~~~
+save(all10, file="AHM1_11.07_all10.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# ~~~~~ won't work with 59,349 parameters ~~~~~~~~~~~~~~~~~~~~~~~~
+# summary(out102)            # Pointless, can't display 59,000*2 rows
+# gelman.diag(out102)        # Error: Cannot allocate vector of size 78.7 Gb
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Comparison of main hyperparameters when M = 215 and with M = 395
 # (not all code to produce this output is shown)
-print(cbind(out10.215$summary[1:17,c(1:3, 7)], out10.395$summary[1:17, c(1:3, 7)]), 2)
-
+# ~~~~~ does not work without the rest of the code ~~~~~~~~~~~~~~~~~~~~~~~~~
+# print(cbind(out10.215$summary[1:17,c(1:3, 7)], out10.395$summary[1:17, c(1:3, 7)]), 2)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 out10 <- out101
 
@@ -346,7 +393,7 @@ for(i in 1:267){
    xlim = c((min(C[i], out10$sims.list$Nsite[,i], na.rm = T)-2),
    max(out10$sims.list$Nsite[,i]) ))
    abline(v = C[i], col = "grey", lwd = 4)
-   browser()
+   # browser()
 }
 
 # Plot it only for a selection of sites (Fig. 11-18)
@@ -360,6 +407,7 @@ for(i in c(9, 32, 162, 12, 27, 30, 118, 159, 250)){
 }
 
 # Plot Nsite estimates under models 9 & 10 vs. elevation (Fig. 11-19)
+elev <- orig.ele
 offset <- 30    # Set off elevation for better visibility
 plot(elev, out9$mean$Nsite, xlab = "Elevation (metres)", ylab = "Community size estimate (Nsite)", frame = F, ylim = c(0,60), pch = 16) # black: model 9
 lines(smooth.spline(out9$mean$Nsite ~ elev), lwd = 3)
@@ -371,80 +419,146 @@ str(all10)                    # look at the MCMC output
 pm <- apply(all10, 2, mean)    # Get posterior means and 95% CRIs
 cri <- apply(all10, 2, function(x) quantile(x, prob = c(0.025, 0.975))) # CRIs
 
+# ~~~~~ the order of the columns in all10 is different ~~~~~~~~~~~~~~~~~~~~~
+# Use parameter names and grep instead of column numbers.
+nms <- names(pm)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Effects of date (linear and quadratic) and of duration on detection
 #par(mfrow = c(1,3), cex.lab = 1.3, cex.axis = 1.3) # Can put all three in one
 par(mfrow = c(1,2), cex.lab = 1.3, cex.axis = 1.3)
 # Date linear (Fig. 11 – 20 left)
-plot(pm[1:145], 1:145, xlim = c(-1.5, 1.5), xlab = "Parameter estimate", ylab = "Species number", main = "Effect of date (linear) on detection", pch = 16)
-abline(v = 0, lwd = 2, col = "black")
-segments(cri[1, 1:145], 1:145, cri[2, 1:145], 1:145, col = "grey", lwd = 1)
-sig1 <- (cri[1, 1:145] * cri[2, 1:145]) > 0
-segments(cri[1, 1:145][sig1 == 1], (1:145)[sig1 == 1], cri[2, 1:145][sig1 == 1], (1:145)[sig1 == 1], col = "blue", lwd = 2)
-abline(v = out101$summary[11,1], lwd = 3, col = "red")
-abline(v = out101$summary[11,c(3,7)], lwd = 2, col = "red", lty = 2)
+# plot(pm[1:145], 1:145, xlim = c(-1.5, 1.5), xlab = "Parameter estimate", ylab = "Species number", main = "Effect of date (linear) on detection", pch = 16)
+# abline(v = 0, lwd = 2, col = "black")
+# segments(cri[1, 1:145], 1:145, cri[2, 1:145], 1:145, col = "grey", lwd = 1)
+# sig1 <- (cri[1, 1:145] * cri[2, 1:145]) > 0
+# segments(cri[1, 1:145][sig1 == 1], (1:145)[sig1 == 1], cri[2, 1:145][sig1 == 1], (1:145)[sig1 == 1], col = "blue", lwd = 2)
+# abline(v = out101$summary[11,1], lwd = 3, col = "red")
+# abline(v = out101$summary[11,c(3,7)], lwd = 2, col = "red", lty = 2)
 
+this1 <- grep("^betalp1", nms)[1:145]
+plot(pm[this1], 1:145, xlim = c(-1.5, 1.5), xlab = "Parameter estimate", ylab = "Species number", main = "Effect of date (linear) on detection", pch = 16)
+abline(v = 0, lwd = 2, col = "black")
+segments(cri[1, this1], 1:145, cri[2, this1], 1:145, col = "grey", lwd = 1)
+sig1 <- (cri[1, this1] * cri[2, this1]) > 0
+segments(cri[1, this1][sig1 == 1], (1:145)[sig1 == 1], cri[2, this1][sig1 == 1], (1:145)[sig1 == 1], col = "blue", lwd = 2)
+abline(v = out101$summary['mu.betalp1','mean'], lwd = 3, col = "red")
+abline(v = out101$summary['mu.betalp1',c('2.5%', '97.5%')], lwd = 2, col = "red", lty = 2)
 
 
 # Date quadratic (not shown)
-plot(pm[216:360], 1:145, xlim = c(-1.5, 1.5), xlab = "Parameter estimate", ylab = "Species number", main = "Effect of date (quadratic) on detection", pch = 16)
-abline(v = 0, lwd = 2, col = "black")
-segments(cri[1, 216:360], 1:145, cri[2, 216:360], 1:145, col = "grey", lwd = 1)
-sig2 <- (cri[1, 216:360] * cri[2, 216:360]) > 0
-segments(cri[1, 216:360][sig2 == 1], (1:145)[sig2 == 1], cri[2, 216:360][sig2 == 1], (1:145)[sig2 == 1], col = "blue", lwd = 2)
-abline(v = out101$summary[13,1], lwd = 3, col = "red")
-abline(v = out101$summary[13, c(3,7)], lwd = 3, col = "red", lty = 2)
+# plot(pm[216:360], 1:145, xlim = c(-1.5, 1.5), xlab = "Parameter estimate", ylab = "Species number", main = "Effect of date (quadratic) on detection", pch = 16)
+# abline(v = 0, lwd = 2, col = "black")
+# segments(cri[1, 216:360], 1:145, cri[2, 216:360], 1:145, col = "grey", lwd = 1)
+# sig2 <- (cri[1, 216:360] * cri[2, 216:360]) > 0
+# segments(cri[1, 216:360][sig2 == 1], (1:145)[sig2 == 1], cri[2, 216:360][sig2 == 1], (1:145)[sig2 == 1], col = "blue", lwd = 2)
+# abline(v = out101$summary[13,1], lwd = 3, col = "red")
+# abline(v = out101$summary[13, c(3,7)], lwd = 3, col = "red", lty = 2)
 
+this2 <- grep("^betalp2", nms)[1:145]
+plot(pm[this2], 1:145, xlim = c(-1.5, 1.5), xlab = "Parameter estimate", ylab = "Species number", main = "Effect of date (quadratic) on detection", pch = 16)
+abline(v = 0, lwd = 2, col = "black")
+segments(cri[1, this2], 1:145, cri[2, this2], 1:145, col = "grey", lwd = 1)
+sig1 <- (cri[1, this2] * cri[2, this2]) > 0
+segments(cri[1, this2][sig1 == 1], (1:145)[sig1 == 1], cri[2, this2][sig1 == 1], (1:145)[sig1 == 1], col = "blue", lwd = 2)
+abline(v = out101$summary['mu.betalp2','mean'], lwd = 3, col = "red")
+abline(v = out101$summary['mu.betalp2',c('2.5%', '97.5%')], lwd = 2, col = "red", lty = 2)
 
 # Survey duration (Fig. 11-20 right)
-plot(pm[431:575], 1:145, xlim = c(-0.5, 1), xlab = "Parameter estimate", ylab = "Species number", main = "Effect of survey duration on detection", pch = 16)
-abline(v = 0, lwd = 2, col = "black")
-segments(cri[1, 431:575], 1:145, cri[2, 431:575], 1:145, col = "grey", lwd = 1)
-sig3 <- (cri[1, 431:575] * cri[2, 431:575]) > 0
-segments(cri[1, 431:575][sig3 == 1], (1:145)[sig3 == 1], cri[2, 431:575][sig3 == 1], (1:145)[sig3 == 1], col = "blue", lwd = 2)
-abline(v = out101$summary[15,1], lwd = 3, col = "red")
-abline(v = out101$summary[15, c(3,7)], lwd = 3, col = "red", lty = 2)
+# plot(pm[431:575], 1:145, xlim = c(-0.5, 1), xlab = "Parameter estimate", ylab = "Species number", main = "Effect of survey duration on detection", pch = 16)
+# abline(v = 0, lwd = 2, col = "black")
+# segments(cri[1, 431:575], 1:145, cri[2, 431:575], 1:145, col = "grey", lwd = 1)
+# sig3 <- (cri[1, 431:575] * cri[2, 431:575]) > 0
+# segments(cri[1, 431:575][sig3 == 1], (1:145)[sig3 == 1], cri[2, 431:575][sig3 == 1], (1:145)[sig3 == 1], col = "blue", lwd = 2)
+# abline(v = out101$summary[15,1], lwd = 3, col = "red")
+# abline(v = out101$summary[15, c(3,7)], lwd = 3, col = "red", lty = 2)
 
+this3 <- grep("^betalp3", nms)[1:145]
+plot(pm[this3], 1:145, xlim = c(-1.5, 1.5), xlab = "Parameter estimate", ylab = "Species number", main = "Effect of survey duration on detection", pch = 16)
+abline(v = 0, lwd = 2, col = "black")
+segments(cri[1, this3], 1:145, cri[2, this3], 1:145, col = "grey", lwd = 1)
+sig1 <- (cri[1, this3] * cri[2, this3]) > 0
+segments(cri[1, this3][sig1 == 1], (1:145)[sig1 == 1], cri[2, this3][sig1 == 1], (1:145)[sig1 == 1], col = "blue", lwd = 2)
+abline(v = out101$summary['mu.betalp3','mean'], lwd = 3, col = "red")
+abline(v = out101$summary['mu.betalp3',c('2.5%', '97.5%')], lwd = 2, col = "red", lty = 2)
 
 # Effects of elevation (linear and quadratic) and of forest on occupancy
 # par(mfrow = c(1,3), cex.lab = 1.3, cex.axis = 1.3) # can do all in one
 # Effect of elevation (linear) on occupancy probability (Fig. 11-21)
-plot(pm[646:790], 1:145, xlim = c(-8, 8), xlab = "Parameter estimate", ylab = "Species number", main = "Effect of elevation (linear) on occupancy", pch = 16)
-abline(v = 0, lwd = 2, col = "black")
-segments(cri[1, 646:790], 1:145, cri[2, 646:790], 1:145, col = "grey", lwd = 1)
-sig4 <- (cri[1, 646:790] * cri[2, 646:790]) > 0
-segments(cri[1, 646:790][sig4 == 1], (1:145)[sig4 == 1], cri[2, 646:790][sig4 == 1], (1:145)[sig4 == 1], col = "blue", lwd = 2)
-abline(v = out101$summary[3,1], lwd = 3, col = "red")
-abline(v = out101$summary[3,c(3,7)], lwd = 3, col = "red", lty = 2)
+# plot(pm[646:790], 1:145, xlim = c(-8, 8), xlab = "Parameter estimate", ylab = "Species number", main = "Effect of elevation (linear) on occupancy", pch = 16)
+# abline(v = 0, lwd = 2, col = "black")
+# segments(cri[1, 646:790], 1:145, cri[2, 646:790], 1:145, col = "grey", lwd = 1)
+# sig4 <- (cri[1, 646:790] * cri[2, 646:790]) > 0
+# segments(cri[1, 646:790][sig4 == 1], (1:145)[sig4 == 1], cri[2, 646:790][sig4 == 1], (1:145)[sig4 == 1], col = "blue", lwd = 2)
+# abline(v = out101$summary[3,1], lwd = 3, col = "red")
+# abline(v = out101$summary[3,c(3,7)], lwd = 3, col = "red", lty = 2)
 
+this4 <- grep("^betalpsi1", nms)[1:145]
+plot(pm[this4], 1:145, xlim = c(-8, 8), xlab = "Parameter estimate", ylab = "Species number", main = "Effect of elevation (linear) on occupancy", pch = 16)
+abline(v = 0, lwd = 2, col = "black")
+segments(cri[1, this4], 1:145, cri[2, this4], 1:145, col = "grey", lwd = 1)
+sig1 <- (cri[1, this4] * cri[2, this4]) > 0
+segments(cri[1, this4][sig1 == 1], (1:145)[sig1 == 1], cri[2, this4][sig1 == 1], (1:145)[sig1 == 1], col = "blue", lwd = 2)
+abline(v = out101$summary['mu.betalpsi1','mean'], lwd = 3, col = "red")
+abline(v = out101$summary['mu.betalpsi1',c('2.5%', '97.5%')], lwd = 2, col = "red", lty = 2)
 
 # Effect of elevation (quadratic) on occupancy probability (Fig. 11-22)
-plot(pm[861:1005], 1:145, xlim = c(-4, 2), xlab = "Parameter estimate", ylab = "Species number", main = "Effect of elevation (quadratic) on occupancy", pch = 16)
+# plot(pm[861:1005], 1:145, xlim = c(-4, 2), xlab = "Parameter estimate", ylab = "Species number", main = "Effect of elevation (quadratic) on occupancy", pch = 16)
+# abline(v = 0, lwd = 2, col = "black")
+# segments(cri[1, 861:1005], 1:145, cri[2, 861:1005], 1:145, col = "grey", lwd=1)
+# sig5 <- (cri[1, 861:1005] * cri[2, 861:1005]) > 0
+# segments(cri[1, 861:1005][sig5 == 1], (1:145)[sig5 == 1], cri[2, 861:1005][sig5 == 1], (1:145)[sig5 == 1], col = "blue", lwd = 2)
+# abline(v = out101$summary[5,1], lwd = 3, col = "red")
+# abline(v = out101$summary[5,c(3,7)], lwd = 3, col = "red", lty = 2)
+
+this5 <- grep("^betalpsi2", nms)[1:145]
+plot(pm[this5], 1:145, xlim = c(-4, 2), xlab = "Parameter estimate", ylab = "Species number", main = "Effect of elevation (quadratic) on occupancy", pch = 16)
 abline(v = 0, lwd = 2, col = "black")
-segments(cri[1, 861:1005], 1:145, cri[2, 861:1005], 1:145, col = "grey", lwd=1)
-sig5 <- (cri[1, 861:1005] * cri[2, 861:1005]) > 0
-segments(cri[1, 861:1005][sig5 == 1], (1:145)[sig5 == 1], cri[2, 861:1005][sig5 == 1], (1:145)[sig5 == 1], col = "blue", lwd = 2)
-abline(v = out101$summary[5,1], lwd = 3, col = "red")
-abline(v = out101$summary[5,c(3,7)], lwd = 3, col = "red", lty = 2)
+segments(cri[1, this5], 1:145, cri[2, this5], 1:145, col = "grey", lwd = 1)
+sig1 <- (cri[1, this5] * cri[2, this5]) > 0
+segments(cri[1, this5][sig1 == 1], (1:145)[sig1 == 1], cri[2, this5][sig1 == 1], (1:145)[sig1 == 1], col = "blue", lwd = 2)
+abline(v = out101$summary['mu.betalpsi2','mean'], lwd = 3, col = "red")
+abline(v = out101$summary['mu.betalpsi2',c('2.5%', '97.5%')], lwd = 2, col = "red", lty = 2)
 
 
 # Effect of forest (linear) on occupancy probability (Fig. 11-23)
-plot(pm[1076:1220], 1:145, xlim = c(-3, 4), xlab = "Parameter estimate", ylab = "Species number", main = "Effect of forest cover on occupancy", pch = 16)
+# plot(pm[1076:1220], 1:145, xlim = c(-3, 4), xlab = "Parameter estimate", ylab = "Species number", main = "Effect of forest cover on occupancy", pch = 16)
+# abline(v = 0, lwd = 2, col = "black")
+# segments(cri[1, 1076:1220], 1:145, cri[2, 1076:1220],1:145, col = "grey", lwd=1)
+# sig6 <- (cri[1, 1076:1220] * cri[2, 1076:1220]) > 0
+# segments(cri[1, 1076:1220][sig6 == 1], (1:145)[sig6 == 1], cri[2, 1076:1220][sig6 == 1], (1:145)[sig6 == 1], col = "blue", lwd = 2)
+# abline(v = out101$summary[7,1], lwd = 3, col = "red")
+# abline(v = out101$summary[7,c(3,7)], lwd = 3, col = "red", lty = 2)
+# negsig6 <- (cri[1, 1076:1220] < 0 & cri[2, 1076:1220] < 0) == 1 # sig negative
+# possig6 <- (cri[1, 1076:1220] > 0 & cri[2, 1076:1220] > 0) == 1 # sig positive
+
+this6 <- grep("^betalpsi3", nms)[1:145]
+plot(pm[this6], 1:145, xlim = c(-3, 4), xlab = "Parameter estimate", ylab = "Species number", main = "Effect of forest cover on occupancy", pch = 16)
 abline(v = 0, lwd = 2, col = "black")
-segments(cri[1, 1076:1220], 1:145, cri[2, 1076:1220],1:145, col = "grey", lwd=1)
-sig6 <- (cri[1, 1076:1220] * cri[2, 1076:1220]) > 0
-segments(cri[1, 1076:1220][sig6 == 1], (1:145)[sig6 == 1], cri[2, 1076:1220][sig6 == 1], (1:145)[sig6 == 1], col = "blue", lwd = 2)
-abline(v = out101$summary[7,1], lwd = 3, col = "red")
-abline(v = out101$summary[7,c(3,7)], lwd = 3, col = "red", lty = 2)
-negsig6 <- (cri[1, 1076:1220] < 0 & cri[2, 1076:1220] < 0) == 1 # sig negative
-possig6 <- (cri[1, 1076:1220] > 0 & cri[2, 1076:1220] > 0) == 1 # sig positive
+segments(cri[1, this6], 1:145, cri[2, this6], 1:145, col = "grey", lwd = 1)
+sig1 <- (cri[1, this6] * cri[2, this6]) > 0
+segments(cri[1, this6][sig1 == 1], (1:145)[sig1 == 1], cri[2, this6][sig1 == 1], (1:145)[sig1 == 1], col = "blue", lwd = 2)
+abline(v = out101$summary['mu.betalpsi3','mean'], lwd = 3, col = "red")
+abline(v = out101$summary['mu.betalpsi3',c('2.5%', '97.5%')], lwd = 2, col = "red", lty = 2)
+negsig6 <- (cri[1, this6] < 0 & cri[2, this6] < 0) == 1 # sig negative
+possig6 <- (cri[1, this6] > 0 & cri[2, this6] > 0) == 1 # sig positive
 
 
 # Predict detection for date and duration and occupancy for elevation and forest
 # for each of the 145 observed species
 predS <- array(NA, dim = c(500, nspec, 4))   # covariate value x species x response, "S" for 'species'
-p.coef <- cbind(lp=pm[1292:1436], betalp1 = pm[1:145], betalp2 = pm[216:360], betalp3 = pm[431:575])
-psi.coef <- cbind(lpsi=pm[1507:1651], betalpsi1 = pm[646:790], betalpsi2 = pm[861:1005], betalpsi3 = pm[1076:1220])
+# p.coef <- cbind(lp=pm[1292:1436], betalp1 = pm[1:145], betalp2 = pm[216:360], betalp3 = pm[431:575])
+# psi.coef <- cbind(lpsi=pm[1507:1651], betalpsi1 = pm[646:790], betalpsi2 = pm[861:1005], betalpsi3 = pm[1076:1220])
+p.coef <- cbind(
+  lp = pm[grep("^lp\\[", nms)][1:145],
+  betalp1 = pm[grep("^betalp1", nms)][1:145],
+  betalp2 = pm[grep("^betalp2", nms)][1:145],
+  betalp3 = pm[grep("^betalp3", nms)][1:145])
+psi.coef <- cbind(
+  lpsi = pm[grep("^lpsi", nms)][1:145],
+  betalpsi1 = pm[grep("^betalpsi1", nms)][1:145],
+  betalpsi2 = pm[grep("^betalpsi2", nms)][1:145],
+  betalpsi3 = pm[grep("^betalpsi3", nms)][1:145])
 
 for(i in 1:nspec){          # Loop over 145 observed species
    predS[,i,1] <- plogis(p.coef[i,1] + p.coef[i,2] * dat.pred +

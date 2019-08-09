@@ -5,8 +5,20 @@
 # Chapter 11. Hierarchical models for communities
 # =========================================================================
 
+library(AHMbook)
+data(MHB2014)
+
+# ~~~~ For this we need the 'all10' matrix from section 7 ~~~~~~~~~~~~~
+load("AHM1_11.07_all10.RData")
+# ~~~~~~ this section requires the data prepared in section 11.3 ~~~~~~~~~~
+source("AHM1_11.03.R")
+# ~~~~ also this from section 7 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+nz <- 150
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 # 11.8 Inferences based on the estimated Z matrix: similarity among sites and species
-# -----------------------------------------------------------------------------------
+# ===================================================================================
 
 
 # Plug MCMC samples for full z matrix into 3D array
@@ -14,11 +26,17 @@ str(all10)
 nsite <- 267
 nspec <- 215
 nsamp <- dim(all10)[1]        # 1200 MCMC samples
+# ~~~~~ the order of the columns in all10 is different ~~~~~~~~~~~~~~~~~~~~~
+# Use parameter names and grep instead of column numbers.
+nms <- colnames(all10)
+is.z <- grep("^z", nms)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 z <- array(NA, dim = c(nsite, nspec, nsamp))
 Jacc <- array(NA, dim = c(nsite, nspec, nsamp))
 for(j in 1:nsamp){    # Fill z matrix by column (default)
    cat(paste("\nMCMC sample", j, "\n"))
-   z[,,j] <- all10[j, 1937:59341]
+   # z[,,j] <- all10[j, 1937:59341]
+   z[,,j] <- all10[j, is.z]
 }
 
 # Restrict computations to observed species
@@ -40,7 +58,8 @@ for(k in 1:nsamp){
       (sum(zobs[ref.site,,k]) + sum(zobs[i,,k]) -
        sum(zobs[ref.site,,k] * zobs[i,,k]))
   }
-  for(i in 1:(nspec-nz)){ # Jacc. index for species (in terms of shared sites)
+  # for(i in 1:(nspec-nz)){ # Jacc. index for species (in terms of shared sites)
+  for(i in 1:145){ # Jacc. index for species (in terms of shared sites) # ~~~~ 145 species only
     Jspec[i,k] <- sum(zobs[,ref.species,k] * zobs[,i,k]) /
       (sum(zobs[,ref.species,k]) + sum(zobs[,i,k]) -
       sum(zobs[,ref.species,k] * zobs[,i,k]))
@@ -69,7 +88,8 @@ psd <- apply(Jspec, 1, sd, na.rm = TRUE)   # Post. mean of Jspec wrt. species 1
 cri <- apply(Jspec, 1, function(x) quantile(x, prob = c(0.025, 0.975), na.rm = TRUE)) # CRI
 tmp <- cbind('post. mean' = pm, 'post. sd' = psd, '2.5%' = cri[1,], '97.5%' = cri[2,])
 rownames(tmp) <- names(obs.occ)
-print(tmp])          # print in systematic order
+# print(tmp])          # print in systematic order
+print(tmp)          # print in systematic order
 print(tmp[rev(order(tmp[,1])),]) # print in order of decreasing Jacc. values
 plot(1:145, tmp[rev(order(tmp[,1])),1])   # can also plot
 

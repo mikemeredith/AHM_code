@@ -5,8 +5,10 @@
 # Chapter 11. Hierarchical models for communities
 # =========================================================================
 
+library(AHMbook)
+
 # 11.2 Simulation of a metacommunity
-# ------------------------------------------------------------------------
+# ==================================
 
 
 simComm(type="det/nondet", nsite=30, nrep=3, nspec=100,

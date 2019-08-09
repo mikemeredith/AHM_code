@@ -6,8 +6,44 @@
 #    in closed populations: binomial N-mixture models
 # =========================================================================
 
+library(AHMbook)
+library(unmarked)
+library(R2WinBUGS)
+bugs.dir <- "C:/WinBUGS14/"          # Place where your WinBUGS installed
+
+# ~~~~~ this section needs 'umf' and 'fm5ZIP' from section 6.9 ~~~~~~~~~~~~~~~~~~~~~
+data(SwissTits)
+# Select Great tit and covariate data from 2013 and
+#   drop 4 sites not surveyed in 2013
+y0 <- SwissTits$counts[, , '2013', 'Great tit']
+( NA.sites <- which(rowSums(is.na(y0)) == 3) ) # Unsurveyed sites
+y <- y0[-NA.sites, ]                 # Drop them from the count data
+tits <- SwissTits$sites[-NA.sites, ] # Also drop from the site covariates
+elev.mean <- mean(tits$elev) ; elev.sd <- sd(tits$elev)
+forest.mean <- mean(tits$forest) ; forest.sd <- sd(tits$forest)
+# Get date and duration data for 2013, without the NA.sites rows:
+date <- SwissTits$date[-NA.sites, , '2013']
+dur <- SwissTits$dur[-NA.sites, , '2013']
+time <- matrix(rep(as.character(1:3), nrow(y)), ncol = 3, byrow = TRUE)
+umf <- unmarkedFramePCount(y = y,
+  siteCovs=data.frame(elev=scale(tits[,"elev"]), forest=scale(tits[,"forest"]), iLength=1/tits[,"rlength"]),
+  obsCovs=list(time = time, date = scale(date), dur = scale(dur)))
+
+fm5ZIP <- pcount(~(elev+I(elev^2)) * (date+I(date^2)) * (dur+I(dur^2)) + time-1
+      - elev:date:dur - elev:date:I(dur^2) - elev:I(date^2):dur
+      - elev:I(date^2):I(dur^2) - I(elev^2):date:dur - I(elev^2):date:I(dur^2)
+      - I(elev^2):I(date^2):dur - I(elev^2):I(date^2):I(dur^2)
+      - I(elev^2):I(date^2) - I(elev^2):I(dur^2) - I(date^2):I(dur^2)
+      - elev:I(date^2) - I(date^2):dur
+      ~ (elev+I(elev^2)) * (forest+I(forest^2))+ iLength
+      - I(elev^2):forest - I(elev^2):I(forest^2),
+      starts = c(2.67, -1.21, -0.27,  0.08, -0.17, -1.59, -0.03, -0.08, -0.14, -0.34, -0.29,  0.13,
+        0.10,  0.03,  0.53,  0.12, -0.20, -0.55, -0.30,  0.03,  0.14,  0.28, -0.04, -0.09,  0),
+      umf, control=list(trace=TRUE, REPORT=5), mixture = "ZIP")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 # 6.11 Bayesian modeling of Swiss Great tits with BUGS
-# ------------------------------------------------------------------------
+# ====================================================
 
 
 # 6.11.1 Bayesian fitting of the basic ZIP N-mixture model
@@ -200,13 +236,14 @@ r <- mask(r, elevation)
 mapPalette <- colorRampPalette(c("grey", "yellow", "orange", "red"))
 par(mfrow = c(1,2), mar = c(5,5,1,5))
 plot(r, col = mapPalette(100), axes = F, box = F, main ="")
-lakes <- readOGR(".", "lakes")
-rivers <- readOGR(".", "rivers")
-border <- readOGR(".", "border")
-plot(rivers, col = "dodgerblue", add = TRUE)
-plot(border, col = "transparent", lwd = 1.5, add = TRUE)
-plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
-
+# ~~~~ shape files not available ~~~~~~~~~~~~~~
+# lakes <- readOGR(".", "lakes")
+# rivers <- readOGR(".", "rivers")
+# border <- readOGR(".", "border")
+# plot(rivers, col = "dodgerblue", add = TRUE)
+# plot(border, col = "transparent", lwd = 1.5, add = TRUE)
+# plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 elev.class <- 100*(CH$elev %/% 100 + 1)      # elevation class of each km2
 tmp <- aggregate(lamPred, by = list(elev.class), FUN = sum)
@@ -233,7 +270,9 @@ quantile(Ntot, prob = c(0.025, 0.975))
 # 6.11.2.1 Accounting for overdispersion at multiple scales
 # ------------------------------------------------------------------------
 # MCMC settings
-ni <- 10^6    ;    nt <- 80    ;    nb <- 200000    ;    nc <- 3
+# ni <- 10^6    ;    nt <- 80    ;    nb <- 200000    ;    nc <- 3
+# ~~~~ for testing I used:
+ni <- 10^5    ;    nt <- 8     ;    nb <- 20000    ;    nc <- 3
 
 # Bundle data and select model 2
 win.data2 <- list(y = y, nsite = nrow(y), nrep = ncol(y),
@@ -241,8 +280,11 @@ win.data2 <- list(y = y, nsite = nrow(y), nrep = ncol(y),
    date2 = date2, dur2 = dur2, e = 1e-06, hlam.on = 1, hp.site.on = 0,
    hp.survey.on = 0)
 
-# Call WinBUGS from R (ART 4050 min) and summarize posteriors
+# Call WinBUGS from R (ART 4050 min ~ 3 days) and summarize posteriors
 out2 <- bugs(win.data2, inits, params, "ZIPNmix.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = F, bugs.directory = bugs.dir)
+# ~~~ After running for 3 days, you should probably save the result ~~~~~~~~~
+save(out2, file="AHM1_06.11_out2.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 print(out2, dig = 3)
 
 
@@ -254,6 +296,9 @@ win.data3 <- list(y = y, nsite = nrow(y), nrep = ncol(y),
 
 # Call WinBUGS from R (ART 4200 min) and summarize posteriors
 out3 <- bugs(win.data3, inits, params, "ZIPNmix.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = F, bugs.directory = bugs.dir)
+# ~~~ After running for 3 days, you should probably save the result ~~~~~~~~~~~
+save(out3, file="AHM1_06.11_out3.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 print(out3, dig = 3)
 
 
@@ -265,6 +310,9 @@ win.data4 <- list(y = y, nsite = nrow(y), nrep = ncol(y),
 
 # Call WinBUGS from R (ART 4020 min) and summarize posteriors
 out4 <- bugs(win.data4, inits, params, "ZIPNmix.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = F, bugs.directory = bugs.dir)
+# ~~~ After running for 3 days, you should probably save the result ~~~~~~~~~
+save(out4, file="AHM1_06.11_out4.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 print(out4, dig = 3)
 
 
@@ -276,6 +324,9 @@ win.data5 <- list(y = y, nsite = nrow(y), nrep = ncol(y),
 
 # Call WinBUGS from R (ART 4250 min) and summarize posteriors
 out5 <- bugs(win.data5, inits, params, "ZIPNmix.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = F, bugs.directory = bugs.dir)
+# ~~~ you should probably save the result ~~~~~~~~~~~~~~~~~
+save(out5, file="AHM1_06.11_out5.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 print(out5, dig = 3)
 
 
@@ -287,6 +338,8 @@ win.data6 <- list(y = y, nsite = nrow(y), nrep = ncol(y),
 
 # Call WinBUGS from R (ART 4230 min) and summarize posteriors
 out6 <- bugs(win.data6, inits, params, "ZIPNmix.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = F, bugs.directory = bugs.dir)
+# ~~~ After running for 3 days, you should probably save the result:
+save(out6, file="AHM1_06.11_out6.RData")
 print(out6, dig = 3)
 
 
@@ -298,6 +351,9 @@ win.data7 <- list(y = y, nsite = nrow(y), nrep = ncol(y),
 
 # Call WinBUGS from R (ART 4625 min) and summarize posteriors
 out7 <- bugs(win.data7, inits, params, "ZIPNmix.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = F, bugs.directory = bugs.dir)
+# ~~~ you should probably save the result ~~~~~~~~~~~~
+save(out7, file="AHM1_06.11_out7.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 print(out7, dig = 3)
 
 # Look at posteriors for random effects
@@ -390,6 +446,9 @@ ni <- 180000    ;    nt <- 100    ;    nb <- 10000    ;    nc <- 3
 
 # Call WinBUGS from R (ART 374 min) and summarize posteriors
 out8 <- bugs(win.data8, inits, params, "Nmix.special.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+# ~~~ you should probably save the result ~~~~~~~~~~~~~~~
+save(out8, file="AHM1_06.11_out8.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 print(out8, dig = 3)
 
 

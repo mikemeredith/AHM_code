@@ -5,6 +5,10 @@
 # Chapter 8. Modeling abundance using hierarchical distance sampling (HDS)
 # =========================================================================
 
+library(R2WinBUGS)
+bd <- "C:/WinBUGS14"    # May have to adapt
+library(AHMbook)
+
 # 8.3 Bayesian conventional distance sampling
 # ===========================================
 
@@ -66,7 +70,7 @@ params <- c("N", "sigma", "D")
 
 # Experience the raw power of BUGS and summarize marginal posteriors
 library(R2WinBUGS)
-bd <- "c:/Program Files/WinBUGS14/"    # May have to adapt
+# bd <- "c:/Program Files/WinBUGS14/"    # May have to adapt
 out1 <- bugs(win.data, inits, params, "model1.txt", n.thin=2,n.chains=3,
    n.burnin=1000, n.iter=11000, debug=TRUE, DIC=FALSE, bugs.dir=bd)
 print(out1, 3)
@@ -118,7 +122,7 @@ inits <- function(){ list (psi=runif(1), z=zst, sigma=runif(1,40,200)) }
 params <- c("N", "sigma", "D")
 
 # Unleash WinBUGS and summarize posteriors
-bd <- "c:/Program Files/WinBUGS14/"
+# bd <- "c:/Program Files/WinBUGS14/"
 out2 <- bugs(win.data, inits, params, "model2.txt", n.thin=2, n.chains=3,
    n.burnin=1000, n.iter=11000, debug=TRUE, DIC=FALSE, bugs.dir = bd)
 print(out2, 2)
@@ -204,7 +208,7 @@ params <- c("sigma", "N","D")
 ni <- 62000   ;   nb <- 2000   ;   nt   <-   2   ;   nc <- 3
 
 # Run BUGS and summarize posteriors
-bd <- "c:/Program Files/WinBUGS14/"
+# bd <- "c:/Program Files/WinBUGS14/"
 out3 <- bugs(win.data, inits, params, "model3.txt", n.thin=nt,
 n.chains=nc, n.burnin=nb, n.iter=ni, debug=FALSE, bugs.dir = bd)
 
@@ -260,7 +264,7 @@ inits <- function(){list (sigma=runif(1,1,10), psi=runif(1) ) }
 params <- c("sigma", "N","D","psi")
 
 # MCMC settings
-ni <- 62000   ;   nb <- 2000   ;   nt   <-   2   ;   nc <- 3
+ni <- 62000   ;   nb <- 2000   ;   nt   <-   2   ;   nc <- 3  # 1.17 days
 
 # Run BUGS and summarize posteriors
 out4 <- bugs(win.data, inits, params, "model4.txt", n.thin=nt,
@@ -272,3 +276,6 @@ print(out3,2)
 
 print(out4,2)
 
+# ~~~~~ maybe save the output ~~~~~~~~~~~~~~~~~~~~~~~~
+save(out1, out2, out3, out4, file="AHM1_08.03_WinBUGSoutput.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

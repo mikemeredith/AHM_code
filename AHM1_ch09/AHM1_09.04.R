@@ -5,8 +5,11 @@
 # Chapter 9. Advanced Hierarchical Distance Sampling
 # =========================================================================
 
+library(AHMbook)
+library(jagsUI)
+
 # 9.4 Mark-Recapture/Double observer Distance Sampling
-# ------------------------------------------------------------------------
+# ====================================================
 
 
 # 9.4.1 Simulating MRDS data

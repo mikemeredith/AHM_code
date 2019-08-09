@@ -6,8 +6,11 @@
 #    in closed populations: binomial N-mixture models
 # =========================================================================
 
+library(AHMbook)
+library(unmarked)
+
 # 6.6 Study design, and bias and precision of the N-mixture estimator
-# -------------------------------------------------------------------
+# ===================================================================
 
 
 # Define simulation settings and arrays for sim results
