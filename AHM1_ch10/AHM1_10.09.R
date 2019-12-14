@@ -234,7 +234,11 @@ Eocc <- function(fm) {
 }
 
 (estimate.of.occurrence <- Eocc(fm20))    # Same as before, without mask
-system.time(Eocc.boot <- parboot(fm20, Eocc, nsim=1000, report=10)) # 100 sec
+# ~~~~~ changes to unmarked::parboot ~~~~~~~~~~~~~~~~~~~~~~~
+# This now has a parallel' argument with default TRUE, but it does not work with Eocc
+# system.time(Eocc.boot <- parboot(fm20, Eocc, nsim=1000, report=10)) # 100 sec
+system.time(Eocc.boot <- parboot(fm20, Eocc, nsim=1000, report=10, parallel=FALSE)) # 100 sec
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 plot(Eocc.boot)         # Plot bootstrap distribution of extent of occurrence
 quantile(Eocc.boot@t.star, c(0.025, 0.975))
 

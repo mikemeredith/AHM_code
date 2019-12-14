@@ -14,7 +14,8 @@ library(unmarked)
 
 
 # Define simulation settings and arrays for sim results
-simreps <- 1000                    # Simulate and analyse 1000 data sets
+# simreps <- 1000                    # Simulate and analyse 1000 data sets
+simreps <- 50                     # ~~~ smaller number for testing, ca. 15 mins
 nsites <- c(20, 120, 250)          # Levels for nsites factor
 nreps <- c(2, 5, 10)               # Levels of nrep factor
 estimates <- array(NA, dim = c(2, simreps, 3, 3))
@@ -22,7 +23,7 @@ estimates <- array(NA, dim = c(2, simreps, 3, 3))
 # Fill p with random numbers between 0.01 and 0.99
 p <- array(runif(n=simreps*3*3, 0.01, 0.99), dim = c(simreps, 3, 3))
 
-# Launch simulation (takes about 6.3 hours)
+# Launch simulation (takes about 6.3 hours with simreps = 1000)
 for(s in 1:3){                     # Loop over levels of nsites factor
   for(r in 1:3){                   # Loop over levels of nreps factor
     for(i in 1:simreps){           # Simulate and analyse 1000 data sets
@@ -41,7 +42,7 @@ par(mfrow = c(3,3), mar = c(4.5,4.5,2,2), cex.lab = 1.5, cex.axis = 1.3)
 for(s in 1:3){                     # Loop over nsites
   for(r in 1:3){                   # Loop over nreps
     plot(p[,s,r], exp(estimates[1,,s,r]), xlab = "Detection probability",
-      ylab = "lambda_hat", main = "", ylim = c(0, 75), frame = F)
+      ylab = "lambda_hat", main = "", ylim = c(0, 75), frame = FALSE)
     text(0.75, 60, paste("M = ", nsites[s], ", J = ", nreps[r], sep = ""),
       cex = 1.5)
     abline(h = 5, col = "red", lwd = 2)

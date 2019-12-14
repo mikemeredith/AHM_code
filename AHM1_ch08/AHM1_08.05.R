@@ -94,13 +94,15 @@ ni <- 12000   ;   nb <- 2000   ;   nt <- 2   ;   nc <- 3
 
 # Call BUGS (ART 33 min) ...
 # bd <- "c:/Program Files/WinBUGS14/" # Never forget this for WinBUGS
-out1 <- bugs(win.data, inits, params, "model1.txt", n.thin=nt,
-   n.chains=nc, n.burnin=nb, n.iter=ni, debug=TRUE, bugs.dir = bd)
+out1 <- bugs(win.data, inits, params, "model1.txt",
+   # n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni, debug=TRUE, bugs.dir = bd)
+   n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni, debug=FALSE, bugs.dir = bd) #~~~~~ for automated testing
 
 # ... or try JAGS for a change (ART 6 min)
 library(jagsUI)       # never forget to load jagsUI
-out1 <- jags(win.data, inits, params, "model1.txt", n.thin=nt,
-   n.chains=nc, n.burnin=nb, n.iter=ni)
+out1 <- jags(win.data, inits, params, "model1.txt",
+  # n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni)
+  n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni, parallel=TRUE)  # ~~~~ speeds up testing
 
 # Summarize posterior output
 print(out1, 2)
@@ -169,8 +171,8 @@ ni <- 12000   ;   nb <- 2000   ;   nt <- 2   ;   nc <- 3
 
 # Run JAGS with parallel processing (ART 1 min)
 library(jagsUI)
-out2 <- jags(win.data, inits, params, "model2.txt", n.thin=nt,
-   n.chains=nc, n.burnin=nb, n.iter=ni, parallel = FALSE)
+out2 <- jags(win.data, inits, params, "model2.txt",
+  n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni, parallel = TRUE)
 print(out2,2)
 
 
@@ -248,7 +250,8 @@ ni <- 12000   ;   nb <- 2000   ;   nt <- 1   ;   nc <- 3
 # Run JAGS (ART 1 min) and summarize posteriors
 library(jagsUI)
 out3 <- jags(win.data, inits, params, "model3.txt", n.thin=nt,
-   n.chains=nc, n.burnin=nb, n.iter=ni)
+   # n.chains=nc, n.burnin=nb, n.iter=ni)
+   n.chains=nc, n.burnin=nb, n.iter=ni, parallel=TRUE)  # ~~~~ faster testing
 print(out3, 2)
 
 
@@ -327,8 +330,10 @@ params <- c("alpha0", "alpha1", "beta0", "beta1", "Ntotal","D")
 ni <- 12000   ;   nb <- 2000   ;   nt <- 1   ;   nc <- 3
 
 # Run BUGS (not STAN !) (ART 2.3 min) and summarize posteriors
-out4 <- bugs(win.data, inits, params, "model4.txt", n.thin=nt,
-   n.chains=nc, n.burnin=nb, n.iter=ni, debug=TRUE, bugs.dir = bd)
+out4 <- bugs(win.data, inits, params, "model4.txt",
+   n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni,
+   # debug=TRUE, bugs.dir = bd)
+   debug=FALSE, bugs.dir = bd) #~~~~~~~~~ for automated testing
 print(out4, 2)
 
 sum(tmp$N.true)                  # True realized population size
@@ -410,14 +415,19 @@ inits <- function(){list (sigma = runif(1, 30, 100), beta0 = 0, beta1 = 0, beta2
 params <- c("sigma", "beta0", "beta1", "beta2", "beta3", "sigma.site", "Ntotal","D")
 
 # MCMC settings
-ni <- 52000   ;   nb <- 2000   ;   nt <- 2   ;   nc <- 3
+# ni <- 52000   ;   nb <- 2000   ;   nt <- 2   ;   nc <- 3
+ni <- 7000   ;   nb <- 2000   ;   nt <- 2   ;   nc <- 3  # ~~~~ for testing
 
 # Run BUGS (ART 0.9 min) and summarize posteriors
-out5 <- bugs(win.data, inits, params, "model5.txt", n.thin=nt,
-   n.chains=nc, n.burnin=nb, n.iter=ni, debug=TRUE, bugs.dir = bd)
-out5 <- jags(win.data, inits, params, "model5.txt", n.thin=nt,
-    n.chains=nc, n.burnin=nb, n.iter=ni)
+out5 <- bugs(win.data, inits, params, "model5.txt",
+  n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni,
+  # debug=TRUE, bugs.dir = bd)
+  debug=FALSE, bugs.dir = bd) #~~~~~ for automated testing
 
 # Run JAGS (ART 0.5 min) and summarize posteriors
+out5 <- jags(win.data, inits, params, "model5.txt",
+  # n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni)
+  n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni, parallel=TRUE)  # ~~~~ faster testing
+
 print(out5, 3)
 

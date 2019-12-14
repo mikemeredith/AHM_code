@@ -6,6 +6,8 @@
 # =========================================================================
 
 library(AHMbook)
+library(unmarked)
+library(jagsUI)
 
 # 9.7 Open HDS models: modelling population dynamics
 # ==================================================
@@ -14,7 +16,7 @@ library(AHMbook)
 # ------------------------------------------------------------------------
 # We load the ISSJ data analyzed in chapter 8, package into an unmarked frame
 library(unmarked)
-library(rjags)
+# library(rjags)
 data(issj)
 covs <- issj[,c("elevation","forest","chaparral")]
 area <- pi*300^2 / 100^2             # Area in ha
@@ -139,15 +141,22 @@ Nst <- y+1  # this is for trend model
 inits <- function(){list(N=Nst, beta0=runif(1), beta1=runif(1), beta2=runif(1),
    beta3=runif(1), beta4=runif(1), alpha0=runif(1,3,5), alpha1=runif(1), r = 1)}
 params <-c('beta0', 'beta1', 'beta2', 'beta3', 'beta4', 'alpha0', 'alpha1', 'Ntot', 'D', 'r')
-ni <- 22000   ;   nb <- 2000   ;   nt <- 1   ;   nc <- 3
+# ni <- 22000   ;   nb <- 2000   ;   nt <- 1   ;   nc <- 3
+ni <- 2200   ;   nb <- 200   ;   nt <- 1   ;   nc <- 3  # ~~~~~ for testing
 
-# JAGS setting b/c otherwise JAGS cannot build a sampler, rec. by M. Plummer
-set.factory("bugs::Conjugate", FALSE, type="sampler")
+# ~~~~~~ jagsUI now has a factories argument ~~~~~~~~~~~~~~~~~~~~~
+# Setting factories manually with rjags::set.factory before calling
+# jags will not work on future versions.
+## JAGS setting b/c otherwise JAGS cannot build a sampler, rec. by M. Plummer
+#set.factory("bugs::Conjugate", FALSE, type="sampler")
 
-# Execute JAGS, look at convergence and summarize the results
-library(jagsUI)
-open1 <- jags (data1, inits, params, "Sollmann1.txt", n.thin=nt, n.chains=nc,
-   n.burnin=nb, n.iter=ni)
+## Execute JAGS, look at convergence and summarize the results
+# open1 <- jags (data1, inits, params, "Sollmann1.txt", n.thin=nt, n.chains=nc,
+   # n.burnin=nb, n.iter=ni)
+open1 <- jags (data1, inits, params, "Sollmann1.txt",
+  n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni,
+  factories="bugs::Conjugate sampler FALSE", parallel=TRUE)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 par(mfrow = c(3,3))   ;   traceplot(open1)   ;   print(open1, 2)
 
 
@@ -218,11 +227,13 @@ inits <- function(){list(N=Nst, beta0=runif(1), beta1=runif(1), beta2=runif(1),
    beta3=runif(1), alpha0=runif(1,3,5), alpha1=runif(1), theta=runif(1,0.6,0.99))}
 params <- c('beta0', 'beta1', 'beta2', 'beta3', 'alpha0', 'alpha1', 'theta',
    'rout', 'Ntot', 'D', 'r')
-ni <- 22000   ;   nb <- 2000   ;   nt <- 1   ;   nc <- 3
+# ni <- 22000   ;   nb <- 2000   ;   nt <- 1   ;   nc <- 3
+ni <- 2200   ;   nb <- 200   ;   nt <- 1   ;   nc <- 3  # ~~~~ for testing
 
 # Execute JAGS, look at convergence and summarize the results
-open2 <- jags (data1, inits, params, "Sollmann2.txt", n.thin=nt, n.chains=nc,
-   n.burnin=nb, n.iter=ni)
+open2 <- jags (data1, inits, params, "Sollmann2.txt",
+  # n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni)
+  n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni, parallel=TRUE)
 par(mfrow = c(3,3))   ;   traceplot(open2)   ;   print(open2, 2)
 
 
@@ -313,7 +324,8 @@ inits <-function(){list(N=yin, beta0=runif(1), beta1=runif(1), beta2=runif(1),
    R=Rin, S=Sin) }
 params <- c('beta0', 'beta1', 'beta2', 'beta3', 'alpha0', 'alpha1', 'phi',
    'gamma', 'Ntot', 'D', 'r')
-ni <- 152000   ;   nb <- 2000   ;   nt <- 10   ;   nc <- 3
+# ni <- 152000   ;   nb <- 2000   ;   nt <- 10   ;   nc <- 3
+ni <- 15200   ;   nb <- 200   ;   nt <- 1   ;   nc <- 3  # ~~~~~ for testing
 
 # Run JAGS, look at convergence and summarize the results
 library(jagsUI)

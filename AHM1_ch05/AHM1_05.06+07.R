@@ -73,7 +73,10 @@ params <- c("alpha", "beta1", "beta2", "beta3", "sd")
 ni <- 6000   ;   nt <- 1   ;   nb <- 1000   ;  nc <- 3
 
 # Call WinBUGS or JAGS from R (ART <1 min)
-out3 <- bugs(win.data, inits, params, "ANCOVA1.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+out3 <- bugs(win.data, inits, params, "ANCOVA1.txt",
+  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
+  # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd())  # ~~~~ for automated testing
 
 out3J <- jags(win.data, inits, params, "ANCOVA1.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
 traceplot(out3J)
@@ -123,7 +126,10 @@ params <- c("alpha", "beta", "sd", "diff.vs1", "diff.vs2", "diff.vs3", "diff.vs4
 ni <- 6000   ;   nt <- 1   ;   nb <- 1000   ;  nc <- 3
 
 # Call WinBUGS or JAGS from R (ART <1 min) and summarize posteriors
-out4 <- bugs(win.data, inits, params, "ANCOVA2.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+out4 <- bugs(win.data, inits, params, "ANCOVA2.txt",
+  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
+  # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd())  # ~~~~ for automated testing
 
 system.time(out4J <- jags(win.data, inits, params, "ANCOVA2.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb))
 traceplot(out4J)

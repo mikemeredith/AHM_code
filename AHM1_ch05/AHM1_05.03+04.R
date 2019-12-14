@@ -72,7 +72,10 @@ ni <- 6000   ;   nt <- 1   ;   nb <- 1000   ;  nc <- 3
 # Call WinBUGS from R (approximate run time (ART) <1 min)
 library(R2WinBUGS)
 bugs.dir <- "C:/WinBUGS14/"          # Place where your WinBUGS installed
-out1B <- bugs(win.data, inits, params, "multiple_linear_regression_model.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+out1B <- bugs(win.data, inits, params, "multiple_linear_regression_model.txt",
+  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
+  # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd()) # ~~~~~ for autotesting
 
 
 # Overview of the object created by bugs
@@ -82,8 +85,11 @@ str(out1B, 1)
 
 # Call OpenBUGS from R (ART <1 min)
 library(R2OpenBUGS)
-out1OB <- bugs(data=win.data, inits=inits, parameters.to.save = params, model.file = "multiple_linear_regression_model.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = TRUE, working.directory = getwd())
-detach("package:R2OpenBUGS", unload=T)  # Otherwise R2WinBUGS is 'masked'
+out1OB <- bugs(data=win.data, inits=inits, parameters.to.save = params, model.file = "multiple_linear_regression_model.txt",
+  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
+  # debug = TRUE, working.directory = getwd())
+  debug = FALSE, working.directory = getwd()) # ~~~~~ for autotesting
+detach("package:R2OpenBUGS", unload=TRUE)  # Otherwise R2WinBUGS is 'masked'
 
 
 # Call JAGS from R (ART <1 min)

@@ -164,10 +164,14 @@ win.data1 <- list(y = y, nsite = nrow(y), nrep = ncol(y),
    hp.survey.on = 0)
 
 # MCMC settings
-ni <- 50000    ;    nt <- 4    ;    nb <- 10000    ;    nc <- 3
+# ni <- 50000    ;    nt <- 4    ;    nb <- 10000    ;    nc <- 3
+ni <- 5000    ;    nt <- 1    ;    nb <- 1000    ;    nc <- 3  # ~~~~ for testing
 
 # Call WinBUGS from R (ART 93 min) and summarize posteriors
-out1 <- bugs(win.data1, inits, params, "ZIPNmix.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+out1 <- bugs(win.data1, inits, params, "ZIPNmix.txt",
+  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
+  # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd())  #  ~~~ for autotesting
 print(out1, dig = 3)
 
 
@@ -272,7 +276,7 @@ quantile(Ntot, prob = c(0.025, 0.975))
 # MCMC settings
 # ni <- 10^6    ;    nt <- 80    ;    nb <- 200000    ;    nc <- 3
 # ~~~~ for testing I used:
-ni <- 10^5    ;    nt <- 8     ;    nb <- 20000    ;    nc <- 3
+ni <- 12000    ;    nt <- 1     ;    nb <- 2000    ;    nc <- 3
 
 # Bundle data and select model 2
 win.data2 <- list(y = y, nsite = nrow(y), nrep = ncol(y),
@@ -281,7 +285,7 @@ win.data2 <- list(y = y, nsite = nrow(y), nrep = ncol(y),
    hp.survey.on = 0)
 
 # Call WinBUGS from R (ART 4050 min ~ 3 days) and summarize posteriors
-out2 <- bugs(win.data2, inits, params, "ZIPNmix.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = F, bugs.directory = bugs.dir)
+out2 <- bugs(win.data2, inits, params, "ZIPNmix.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
 # ~~~ After running for 3 days, you should probably save the result ~~~~~~~~~
 save(out2, file="AHM1_06.11_out2.RData")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -295,7 +299,7 @@ win.data3 <- list(y = y, nsite = nrow(y), nrep = ncol(y),
    hp.survey.on = 0)
 
 # Call WinBUGS from R (ART 4200 min) and summarize posteriors
-out3 <- bugs(win.data3, inits, params, "ZIPNmix.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = F, bugs.directory = bugs.dir)
+out3 <- bugs(win.data3, inits, params, "ZIPNmix.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
 # ~~~ After running for 3 days, you should probably save the result ~~~~~~~~~~~
 save(out3, file="AHM1_06.11_out3.RData")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -309,7 +313,7 @@ win.data4 <- list(y = y, nsite = nrow(y), nrep = ncol(y),
    hp.survey.on = 1)
 
 # Call WinBUGS from R (ART 4020 min) and summarize posteriors
-out4 <- bugs(win.data4, inits, params, "ZIPNmix.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = F, bugs.directory = bugs.dir)
+out4 <- bugs(win.data4, inits, params, "ZIPNmix.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
 # ~~~ After running for 3 days, you should probably save the result ~~~~~~~~~
 save(out4, file="AHM1_06.11_out4.RData")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -323,7 +327,7 @@ win.data5 <- list(y = y, nsite = nrow(y), nrep = ncol(y),
    hp.survey.on = 0)
 
 # Call WinBUGS from R (ART 4250 min) and summarize posteriors
-out5 <- bugs(win.data5, inits, params, "ZIPNmix.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = F, bugs.directory = bugs.dir)
+out5 <- bugs(win.data5, inits, params, "ZIPNmix.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
 # ~~~ you should probably save the result ~~~~~~~~~~~~~~~~~
 save(out5, file="AHM1_06.11_out5.RData")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -337,7 +341,7 @@ win.data6 <- list(y = y, nsite = nrow(y), nrep = ncol(y),
    hp.survey.on = 1)
 
 # Call WinBUGS from R (ART 4230 min) and summarize posteriors
-out6 <- bugs(win.data6, inits, params, "ZIPNmix.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = F, bugs.directory = bugs.dir)
+out6 <- bugs(win.data6, inits, params, "ZIPNmix.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
 # ~~~ After running for 3 days, you should probably save the result:
 save(out6, file="AHM1_06.11_out6.RData")
 print(out6, dig = 3)
@@ -350,7 +354,7 @@ win.data7 <- list(y = y, nsite = nrow(y), nrep = ncol(y),
    hp.survey.on = 1)
 
 # Call WinBUGS from R (ART 4625 min) and summarize posteriors
-out7 <- bugs(win.data7, inits, params, "ZIPNmix.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = F, bugs.directory = bugs.dir)
+out7 <- bugs(win.data7, inits, params, "ZIPNmix.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
 # ~~~ you should probably save the result ~~~~~~~~~~~~
 save(out7, file="AHM1_06.11_out7.RData")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -442,10 +446,15 @@ inits <- function(){ list(N = Nst, beta0 = 0, mean.p = rep(0.5,3), beta = runif(
 params <- c("beta0", "beta", "alpha.var.lam", "beta.var.lam", "alpha0", "mean.p", "alpha", "sd.p.survey")
 
 # MCMC settings
-ni <- 180000    ;    nt <- 100    ;    nb <- 10000    ;    nc <- 3
+# ni <- 180000    ;    nt <- 100    ;    nb <- 10000    ;    nc <- 3
+# ~~~~~~~~~~~~~~ for testing
+ni <- 18000    ;    nt <- 10    ;    nb <- 1000    ;    nc <- 3
 
 # Call WinBUGS from R (ART 374 min) and summarize posteriors
-out8 <- bugs(win.data8, inits, params, "Nmix.special.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+out8 <- bugs(win.data8, inits, params, "Nmix.special.txt",
+  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
+  # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd())  # ~~~ for autotesting
 # ~~~ you should probably save the result ~~~~~~~~~~~~~~~
 save(out8, file="AHM1_06.11_out8.RData")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

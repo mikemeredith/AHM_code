@@ -211,8 +211,10 @@ params <- c("alpha0", "alpha1", "beta0", "beta1", "N.occ", "psi.fs", "psi.pred",
 ni <- 25000   ;   nt <- 10   ;   nb <- 2000   ;   nc <- 3
 
 # Call WinBUGS from R (ART 2 min) and summarize posteriors
-out1B <- bugs(win.data, inits, params, "model.txt", n.chains = nc,
-n.thin = nt, n.iter = ni, n.burnin = nb, debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+out1B <- bugs(win.data, inits, params, "model.txt",
+  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
+  # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd())  # ~~~~~ for autotesting
 print(out1B, dig = 3)
 
 

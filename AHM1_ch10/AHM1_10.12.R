@@ -75,7 +75,10 @@ params <- c("int.psi", "beta1", "int.lambda", "alpha1", "n.occ")
 ni <- 12000   ;   nt <- 2   ;   nb <- 2000   ;   nc <- 3
 
 # Call WinBUGS from R (ART 1.3 min) and summarize posteriors
-out1 <- bugs(win.data, inits, params, "model1.txt", n.chains=nc, n.iter=ni, n.burn = nb, n.thin=nt, debug = TRUE, bugs.directory = bd)
+out1 <- bugs(win.data, inits, params, "model1.txt",
+  n.chains=nc, n.iter=ni, n.burn = nb, n.thin=nt,
+  # debug = TRUE, bugs.directory = bd)
+  debug = FALSE, bugs.directory = bd) # ~~~~~ for autotesting
 print(out1, dig = 3)
 
 
@@ -145,7 +148,10 @@ params <- c("psi", "lambda.int", "alpha1", "alpha2", "n.occ", "z", "sexratio", "
 ni <- 15000   ;   nt <- 2   ;   nb <- 2000   ;   nc <- 3
 
 # Call WinBUGS from R (ART 0.6 min) and summarize posteriors
-out2 <- bugs(win.data, inits, params, "model2.txt", n.chains=nc, n.iter=ni, n.burn = nb, n.thin=nt, debug = T, bugs.directory = bd)
+out2 <- bugs(win.data, inits, params, "model2.txt",
+  n.chains=nc, n.iter=ni, n.burn = nb, n.thin=nt,
+  # debug = TRUE, bugs.directory = bd)
+  debug = FALSE, bugs.directory = bd)  # ~~~~~ for autotesting
 print(out2, dig = 3)
 
 

@@ -51,9 +51,10 @@ return(list(N = N, sigma = sigma, xall = xall, x = x))
 # Obtain a data set for analysis
 set.seed(2015)               # If you want to get same results
 tmp <- sim.ldata(sigma = 30) # Execute function and assign results to 'tmp'
-attach(tmp)
-# ~~~~~ 'sigma' in the Global environment masks tmp$sigma
+# ~~~~~ 'sigma' in the Global environment masks tmp$sigma ~~~~~
 rm(sigma)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+attach(tmp)
 
 # Conditional likelihood
 Lcond <- function(lsigma){  # Define conditional nll
@@ -251,10 +252,10 @@ return(list(N=N, sigma=sigma, B=B, u1=u1, u2=u2, d=d, y=y, N.real=N.real))
 # obtain a data set by distance sampling a population of N=1000
 set.seed(1234)
 tmp <-sim.pdata(N=1000, sigma=1, keep.all=FALSE, B=3)
-attach(tmp)
 # ~~~~ remove objects that mask 'tmp' ~~~~~~~~~~~
 rm(B, N, sigma, y)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+attach(tmp)
 
 # Bin the data and tabulate the bin frequencies. Be sure to pad the 0s!
 delta <- 0.5                   # width of distance bins

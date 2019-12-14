@@ -71,8 +71,10 @@ params <- c("N", "sigma", "D")
 # Experience the raw power of BUGS and summarize marginal posteriors
 library(R2WinBUGS)
 # bd <- "c:/Program Files/WinBUGS14/"    # May have to adapt
-out1 <- bugs(win.data, inits, params, "model1.txt", n.thin=2,n.chains=3,
-   n.burnin=1000, n.iter=11000, debug=TRUE, DIC=FALSE, bugs.dir=bd)
+out1 <- bugs(win.data, inits, params, "model1.txt",
+  n.thin=2,n.chains=3, n.burnin=1000, n.iter=11000,
+  # debug=TRUE, DIC=FALSE, bugs.dir=bd)
+  debug=FALSE, DIC=FALSE, bugs.dir=bd) #~~~~~ for automated testing
 print(out1, 3)
 
 
@@ -123,8 +125,10 @@ params <- c("N", "sigma", "D")
 
 # Unleash WinBUGS and summarize posteriors
 # bd <- "c:/Program Files/WinBUGS14/"
-out2 <- bugs(win.data, inits, params, "model2.txt", n.thin=2, n.chains=3,
-   n.burnin=1000, n.iter=11000, debug=TRUE, DIC=FALSE, bugs.dir = bd)
+out2 <- bugs(win.data, inits, params, "model2.txt",
+  n.thin=2, n.chains=3, n.burnin=1000, n.iter=11000,
+  # debug=TRUE, DIC=FALSE, bugs.dir = bd)
+  debug=FALSE, DIC=FALSE, bugs.dir = bd) #~~~~~ for automated testing
 print(out2, 2)
 
 
@@ -156,6 +160,9 @@ sum(areas)
 # Simulate a data set and harvest the output
 set.seed(1234)
 tmp <- sim.pdata(N=200, sigma=1, keep.all=FALSE, B=3)
+# ~~~~~~ remove objects that mask elements of temp ~~~~~~~
+rm(B, sigma, y)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 attach(tmp)
 
 # Chop the data into bins
@@ -205,13 +212,14 @@ inits <- function(){list (sigma=runif(1, 1, 10)) }
 params <- c("sigma", "N","D")
 
 # MCMC settings
-ni <- 62000   ;   nb <- 2000   ;   nt   <-   2   ;   nc <- 3
+# ni <- 62000   ;   nb <- 2000   ;   nt   <-   2   ;   nc <- 3
+ni <- 6200   ;   nb <- 200   ;   nt   <-   1   ;   nc <- 3  # ~~~~ for testing
 
 # Run BUGS and summarize posteriors
 # bd <- "c:/Program Files/WinBUGS14/"
-out3 <- bugs(win.data, inits, params, "model3.txt", n.thin=nt,
-n.chains=nc, n.burnin=nb, n.iter=ni, debug=FALSE, bugs.dir = bd)
-
+out3 <- bugs(win.data, inits, params, "model3.txt",
+  n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni,
+  debug=FALSE, bugs.dir = bd)
 
 ## Version 2: point count data (full likelihood with data augmentation)
 # Do data augmentation (for same simulated data set)
@@ -264,12 +272,13 @@ inits <- function(){list (sigma=runif(1,1,10), psi=runif(1) ) }
 params <- c("sigma", "N","D","psi")
 
 # MCMC settings
-ni <- 62000   ;   nb <- 2000   ;   nt   <-   2   ;   nc <- 3  # 1.17 days
+# ni <- 62000   ;   nb <- 2000   ;   nt   <-   2   ;   nc <- 3  # 1.17 days
+ni <- 6200   ;   nb <- 200   ;   nt   <-   2   ;   nc <- 3  # ~~~~~ for testing
 
 # Run BUGS and summarize posteriors
-out4 <- bugs(win.data, inits, params, "model4.txt", n.thin=nt,
-   n.chains=nc, n.burnin=nb, n.iter=ni, debug=FALSE, bugs.dir = bd)
-
+out4 <- bugs(win.data, inits, params, "model4.txt",
+  n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni,
+  debug=FALSE, bugs.dir = bd)
 
 # Compare posterior summaries
 print(out3,2)

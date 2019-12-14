@@ -6,6 +6,9 @@
 # =========================================================================
 
 library(AHMbook)
+library(R2WinBUGS)
+bugs.dir <- "C:/WinBUGS14"
+library(jagsUI)
 
 # ~~~~~~ this section requires the data prepared in section 11.3 ~~~~~~~~~~
 source("AHM1_11.03.R")
@@ -75,13 +78,17 @@ params <- c("gamma0", "gamma")
 ni <- 6000   ;   nt <- 4   ;   nb <- 2000   ;   nc <- 3
 
 # Call WinBUGS from R (ART <1 min)
-out1 <- bugs(win.data, inits, params, "model1.txt", n.chains = nc,
-n.thin = nt, n.iter = ni, n.burnin = nb, debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+out1 <- bugs(win.data, inits, params, "model1.txt",
+  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
+  # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd())  # ~~~~ for autotesting
 
 # Call JAGS from R (ART <1 min), check convergence and summarize posteriors
 library(jagsUI)
-out1J <- jags(win.data, inits, params, "model1.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
-traceplot(out1J)    ;    print(out1J, dig = 3)
+out1J <- jags(win.data, inits, params, "model1.txt",
+  # n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
+  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel=TRUE)  # ~~~~~ for testing
+jagsUI::traceplot(out1J)    ;    print(out1J, dig = 3)
 
 
 # Plot posterior distributions for potentially 'ecological' parameters
@@ -171,12 +178,16 @@ params <- c("gamma0", "gamma")
 ni <- 6000   ;   nt <- 4   ;   nb <- 2000   ;   nc <- 3
 
 # Call WinBUGS from R (ART 1.7 min)
-out2 <- bugs(win.data, inits, params, "model2.txt", n.chains = nc,
-n.thin = nt, n.iter = ni, n.burnin = nb, debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+out2 <- bugs(win.data, inits, params, "model2.txt",
+  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
+  # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd())  # ~~~~ for autotesting
 
 # Call JAGS from R (ART 0.6 min)
-out2J <- jags(win.data, inits, params, "model2.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
-traceplot(out2J)   ;   print(out2J, dig = 2)
+out2J <- jags(win.data, inits, params, "model2.txt",
+  # n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
+  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)  # ~~~~~ for testing
+jagsUI::traceplot(out2J)   ;   print(out2J, dig = 2)
 
 
 # 11.5.2 Poisson random effects model for the observed community size
@@ -221,12 +232,16 @@ params <- c("mugamma0", "sd.gamma0", "gamma0", "gamma")
 ni <- 6000   ;   nt <- 4   ;   nb <- 2000   ;   nc <- 3
 
 # Call WinBUGS from R (ART 2.9 min)
-out3 <- bugs(win.data, inits, params, "model3.txt", n.chains = nc,
-n.thin = nt, n.iter = ni, n.burnin = nb, debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+out3 <- bugs(win.data, inits, params, "model3.txt",
+  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
+  # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd())  # ~~~~ for autotesting
 
 # Call JAGS from R (ART 0.7 min)
-out3J <- jags(win.data, inits, params, "model3.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
-traceplot(out3J, c('mugamma0', 'sd.gamma0', 'gamma'))   ;    print(out3J, dig = 2)
+out3J <- jags(win.data, inits, params, "model3.txt",
+  # n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
+  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel=TRUE)  # ~~~~~ for testing
+jagsUI::traceplot(out3J, c('mugamma0', 'sd.gamma0', 'gamma'))   ;    print(out3J, dig = 2)
 
 
 # 11.5.3 N-mixture model for the observed community size
@@ -282,7 +297,7 @@ ni <- 6000   ;   nt <- 4   ;   nb <- 2000   ;   nc <- 3
 #   and summarize posteriors
 out4 <- jags(win.data, inits, params, "model4.txt",
    n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-traceplot(out4, c('alpha0', 'alpha', 'beta0', 'beta'))  ;  print(out4, 3)
+jagsUI::traceplot(out4, c('alpha0', 'alpha', 'beta0', 'beta'))  ;  print(out4, 3)
 
 print(tmp <- cbind(out3$summary[c(1, 270:272),c(1:3,7)], out4$summary[5:8, c(1:3, 7)]), 3)
 

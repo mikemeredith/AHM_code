@@ -5,7 +5,10 @@
 # Chapter 7. Modeling abundance using multinomial N-mixture models
 # =========================================================================
 
+### SLOW: the unmarked analysis takes almost 1 hr.
+
 library(unmarked)
+library(jagsUI)
 
 # 7.9 Example 3: Jays in the Swiss MHB
 # ====================================
@@ -342,8 +345,10 @@ Nhat <- function(fm) {
 }
 
 set.seed(2015)
-(pb.N <- parboot(fm17NB, Nhat, nsim=100, report=1))
-
+# ~~~~~~ parboot now runs in parallel by default, but Nhat doesn't work ~~~~~~~~
+# (pb.N <- parboot(fm17NB, Nhat, nsim=100, report=1))
+(pb.N <- parboot(fm17NB, Nhat, nsim=100, report=1, parallel=FALSE))
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # 7.9.7 Bayesian Analysis of the MHB Data
 # ------------------------------------------------------------------------
@@ -434,8 +439,9 @@ ni <- 11000   ;   nb <- 1000   ;   nt <- 4   ;   nc <- 3
 
 # Call JAGS from R and summarize marginal posteriors
 
-out <- jags(data, inits, parameters, "model.txt", n.thin = nt,
-   n.chains = nc, n.burnin = nb, n.iter = ni)
+out <- jags(data, inits, parameters, "model.txt",
+  # n.thin = nt, n.chains = nc, n.burnin = nb, n.iter = ni)
+  n.thin = nt, n.chains = nc, n.burnin = nb, n.iter = ni, parallel=TRUE)  # ~~~ for testing
 
 print(out, digits = 2)
 

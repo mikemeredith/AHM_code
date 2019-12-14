@@ -175,7 +175,8 @@ summary(fm5)
 
 # Bootstrap Goodness-of-fit assessment: ART ~ 20 hours
 set.seed(1234)
-(pb <- parboot(fm5, fitstats, nsim=100, report=5))
+# (pb <- parboot(fm5, fitstats, nsim=100, report=5))
+(pb <- parboot(fm5, fitstats, nsim=10, report=5))  # ~~~~ reduce the number for testing
 
 # Compute magnitude of "overdispersion" c.hat as ratio of observed to expected
 #    chisquare test statistic
@@ -323,7 +324,8 @@ inits <- function(){
 params <- c("sigma", "phi", "beta0", "mean.lam", "beta1", "Mtot", "Ntot")
 
 # MCMC settings
-ni <- 60000   ;   nb <- 10000   ;   nt <- 5   ;   nc <- 3
+# ni <- 60000   ;   nb <- 10000   ;   nt <- 5   ;   nc <- 3
+ni <- 6000   ;   nb <- 1000   ;   nt <- 1   ;   nc <- 3  # ~~~~~ reduce for testing
 
 # Run WinBUGS or JAGS
 # library("R2WinBUGS")
@@ -335,8 +337,8 @@ library("jagsUI")  # JAGS works but WinBUGS does not!
 # elements of variable
 
 # Run JAGS: This fails quite often ('invalid parent node'), just keep trying
-outTE1 <- jags(data, inits, params, "model.txt", n.thin=nt,n.chains=nc,
-   n.burnin=nb,n.iter=ni, parallel = TRUE)
+outTE1 <- jags(data, inits, params, "model.txt",
+  n.thin=nt,n.chains=nc, n.burnin=nb,n.iter=ni, parallel = TRUE)
 traceplot(outTE1)   ;    print(outTE1, 3)            # ART 4 min
 
 

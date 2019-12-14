@@ -13,7 +13,9 @@ library(unmarked)
 # ==============================================================
 
 
-simreps <- 1000                   # Number of data sets created/analysed
+# simreps <- 1000                 # Number of data sets created/analysed
+                                  # ~~~~ 1000 takes around 90 mins
+simreps <- 100                    # ~~~~ reduced number for testing
 MLE <- array(dim = c(5, simreps)) # Array to hold MLEs
 
 for(i in 1:simreps){              # Create and analyse 1000 data sets

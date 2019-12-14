@@ -158,9 +158,9 @@ gof.P   ;   gof.NB   ;   gof.ZIP                        # print results
 print(cbind(y, fitted(fm5), residuals(fm5)), 2)  # For Poisson model
 plot_Nmix_resi(fm5, fm5NB, fm5ZIP)               # Produces Fig. 6–10 ## function renamed
 
-plot_Nmix_resi <- function(fmP, fmNB, fmZIP){
+plot_Nmix_resi <- function(fmP, fmNB, fmZIP){  # ~~~~~ this function is in AHMbook package
 # Function does diagnostic plots for one Nmix model fitted with all three
-#   mixture distributions currently availabe in unmarked:
+#   mixture distributions currently available in unmarked:
 #   Poisson, negative binomial and zero-inflated Poisson
 # For each, fitted values vs. observed data and
 #   residuals vs. fitted values are plotted.
@@ -501,10 +501,11 @@ Nhat <- function(fm = fm5ZIP, iLength = 0, area = 1) {
 
 # Launch the bootstrap (takes about 30h)
 # ~~~~~~~~~~ changes in unmarked::parboot wef 0.12-0  ~~~~~~~
-# parboot also has a 'parallel' argument with default TRUE. Unfortunately the 'Nhat' function
+# parboot now has a 'parallel' argument with default TRUE. Unfortunately the 'Nhat' function
 #  defined above won't work  in parallel, so need to specify parallel = FALSE.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-system.time(pb.N <- parboot(fm5ZIP, Nhat, nsim = 2500, report=5, parallel=FALSE))
+# system.time(pb.N <- parboot(fm5ZIP, Nhat, nsim = 2500, report=5, parallel=FALSE))
+system.time(pb.N <- parboot(fm5ZIP, Nhat, nsim = 25, report=5, parallel=FALSE)) # ~~~ use for testing
 
 bs <- pb.N@t.star[,3]             # Extract the bootstrapped vals of N3
 

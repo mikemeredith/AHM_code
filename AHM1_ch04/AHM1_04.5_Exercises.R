@@ -5,6 +5,7 @@
 # Chapter 4. Introduction to data simulation
 # =========================================================================
 
+library(AHMbook)
 
 # 4.5 Exercises
 # =============

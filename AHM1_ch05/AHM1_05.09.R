@@ -63,7 +63,10 @@ params <- c("alpha", "beta", "lambda", "resi")
 ni <- 6000   ;   nt <- 1   ;   nb <- 1000   ;  nc <- 3
 
 # Call WinBUGS or JAGS from R and summarize posteriors
-out5 <- bugs(win.data, inits, params, "Poisson_GLM.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+out5 <- bugs(win.data, inits, params, "Poisson_GLM.txt",
+  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
+  # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd())  # ~~~~ for automated testing
 
 system.time(out5J <- jags(win.data, inits, params, "Poisson_GLM.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb))
 par(mfrow = c(4,2))    ;    traceplot(out5J, c("alpha[1:4]", "beta[1:4]"))

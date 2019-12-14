@@ -6,6 +6,7 @@
 # =========================================================================
 
 library(AHMbook)
+library(unmarked)
 
 # 8.4 Hierarchical Distance Sampling
 # ==================================
@@ -39,13 +40,16 @@ jayumf <- unmarkedFrameDS(y=as.matrix(issj[,1:3]),
     jayumf, keyfun="halfnorm", output="abund"))
 
 
-(pb <- parboot(fm1, fitstats, nsim=1000, report=5))
+# (pb <- parboot(fm1, fitstats, nsim=1000, report=5))
+(pb <- parboot(fm1, fitstats, nsim=100, report=5))  # ~~~~~ for testing
 (c.hat <- pb@t0[2] / mean(pb@t.star[,2]))  # c-hat as ratio of observed
                            # and mean of expected value of Chi2 (under H0)
                            # (see, e.g., Johnson et al., Biometrics, 2010)
 
 residuals(fm1)             # Can inspect residuals
-plot(pb)                   # Not shown
+# ~~~~~ only plot if using screen device ~~~~~
+if(dev.interactive(orNone=TRUE))
+  plot(pb)                   # Not shown
 print(pb)
 
 

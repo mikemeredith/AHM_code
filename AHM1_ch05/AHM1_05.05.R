@@ -75,7 +75,10 @@ params <- c("alpha0", "alpha1", "alpha2", "alpha3", "sd", "Cmean", "mu")
 params <- c("alpha0", "alpha1", "alpha2", "alpha3", "sd", "Cmean[1:10]", "mu[1:10]")
 
 # Call WinBUGS or JAGS from R (ART <1 min) and summarize posteriors
-out1.1 <- bugs(win.data, inits, params, "multiple_linear_regression_model.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd(), DIC = FALSE)
+out1.1 <- bugs(win.data, inits, params, "multiple_linear_regression_model.txt",
+  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
+  # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd(), DIC = FALSE)
+  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd(), DIC = FALSE) # ~~~ for autotesting
 
 out1.1 <- jags(win.data, inits, params, "multiple_linear_regression_model.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
 
@@ -97,7 +100,10 @@ str(win.data)  # Cmean is numeric
 params <- c("alpha0", "alpha1", "alpha2", "alpha3", "sd", "mu[1:2]")
 
 # Call WinBUGS from R (ART <1 min) and summarize posteriors
-out1.2 <- bugs(win.data, inits, params, "multiple_linear_regression_model.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd(), DIC = FALSE)
+out1.2 <- bugs(win.data, inits, params, "multiple_linear_regression_model.txt",
+  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
+  # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd(), DIC = FALSE)
+  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd(), DIC = FALSE) # ~~~ for autotesting
 
 print(out1.2, 2)
 
@@ -160,7 +166,10 @@ params <- c("alpha0", "alpha1", "alpha2", "alpha3", "sd", "elev")
 ni <- 6000   ;   nt <- 1   ;   nb <- 1000   ;  nc <- 3
 
 # Call WinBUGS from R (ART <1 min)
-out1.3 <- bugs(win.data, inits, params, "missing_cov_imputation_model_1.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+out1.3 <- bugs(win.data, inits, params, "missing_cov_imputation_model_1.txt",
+  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
+  # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd()) # ~~~~ for autotesting
 
 
 # Specify model in BUGS language
@@ -200,7 +209,10 @@ params <- c("alpha0", "alpha1", "alpha2", "alpha3", "sd", "elev", "mu.elev", "sd
 ni <- 6000   ;   nt <- 1   ;   nb <- 1000   ;  nc <- 3
 
 # Call WinBUGS from R (ART <1 min)
-out1.4 <- bugs(win.data, inits, params, "missing_cov_imputation_model_2.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+out1.4 <- bugs(win.data, inits, params, "missing_cov_imputation_model_2.txt",
+  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
+  # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd()) # ~~~ for autotesting
 
 graphics.off() # ~~~~~~~ start new plot ~~~~~~~~~~~~~~~
 par(cex = 1.5, lwd = 2)

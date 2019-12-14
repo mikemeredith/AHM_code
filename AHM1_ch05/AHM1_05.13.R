@@ -54,10 +54,14 @@ params <- c("mu.alpha", "sd.alpha", "alpha0", "alpha", "re0") # Params
 ni <- 30000 ; nt <- 25 ; nb <- 5000 ; nc <- 3                 # MCMC settings
 
 # Call WinBUGS or JAGS from R (ART 6-7 min) and summarize posteriors
-out8 <- bugs(win.data, inits, params, "RE.Poisson.txt", n.chains = nc,
-n.thin = nt, n.iter = ni, n.burnin = nb, debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+out8 <- bugs(win.data, inits, params, "RE.Poisson.txt",
+  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
+  # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd())   # ~~~~ for autotesting
 
-out8 <- jags(win.data, inits, params, "RE.Poisson.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
+out8 <- jags(win.data, inits, params, "RE.Poisson.txt",
+  # n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
+  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel=TRUE)
 par(mfrow = c(3,2))  ;  traceplot(out8, c("mu.alpha", "sd.alpha", "alpha[1:3]"))
 
 print(out8, 3)

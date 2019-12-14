@@ -90,6 +90,7 @@ nc <- 3   ;   ni <- 6000   ;   nb <- 1000   ;   nt <- 1
 
 # Experience the power of BUGS and print posterior summary
 # ~~~~~ WinBUGS fails with "Rejection1" appearing in the status bar ~~~~~~~~~~~~~
+# ~~~~~ The JAGS code below works fine.
 # library(R2WinBUGS)
 # bd <- "c:/Program Files/WinBUGS14/" # ~~~~~ doesn't work
 # out <- bugs(data, inits, parameters, "model.txt", n.thin = nt,
@@ -173,8 +174,13 @@ fit2.pred <- sum(resid2.pred[])
 parameters <- c("N", "p0", "beta0", "beta1", "beta2", "beta3",
    "fit1.data", "fit1.pred", "fit2.data", "fit2.pred")
 
-out <- bugs (data, inits, parameters, "model_gof.txt",n.thin=nt, n.chains=nc,
-       n.burnin=nb, n.iter=ni, debug=TRUE, bugs.dir = bd)
+# ~~~~~ WinBUGS sometimes fails with "Rejection1" appearing in the status bar ~~~~~~~~~~~~~
+# out <- bugs (data, inits, parameters, "model_gof.txt",n.thin=nt, n.chains=nc,
+       # n.burnin=nb, n.iter=ni, debug=TRUE, bugs.dir = bd)
+# ~~~~ use JAGS instead
+out <- jags (data, inits, parameters, "model_gof.txt",n.thin=nt, n.chains=nc,
+       n.burnin=nb, n.iter=ni, parallel=TRUE)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 mean(out$sims.list$fit1.pred > out$sims.list$fit1.data)
 
@@ -239,8 +245,10 @@ inits <- function(){
          w1=1, w2=1, w3=1)
 }
 # Call WinBUGS from R and summarize marginal posteriors
-out <- bugs(data, inits, parameters, "model.txt", n.thin = nt,
-   n.chains = nc, n.burnin = nb, n.iter = ni, debug = TRUE, bugs.dir=bd)
+out <- bugs(data, inits, parameters, "model.txt",
+  n.thin = nt, n.chains = nc, n.burnin = nb, n.iter = ni,
+  # debug = TRUE, bugs.dir=bd)
+  debug = FALSE, bugs.dir=bd)  # ~~~~ for autotesting
 print(out, digits = 3)
 
 
@@ -305,8 +313,10 @@ nc <- 3   ;   ni <- 6000   ;   nb <- 1000   ;   nt <- 1
 
 
 # Call WinBUGS from R and summarize marginal posteriors
-out <- bugs(data, inits, parameters, "modelP.txt", n.thin=nt,
-   n.chains = nc, n.burnin = nb, n.iter = ni, debug = TRUE, bugs.dir=bd)
+out <- bugs(data, inits, parameters, "modelP.txt",
+  n.thin=nt, n.chains = nc, n.burnin = nb, n.iter = ni,
+  # debug = TRUE, bugs.dir=bd)
+  debug = FALSE, bugs.dir=bd) # ~~~~ for autotesting
 print(out, 3)
 
 
@@ -359,9 +369,11 @@ parameters <- c("p0", "alpha1", "beta0", "beta1", "beta2", "beta3", "sigma")
 nc <- 3   ;   ni <- 32000   ;   nb <- 2000   ;   nt <- 1
 
 # Call WinBUGS from R and summarize marginal posteriors
-out <- bugs(data, inits, parameters, "modelP.txt", n.thin=nt,
-   n.chains = nc, n.burnin = nb, n.iter = ni, debug = TRUE, bugs.dir = bd)
+out <- bugs(data, inits, parameters, "modelP.txt",
+  n.thin=nt, n.chains = nc, n.burnin = nb, n.iter = ni,
+  # debug = TRUE, bugs.dir = bd)
+  debug = FALSE, bugs.dir = bd) # ~~~~ for autotesting
 print(out, digits=3)
 
-plot(density(out$sims.list$sigma), frame = F, main = "") # Fig. 7-4
+plot(density(out$sims.list$sigma), frame = FALSE, main = "") # Fig. 7-4
 

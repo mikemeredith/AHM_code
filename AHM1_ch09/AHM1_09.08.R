@@ -7,6 +7,8 @@
 
 library(AHMbook)
 library(unmarked)
+library(raster)
+library(plotrix)
 
 # ~~~~~ Use the old buggy RNG for 'sample' for compatibility ~~~~~~~~~
 # The functions 'sim.spatialDS' and 'sim.spatialHDS' use 'sample' internally.
@@ -80,7 +82,8 @@ params <- c("sigma", "N", "psi")
 # Execute jags and summarize the posterior distributions
 # out1 <- jags (data, inits, parameters, "model1.txt", n.thin=nthin,  # ~~~ oops!
 out1 <- jags (data, inits, params, "model1.txt", n.thin=nthin,
-   n.chains=nc, n.burnin=nb,n.iter=ni, parallel = FALSE)
+   # n.chains=nc, n.burnin=nb,n.iter=ni, parallel = FALSE)
+   n.chains=nc, n.burnin=nb,n.iter=ni, parallel = TRUE)  # ~~~~~ for autotesting
 par(mfrow = c(2,2))   ;   traceplot(out1)
 print(out1, 2)
 
@@ -180,7 +183,9 @@ for(i in 1:nind){
 }
 
 # Bundle and summarize the data for BUGS
-str(data <- list (B=B, nind=nind, y=y, nz=nz, Habitat=Habitat, Habgrid=Habgrid, G=G, pixel=pixel))
+str(data <- list (B=B, nind=nind, y=y, nz=nz, Habitat=Habitat,
+  # Habgrid=Habgrid, G=G, pixel=pixel))
+  Habgrid=as.matrix(Habgrid), G=G, pixel=pixel)) # ~~~~ jagsUI no longer converts data internally
 
 
 # Write BUGS model
@@ -218,7 +223,8 @@ D <- N/9                           # area = 9 ha
 # Load libraries and specify MCMC settings
 library("R2WinBUGS")
 library(jagsUI)
-ni <- 12000   ;   nb <- 2000   ;   nthin <- 2   ;   nc <- 3
+# ni <- 12000   ;   nb <- 2000   ;   nthin <- 2   ;   nc <- 3  # 2 hrs
+ni <- 1200   ;   nb <- 200   ;   nthin <- 1   ;   nc <- 3  # ~~~~~~~~ for testing
 
 # Create inits and define parameters to monitor
 inits <- function(){  list (sigma=runif(1,1,10),psi=runif(1),
@@ -237,7 +243,8 @@ params <- c("sigma", "N", "psi", "beta", "D", "pixel")
 
 # Run JAGS, check convergence and summarize posteriors
 out2 <- jags (data, inits, params, "spatialDS.txt", n.thin=nthin,
-   n.chains=nc, n.burnin=nb, n.iter=ni, parallel = FALSE)
+   # n.chains=nc, n.burnin=nb, n.iter=ni, parallel = FALSE)
+   n.chains=nc, n.burnin=nb, n.iter=ni, parallel = TRUE)  # ~~~~ speeds up testing
 
 # Plot density maps
 library(raster)
@@ -364,7 +371,9 @@ for(i in 1:nsites){
 }
 
 # Bundle the data for BUGS
-str(data <- list (y=Ymat, pixel=pixmat, Habitat=Habitat, Habgrid=Habgrid, G = G,
+str(data <- list (y=Ymat, pixel=pixmat, Habitat=Habitat,
+   # Habgrid=Habgrid, G = G,
+   Habgrid=as.matrix(Habgrid), G = G, # ~~~ jagsUI no longer converts input internally
    nsites=nsites, M = Msite, B = B))
 
 # Write out the BUGS model file
@@ -417,7 +426,8 @@ params <- c("sigma", "Ntotal", "beta1", "beta0", "D", "lam0", "N")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # MCMC settings
-ni <- 12000   ;   nb <- 2000   ;   nthin <- 2   ;   nc <- 3
+# ni <- 12000   ;   nb <- 2000   ;   nthin <- 2   ;   nc <- 3
+ni <- 1200   ;   nb <- 200   ;   nthin <- 1   ;   nc <- 3  # ~~~~~~~~ for testing
 
 # Call JAGS, check convergence and summarize the results
 out3 <- jags(data, inits, params, "spatialHDS.txt", n.thin=nthin, n.chains=nc, n.burnin=nb, n.iter=ni, parallel = TRUE)

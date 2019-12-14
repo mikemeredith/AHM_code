@@ -70,10 +70,11 @@ inits <- function() list(z = array(1, dim = data$nunit), a = array(1, dim =c(dat
 params <- c("int.psi", "int.theta", "int.p", "beta.lpsi", "beta.ltheta", "beta.lp","p.theta", "sum.z", "sum.a")
 
 # MCMC settings
-ni <- 25000   ;   nt <- 2   ;   nb <- 2000   ;   nc <- 3
+# ni <- 25000   ;   nt <- 2   ;   nb <- 2000   ;   nc <- 3
+ni <- 2500   ;   nt <- 1   ;   nb <- 200   ;   nc <- 3  # ~~~~~ reduce numbers for testing
 
 # Call JAGS (ART 15 min) and summarize posterior
-out <- jags(win.data, inits, params, "model.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = T)
+out <- jags(win.data, inits, params, "model.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 traceplot(out)   ;   print(out, 3)
 
 # Compare truth and estimate in table
@@ -97,7 +98,8 @@ occUM.fn <- function(data = data, inits = c(1, 1, -1)){
 }
 
 # Choose number of simulations and create structures to hold results
-simreps <- 10000                # takes about 30 min
+# simreps <- 10000                # takes about 30 min
+simreps <- 1000                # ~~~~ enough for testing
 obs.stats <- array(NA, dim = c(simreps, 3))
 dimnames(obs.stats) <- list(NULL, c("sum.z", "obs.sum.z", "sum.z.x"))
 MLEs <- array(NA, dim = c(3,2,simreps))

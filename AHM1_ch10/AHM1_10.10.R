@@ -100,7 +100,10 @@ params <- c("int.psi", "int.theta", "int.p", "beta.lpsi", "beta.ltheta", "beta.l
 ni <- 5000   ;   nt <- 2   ;   nb <- 1000   ;   nc <- 3
 
 # Call WinBUGS and summarize posterior
-out <- bugs(win.data, inits, params, "model.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = TRUE, bugs.dir = bd) # bd="c:/WinBUGS14/"
+out <- bugs(win.data, inits, params, "model.txt",
+  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
+  # debug = TRUE, bugs.dir = bd) # bd="c:/WinBUGS14/"
+  debug = FALSE, bugs.dir = bd) # ~~~~~ for autotesting
 print(out, 3)
 data$sum.z
 

@@ -119,7 +119,8 @@ inits <- function() list(z = zst, w = wst, lpsi = rnorm(n = nspec+nz), lp = rnor
 params <- c("mu.lpsi", "sd.lpsi", "mu.lp", "sd.lp", "psi", "p", "Nsite", "Ntotal", "omega", "n0")
 
 # MCMC settings
-ni <- 22000   ;   nt <- 2   ;   nb <- 2000   ;   nc <- 3
+# ni <- 22000   ;   nt <- 2   ;   nb <- 2000   ;   nc <- 3
+ni <- 2200   ;   nt <- 2   ;   nb <- 200   ;   nc <- 3  # ~~~~~ use for testing
 
 # Call JAGS from R (ART 62 min), check convergence and summarize posteriors
 out9 <- jags(win.data, inits, params, "model9.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
@@ -131,14 +132,16 @@ save(out9, file="AHM1_11.07_out9.RData")
 
 # Plot posterior distribution of site-specific species richness (Nsite)
 par(mfrow = c(3,3), mar = c(5,4,3,2))
+oldask <- devAskNewPage(ask=dev.interactive(orNone=TRUE)) #~~~~ to replace browser call
 for(i in 1:267){
    plot(table(out9$sims.list$Nsite[,i]), main = paste("Quadrat", i),
    xlab = "Local species richness", ylab = "", frame = F,
    xlim = c((min(C[i], out9$sims.list$Nsite[,i], na.rm = T)-2),
    max(out9$sims.list$Nsite[,i]) ))
    abline(v = C[i], col = "grey", lwd = 4)
-   # browser()
+   # browser()  # ~~~~~ incompatible with automated testing
 }
+devAskNewPage(ask=oldask) #~~~~ clean up
 
 # Plot it only for a selection of sites
 par(mfrow = c(3,3), mar = c(5,4,3,2))
@@ -149,7 +152,7 @@ for(i in c(9, 32, 162, 12, 27, 30, 118, 159, 250)){
    max(out9$sims.list$Nsite[,i]) ))
    abline(v = C[i], col = "grey", lwd = 4)
 }
-graphics.off()  # ~~~~~ clean up!
+par(mfrow=c(1,1), mar=c(5,4,4,2)+0.1)  # ~~~~~ clean up!
 
 # Plot posterior distribution of total species richness (Ntotal)
 plot(table(out9$sims.list$Ntotal), main = "", ylab = "", xlab = "Avian metacommunity size in Swiss MHB survey (267 1km2 quadrats)", frame = F, xlim = c(144, 245))
@@ -285,7 +288,8 @@ inits <- function() list(z = zst, w = wst, lpsi = rnorm(n = nspec+nz), betalpsi1
 params1 <- c("omega", "mu.lpsi", "sd.lpsi", "mu.betalpsi1", "sd.betalpsi1", "mu.betalpsi2", "sd.betalpsi2", "mu.betalpsi3", "sd.betalpsi3", "mu.lp", "sd.lp", "mu.betalp1", "sd.betalp1", "mu.betalp2", "sd.betalp2", "mu.betalp3", "sd.betalp3", "Ntotal", "Nsite")
 
 # MCMC settings
-ni <- 15000   ;   nt <- 10   ;   nb <- 5000   ;   nc <- 3
+# ni <- 15000   ;   nt <- 10   ;   nb <- 5000   ;   nc <- 3
+ni <- 1500   ;   nt <- 1   ;   nb <- 500   ;   nc <- 3  # ~~~~~ use for testing
 
 # Run JAGS, check convergence and summarize posteriors
 out101 <- jags(win.data, inits, params1, "model10.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
@@ -298,7 +302,8 @@ save(out10, file="AHM1_11.07_out10.RData")
 
 # Set 2
 params2 <- c("mu.lpsi", "sd.lpsi", "mu.betalpsi1", "sd.betalpsi1", "mu.betalpsi2", "sd.betalpsi2", "mu.betalpsi3", "sd.betalpsi3", "lpsi", "betalpsi1", "betalpsi2", "betalpsi3", "lp", "betalp1", "betalp2", "betalp3", "z", "w")
-ni <- 12000   ;   nt <- 20   ;   nb <- 2000   ;   nc <- 3  # 3 hrs
+# ni <- 12000   ;   nt <- 20   ;   nb <- 2000   ;   nc <- 3  # 3 hrs
+ni <- 1200   ;   nt <- 2   ;   nb <- 200   ;   nc <- 3  # ~~~~~ use for testing
 out102 <- jags.basic(win.data, inits, params2, "model10.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 library(coda)
 all10 <- as.matrix(out102) # Put output from 3 chains into a matrix
@@ -387,14 +392,16 @@ matlines(o.dur, t(criC[,,4]), col = "grey", lty = 1)
 
 # Plot posterior distribution of site-specific species richness (Nsite)
 par(mfrow = c(3,3), mar = c(5,4,3,2))
+oldask <- devAskNewPage(ask=dev.interactive(orNone=TRUE)) #~~~~ to replace browser call
 for(i in 1:267){
    plot(table(out10$sims.list$Nsite[,i]), main = paste("Quadrat", i),
    xlab = "Local species richness", ylab = "", frame = F,
    xlim = c((min(C[i], out10$sims.list$Nsite[,i], na.rm = T)-2),
    max(out10$sims.list$Nsite[,i]) ))
    abline(v = C[i], col = "grey", lwd = 4)
-   # browser()
+   # browser() #~~~~ incompatible with automated testing
 }
+devAskNewPage(ask=oldask) #~~~~ clean up
 
 # Plot it only for a selection of sites (Fig. 11-18)
 par(mfrow = c(3,3), mar = c(5,4,3,2))

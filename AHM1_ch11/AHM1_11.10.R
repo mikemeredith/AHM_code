@@ -172,12 +172,13 @@ inits <- function()list(a = ast, N = Nst)
 params <- c("phi", "mp", "mlambda", "alpha0", "beta0", "alpha", "beta", "mu.beta0", "sd.beta0", "mu.beta", "sd.beta", "mu.alpha0", "sd.alpha0", "mu.alpha", "sd.alpha", "Nsite")
 
 # MCMC settings
-ni <- 60000   ;   nt <- 30   ;   nb <- 30000   ;   nc <- 3 # 6 hrs
+# ni <- 60000   ;   nt <- 30   ;   nb <- 30000   ;   nc <- 3 # 6 hrs
+ni <- 6000   ;   nt <- 3   ;   nb <- 3000   ;   nc <- 3 # ~~~~~ use for testing
 
 # Call JAGS from R (BRT XXX min), check convergence and summarize posteriors
 out11 <- jags(win.data, inits, params, "model11.txt", n.chains = nc,
-# n.thin = nt, n.iter = ni, n.burnin = nb, parallel = FALSE)
-n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+  # n.thin = nt, n.iter = ni, n.burnin = nb, parallel = FALSE)
+  n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 par(mfrow = c(3,3))   ;    traceplot(out11, c("mu.beta0", "sd.beta0", "mu.beta", "sd.beta", "mu.alpha0", "sd.alpha0", "mu.alpha", "sd.alpha") )
 print(out11, 2)
 # ~~~~~ suggest saving for use later ~~~~~~~~~~~~~

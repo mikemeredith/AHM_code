@@ -45,7 +45,8 @@ psi.true <- mean(N>0)                   # True occupancy in sample
 # Plots
 if(show.plot){
 par(mfrow = c(2, 2), cex.main = 1)
-devAskNewPage(ask = TRUE)
+# devAskNewPage(ask = TRUE)
+devAskNewPage(ask = dev.interactive(orNone=TRUE))  # ~~~~~ for autotesting
 curve(exp(beta0 + beta1*x), -1, 1, col = "red", main = "Relationship lambda-elevation \nat average forest cover", frame.plot = F, xlab = "Scaled elevation")
 plot(elev, lambda, xlab = "Scaled elevation", main = "Relationship lambda-elevation \nat observed forest cover", frame.plot = F)
 curve(exp(beta0 + beta2*x), -1, 1, col = "red", main = "Relationship lambda-forest \ncover at average elevation", xlab = "Scaled forest cover", frame.plot = F)

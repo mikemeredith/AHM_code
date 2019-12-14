@@ -5,6 +5,8 @@
 # Chapter 11. Hierarchical models for communities
 # =========================================================================
 
+# Took 70 mins with the original code
+
 library(jagsUI)
 
 # ~~~~~~ this section requires the data prepared in section 11.3 ~~~~~~~~~~
@@ -176,7 +178,8 @@ inits <- function() list(z = zst, Omega = matrix(c(1,0,0,1), ncol = 2), eta = ma
 params <- c("mu.eta", "probs", "psi", "p", "Nsite", "Nocc.fs", "Sigma", "rho")
 
 # MCMC settings
-ni <- 20000   ;   nt <- 15   ;   nb <- 5000   ;   nc <- 3
+# ni <- 20000   ;   nt <- 15   ;   nb <- 5000   ;   nc <- 3
+ni <- 2000   ;   nt <- 2   ;   nb <- 500   ;   nc <- 3  # ~~~~ for testing
 
 # Call JAGS from R (ART 12 min), check traceplots and summarize posteriors
 out6 <- jags(win.data, inits, params, "model6.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
@@ -273,7 +276,8 @@ inits <- function() list(z = zst)
 params <- c("mu.psi", "mu.lpsi", "sd.lpsi", "mu.p", "mu.lp", "sd.lp")
 
 # MCMC settings
-ni <- 6000   ;   nt <- 2   ;   nb <- 2000   ;   nc <- 3
+# ni <- 6000   ;   nt <- 2   ;   nb <- 2000   ;   nc <- 3
+ni <- 600   ;   nt <- 1   ;   nb <- 200   ;   nc <- 3  # ~~~~~ for testing
 
 # Call JAGS from R (ART 6 min), look at convergence and summarize posteriors
 out7 <- jags(win.data, inits, params, "model7.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
@@ -355,7 +359,8 @@ params <- c("delta0.lpsi", "delta1.lpsi", "delta0.lp", "delta1.lp", "phi0.lpsi",
 "phi1.lpsi", "phi0.lp", "phi1.lp", "psi", "p", "Nocc.fs", "Nsite")
 
 # MCMC settings
-ni <- 12000   ;   nt <- 2   ;   nb <- 2000   ;   nc <- 3
+# ni <- 12000   ;   nt <- 2   ;   nb <- 2000   ;   nc <- 3
+ni <- 1200   ;   nt <- 1   ;   nb <- 200   ;   nc <- 3  # ~~~~ for testing
 
 # Call JAGS from R (ART 12 min), look at convergence and summarize posteriors
 out8 <- jags(win.data, inits, params, "model8.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
@@ -446,10 +451,14 @@ sink()
 # Initial values, params monitored, and MCMC settings
 inits <- function() list(beta = rnorm(4))
 params <- c("beta", "sd.site", "Npred")
-ni <- 12000   ;   nt <- 10   ;   nb <- 2000   ;   nc <- 3
+# ni <- 12000   ;   nt <- 10   ;   nb <- 2000   ;   nc <- 3
+ni <- 1200   ;   nt <- 1   ;   nb <- 200   ;   nc <- 3  # ~~~~~ for testing
 
 # Call JAGS and summarize posterior
-out <- jags(win.data, inits, params, "meta.analysis.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
+out <- jags(win.data, inits, params, "meta.analysis.txt",
+  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
+  # parallel=FALSE)
+  parallel=TRUE)  # ~~~~~ for testing
 print(out, 3)
 
 lines(seq(200, 2750,5), out$mean$Npred, col = "blue", lwd = 3)
@@ -457,11 +466,13 @@ matlines(seq(200,2750,5), out$summary[6:516,c(3, 7)], col = "blue", lwd = 2, lty
 
 
 par(mfrow = c(3, 3), mar = c(5,4,3,2))
+oldask <- devAskNewPage(ask=dev.interactive(orNone=TRUE)) #~~~~ to replace browser call
 for(i in 1:267){
    for(j in 1:267){
       plot(jitter(out5$sims.list$Nsite[,i]), jitter(out5$sims.list$Nsite[,j]),
       main = paste("Joint posterior sites", i, "and", j))
-#   browser()
+#   browser() #~~~~~ incompatible with automated testing
    }
 }
+devAskNewPage(oldask) #~~~~ clean up
 

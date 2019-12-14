@@ -110,10 +110,19 @@ params <- c("sigma", "phi", "beta0", "mean.lam", "beta.trend",
    "beta1", "Mtot", "Ntot")
 
 # MCMC settings
-ni <- 12000   ;   nb <- 2000   ;   nt <- 5   ;   nc <- 3
+# ni <- 12000   ;   nb <- 2000   ;   nt <- 5   ;   nc <- 3
+ni <- 1200   ;   nb <- 200   ;   nt <- 1   ;   nc <- 3  # ~~~~ use for testing
 
 # Run JAGS (ART 9 min), look at trace plots and summarize
-outRD <- jags(data, inits, params, "tempemig4d.txt", n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni, parallel = FALSE)
+# ~~~~~~~ this crashes reliably ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#   with error "Error in node cellprobs.cond[6] Invalid parent values"
+#   when script is run as-is, with the RNG seed specified on line 16.
+# Set a new seed to overcome this:
+set.seed(1)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+outRD <- jags(data, inits, params, "tempemig4d.txt",
+  # n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni, parallel = FALSE)
+  n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni, parallel = TRUE)  # ~~~~ for faster testing
 par(mfrow = c(3,3))   ;   traceplot(outRD)
 summary(outRD)
 

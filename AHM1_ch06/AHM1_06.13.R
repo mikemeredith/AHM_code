@@ -7,6 +7,7 @@
 # =========================================================================
 
 library(AHMbook)
+library(unmarked)
 
 # 6.13 The Royle-Nichols model and other non-standard N-mixture models
 # ====================================================================
@@ -106,6 +107,7 @@ library(unmarked)
 
 # Loop over 6 species of tits
 par(mfrow = c(2,2), mar = c(5,4,3,1))
+oldask <- devAskNewPage(ask=dev.interactive(orNone=TRUE)) #~~~~ to replace browser call
 for(k in 1:6){
   cat("\n*** Analysis for ", spec.names[k], "***\n")
   # Plot observed data: counts vs survey date
@@ -137,12 +139,13 @@ for(k in 1:6){
   abline(h = 0, lwd = 1, col = "grey")
   abline(v = 0, lwd = 1, col = "grey")
   abline(lm(coef(Nmix2) ~ coef(Nmix1)), lwd = 2, col = "blue")
-  browser()
+  # browser() #~~~~~ incompatible with automated checking
 
   # Overall discrepancy measure (for state model only): slope of regression and r2
   print(slope <- coef(lm(coef(Nmix2)[1:10] ~ coef(Nmix1)[1:10]))[2]) # Slope
   print(r <- cor(coef(Nmix2)[1:10], coef(Nmix1)[1:10]))       # Correlation
 }
+devAskNewPage(oldask) #~~~~ clean up
 
 
 # 6.13.2 The Poisson/Poisson N-mixture model (no code)

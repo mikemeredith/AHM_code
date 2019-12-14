@@ -67,8 +67,10 @@ params <- c("mean.psi", "alpha", "beta", "theta")
 ni <- 6000   ;   nt <- 1   ;   nb <- 1000   ;  nc <- 3
 
 # Call WinBUGS or JAGS from R (ART <1 min)
-out6 <- bugs(win.data, inits, params, "Bernoulli_GLM.txt", n.chains = nc,
-n.thin = nt, n.iter = ni, n.burnin = nb, debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+out6 <- bugs(win.data, inits, params, "Bernoulli_GLM.txt",
+  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
+  # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
+  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd())  # ~~~~ for autotesting
 
 out6J <- jags(win.data, inits, params, "Bernoulli_GLM.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
 par(mfrow = c(4,2))    ;    traceplot(out6J, c("alpha[1:4]", "beta[1:4]"))

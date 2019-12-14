@@ -123,11 +123,12 @@ inits <- function(){list(z1=zst, alpha1=rnorm(3), beta1=rnorm(3), b.occ = rnorm(
 params <- c("alpha1", "beta1", "psi1", "p1", "fix.terms.occ", "smooth.terms.occ", "b.occ", "fix.terms.det", "smooth.terms.det", "b.det", "sum.z1", "sd.b.occ", "sd.b.det", "alpha2", "beta2", "psi2", "p2", "sum.z2")
 
 # MCMC settings
-ni <- 100000   ;   nb <- 10000   ;   nt <- 90   ;   nc <- 3
+# ni <- 100000   ;   nb <- 10000   ;   nt <- 90   ;   nc <- 3
+ni <- 10000   ;   nb <- 1000   ;   nt <- 10   ;   nc <- 3  # ~~~~ reduce for testing
 
 # Call JAGS from R (ART 95 min) and summarize posteriors
 system.time(fhm <- jags(win.data, inits, params, "hypermodel.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE))
-# traceplot(fhm)   ;   print(fhm, 3)  # ~~~~ remove for testing
+traceplot(fhm)   ;   print(fhm, 3)
 print(fhm$summary[c(1:6, 2957:2965, 3926),], 3)  # Compare some key estimands
 
 # Plot prediction of psi and p

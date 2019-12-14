@@ -5,6 +5,8 @@
 # Chapter 11. Hierarchical models for communities
 # =========================================================================
 
+# Took 40 mins with simreps = 50
+
 library(AHMbook)
 
 # 11.2 Simulation of a metacommunity
@@ -46,7 +48,8 @@ for(i in 1:100){
 hist(200-temp, breaks = 30, main = "Number of species in the metacommunity \nthat do not occur in the 10 sampled sites", col = "gold")
 
 # Simulation 1: effects of psi and sd(logit(psi)) on number of species actually occurring in the 50 sampled sites
-simrep <- 50                   # Run 50 simulation reps
+# simrep <- 50                   # Run 50 simulation reps
+simrep <- 10                   # ~~~~ reduce number for testing
 mpsi <- seq(0.01, 0.25,,10)
 slpsi <- seq(0.1, 5,,10)
 results1 <- array(NA, dim = c(10, 10, simrep))
@@ -63,7 +66,8 @@ for(i in 1:10){      # Loop over levels of factor mean.psi (mpsi)
 
 
 # Simulation 2: effects of p and sd(logit(p)) on the proportion of the species occurring in the 50 sampled sites that are detected at least once
-simrep <- 50         # Run 50 simulation reps again
+# simrep <- 50         # Run 50 simulation reps again
+simrep <- 10         # Reduce number for testing
 mp <- seq(0.01, 0.25,,10)
 slp <- seq(0.1, 5,,10)
 results2 <- array(NA, dim = c(10, 10, simrep, 2))
