@@ -2,6 +2,10 @@
 
 # CHANGES
 
+## 2020-02-06
+
+Preliminary code for AHM2 chapters 1 to 3 added. These all work properly but may need some tidying up.
+
 ## 2019-12-14
 
 A slew of changes to enable scripts to run reasonably quickly and without human intervention for testing purposes. The main features are:
