@@ -108,7 +108,7 @@ parID <- matrix(c('p','sig','sig'), 50, 3, byrow=TRUE)
 umf.cr2 <- unmarkedFrameMPois(y=alfl.H1,
         siteCovs=alfl.covs[,c("woody", "struct", "time.1")],
         obsCovs=list(parID=parID), obsToY=o2y, piFun="MhPiFun")
-
+multinomPois(~ parID-1 ~ woody, umf.cr2)
 
 
 # 7.8.4 Bayesian analysis using data augmentation (DA): heterogeneity models in BUGS
