@@ -321,7 +321,7 @@ pred4 <- modavgPred(cand.set = list(fm5ZIP), newdata=newData4, parm.type = "dete
 newData5 <- data.frame(elev=0, forest=0, iLength=0, date=0, dur=durp, time = factor("2", levels = c("1", "2", "3")))
 pred5 <- modavgPred(cand.set = list(fm5ZIP), newdata=newData5, parm.type = "detect", type = "response", c.hat = 2.47)[2:3] # ~~~~~
 newData6 <- data.frame(elev=0, forest=0, iLength=0, date=0, dur=0,
-time = c("1", "2", "3"))
+  time = c("1", "2", "3"), stringsAsFactors=TRUE) # ~~~~ change in default for stringsAsFactors
 pred6 <- modavgPred(cand.set = list(fm5ZIP), newdata=newData6, parm.type = "detect", type = "response", c.hat = 2.47)[2:3] # ~~~~~
 
 # Plot these predictions along single covariate gradient

@@ -146,7 +146,7 @@ ni <- 2200   ;   nb <- 200   ;   nt <- 1   ;   nc <- 3  # ~~~~~ for testing
 
 # ~~~~~~ jagsUI now has a factories argument ~~~~~~~~~~~~~~~~~~~~~
 # Setting factories manually with rjags::set.factory before calling
-# jags will not work on future versions.
+# jags will not work on current versions.
 ## JAGS setting b/c otherwise JAGS cannot build a sampler, rec. by M. Plummer
 #set.factory("bugs::Conjugate", FALSE, type="sampler")
 
@@ -329,6 +329,7 @@ ni <- 15200   ;   nb <- 200   ;   nt <- 1   ;   nc <- 3  # ~~~~~ for testing
 
 # Run JAGS, look at convergence and summarize the results
 library(jagsUI)
+set.seed(1) # ~~~ prevents "node incompatible..." error
 open3  <- jags (data1, inits, params, "Sollmann3.txt", n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni, parallel=TRUE)
 par(mfrow = c(3,3))   ;   traceplot(open3)   ;   print(open3, 2)
 

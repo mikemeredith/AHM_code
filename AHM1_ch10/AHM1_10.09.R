@@ -5,6 +5,15 @@
 # Chapter 10. Modeling static occurrence and species distributions using site-occupancy models
 # =========================================================================
 
+# ~~~~ impact of changes in R 4.0 ~~~~~~
+# The default for 'stringsAsFactors' in 'data.frame' changed from TRUE to FALSE.
+# This affects older versions of 'unmarked' and 'AICcmodavg', so reset the old default
+# as a temporary measure.
+if(packageVersion("unmarked") <= '1.0.0' || packageVersion("AICcmodavg") <= '2.2.2')
+  options(stringsAsFactors = TRUE)
+# This has no effect in R versions prior to 4.0.0.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 # 10.9 Distribution modeling and mapping of Swiss red squirrels
 # =============================================================
 ## Code modified to use the file "SwissSquirrels.txt" included in the AHMbook package
@@ -16,7 +25,7 @@ str(data)
 y <- as.matrix(data[,7:9])     # Grab 2007 squirrel det/nondet data
 elev.orig <- data[,"ele"]      # Unstandardised, original values of covariates
 forest.orig <- data[,"forest"]
-time <- matrix(as.character(1:3), nrow=265, ncol = 3, byrow = T)
+time <- matrix(as.character(1:3), nrow=265, ncol = 3, byrow = TRUE)
 date.orig <- as.matrix(data[,10:12])
 dur.orig <- as.matrix(data[,13:15])
 
@@ -100,7 +109,7 @@ cbind(fm22@AIC, fm23@AIC, fm24@AIC) # None better, hence, stay with model 20
 
 
 library(AICcmodavg)
-system.time(gof.boot <- mb.gof.test(fm20, nsim = 1000))
+system.time(gof.boot <- mb.gof.test(fm20, nsim = 1000, parallel=FALSE))
 gof.boot
 
 

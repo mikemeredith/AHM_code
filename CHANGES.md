@@ -2,6 +2,12 @@
 
 # CHANGES
 
+## 2020-06-01
+
+Testing with R 4.0.1 RC and latest versions of packages.
+
+* Change of default for `stringsAsFactors` in `data.frame`: `stringsAsFactors=TRUE` needed in some places.
+
 ## 2020-02-06
 
 Preliminary code for AHM2 chapters 1 to 3 added. These all work properly but may need some tidying up.
