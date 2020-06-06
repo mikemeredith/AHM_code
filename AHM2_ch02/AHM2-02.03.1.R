@@ -4,13 +4,18 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
+# Code from proofs dated 2020-01-09
 
 library(jagsUI)
 
-# 2.3 YEAR-STRATIFIED N-MIXTURE MODEL
+# ~~~~ need the Green Woodpecker data prepared in 2.2 ~~~~~~~~
+source("AHM2-02.02.R")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# 2.3 Year-stratified N-mixture model
 # ===========================================
 
-# 2.3.1 ADDING COVARIATES AND ESTIMATING A COMMON TREND OVER TIME
+# 2.3.1 Adding covariates and estimating a common trend over time
 # ---------------------------------------------------------------
 # Bundle data
 str(bdata <- list(C = C, nsites = dim(C)[1], nsurveys = dim(C)[2], nyears = dim(C)[3],

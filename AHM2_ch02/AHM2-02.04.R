@@ -4,16 +4,20 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
-
-
+# Code from proofs dated 2020-01-09
 
 library(jagsUI)
 library(AHMbook)
 
-# 2.4 Modeling Temporary Emigration (TE) with a Three-Level N-Mixture Model
+# ~~~~ need the Green Woodpecker data prepared in 2.2 ~~~~~~~~
+source("AHM2-02.02.R")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+# 2.4 Modeling Temporary Emigration (TE) with a three-level N-mixture model
 # =========================================================================
 
-# 2.4.1 DOING IT WITH BUGS
+# 2.4.1 Doing it with bugs
 
 # Bundle data
 str(bdata <- list(C = C, nsites = dim(C)[1], nsurveys = dim(C)[2],
@@ -144,13 +148,14 @@ print(out3b, 3)
 # totalN[1] 88.370 7.606 76.000 87.000 106.000 FALSE 1.000 1.002 861
 # . . .
 
-# 2.4.2 N-MIXTURE MODELS WITH TE IN UNMARKED
+# 2.4.2 N-mixture models with TE in unmarked
 # ------------------------------------------
 
 # Wide format is required in unmarked
 ywide <- matrix(C, nrow = dim(C)[1])
 DATEwide <- matrix(DATE, nrow = dim(C)[1])
 INTwide <- matrix(INT, nrow = dim(C)[1])
+nyears <- dim(C)[3]
 yearmat <- col( matrix(1, nrow = nrow(ywide), ncol = nyears) )
 # Set everything up in an unmarkedFrame
 library(unmarked)
@@ -190,7 +195,7 @@ rbind(coef(fm0nb), coef(fm0nb.200))
 summary(fm9p <- gpcount(~elev + I(elev^2)+ forest, ~1, ~date + I(date^2) +
     int, umf, K = 100, mixture = "P"))
 summary(fm9bp <- gpcount(~elev + I(elev^2)+ forest, ~trend, ~date +
-    I(date^2) + int, umf, K = 100, mixture = "P"))  #####################################
+    I(date^2) + int, umf, K = 100, mixture = "P"))
 summary(fm9nb <- gpcount(~elev + I(elev^2)+ forest, ~1, ~date + I(date^2) +
     int, umf, K = 100, mixture = "NB") )
 summary(fm9bnb <- gpcount(~elev + I(elev^2)+ forest, ~trend, ~date +
@@ -207,7 +212,7 @@ modSel(fl)
 # fm9p 9 16222.69 876.25 5.3e-191 1.00
 # fm0p 3 16692.70 1346.26 4.6e-293 1.00
 
-# 2.4.3 ESTIMATING DENSITY FROM POINT COUNTS USING A SPATIAL TE MODEL
+# 2.4.3 Estimating density from point counts using a spatial TE model
 # -------------------------------------------------------------------
 # Grab data set from AHMbook package
 data(cswa)
@@ -343,11 +348,13 @@ lam <- predict(fit, type="lambda")$Predicted
 getD(cswamods$Wh2Wc..Wh, covs=covs)
 # [1] 1.092638
 # Bootstrap assessment of uncertainty. ART ~ 1.5 mins
-cswa.Dhat <- parboot(cswamods$Wh2Wc..Wh, statistic = getD, covs = covs, nsim = 500)
+# cswa.Dhat <- parboot(cswamods$Wh2Wc..Wh, statistic = getD, covs = covs, nsim = 500)
+cswa.Dhat <- parboot(cswamods$Wh2Wc..Wh, statistic = getD, covs = covs,
+    nsim = 500, ncores=3)
 plot(cswa.Dhat); abline(v = 1.109612, col = 4) # Not shown
 summary(cswa.Dhat@t.star) # Not shown
 # Goodness-of-fit assessment (ART 6 min)
-(gof <- parboot(cswamods$Wh2Wc..Wh, statistic = fitstats, nsim = 1000))
+(gof <- parboot(cswamods$Wh2Wc..Wh, statistic = fitstats, nsim = 1000, ncores=3))
 plot(gof) # Not shown
 # Parametric Bootstrap Statistics:
 # t0 mean(t0 - t_B) StdDev(t0 - t_B) Pr(t_B > t0)
@@ -456,15 +463,16 @@ getDpc(cswapcmods$Wh2Wc., covs = covs)
 mean(cswa$spotMaps$CSWA / cswa$spotMaps$parea)
 # [1] 1.345462
 # Parametric bootstrap (ART 3 min)
-( cswapc.Dhat <- parboot(cswapcmods$Wh2Wc., statistic = getDpc, nsim = 1000, covs = covs) )
-  Parametric Bootstrap Statistics:
-  t0 mean(t0 - t_B) StdDev(t0 - t_B) Pr(t_B > t0)
-  1 3.75 -2.02 5.72 0.584
-  t_B quantiles:
-  0% 2.5% 25% 50% 75% 97.5% 100%
-  [1,] 1.6 2.2 3.1 4.1 5.7 27 48
-  t0 = Original statistic compuated from data
-  t_B = Vector of bootstrap samples
+( cswapc.Dhat <- parboot(cswapcmods$Wh2Wc., statistic = getDpc, nsim = 1000,
+    covs = covs, ncores=3) )
+  # Parametric Bootstrap Statistics:
+  # t0 mean(t0 - t_B) StdDev(t0 - t_B) Pr(t_B > t0)
+  # 1 3.75 -2.02 5.72 0.584
+  # t_B quantiles:
+  # 0% 2.5% 25% 50% 75% 97.5% 100%
+  # [1,] 1.6 2.2 3.1 4.1 5.7 27 48
+  # t0 = Original statistic compuated from data
+  # t_B = Vector of bootstrap samples
 # Get (parametric) bootstrap SE and CI
 (SE <- sd(cswapc.Dhat@t.star))
 (CI <- quantile(cswapc.Dhat@t.star, c(0.025, 0.975)))
@@ -530,7 +538,7 @@ getDr1(cswamods1$Wh2Wc.Wh, cswa$spotMaps)
 # [1] 0.4809083
 # Bootstrap the density estimate (ART 20 sec)
 Dhat.rem1 <- parboot(cswamods1$Wh2Wc.Wh, statistic = getDr1, nsim = 1000,
-    spotMaps = cswa$spotMaps)
+    spotMaps = cswa$spotMaps, ncores=3)
 # Summarize the bootstrap output
 Dhat.rem1
 # Parametric Bootstrap Statistics:

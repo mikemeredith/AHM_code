@@ -4,9 +4,10 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
+# Code from proofs dated 2020-01-09
 
-# 2.6 ROBUSTNESS AND FIT: SUMMARY THOUGHTS ON THE
-# DAIL-MADSEN MODELS (AND ON N-MIXTURE MODELS IN GENERAL)
-# ==========================================
+# 2.6 Robustness and fit: summary thoughts on the
+# Dail-Madsen models (and on N-mixture models in general)
+# =======================================================
 
 # no code

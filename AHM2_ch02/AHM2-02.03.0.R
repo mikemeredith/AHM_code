@@ -4,10 +4,15 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
+# Code from proofs dated 2020-01-09
 
 library(jagsUI)
 
-# 2.3 YEAR-STRATIFIED N-MIXTURE MODEL
+# ~~~~ need the Green Woodpecker data prepared in 2.2 ~~~~~~~~
+source("AHM2-02.02.R")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# 2.3 Year-stratified N-mixture model
 # ===========================================
 
 # Bundle and summarize data set

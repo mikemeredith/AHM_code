@@ -4,13 +4,14 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 1 : RELATIVE ABUNDANCE MODELS FOR POPULATION DYNAMICS
 # =============================================================
+# Code from proofs dated 2020-06-03
 
 library(AHMbook)
 
-# 1.7 “Demographic” State-Space Models for Inference About Relative Abundance
+# 1.7 “Demographic” state-space models for inference about relative abundance
 # ===========================================================================
 
-# 1.7.1 Simulation Assessment of a Demographic State-Space Model
+# 1.7.1 Simulation assessment of a demographic state-space model
 # --------------------------------------------------------------
 
 set.seed(1)
@@ -40,12 +41,12 @@ sd.log.gamma.survey <- 0.5 # Value of overdispersion in gamma
 str(data <- simPOP(mean.lam = 3, beta.lam = betas, mean.gamma = 1.0,
   beta.gamma = betas, sd.log.gamma.survey = sd.log.gamma.survey, sd.rho = 0.2,
   mean.p = 0.6, beta.p = betas))
-  
+
 # 5. Effect of heterogeneity in p (in extended Markov model)
 sd.logit.p.survey <- 1 # Value of overdispersion in p
 str(data <- simPOP(mean.lam = 3, beta.lam = betas, mean.gamma = 1.0,
   beta.gamma = betas, sd.rho = 0.2, mean.p = 0.6, sd.logit.p.survey = sd.logit.p.survey))
-  
+
 # 6. Effects of heterogeneity in lambda, gamma, and p simultaneously (in extended Markov model)
 sd.log.lam <- 1 # Value of overdispersion in lambda
 sd.log.gamma.survey <- 0.5 # Value of overdispersion in gamma

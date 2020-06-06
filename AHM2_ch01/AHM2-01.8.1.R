@@ -4,6 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 1 : RELATIVE ABUNDANCE MODELS FOR POPULATION DYNAMICS
 # =============================================================
+# Code from proofs dated 2020-06-03
 
 library(AHMbook)
 library(jagsUI)
@@ -38,6 +39,7 @@ set.seed(1)
 str(data <- simPH(npop = 18, nyear = 17, nrep = 10, date.range = 1:150,
     initial.lambda = 500, mu.range = c(50, 80), sigma.range = c(20, 30),
     p.range = c(1, 1)))
+
 # Bundle and summarize data set: add pop and year info
 str(bugs.data <- list(C = data$C, date = data$date, npop = data$npop,
     nyear = data$nyear, nsurvey = data$nrep, pi = pi) )
@@ -57,7 +59,6 @@ model {
   for(i in 1:npop){
     for(t in 1:nyear){
       mu[i,t] ~ dnorm(0, 0.0001)
-      # curve(dnorm(x, 0, sqrt(1/ 0.0001)), -200, 200) # how's it look like ?
     }
   }
   expn1 ~ dunif(1, 2000)
@@ -72,19 +73,19 @@ model {
     # Initial conditions
     n1[i] ~ dpois(expn1)
     n[i,1] <- n1[i]
-    # Autoregressive (Markovian) transitions from t to tD1
+    # Autoregressive (Markovian) transitions from t to t+1
     for(t in 2:nyear){
-      n[i,t] ~ dpois(n[i,(t-1)]*gamma[t-1])
+      n[i,t] ~ dpois(n[i,(t-1)] * gamma[t-1])
     }
   }
   # Phenomenological within-season population model
   for(i in 1:npop){
     for(t in 1:nyear){
-    for(k in 1:nsurvey){
-      C[i,t,k] ~ dpois(lambda[i,t,k])
-      lambda[i,t,k] <- n[i,t]*(1 / (sigma[t]*sqrt(2*pi)) )*exp( - pow((date[i,t,k] - mu
-      [i,t]),2) / (2*pow(sigma[t], 2)) )
-    }
+      for(k in 1:nsurvey){
+        C[i,t,k] ~ dpois(lambda[i,t,k])
+        lambda[i,t,k] <- n[i,t] * (1 / (sigma[t] * sqrt(2 * pi)) ) *
+        exp( - pow((date[i,t,k] - mu[i,t]),2) / (2 * pow(sigma[t], 2)) )
+      }
     }
   }
 }
@@ -98,7 +99,7 @@ params <- c("expn1", "n", "n1", "mu", "gamma", "sigma")
 # MCMC settings
 na <- 1000 ; ni <- 10000 ; nt <- 5 ; nb <- 5000 ; nc <- 3
 # Call JAGS (ART 3 min), assess convergence and summarize posteriors
-out12 <- jags(bugs.data, inits, params, "modelPH.txt", n.adapt = na, n.chains = nc,
-  n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+out12 <- jags(bugs.data, inits, params, "modelPH.txt", n.adapt = na,
+    n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 par(mfrow = c(3,3)) ; traceplot(out12, c("expn1", "n1", "gamma", "sigma"))
-summary(out12) ; View(out12) ; print(out12, dig = 3)
+summary(out12) ; jags.View(out12) ; print(out12, dig = 3)

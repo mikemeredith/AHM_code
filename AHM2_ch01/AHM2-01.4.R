@@ -4,12 +4,15 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 1 : RELATIVE ABUNDANCE MODELS FOR POPULATION DYNAMICS
 # =============================================================
+# Code from proofs dated 2020-06-03
 
-### Need to run 1.3 before this
+# ~~~~~ Need to run 1.3 before this ~~~~~~~
+source("AHM2-01.03.R")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 library(coda)
 
-# 1.4 Generalized Linear Models: A Site-By-Year Model
+# 1.4 Generalized Linear Models: A site-by-year model
 # ===================================================
 
 # Bundle and summarize data
@@ -20,7 +23,6 @@ str(bdata <- list(C = C, M = M, T = T) )
 # $ C: int [1:267, 1:18] 1 0 NA 0 3 NA NA 5 0 0 ...
 # $ M: int 267
 # $ T: int 18
-
 # Specify model in BUGS language
 cat(file = "model1.txt","
 model {
@@ -51,33 +53,30 @@ inits <- function() list(site = rnorm(nrow(C)), year = c(NA, rnorm(ncol(C)-1)))
 # Parameters monitored
 params <- c("site", "year", "popindex")
 # MCMC settings
-na <- 1000 ; ni <- 15000; nt <- 10 ; nb <- 5000 ; nc <- 3
-
+na <- 1000 ; ni <- 15000 ; nt <- 10 ; nb <- 5000 ; nc <- 3
 # Call JAGS (ART 5 min), check convergence and summarize posteriors
 library(jagsUI)
 out1 <- jags(bdata, inits, params, "model1.txt", n.adapt = na, n.chains = nc,
-  n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-
-par(mfrow = c(3,3)) ; traceplot(out1) ; par(mfrow = c(1,1))
-View(out1) ; print(out1, 2) # Two formats for posterior summaries
-
+n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+par(mfrow = c(3,3)) ; traceplot(out1)
+jags.View(out1) ; print(out1, 2) # Two formats for posterior summaries
 
 # Reformat data for analysis in R using glm
 cvec <- c(C)
 sitevec <- rep(1:267, 18)
 yrvec <- rep(1:18, each = 267)
 cbind(sitevec, yrvec, cvec) # Look at data in this format
-summary(fm <- glm(cvec ~ as.factor(sitevec) + as.factor(yrvec) - 1, family =
-'poisson'))
+summary(fm <- glm(cvec ~ as.factor(sitevec) + as.factor(yrvec) - 1,
+family = 'poisson'))
 
 cor(exp(fm$coef[1:nsite]), exp(out1$summary[1:nsite,1])) # > 0.999
-cor(fm$coef[268:284], out1$summary[269:285,1]) # >0.0999
-
+cor(fm$coef[268:284], out1$summary[269:285,1]) # > 0.999
 
 params <- c("site", "year", "popindex", "C")
 na <- 100 ; ni <- 1500 ; nt <- 2 ; nb <- 500 ; nc <- 2
+
 out1X <- jags(bdata, inits, params, "model1.txt", n.adapt = na, n.chains = nc,
-  n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 
 (n.missing <- rowSums(is.na(C)) )
 (na.sites <- which(n.missing > 0) )
@@ -100,4 +99,3 @@ head(round(out1X$sd$C[160:169, 1:13], 1))
 # [4,] 1.3 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0 0 0
 # [5,] 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0 0 0
 # [6,] 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0 0 0
-

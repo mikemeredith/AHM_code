@@ -4,12 +4,22 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 1 : RELATIVE ABUNDANCE MODELS FOR POPULATION DYNAMICS
 # =============================================================
+# Code from proofs dated 2020-06-03
 
+# library(AHMbook)
+library(jagsUI)
+
+# ~~~~~ Need to run 1.3 before this ~~~~~~~
+source("AHM2-01.03.R")
+# ~~~~~ and this from 1.4 ~~~~~~~~~~~~~~~~~
+M <- nrow(C)
+T <- ncol(C)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # 1.5 Generalized Linear Mixed Models
 # ===================================
 
-# 1.5.4 The “TRIM Model” With Temporal Autocorrelation
+# 1.5.4 The “TRIM Model” with temporal autocorrelation
 # ----------------------------------------------------
 
 # Bundle data
@@ -28,7 +38,7 @@ model {
   tau <- pow(sd, -2)
   sd ~ dunif(0, 3)
   rho ~ dunif(-1,1) # Autoregressive param. for temp. autocorrelation
-  # ’Likelihood’
+  # 'Likelihood'
   # First year
   for (i in 1:M){
     eps[i,1] ~ dnorm(0, tau) # unstructured random variation (= OD)
@@ -51,18 +61,19 @@ model {
 ")
 
 # Initial values
-inits <- function() list(site = rnorm(M), year = c(NA, rnorm(T-1)), rho = runif(1),
-  eps = array(0.1, dim=c(M, T)))
+inits <- function() list(site = rnorm(M), year = c(NA, rnorm(T-1)),
+    rho = runif(1), eps = array(0.1, dim = c(M, T)))
 # Parameters monitored
 params <- c("popindex", "site", "year", "lam.sel", "rho", "sd")
 # MCMC settings
-na <- 10000 ; ni <- 250000 ; nt <- 200 ; nb <- 50000 ; nc <- 3
+# na <- 10000 ; ni <- 250000 ; nt <- 200 ; nb <- 50000 ; nc <- 3
+na <- 10000 ; ni <- 25000 ; nt <- 20 ; nb <- 5000 ; nc <- 3  # ~~~ for testing, 30 mins
 # Call JAGS (ART 251 min), check convergence and summarize posteriors
 out5 <- jags(bdata, inits, params, "model5.txt", n.adapt = na, n.chains = nc,
-  n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-par(mfrow = c(3,2)) ; traceplot(out5) ; par(mfrow = c(1,1))
-summary(out5) ; View(out5) ; print(out5, 3)
-# mean sd 2.5% 50% 97.5% overlap0 f Rh at n.eff
+    n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+par(mfrow = c(3,2)) ; traceplot(out5)
+summary(out5) ; jags.View(out5) ; print(out5, 3)
+# mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
 # rho 0.945 0.026 0.892 0.947 0.987 FALSE 1.000 1.032 71
 # sd 0.211 0.012 0.188 0.210 0.235 FALSE 1.000 1.007 277
 # [ ... ]

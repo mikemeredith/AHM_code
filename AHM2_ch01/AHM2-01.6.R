@@ -4,16 +4,22 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 1 : RELATIVE ABUNDANCE MODELS FOR POPULATION DYNAMICS
 # =============================================================
+# Code from proofs dated 2020-06-03
 
 # library(AHMbook)
+library(jagsUI)
 
-# 1.6 Gaussian State-Space Models for Inference About Relative Abundance
+# ~~~~~ Need to run 1.3 before this ~~~~~~~
+source("AHM2-01.03.R")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+# 1.6 Gaussian state-space models for inference about relative abundance
 # ======================================================================
 
-# 1.6.1 Modeling Multiple Time-Series With Fixed Effects for Site-Level Parameters
+# 1.6.1 Modeling multiple time-series with fixed effects for site-level parameters
 # --------------------------------------------------------------------------------
 
-# Check number of zero years in all sites
 nzero <- apply(C, 1, function(x) sum(x == 0, na.rm = TRUE))
 plot(sort(nzero)) # Make a graph of number of zero years
 sum(nzero <= 1) # 97 sites with at most 1 zero year
@@ -33,7 +39,7 @@ model {
   # Priors
   for(i in 1:M){
     n[i, 1] ~ dnorm(0, 0.01)I(0,) # Prior for initial pop. sizes
-    # curve(dnorm(x, 0, sqrt(1/ 0.01)), 0, 50) # how does it look like ?
+    # curve(dnorm(x, 0, sqrt(1/0.01)), 0, 50) # how does it look like ?
     mean.gamma[i] ~ dunif(0, 10) # Prior for mean growth rates
     sigma.proc[i] ~ dnorm(0, 1)I(0,) # Prior for sd of state process
     sigma2.proc[i] <- pow(sigma.proc[i], 2)
@@ -42,7 +48,7 @@ model {
     sigma2.obs[i] <- pow(sigma.obs[i], 2)
     tau.obs[i] <- pow(sigma.obs[i], -2)
   }
-  # ’Likelihood’
+  # 'Likelihood'
   # State process
   for (i in 1:M){
     for (t in 1:(T-1)){
@@ -65,29 +71,25 @@ model {
 
 # Initial values
 inits <- function(){list(sigma.proc = runif(newM, 0, 5),
-  mean.gamma = runif(newM, 0.1, 2), sigma.obs = runif(newM, 0, 10),
-  n = cbind(runif(newM, 0, 50), array(NA, dim = c(newM, ncol(C)-1))))}
+    mean.gamma = runif(newM, 0.1, 2), sigma.obs = runif(newM, 0, 10),
+    n = cbind(runif(newM, 0, 50), array(NA, dim = c(newM, ncol(C)-1))))}
 # Parameters monitored
 params <- c("mean.gamma", "sigma2.proc", "sigma2.obs", "popindex", "n")
 # MCMC settings
 # na <- 10000 ; ni <- 6e6 ; nt <- 1000 ; nb <- 5e6 ; nc <- 2
-na <- 10000 ; ni <- 6e5 ; nt <- 100 ; nb <- 5e5 ; nc <- 2  # ~~~~~~ for testing
+na <- 10000 ; ni <- 6e5 ; nt <- 100 ; nb <- 5e5 ; nc <- 3  # ~~~~~~ for testing, 32 mins
 # Call JAGS (ART 505 min), check convergence and summarize posteriors
 out6 <- jags(bdata, inits, params, "model6.txt", n.adapt = na, n.chains = nc,
-  n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+    n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 par(mfrow = c(4,4)) ; traceplot(out6) # all params
-summary(out6) ; View(out6) ; print(out6$summary[1:320,-c(4:6)], 3)
+summary(out6) ; jags.View(out6) ; print(out6$summary[1:320,-c(4:6)], 3)
 # Check how many and which parameters have failed to converge
 which(out6$summary[,8] > 1.1) # 7 derived quants or latent variables
 
-# Produce Fig. 1.6
+# Produce figure 1.6
 par(mfrow = c(1, 2))
 graphSSM(out6, bdata$C)
 
-# 1.6.2 MODELING MULTIPLE TIME-SERIES WITH RANDOM EFFECTS FOR SITELEVEL PARAMETERS
+# 1.6.2 Modeling multiple time-series with random effects for sitelevel parameters - no code
 
-# no code
-
-# 1.6.3 BRIEF COMMENTS ON GAUSSIAN STATE-SPACE MODELS
-
-# no code
+# 1.6.3 Brief comments on gaussian state-space models - no code

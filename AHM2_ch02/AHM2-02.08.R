@@ -4,12 +4,33 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
-
-# ~~~~ this follows on from 2.7 ~~~~~~~~~~~
+# Code from proofs dated 2020-01-09
 
 library(jagsUI)
 
-# 2.8 MULTINOMIAL MIXTURES WITH FULL DYNAMICS
+# ~~~~ need this code from 2.7.2 ~~~~~~~~~~~
+alfl <- read.csv(system.file("csv", "alfl.csv", package = "unmarked"))
+alfl.covs <- read.csv(system.file("csv", "alflCovs.csv", package = "unmarked"),
+    row.names = 1)
+alfl$captureHistory <- paste(alfl$interval1, alfl$interval2, alfl$interval3, sep = "")
+alfl$captureHistory <- factor(alfl$captureHistory,
+    levels = c("001", "010", "011", "100", "101", "110", "111"))
+alfl$id <- factor(alfl$id, levels = rownames(alfl.covs))
+alfl.v1 <- alfl[alfl$survey == 1,]
+alfl.H1 <- table(alfl.v1$id, alfl.v1$captureHistory)
+alfl.v2 <- alfl[alfl$survey == 2,]
+alfl.H2 <- table(alfl.v2$id, alfl.v2$captureHistory)
+alfl.v3 <- alfl[alfl$survey == 3,]
+alfl.H3 <- table(alfl.v3$id, alfl.v3$captureHistory)
+# Arrange the data in 3-d array format and also the wide format
+Y <- array(NA, c(50, 3, 7))
+Y[1:50,1,1:7] <- alfl.H1
+Y[1:50,2,1:7] <- alfl.H2
+Y[1:50,3,1:7] <- alfl.H3
+Ywide <- cbind(alfl.H1, alfl.H2, alfl.H3)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# 2.8 Multinomial mixtures with full dynamics
 # ===========================================
 
 # Prepare time and date (incl. median-centering)

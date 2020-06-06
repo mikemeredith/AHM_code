@@ -4,15 +4,17 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
+# Code from proofs dated 2020-01-09
 
 library(AHMbook)
 library(jagsUI)
+library(unmarked)
 
-# 2.7 MODELING DYNAMICS WITH MULTINOMIAL N-MIXTURE MODELS
+# 2.7 Modeling dynamics with multinomial N-mixture models
 # =======================================================
 
-# 2.7.1 MODELING TE WITH A THREE-LEVEL MULTINOMIAL-MIXTURE MODEL IN UNMARKED USING FUNCTION GMULTMIX
-# --------------------------------------------------------------------------------------------------
+# 2.7.1 Modeling TE with a three-level multinomial-mixture model in unmarked using function gmultmix
+# ------------------------------------------------------------------------------------------
 
 # Define function for data simulation
 simMultMix <- function(nsites = 100, nyears = 4, nsurveys = 3, lambda = 3, theta = 0.5, p = 0.3)
@@ -55,7 +57,7 @@ head(getP(fm))
 re <- ranef(fm)
 plot(re, layout=c(5, 1), xlim = c(-1, 20), subset = site%in%1:5, lwd = 5)
 
-# 2.7.2 CHANDLER’S ALDER FLYCATCHER DATA
+# 2.7.2 Chandler’s alder flycatcher data
 # --------------------------------------
 
 alfl <- read.csv(system.file("csv", "alfl.csv", package = "unmarked"))
@@ -91,6 +93,7 @@ Ywide <- cbind(alfl.H1, alfl.H2, alfl.H3)
 intervalMat <- matrix(c('1', '2', '3'), 50, 3, byrow = TRUE)
 class(alfl.H1) <- "matrix"
 o2y <- matrix(1, 3, 7)
+
 summary(umf.cr1 <- unmarkedFrameMPois(y = alfl.H1,
     siteCovs = alfl.covs[,c("woody", "struct", "time.1")],
     obsCovs = list(interval = intervalMat), obsToY = o2y,
@@ -178,7 +181,8 @@ m3g3
 # date -0.0369 0.0117 -3.14 1.69e-03
 
 # Carry out a parametric bootstrap goodness-of-fit test (ART 7 min)
-(pb <- parboot(m3g3, fitstats, nsim = 1000, report = 1))
+# (pb <- parboot(m3g3, fitstats, nsim = 1000, report = 1))  # hogs all cores
+(pb <- parboot(m3g3, fitstats, nsim = 1000, report = 1, ncores=3))
 # Parametric Bootstrap Statistics:
 # t0 mean(t0 - t_B) StdDev(t0 - t_B) Pr(t_B > t0)
 # SSE 87.1 -14.16 15.4 0.823
@@ -239,8 +243,9 @@ m3g1 <- gmultmix( ~date + woody, ~1, ~date, data = umf2, mixture = "P")
 m3g2 <- gmultmix( ~date + struct, ~1, ~date, data = umf2, mixture = "P")
 m3g3 <- gmultmix( ~date + woody + struct, ~1, ~date, data = umf2, mixture = "P")
 # Fit list
-(fl <- modSel(fitList(m0, m1, m1b, m1c, m2, m2b, m2c, m3, m3b, m3c, m3d, m3e, m3f, m3g, m3h,
-m3i, m3g1, m3g2, m3g3)) )
+# (fl <- modSel(fitList(m0, m1, m1b, m1c, m2, m2b, m2c, m3, m3b, m3c, m3d, m3e, m3f, m3g, m3h,
+# m3i, m3g1, m3g2, m3g3)) )
+(fl <- modSel(fitList(m0, m1, m1b, m1c, m2, m2b, m2c, m3, m3g1, m3g2, m3g3)) )
 # nPars AIC delta AICwt cumltvWt
 # m3g3 6 576.56 0.0000 5.0e-01 0.50
 # m3g1 5 576.56 0.0047 5.0e-01 1.00
@@ -262,7 +267,8 @@ m3g3
 # date -0.0371 0.0117 -3.16 1.60e-03
 
 # Goodness-of-fit analysis (ART 7 min)
-(pb <- parboot(m3g3, fitstats, nsim = 1000))
+# (pb <- parboot(m3g3, fitstats, nsim = 1000))
+(pb <- parboot(m3g3, fitstats, nsim = 1000, ncores = 3))
 # Parametric Bootstrap Statistics:
 # t0 mean(t0 - t_B) StdDev(t0 - t_B) Pr(t_B > t0)
 # SSE 86.2 -10.30 12.2 0.803
@@ -276,7 +282,7 @@ m3g3
 # t0 = Original statistic compuated from data
 # t_B = Vector of bootstrap samples
 
-# 2.7.3 TEMPORARY EMIGRATION MODELS IN BUGS
+# 2.7.3 Temporary emigration models in BUGS
 # -----------------------------------------
 
 # Remember, Y is the 3-d flycatcher data created in Section 2.7.2

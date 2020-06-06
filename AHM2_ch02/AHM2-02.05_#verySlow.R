@@ -4,15 +4,16 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
+# Code from proofs dated 2020-01-09
 
 library(jagsUI)
 library(unmarked)
 library(AHMbook)
 
-# 2.5 DYNAMIC N-MIXTURE MODEL OF DAIL-MADSEN
+# 2.5 Dynamic N-mixture model of Dail-Madsen
 # ==========================================
 
-# 2.5.1 A DAIL-MADSEN SIMULATOR
+# 2.5.1 A Dail-Madsen simulator
 # -----------------------------
 
 simDM0 <- function(nsites = 50, nsurveys = 3, nyears = 5, lambda = 4,
@@ -54,7 +55,7 @@ str(data <- simDM0(nsites = 50, nsurveys = 3, nyears = 5, lambda = 4,
     phi = 0.8, gamma = 1.5, p = 0.7))
 
 
-# 2.5.2 FITTING THE DM MODEL IN BUGS
+# 2.5.2 Fitting the DM model in BUGS
 # ----------------------------------
 
 # Bundle data set
@@ -121,7 +122,37 @@ print(out1, 3)
 
 # To choose the absolute recruitment parameterization, we edit the BUGS code above to fit the
 # absolute (or “constant”) recruitment parameterization simply by commenting out the recruitment line
-# for “per capita” and then uncommenting the line previous to that. Then you can execute the line of code
+# for “per capita” and then uncommenting the line previous to that.
+# ~~~~~~~~~~~~~~~~~~ here's the new JAGS code ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cat(file = "DM1b.txt","
+model {
+  # Priors
+  lambda ~ dunif(0, 100) # Population growth rate
+  phi ~ dunif(0, 1) # apparent survival (omega in paper/unmarked)
+  gamma ~ dunif(0, 5) # per-capita recruitment rate
+  p ~ dunif(0, 1) # Detection probability
+  # Likelihood
+  for(i in 1:nsites){
+    # State process: initial condition
+    N[i,1] ~ dpois(lambda)
+    # State process: transition model
+    for(t in 1:(nyears-1)){
+      S[i,t+1] ~ dbin(phi, N[i,t]) # Survival process
+      R[i,t+1] ~ dpois(gamma) # 'absolute’ recruitment = 'constant’
+      # R[i,t+1] ~ dpois(N[i,t] * gamma) # per-capita recruitment = 'autoreg’
+      N[i,t+1] <- S[i,t+1] + R[i,t+1]
+    } # end t
+    # Observation process
+    for(t in 1:nyears){
+      for(j in 1:nsurveys){
+        C[i,t,j] ~ dbin(p, N[i,t])
+      } # end j
+    } # end t
+  } # end i
+}
+")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Then you can execute the line of code
 # that calls JAGS, which should produce results similar to the following:
 # Call JAGS (ART 1.3 min), check convergence and summarize posteriors
 out1b <- jags(bdata, inits, params, "DM1b.txt", n.adapt = na,
@@ -135,7 +166,7 @@ print(out1b, 2)
 # gamma 1.14 0.17 0.85 1.13 1.51 FALSE 1 1 1061
 # p 0.70 0.02 0.66 0.70 0.73 FALSE 1 1 5387
 
-# 2.5.3 THE UNMARKED FUNCTION PCOUNTOPEN
+# 2.5.3 The unmarked function pcountOpen
 # --------------------------------------
 
 # Prepare data
@@ -195,10 +226,10 @@ summary(umf <- unmarkedFramePCO(y = data$yy, numPrimary = data$nyears))
 (p <- plogis(coef(fm2, type = "det")))
 
 
-# 2.5.4 NONROBUST DESIGN DATA
+# 2.5.4 Nonrobust design data
 # (no code)
 
-# 2.5.5 FITTING SOME COMPLEX COVARIATE EFFECTS IN THE DYNAMICS
+# 2.5.5 Fitting some complex covariate effects in the dynamics
 # ------------------------------------------------------------
 
 # Test with same settings as before, that is, without covariates
@@ -210,11 +241,11 @@ data <- simDM(nsites = 100, nsurveys = 3, nyears = 5, mean.lambda = 4,
 summary(umf <- unmarkedFramePCO(y = data$yy, numPrimary = data$nyears))
 system.time(summary(fm3 <- pcountOpen(lam = ~1, gam = ~1, omega = ~1,
     p = ~1, data = umf, dynamics = "autoreg", K = 100,
-    control = list(trace = TRUE, REPORT = 1))))
+    control = list(trace = TRUE, REPORT = 1))))  # 36 secs
 # Check with higher value of K: find that K[100 is OK. ART ~ 1.5 min
 system.time(summary(fm3x <- pcountOpen(lam = ~1, gam = ~1, omega = ~1,
     p = ~1, data = umf, dynamics = "autoreg", K = 150,
-    control = list(trace = TRUE, REPORT = 1)))) # not shown
+    control = list(trace = TRUE, REPORT = 1)))) # not shown # 2 mins
 # Backtransform parameter estimates and compare with truth
 (lam <- exp(coef(fm3, type = "lambda"))) # Initial abundance
 (gam <- exp(coef(fm3, type = "gamma"))) # Recruitment
@@ -254,14 +285,14 @@ tmp <- coef(fm4.1)
 inits <- c(tmp[1], 0, tmp[2:4]) # choose 0 for the new param in model
 system.time(summary(fm4.2 <- pcountOpen(lam = ~ cov.lam, gam = ~1,
     omega = ~1, p = ~1, data = umf, dynamics = "autoreg", se = FALSE,
-    control = list(trace = TRUE, REPORT = 1), starts = inits)))
+    control = list(trace = TRUE, REPORT = 1), starts = inits)))  # 1 min
 
 # Add in observation covariate on p. ART ~ 2.5 mins
 tmp <- coef(fm4.2)
 inits <- c(tmp, 0)
 system.time(summary(fm4.3 <- pcountOpen(lam = ~ cov.lam, gam = ~1,
     omega = ~1, p = ~ cov.p, data = umf, dynamics = "autoreg", se = FALSE,
-    control = list(trace = TRUE, REPORT = 1), starts = inits) ))
+    control = list(trace = TRUE, REPORT = 1), starts = inits) ))  # 80 secs
 # Add in site covariate on gamma. ART ~ 14 hrs
 tmp <- coef(fm4.3)
 inits <- c(tmp[1:3], 0, tmp[4:6])
@@ -274,7 +305,7 @@ inits <- c(tmp[1:5], 0, tmp[6:7])
 system.time(summary(fm4.5 <- pcountOpen(lam = ~ cov.lam, gam = ~cov.gamma,
     omega = ~ cov.phi, p = ~ cov.p, data = umf,
     dynamics = "autoreg", se = FALSE, control = list(trace = TRUE, REPORT = 1),
-    starts = inits) ))   # 9.6 hrs
+    starts = inits) ))   # 9.6 hrs / 14 hrs
 # Put the fitted models in a "fitList"
 fms <- fitList(
 "lam(.)gamma(.)phi(0)p(.)" = fm4.1,
@@ -298,7 +329,7 @@ str(toExport) # output not printed
 # Fit the basic model with no covariates
 system.time(summary(fm4.1.se <- pcountOpen(lam = ~1, gam = ~1,
     omega = ~1, p = ~1, data = umf, dynamics = "autoreg",
-    control = list(trace = TRUE, REPORT = 1))))
+    control = list(trace = TRUE, REPORT = 1))))  # 3 mins
 # Add in site covariate on lambda (ART 179 sec, no SEs)
 tmp <- coef(fm4.1.se)
 inits <- c(tmp[1], 0, tmp[2:4])
@@ -322,15 +353,16 @@ tmp <- coef(fm4.4.se)
 inits <- c(tmp[1:5], 0, tmp[6:7])
 system.time(summary(fm4.5.se <- pcountOpen(lam = ~ cov.lam,
     gam = ~ cov.gamma, omega = ~ cov.phi, p= ~ cov.p, data = umf,
-    dynamics = "autoreg", control = list(trace = TRUE, REPORT = 1), starts = inits) )) # 7.7 hrs
+    dynamics = "autoreg", control = list(trace = TRUE, REPORT = 1), starts = inits) )) # 7.7 / 10.5hrs
 
 # To get a sense of the time comparison with and without SE computation, we ran model fm4.5 both
 # ways (here note the use of estimates from model fm4.5 as starting values in both cases):
+# ~~~ These take a week, do not include in routine tests ~~~~~~~~~~~~~~~~~~~~~~
 if(FALSE) {
 # Model 4.5 without SEs
 tmp <- coef(fm4.4)
 inits <- c(tmp[1:5], 0, tmp[6:7])
-system.time(summary(fm4.5 <- pcountOpen(lam = ~ cov.lam, 
+system.time(summary(fm4.5 <- pcountOpen(lam = ~ cov.lam,
     gam = ~ cov.gamma, omega = ~ cov.phi, p = ~ cov.p, data = umf,
     dynamics = "autoreg", K = max(data$yy) + 100, se = FALSE,
     control = list(trace = TRUE, REPORT = 1), starts = inits) ))
@@ -422,7 +454,8 @@ params <- c("mean.lambda", "mean.phi", "mean.gamma", "mean.p",
   "beta.lam", "beta.phi", "beta.gamma", "beta.p", "alpha.lam", "alpha.phi",
   "alpha.gamma", "alpha.p")
 # MCMC settings
-na <- 1000 ; ni <- 500000 ; nt <- 250 ; nb <- 250000 ; nc <- 3
+# na <- 1000 ; ni <- 500000 ; nt <- 250 ; nb <- 250000 ; nc <- 3
+na <- 1000 ; ni <- 50000 ; nt <- 25 ; nb <- 25000 ; nc <- 3 # ~~~ for testing, 4 mins
 # Call JAGS (ART 66 min), check convergence and summarize posteriors
 out4 <- jags(bdata, inits, params, "DM2.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
@@ -440,15 +473,15 @@ cbind('truth' = unlist(data[4:11]), round(out4$summary[1:8, c(1,3,7)],3))
 # beta.phi -1.0 0.873 0.648 1.085
 # beta.p -1.0 -1.005 -1.140 -0.870
 
-# 2.5.6 CASE STUDY OF THE SWISS MHB DATA FOR THE GREEN WOODPECKER:
-# BAYESIAN ANALYSIS OF THE DAIL-MADSEN MODEL FOR ROBUST DESIGN DATA WITH BUGS
+# 2.5.6 Case study of the Swiss MHB data for the green woodpecker:
+# Bayesian analysis of the Dail-Madsen model for robust design data with BUGS
 # ---------------------------------------------------------------------------
 source(file="AHM2-02.02.R")
 
 # Bundle data
-str(bdata <- list(C = C, nsites = dim(C)[1], nsurveys = dim(C)[2], nyears = dim(C)[3], 
+str(bdata <- list(C = C, nsites = dim(C)[1], nsurveys = dim(C)[2], nyears = dim(C)[3],
     elev = elev, forest = forest, DATE = DATE, INT = INT))
-List of 8
+# List of 8
 # $ C : int [1:267, 1:3, 1:14] 0 3 0 0 0 0 0 0 0 0 ...
 # $ nsites : int 267
 # $ nsurveys : int 3
@@ -460,7 +493,7 @@ List of 8
 # MCMC settings
 na <- 1000 ; ni <- 150000 ; nt <- 10 ; nb <- 50000 ; nc <- 3
 # Call JAGS (ART 88 min), check convergence and summarize posteriors
-# out5 <- jags(bdata, inits, params, "DM3.txt", n.adapt = na, 
+# out5 <- jags(bdata, inits, params, "DM3.txt", n.adapt = na,
     # n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 # par(mfrow = c(2, 3)) ; traceplot(out5) ; par(mfrow = c(1, 1))
 # print(out5, 3)
@@ -471,8 +504,8 @@ na <- 1000 ; ni <- 150000 ; nt <- 10 ; nb <- 50000 ; nc <- 3
 # p 0.290 0.009 0.273 0.290 0.308 FALSE 1 1.004 575
 
 # Bundle data
-str(bdata <- list(C = C, nsites = dim(C)[1], nsurveys = dim(C)[2], 
-  nyears = dim(C)[3], elev = as.vector(elev),forest = as.vector(forest), 
+str(bdata <- list(C = C, nsites = dim(C)[1], nsurveys = dim(C)[2],
+  nyears = dim(C)[3], elev = as.vector(elev),forest = as.vector(forest),
   DATE = DATE, length = peckers$route.length, INT = INT)) # note length added
 # Specify model in BUGS language
 cat(file = "DM4.txt","
@@ -539,7 +572,8 @@ params <-c("alpha.lam", "beta.elev", "beta.elev2", "beta.for", "beta.ilen", "phi
     "alpha.gamma", "beta.gamma", "sigma.gamma", "gamma0", "alpha.p", "beta.jul",
     "beta.jul2", "beta.int", "beta.int2")
 # MCMC settings
-na <- 1000 ; ni <- 70000 ; nt <- 4 ; nb <- 10000 ; nc <- 4
+# na <- 1000 ; ni <- 70000 ; nt <- 4 ; nb <- 10000 ; nc <- 4
+na <- 1000 ; ni <- 7000 ; nt <- 1 ; nb <- 1000 ; nc <- 3  # ~~~ for testing, 7 mins
 # try different seeds in hopes of getting one that runs
 set.seed(299, kind = "Mersenne-Twister")
 # Call JAGS (ART 83 min), check convergence and summarize posteriors
@@ -562,7 +596,7 @@ print(out6, digits=2)
 # beta.int 0.24 0.04 0.16 0.24 0.31 FALSE 1.00 1.01 362
 # beta.int2 -0.09 0.02 -0.13 -0.09 -0.05 FALSE 1.00 1.00 4514
 
-# 2.5.7 LIKELIHOOD ANALYSIS OF THE SWISS WOODPECKER DATA IN UNMARKED
+# 2.5.7 Likelihood analysis of the Swiss woodpecker data in unmarked
 # ------------------------------------------------------------------
 
 # Data management
@@ -597,7 +631,7 @@ dm2 <- pcountOpen(lam = ~1, gam = ~1, omega = ~1, p = ~ date + I(date^2),
 dm3 <- pcountOpen(lam = ~1, gam = ~1, omega = ~1, p = ~date + I(date^2) +
     int, data = umf, dynamics = "autoreg", K = Kmax )
 system.time(dm4 <- pcountOpen(lam = ~1, gam = ~1, omega = ~1, p = ~date +
-    I(date^2) + int + I(int^2), data = umf, dynamics = "autoreg", K = Kmax ))
+    I(date^2) + int + I(int^2), data = umf, dynamics = "autoreg", K = Kmax ))  # 80 secs
 # Models with constant dynamics: ART 1 – 10 min
 system.time(dm0b <- pcountOpen(lam = ~1, gam = ~1, omega = ~1, p = ~ 1,
     data = umf, dynamics = "constant", K = Kmax ) )
@@ -605,11 +639,11 @@ dm1b <- pcountOpen(lam = ~elev, gam = ~1, omega = ~1, p = ~date , data = umf,
     dynamics = "constant", K = Kmax)
 dm2b <- pcountOpen(lam = ~elev + I(elev^2), gam = ~1, omega = ~1, p = ~date + I(date^2),
     data = umf, dynamics = "constant", K = Kmax)
-dm3b <- pcountOpen(lam = ~elev + I(elev^2) + forest, gam = ~1, omega = ~1, 
+dm3b <- pcountOpen(lam = ~elev + I(elev^2) + forest, gam = ~1, omega = ~1,
     p = ~date + I(date^2) + int, data = umf, dynamics = "constant", K = Kmax)
-system.time(dm4b <- pcountOpen(lam = ~elev + I(elev^2) + forest + ilength, gam = ~1, 
-    omega = ~1, p = ~date + I(date^2) + int + I(int^2), data = umf, 
-    dynamics = "constant", K = Kmax) )
+system.time(dm4b <- pcountOpen(lam = ~elev + I(elev^2) + forest + ilength, gam = ~1,
+    omega = ~1, p = ~date + I(date^2) + int + I(int^2), data = umf,
+    dynamics = "constant", K = Kmax) )  # 9 mins
 # Construct fitList and produce AIC table
 fl <- fitList(dm0 = dm0, dm1 = dm1, dm2 = dm2, dm3 = dm3, dm4 = dm4, dm0b = dm0b, dm1b = dm1b,
     dm2b = dm2b, dm3b = dm3b, dm4b = dm4b)
@@ -622,13 +656,13 @@ modSel(fl)
 # ... truncated ...
 # Now build-up some abundance models. ART 5 – 10 min
 system.time(dm5 <- pcountOpen(lam = ~elev , gam = ~1, omega = ~1, p = ~date + I(date^2) + int +
-    I(int^2), data = umf, dynamics = "constant", K = Kmax ))
+    I(int^2), data = umf, dynamics = "constant", K = Kmax ))  # 5 mins
 dm6 <- pcountOpen(lam = ~elev + I(elev^2) , gam = ~1, omega = ~1, p = ~date + I(date^2) + int +
     I(int^2), data = umf, dynamics = "constant", K = Kmax )
-dm7 <- pcountOpen(lam = ~elev + I(elev^2) + forest , gam = ~1, omega = ~1, p = ~date + 
+dm7 <- pcountOpen(lam = ~elev + I(elev^2) + forest , gam = ~1, omega = ~1, p = ~date +
     I(date^2) + int + I(int^2), data = umf, dynamics = "constant", K = Kmax)
-system.time(dm8 <- pcountOpen(lam = ~elev + I(elev^2) + forest + ilength, gam = ~1, 
-    omega = ~1, p = ~date + I(date^2) + int + I(int^2), data = umf, dynamics = "constant", K = Kmax))
+system.time(dm8 <- pcountOpen(lam = ~elev + I(elev^2) + forest + ilength, gam = ~1,
+    omega = ~1, p = ~date + I(date^2) + int + I(int^2), data = umf, dynamics = "constant", K = Kmax)) # 9 mins
 # Organize the results into a fit list and produce AIC table
 fl <- fitList(dm5, dm6, dm7, dm8)
 modSel(fl)

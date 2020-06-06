@@ -1,17 +1,18 @@
 #   Applied hierarchical modeling in ecology
-#   Modeling distribution, abundance and species richness using R and BUGS
+#   Modeling distribution, abundance and species richness using nsites and BUGS
 #   Volume 2: Dynamic and Advanced models
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
+# Code from proofs dated 2020-01-09
 
 library(AHMbook)
 library(jagsUI)
 
-# 2.9 THE MULTISTATE DAIL-MADSEN MODEL
+# 2.9 The multistate Dail-Madsen model
 # ====================================
 
-# 2.9.1 EXAMPLE 1: DISEASED FROGS
+# 2.9.1 Example 1: diseased frogs
 # -------------------------------
 # Specify model in BUGS language
 cat(file = "frogs.txt", "
@@ -104,22 +105,19 @@ model {
 } # end model
 ")
 
-# Simulate a data set
-# ~~~~~~~~~~~~ simFrogDisease function is not in the printed book ~~~~~~~~~~~~~~~~~~~~
-simFrogDisease <- function(
-    nsites = 100,
-    nyears = 3,
-    nsurveys = 3,
-    alpha.lam = 3,             # Mean abundance at t=1
-    omega = c(0.9, 0.7),       # State-specific survival
-    gamma = c(2,1),            # State-specific recruitment
-    p = c(0.8, 0.8, 0.8),      # Detection probability
-    recovery = 0.1,            # Pr recovery given diseased
-    infection = 0.1){          # Pr infection given not diseased
+# ~~~~~~~~~~~~~~~ the simFrogDisease function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+simFrogDisease <- function(nsites = 100, nyears = 3, nsurveys = 3,
+                    alpha.lam = 3,             # Mean abundance at t=1
+                    omega = c(0.9, 0.7),       # State-specific survival
+                    gamma = c(2,1),            # State-specific recruitment
+                    p = c(0.8, 0.8, 0.8),      # Detection probability
+                    recovery = 0.1,        # Pr recovery given diseased
+                    infection = 0.1){      # Pr infection given not diseased
 
   # Empty matrices to hold the data
   yN <- yI <- array(NA, dim = c(nsites, nyears, nsurveys))
   NI <- NN <- array(NA, dim = c(nsites, nsurveys))
+
   # First season
   NN[,1] <- rpois(n = nsites, lambda = alpha.lam)
   NI[,1] <- rpois(n = nsites, lambda = alpha.lam)
@@ -130,18 +128,17 @@ simFrogDisease <- function(
       }
   }
   SN <- SI <- GI <- GN <- TrN <- TrI <- array(0, dim = c(nsites, nsurveys-1))
+
   # Second and subsequent seasons
   for(k in 2:nsurveys){
     for(i in 1:nsites){
       if(NN[i,k-1]>0){
         SN[i, k-1] <- rbinom(n=1, size=NN[i,k-1], prob=omega[1])	# Survival of uninfecteds
-        TrN[i,k-1] <- rbinom(n=1, size=SN[i,k-1], prob=infection) # Getting infected -
-            # lost from NN, and gained by NI
+        TrN[i,k-1] <- rbinom(n=1, size=SN[i,k-1], prob=infection)   # Getting infected - lost from NN, and gained by NI
       }
       if(NI[i,k-1]>0){
         SI[i, k-1] <-  rbinom(n=1, size=NI[i,k-1], prob=omega[2])   # Survival of infecteds
-        TrI[i, k-1] <- rbinom(n=1, size=SI[i,k-1], prob=recovery) 	# Losing infection -
-            # lost from NI and gained by NN
+        TrI[i, k-1] <- rbinom(n=1, size=SI[i,k-1], prob=recovery) 	# Losing infection - lost from NI and gained by NN
       }
       # Recruitment
       GI[i, k-1] <- rpois(1, lambda = gamma[2])
@@ -159,26 +156,18 @@ simFrogDisease <- function(
       }
     }
   }
-  return(list(# ..... arguments input .....
-    nsites = nsites, nyears = nyears, nsurveys = nsurveys,alpha.lam= alpha.lam,omega = omega,gamma = gamma,
-    infection = infection, recovery = recovery, p = p,
-    # ..... generated values .....
-    SN = SN,    # Survival of uninfecteds
-    SI = SI,    # Survival of infecteds
-    GN = GN,    # Number recruited uninfected
-    GI = GI,    # Number recruited infected
-    TrI = TrI,  # Losing infection
-    TrN = TrN,  # Get infected
-    NN = NN,    # Total population uninfected
-    NI = NI,    # Total population infected
-    yN = yN,    # Observed number uninfected
-    yI = yI))   # Observed number infected
+  return(list(nsites = nsites, nyears = nyears, nsurveys = nsurveys,alpha.lam= alpha.lam,omega = omega,gamma = gamma,
+    infection = infection, recovery = recovery,
+    SN = SN, SI = SI, GN = GN, GI = GI, TrI = TrI, TrN = TrN, NN = NN, NI = NI,
+    p = p, yN = yN, yI = yI))
 }
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Simulate a data set
 set.seed(2019)
 str(sodata <- simFrogDisease(nsites = 100, nyears = 3, nsurveys = 3, alpha.lam = 3,
-    omega = c(0.9, 0.7), gamma = c(2,1), p = c(0.8, 0.8, 0.8), recovery = 0.1, infection = 0.1))
+    omega = c(0.9, 0.7), gamma = c(2,1), p = c(0.8, 0.8, 0.8), recovery = 0.1,
+    infection = 0.1))
+
 # Bundle data
 str(bdata <- list(yN = sodata$yN, yI = sodata$yI, nsites = dim(sodata$yN)[1],
     nsurveys = dim(sodata$yN)[2], nyears = dim(sodata$yN)[3]))
@@ -190,16 +179,16 @@ str(bdata <- list(yN = sodata$yN, yI = sodata$yI, nsites = dim(sodata$yN)[1],
 # $ nyears : int 3
 # Initial values
 inits <- function() {list(alpha.lamN = runif(1, 2, 3), mean.pN = runif(1, 0.9, 1),
-  mean.omegaN = runif(1, 0.7, 1), mean.gammaN = runif(1, 2, 3), 
-  mean.psi_NI = runif(1, 0, 0.3), alpha.lamI = runif(1, 2, 3), mean.pI = runif(1, 0.9, 1), 
-  mean.omegaI = runif(1, 0.7, 1), mean.gammaI = runif(1, 2, 3), mean.psi_IN = runif(1, 0, 0.3))}
+    mean.omegaN = runif(1, 0.7, 1), mean.gammaN = runif(1, 2, 3),
+    mean.psi_NI = runif(1, 0, 0.3), alpha.lamI = runif(1, 2, 3),
+    mean.pI = runif(1, 0.9, 1), mean.omegaI = runif(1, 0.7, 1),
+    mean.gammaI = runif(1, 2, 3), mean.psi_IN = runif(1, 0, 0.3))}
 # Parameters monitored
 params <- c("alpha.lamN", "alpha.lamI", "mean.pN", "mean.pI", "mean.omegaN",
     "mean.omegaI", "mean.gammaN", "mean.gammaI", "mean.psi_NI", "mean.psi_IN", "fitN",
     "fitN.new", "fitI", "fitI.new")
 # MCMC settings
-# na <- 1000 ; ni <- 60000 ; nb <- 10000 ; nt <- 5 ; nc <- 10
-na <- 1000 ; ni <- 60000 ; nb <- 10000 ; nt <- 5 ; nc <- 3  # ~~~ for testing
+na <- 1000 ; ni <- 60000 ; nb <- 10000 ; nt <- 5 ; nc <- 10
 # Call JAGS (ART 14 min), gauge convergence and summarize posteriors
 set.seed(127) # Cheating: use this seed to get good initial values.
 (out9 <- jags(bdata, inits, params, "frogs.txt", n.adapt = na,
@@ -222,13 +211,13 @@ print(out9, dig = 2)
 # fitI.new 138.13 10.47 118.57 137.80 159.49 FALSE 1.00 1.00 40418
 
 par(mfrow=c(1,2)) # Not shown
-# pp.check(out9, actual = 'fitN', new = 'fitN.new')
-# pp.check(out9, actual = 'fitI', new = 'fitI.new')
 pp.check(out9, observed = 'fitN', simulated = 'fitN.new')
 pp.check(out9, observed = 'fitI', simulated = 'fitI.new')
+pp.check(out9, actual = 'fitI', new = 'fitI.new')
 
-# 2.9.2 EXAMPLE 2: DUSKY SALAMANDERS -- A THREE-STATE MODEL WITH TWO OBSERVABLE STATES
-# ---------------------------------------------------------------------------------
+
+# 2.9.2 Example 2: dusky salamanders -- a three-state model with two observable states
+# ------------------------------------------------------------------------------------
 
 data(duskySalamanders) # require(AHMbook)
 str(duskySalamanders)

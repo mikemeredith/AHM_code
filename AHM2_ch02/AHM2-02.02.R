@@ -4,6 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
+# Code from proofs dated 2020-01-09
 
 # 2.2 Swiss MHB Data for the Green Woodpecker
 # ===========================================

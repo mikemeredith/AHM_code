@@ -4,13 +4,19 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
+# Code from proofs dated 2020-01-09
 
 library(jagsUI)
 
-# 2.3 YEAR-STRATIFIED N-MIXTURE MODEL
-# ===========================================
+# ~~~~ need the Green Woodpecker data prepared in 2.2 ~~~~~~~~
+source("AHM2-02.02.R")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# 2.3.3 FITTING THE YEAR-STRATIFIED MODEL IN UNMARKED (“STACKING” THE DATA
+# 2.3 Year-stratified N-mixture model
+# ===================================
+
+# 2.3.3 Fitting the year-stratified model in unmarked (“stacking” the data)
+# -------------------------------------------------------------------------
 # Stack the data
 nyears <- 14 # Number of years
 Cstacked <- NULL
@@ -36,7 +42,7 @@ summary(umf <- unmarkedFramePCount(y = Cstacked,
 
 # Fit some models with default Poisson mixture for abundance.
 # ART for this whole block of 9 models: 5 mins
-system.time(fm0 <- pcount(~1 ~ 1, umf, se = F))
+system.time(fm0 <- pcount(~1 ~ 1, umf, se = F)) # 13 secs
 fm1 <- pcount(~1 ~ trend, umf, se = F)
 fm2 <- pcount(~date ~ 1, umf, se = F)
 fm3 <- pcount(~1 ~ elev, umf, se = F)
@@ -46,7 +52,7 @@ fm6 <- pcount(~1 ~ elev + I(elev^2)+ forest + trend, umf, se = F)
 fm7 <- pcount(~date ~ elev + I(elev^2)+ forest + trend, umf, se = F)
 fm8 <- pcount(~date + I(date^2) ~ elev + I(elev^2)+ forest + trend, umf, se = F)
 system.time(fm9 <- pcount(~date + I(date^2) + int ~ elev + I(elev^2)+ forest + trend, umf,
-se = T)) # Later we want those SEs ...
+se = T)) # Later we want those SEs ... # 4 mins
 
 # Negative binomial models: models with covariates and trend
 # ART for these NB models: 8 mins
@@ -59,7 +65,7 @@ fm7nb <- pcount(~date ~ elev + I(elev^2)+ forest + trend, umf, mixture =
 fm8nb <- pcount(~date + I(date^2) ~ elev + I(elev^2)+ forest + trend,
 umf, mixture = "NB", se = F)
 system.time(fm9nb <- pcount(~date + I(date^2) + int ~ elev + I(elev^2)+
-forest + trend, umf, mixture = "NB", se = F))
+forest + trend, umf, mixture = "NB", se = F))  # 2.6 mins
 
 # Organize models into a fitList and create a model selection table
 fl <- fitList(fm0 = fm0, fm1 = fm1, fm2 = fm2, fm3 = fm3, fm4 = fm4, fm5 = fm5, fm6 = fm6,
@@ -107,11 +113,11 @@ rbind('AIC(K = 118)' = fm9nb@AIC, 'AIC(K = 200)' = fm9nb.K200@AIC,
 
 system.time(fm9nb <- pcount(~date + I(date^2) + int ~ elev + I(elev^2) +
     forest + trend, umf, K = 200, mixture = "NB",
-    control = list(trace = TRUE, REPORT = 1, maxit = 500), se = T))  # 355 secs
+    control = list(trace = TRUE, REPORT = 1, maxit = 500), se = T))  # 9 mins
 
 # Bootstrap simulation with 100 replicates for the AIC-best NegBin model
 # ART 2 hours
-system.time(pb1 <- parboot(fm9nb, fitstats, nsim = 100, report = 1))  # 1176 secs
+system.time(pb1 <- parboot(fm9nb, fitstats, nsim = 100, report = 1))  # 20 mins
 # Call: parboot(object = fm9nb, statistic = fitstats, nsim = 100, report = 1)
 # Parametric Bootstrap Statistics:
 # t0 mean(t0 - t_B) StdDev(t0 - t_B) Pr(t_B > t0)
@@ -128,7 +134,8 @@ system.time(pb1 <- parboot(fm9nb, fitstats, nsim = 100, report = 1))  # 1176 sec
 # t_B = Vector of bootstrap samples
 
 # Bootstrap simulation with 100 replicates for the AIC-best Poisson model
-system.time(pb1P <- parboot(fm9, fitstats, nsim = 100, report = 1))  # 393 secs
+# system.time(pb1P <- parboot(fm9, fitstats, nsim = 100, report = 1))  # 393 secs
+system.time(pb1P <- parboot(fm9, fitstats, nsim = 100, report = 1, ncores=3))  # 40 mins
 # Call: parboot(object = fm9, statistic = fitstats, nsim = 100, report = 1)
 # Parametric Bootstrap Statistics:
 # t0 mean(t0 - t_B) StdDev(t0 - t_B) Pr(t_B > t0)
