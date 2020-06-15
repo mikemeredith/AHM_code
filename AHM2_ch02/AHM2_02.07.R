@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
-# Code from proofs dated 2020-01-09
+# Code from proofs dated 2020-06-11
 
 library(AHMbook)
 library(jagsUI)
@@ -17,8 +17,8 @@ library(unmarked)
 # ------------------------------------------------------------------------------------------
 
 # Define function for data simulation
-simMultMix <- function(nsites = 100, nyears = 4, nsurveys = 3, lambda = 3, theta = 0.5, p = 0.3)
-{
+simMultMix <- function(nsites = 100, nyears = 4, nsurveys = 3, lambda = 3,
+    theta = 0.5, p = 0.3){
   # Simulate data using the multinomial-Poisson model with a
   # repeated constant-interval removal design (written by R.B. Chandler)
   #
@@ -35,12 +35,14 @@ simMultMix <- function(nsites = 100, nyears = 4, nsurveys = 3, lambda = 3, theta
     y[i,,3] <- rbinom(nyears, Nleft2, p)
   }
   y2d <- cbind(y[,1,], y[,2,], y[,3,], y[,4,])
-  return(list(nsites = nsites, nyears = nyears, nsurveys = nsurveys, lambda = lambda, theta =
-  theta, p = p, M = M, N = N, y = y, y2d = y2d))
+  return(list(nsites = nsites, nyears = nyears, nsurveys = nsurveys,
+      lambda = lambda, theta = theta, p = p, M = M, N = N, y = y, y2d = y2d))
 }
 # Execute function
 set.seed(24)
-str(data <- simMultMix(nsites = 100, nyears = 4, nsurveys = 3, lambda = 3, theta = 0.5, p = 0.3) )
+str(data <- simMultMix(nsites = 100, nyears = 4, nsurveys = 3, lambda = 3,
+    theta = 0.5, p = 0.3) )
+
 # Package data in unmarked format GMM, fit model and inspect estimates
 library(unmarked)
 umf <- unmarkedFrameGMM(y = data$y2d, numPrimary = data$nyears, type = "removal")
@@ -61,10 +63,10 @@ plot(re, layout=c(5, 1), xlim = c(-1, 20), subset = site%in%1:5, lwd = 5)
 # --------------------------------------
 
 alfl <- read.csv(system.file("csv", "alfl.csv", package = "unmarked"))
-alfl.covs <- read.csv(system.file("csv", "alflCovs.csv", package = "unmarked"),
-    row.names = 1)
+alfl.covs <- read.csv(system.file("csv", "alflCovs.csv",
+    package = "unmarked"), row.names = 1)
 head(alfl.covs)
-# alfl$captureHistory <- paste(alfl$interval1, alfl$interval2, alfl$interval3, sep = " ")
+
 alfl$captureHistory <- paste(alfl$interval1, alfl$interval2, alfl$interval3, sep = "")
 alfl$captureHistory <- factor(alfl$captureHistory,
     levels = c("001", "010", "011", "100", "101", "110", "111"))
@@ -76,7 +78,7 @@ head(alfl, 5)
 # 3 his1_05 1 0 1 1 011
 # 4 his1_05 1 1 1 1 111
 # 5 his1_05 2 0 1 1 011
-# Note: we analyzed survey [[ 1 in ch. 7, here use all urveys
+# Note: we analyzed survey == 1 in ch. 7, here use all surveys
 alfl.v1 <- alfl[alfl$survey == 1,]
 alfl.H1 <- table(alfl.v1$id, alfl.v1$captureHistory)
 alfl.v2 <- alfl[alfl$survey == 2,]
@@ -89,6 +91,7 @@ Y[1:50,1,1:7] <- alfl.H1
 Y[1:50,2,1:7] <- alfl.H2
 Y[1:50,3,1:7] <- alfl.H3
 Ywide <- cbind(alfl.H1, alfl.H2, alfl.H3)
+
 # unmarkedFrame for a static model just using 1 primary sample
 intervalMat <- matrix(c('1', '2', '3'), 50, 3, byrow = TRUE)
 class(alfl.H1) <- "matrix"
@@ -107,8 +110,9 @@ date <- date - median(date)
 occ <- matrix(NA, nrow = 50, ncol = 9)
 occ <- col(occ)
 summary(alfl.umf <- unmarkedFrameGMM(y = Ywide,
-    siteCovs = alfl.covs[,c("woody", "struct")], obsCovs = list(occ = occ), numPrimary = 3,
-    yearlySiteCovs = list(time = time, date = date), obsToY = o2y, piFun = "crPiFun") )
+    siteCovs = alfl.covs[,c("woody", "struct")], obsCovs = list(occ = occ),
+    numPrimary = 3, yearlySiteCovs = list(time = time, date = date),
+    obsToY = o2y, piFun = "crPiFun") )
 
 m0 <- gmultmix( ~1, ~1, ~1, data = alfl.umf, mixture = "P")
 m1 <- gmultmix( ~1, ~time, ~1, data = alfl.umf, mixture = "P")
@@ -126,9 +130,8 @@ m3f <- gmultmix( ~1, ~1, ~time + date, data = alfl.umf, mixture = "P")
 m3g <- gmultmix( ~1, ~time + date, ~date, data = alfl.umf, mixture = "P")
 m3h <- gmultmix( ~1, ~time + date, ~time + date, data = alfl.umf, mixture = "P")
 m3i <- gmultmix( ~1, ~date, ~time + date, data = alfl.umf, mixture = "P")
-(fl <- modSel(fitList(m0, m1, m1b, m1c, m2, m2b, m2c, m3, m3b, m3c, m3d, m3e, m3f, m3g, m3h,
-m3i)) )
-fl
+(fl <- modSel(fitList(m0, m1, m1b, m1c, m2, m2b, m2c, m3, m3b, m3c, m3d,
+    m3e, m3f, m3g, m3h, m3i)) )
 # nPars AIC delta AICwt cumltvWt
 # m3g 6 565.79 0.00 6.6e-01 0.66
 # m3h 7 567.46 1.66 2.9e-01 0.95
@@ -137,6 +140,7 @@ fl
 # m3i 6 574.21 8.41 9.8e-03 0.99
 # m3b 6 575.28 9.48 5.8e-03 1.00
 # [... output truncated ... ]
+
 m3g
 # Abundance:
 # Estimate SE z P(>|z|)
@@ -154,8 +158,8 @@ m3g
 m3g1 <- gmultmix(~woody, ~time + date, ~date, data = alfl.umf, mixture = "P")
 m3g2 <- gmultmix(~struct, ~time + date, ~date, data = alfl.umf, mixture = "P")
 m3g3 <- gmultmix(~woody + struct, ~time + date, ~date, data = alfl.umf, mixture = "P")
-(fl <- modSel(fitList(m0, m1, m1b, m1c, m2, m2b, m2c, m3, m3b, m3c, m3d, m3e, m3f, m3g, m3h,
-m3i, m3g1, m3g2, m3g3)) )
+(fl <- modSel(fitList(m0, m1, m1b, m1c, m2, m2b, m2c, m3, m3b, m3c, m3d, m3e,
+    m3f, m3g, m3h, m3i, m3g1, m3g2, m3g3)) )
 # nPars AIC delta AICwt cumltvWt
 # m3g3 8 554.80 0.00 5.1e-01 0.51
 # m3g1 7 554.97 0.17 4.7e-01 0.99
@@ -196,12 +200,15 @@ m3g3
 # t0 = Original statistic compuated from data
 # t_B = Vector of bootstrap samples
 
+# For comparison, we will now stack the data and fit a similar set of models
+# ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
 Ystacked <- rbind(Ywide[,1:7], Ywide[,8:14], Ywide[,15:21])
 sc <- alfl.covs[,c("woody", "struct")]
 sc <- rbind(sc, sc, sc) # Repeat the site covs matrix
 sc <- cbind(sc, date = c(date), time = c(time)) # YearlySiteCovs become siteCovs
-summary(umf2 <- unmarkedFrameGMM(y = Ystacked, siteCovs = sc, numPrimary = 1, obsToY = o2y,
-    piFun = "crPiFun") )
+summary(umf2 <- unmarkedFrameGMM(y = Ystacked, siteCovs = sc, numPrimary = 1,
+    obsToY = o2y, piFun = "crPiFun") )
 
 # Models with time on lambda or p
 m0 <- gmultmix( ~1, ~1, ~1, data = umf2, mixture = "P")
@@ -214,11 +221,17 @@ m2b <- gmultmix( ~date, ~1, ~1, data = umf2, mixture = "P")
 m2c <- gmultmix( ~date, ~1, ~date, data = umf2, mixture = "P")
 # Models with both time and date .... all run in no time
 m3 <- gmultmix( ~1, ~1, ~time + date, data = umf2, mixture = "P")
-# ...model fitting truncated, see book website ...
-
-# ( fl <- modSel(fitList(m0, m1, m1b, m1c, m2, m2b, m2c, m3, m3b, m3c, m3d, m3e, m3f, m3g, m3h,
-# m3i)) )
-( fl <- modSel(fitList(m0, m1, m1b, m1c, m2, m2b, m2c, m3)) )
+# ~~~~ extra models not shown in book ~~~~~~~~~~~~~~~~~~~~~
+m3b <- gmultmix( ~time, ~1, ~date, data=umf2, mixture = "P")
+m3c <- gmultmix( ~time, ~1, ~time + date, data=umf2, mixture = "P")
+m3d <- gmultmix( ~date,  ~1, ~time, data=umf2, mixture = "P")
+m3e <- gmultmix( ~time + date, ~1, ~1, data=umf2, mixture = "P")
+m3f <- gmultmix( ~time + date, ~1, ~time, data=umf2, mixture = "P")
+m3g <- gmultmix( ~date,  ~1, ~time + date, data=umf2, mixture = "P")
+m3h <- gmultmix( ~time + date, ~1, ~date, data=umf2, mixture = "P")
+m3i <- gmultmix( ~time + date, ~1, ~time + date, data=umf2, mixture = "P")
+( fl <- modSel(fitList(m0, m1, m1b, m1c, m2, m2b, m2c, m3,
+    m3b, m3c, m3d, m3e, m3f, m3g, m3h, m3i)) )
 # nPars AIC delta AICwt cumltvWt
 # m2c 4 597.88 0.00 4.1e-01 0.41
 # m3h 5 598.61 0.73 2.8e-01 0.69
@@ -228,6 +241,8 @@ m3 <- gmultmix( ~1, ~1, ~time + date, data = umf2, mixture = "P")
 # m3b 4 606.63 8.75 5.1e-03 0.98
 # m2 3 606.65 8.77 5.1e-03 0.99
 # ... truncated ...
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 m2c
 # Abundance:
 # Estimate SE z P(>|z|)
@@ -294,8 +309,9 @@ nseasons <- 3 # Number of primary occasions
 nsites <- nrow(Ywide) # Number of sites
 nobs <- apply(y3d, c(1,3), sum) # Total detections per site and occasion
 # Bundle data
-str(bdata <- list(y3d = y3d, nsites = nsites, nseasons = nseasons, nobs = nobs,
-  woody = alfl.covs[,"woody"], struct = alfl.covs[,"struct"], date = date, time = time, pi = pi))
+str(bdata <- list(y3d = y3d, nsites = nsites, nseasons = nseasons,
+    nobs = nobs, woody = alfl.covs[,"woody"], struct = alfl.covs[,"struct"],
+    date = date, time = time, pi = pi))
 # List of 9
 # $ y3d : int [1:50, 1:7, 1:3] 0 0 0 0 0 0 0 0 1 0 ...
 # $ nsites : int 50
@@ -355,31 +371,32 @@ model {
       nobs[i,k] ~ dbin(pmarg[i,k], M[i])
       #Part 2: Number of available individuals
       Navail[i,k] ~ dbin(phi[i,k], M[i])
-    } # end k
+    }
     M[i] ~ dpois(lambda[i]) #Part 1: Abundance model
-  } # end i
+  }
   # Derived quantities
   for(k in 1:nseasons){
     Davail[k] <- mean(phi[,k])*exp(beta0)/ area
-  } # end k
+  }
   Mtotal <- sum(M[])
   area <- (pi*50*50)/ 10000 # 50 m point counts, D in units per ha
   Dtotal <- exp(beta0)/ area
-} # end model
+}
 ")
 # Initial values
 Navail.st <- apply(y3d, c(1, 3), sum)
 Mst <- apply(Navail.st, 1, max, na.rm = TRUE) + 2
 inits <- function() list(M = Mst, sigma = 100)
+
 # Parameters monitored
-params <- c("beta0" , "beta1", "beta2", "alpha0", "alpha1", "gamma0", "gamma1", "gamma2",
-  "Mtotal", "Davail", "Dtotal")
+params <- c("beta0" , "beta1", "beta2", "alpha0", "alpha1", "gamma0",
+    "gamma1", "gamma2", "Mtotal", "Davail", "Dtotal")
 # MCMC settings
 na <- 1000 ; ni <- 10000 ; nb <- 5000 ; nt <- 5 ; nc <- 3
 # Call JAGS (ART 0.2 min), gauge convergence, summarize posteriors
-out7 <- jags(bdata, inits, params, "CR_TE.txt", n.adapt = na, n.iter = ni, n.burnin = nb,
-    n.thin = nt, n.chains = nc, parallel = TRUE)
-par(mfrow = c(3, 3)) ; traceplot(out7) ; par(mfrow = c(1, 1))
+out7 <- jags(bdata, inits, params, "CR_TE.txt", n.adapt = na, n.iter = ni,
+    n.burnin = nb, n.thin = nt, n.chains = nc, parallel = TRUE)
+op <- par(mfrow = c(3, 3)) ; traceplot(out7) ; par(op)
 print(out7, 3)
 # mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
 # beta0 -0.797 0.429 -1.637 -0.797 0.047 TRUE 0.966 1.003 849
@@ -395,8 +412,3 @@ print(out7, 3)
 # Davail[2] 0.287 0.128 0.117 0.264 0.618 FALSE 1.000 1.004 879
 # Davail[3] 0.162 0.076 0.060 0.148 0.353 FALSE 1.000 1.002 1410
 # Dtotal 0.629 0.280 0.248 0.574 1.334 FALSE 1.000 1.003 1918
-
-
-
-
-

@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
-# Code from proofs dated 2020-01-09
+# Code from proofs dated 2020-06-11
 
 library(jagsUI)
 
@@ -16,17 +16,19 @@ source("AHM2-02.02.R")
 # ===========================================
 
 # Bundle and summarize data set
-str(bdata <- list(C = C, nsites = dim(C)[1], nsurveys = dim(C)[2], nyears = dim(C)[3]))
+str(bdata <- list(C = C, nsites = dim(C)[1], nsurveys = dim(C)[2],
+    nyears = dim(C)[3]))
 # List of 4
 # $ C: int [1:267, 1:3, 1:14] 0 3 0 0 0 0 0 0 0 0 ...
 # $ nsites: int 267
 # $ nsurveys: int 3
 # $ nyears: int 14
+
 # Specify model in BUGS language
 cat(file = "Nmix1.txt","
 model {
   # Priors
-  for (t in 1:nyears){ # Loop over years (’seasons')
+  for (t in 1:nyears){ # Loop over years ('seasons')
     lambda[t] ~ dunif(0, 100) # Expected abundance
     p[t] ~ dunif(0, 1) # Detection probability
   } # end t
@@ -56,7 +58,7 @@ params <- c("lambda", "p", "totalN")
 na <- 100 ; ni <- 3000 ; nt <- 2 ; nb <- 1000 ; nc <- 3
 # Run JAGS (ART 1 min), check convergence and summarize posteriors
 out1 <- jags(bdata, inits, params, "Nmix1.txt", n.adapt = na,
-  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-par(mfrow = c(3, 3)) ; traceplot(out1) ; par(mfrow = c(1, 1))
+    n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+op <- par(mfrow = c(3, 3)) ; traceplot(out1) ; par(op)
 print(out1, digits = 2) # not shown
 

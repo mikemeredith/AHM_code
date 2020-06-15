@@ -105,95 +105,44 @@ model {
 } # end model
 ")
 
-# ~~~~~~~~~~~~~~~ the simFrogDisease function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-simFrogDisease <- function(nsites = 100, nyears = 3, nsurveys = 3,
-                    alpha.lam = 3,             # Mean abundance at t=1
-                    omega = c(0.9, 0.7),       # State-specific survival
-                    gamma = c(2,1),            # State-specific recruitment
-                    p = c(0.8, 0.8, 0.8),      # Detection probability
-                    recovery = 0.1,        # Pr recovery given diseased
-                    infection = 0.1){      # Pr infection given not diseased
+# ~~~~~~~~~~~~~~~ the simFrogDisease function is now in AHMbook ~~~~~~~~~~~~~~~
 
-  # Empty matrices to hold the data
-  yN <- yI <- array(NA, dim = c(nsites, nyears, nsurveys))
-  NI <- NN <- array(NA, dim = c(nsites, nsurveys))
-
-  # First season
-  NN[,1] <- rpois(n = nsites, lambda = alpha.lam)
-  NI[,1] <- rpois(n = nsites, lambda = alpha.lam)
-  for(i in 1:nsites){
-      for(j in 1:nyears){
-        yN[i,j, 1] <- rbinom(n = 1, NN[i,1], p[1])
-        yI[i,j, 1] <- rbinom(n = 1, NI[i,1], p[1])
-      }
-  }
-  SN <- SI <- GI <- GN <- TrN <- TrI <- array(0, dim = c(nsites, nsurveys-1))
-
-  # Second and subsequent seasons
-  for(k in 2:nsurveys){
-    for(i in 1:nsites){
-      if(NN[i,k-1]>0){
-        SN[i, k-1] <- rbinom(n=1, size=NN[i,k-1], prob=omega[1])	# Survival of uninfecteds
-        TrN[i,k-1] <- rbinom(n=1, size=SN[i,k-1], prob=infection)   # Getting infected - lost from NN, and gained by NI
-      }
-      if(NI[i,k-1]>0){
-        SI[i, k-1] <-  rbinom(n=1, size=NI[i,k-1], prob=omega[2])   # Survival of infecteds
-        TrI[i, k-1] <- rbinom(n=1, size=SI[i,k-1], prob=recovery) 	# Losing infection - lost from NI and gained by NN
-      }
-      # Recruitment
-      GI[i, k-1] <- rpois(1, lambda = gamma[2])
-      GN[i, k-1] <- rpois(1, lambda = gamma[1])
-    }
-    # Total population size
-    NI[,k] <-  SI[,k-1] + GI[,k-1]  + TrN[,k-1] - TrI[,k-1]
-    NN[,k] <-  SN[,k-1] + GN[,k-1]  + TrI[,k-1] - TrN[,k-1]
-  }
-  for(i in 1:nsites){
-    for(j in 1:nyears){
-      for(k in 2:nsurveys){
-            yN[i, j, k] <- rbinom(n = 1, NN[i,k], p[k])
-            yI[i, j, k] <- rbinom(n = 1, NI[i,k], p[k])
-      }
-    }
-  }
-  return(list(nsites = nsites, nyears = nyears, nsurveys = nsurveys,alpha.lam= alpha.lam,omega = omega,gamma = gamma,
-    infection = infection, recovery = recovery,
-    SN = SN, SI = SI, GN = GN, GI = GI, TrI = TrI, TrN = TrN, NN = NN, NI = NI,
-    p = p, yN = yN, yI = yI))
-}
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Simulate a data set
 set.seed(2019)
-str(sodata <- simFrogDisease(nsites = 100, nyears = 3, nsurveys = 3, alpha.lam = 3,
-    omega = c(0.9, 0.7), gamma = c(2,1), p = c(0.8, 0.8, 0.8), recovery = 0.1,
-    infection = 0.1))
+str(sodata <- simFrogDisease(nsites = 100, nyears = 3, nsurveys = 3,
+    alpha.lam = 3, omega = c(0.9, 0.7), gamma = c(2,1),
+    p = c(0.8, 0.8, 0.8), recovery = 0.1, infection = 0.1))
 
 # Bundle data
-str(bdata <- list(yN = sodata$yN, yI = sodata$yI, nsites = dim(sodata$yN)[1],
-    nsurveys = dim(sodata$yN)[2], nyears = dim(sodata$yN)[3]))
+str(bdata <- list(yN = sodata$yN, yI = sodata$yI,
+    nsites = dim(sodata$yN)[1], nsurveys = dim(sodata$yN)[2],
+    nyears = dim(sodata$yN)[3]))
 # List of 5
 # $ yN : int [1:100, 1:3, 1:3] 4 3 1 3 1 0 4 0 1 2 ...
 # $ yI : int [1:100, 1:3, 1:3] 2 3 2 5 1 3 2 3 0 1 ...
 # $ nsites : int 100
 # $ nsurveys : int 3
 # $ nyears : int 3
+
 # Initial values
 inits <- function() {list(alpha.lamN = runif(1, 2, 3), mean.pN = runif(1, 0.9, 1),
     mean.omegaN = runif(1, 0.7, 1), mean.gammaN = runif(1, 2, 3),
     mean.psi_NI = runif(1, 0, 0.3), alpha.lamI = runif(1, 2, 3),
     mean.pI = runif(1, 0.9, 1), mean.omegaI = runif(1, 0.7, 1),
     mean.gammaI = runif(1, 2, 3), mean.psi_IN = runif(1, 0, 0.3))}
+
 # Parameters monitored
-params <- c("alpha.lamN", "alpha.lamI", "mean.pN", "mean.pI", "mean.omegaN",
-    "mean.omegaI", "mean.gammaN", "mean.gammaI", "mean.psi_NI", "mean.psi_IN", "fitN",
-    "fitN.new", "fitI", "fitI.new")
+params <- c("alpha.lamN", "alpha.lamI", "mean.pN", "mean.pI",
+    "mean.omegaN",  "mean.omegaI", "mean.gammaN", "mean.gammaI",
+    "mean.psi_NI", "mean.psi_IN", "fitN", "fitN.new", "fitI", "fitI.new")
+
 # MCMC settings
 na <- 1000 ; ni <- 60000 ; nb <- 10000 ; nt <- 5 ; nc <- 10
 # Call JAGS (ART 14 min), gauge convergence and summarize posteriors
 set.seed(127) # Cheating: use this seed to get good initial values.
 (out9 <- jags(bdata, inits, params, "frogs.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE))
-par(mfrow = c(2,2)) ; traceplot(out9) ; par(mfrow = c(1,1))
+op <- par(mfrow = c(2,2)) ; traceplot(out9) ; par(op)
 print(out9, dig = 2)
 # alpha.lamN 1.16 0.06 1.04 1.16 1.27 FALSE 1.00 1.00 39674
 # alpha.lamI 1.15 0.06 1.03 1.15 1.26 FALSE 1.00 1.00 100000
@@ -210,11 +159,11 @@ print(out9, dig = 2)
 # fitI 131.04 4.22 123.59 130.76 140.08 FALSE 1.00 1.00 16866
 # fitI.new 138.13 10.47 118.57 137.80 159.49 FALSE 1.00 1.00 40418
 
-par(mfrow=c(1,2)) # Not shown
+op <- par(mfrow=c(1,2)) # Not shown
 pp.check(out9, observed = 'fitN', simulated = 'fitN.new')
 pp.check(out9, observed = 'fitI', simulated = 'fitI.new')
-pp.check(out9, actual = 'fitI', new = 'fitI.new')
-
+pp.check(out9, observed = 'fitI', simulated = 'fitI.new')
+par(op)
 
 # 2.9.2 Example 2: dusky salamanders -- a three-state model with two observable states
 # ------------------------------------------------------------------------------------
@@ -274,17 +223,18 @@ model {
         n[i,t,1,j] ~ dbin(p[1], (N[i,t,1]+N[i,t,2]))
         # Detection probability is the same for all adults
         n[i,t,2,j] ~ dbin(p[2], N[i,t,3])
-      } # end j
-    } # end t
-  } # end i
+      }
+    }
+  }
   # Derived quantities: Total N for each stage and year
   for (t in 1:nyears) {
     Ntotal[1,t] <- sum(N[,t,1])
     Ntotal[2,t] <- sum(N[,t,2])
     Ntotal[3,t] <- sum(N[,t,3])
-  } # end t
-} # end model
+  }
+}
 ")
+
 # Find initial values that work for JAGS ...
 lamNew <- NA ; phiNew <- NA ; gammaNew <- NA ; pNew <- NA
 lamNew[1] <- 5 * 10 # Initial population size (juveniles)
@@ -305,19 +255,22 @@ for(i in 1:nsites){
     N[i,t,1] <- max.it1
     N[i,t,2] <- max.it1
     N[i,t,3] <- max.it2 + 2
-  } # end t
-} # end i
+  }
+}
 N1[,1,] <- N[,1,]
 # Package all that into the Initial values function
 inits <- function() list(phi = phiNew, gamma = runif(3,1,3), p = pNew, N = N1)
+
 # Parameters monitored
 params <- c("lambda", "phi", "gamma", "p", "Ntotal")
+
 # MCMC settings
 na <- 1000 ; ni <- 100000 ; nb <-50000 ; nt <- 2 ; nc <- 3
+
 # Call JAGS (ART 7 min), check convergence and summarize posteriors
 out10 <- jags(bdata, inits, params, "Zipkin.txt", n.adapt = na, n.thin = nt,
-  n.chains = nc, n.burnin = nb, n.iter = ni, parallel = TRUE)
-par(mfrow = c(3,3)) ; traceplot(out10) ; par(mfrow = c(1,1))
+    n.chains = nc, n.burnin = nb, n.iter = ni, parallel = TRUE)
+op <- par(mfrow = c(3,3)) ; traceplot(out10) ; par(op)
 print(out10, dig = 3)
 # mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
 # lambda[1] 1.961 1.545 0.098 1.629 5.908 FALSE 1 1.009 683

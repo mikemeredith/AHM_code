@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
-# Code from proofs dated 2020-01-09
+# Code from proofs dated 2020-06-11
 
 library(jagsUI)
 
@@ -48,8 +48,10 @@ nseasons <- 3 # Number of primary occasions
 nsites <- nrow(Ywide) # Number of sites
 nobs <- apply(y3d, c(1,3), sum) # Total detections/site, occasion
 # Bundle data (sames as before)
-str(bdata <- list(y3d = y3d, nsites = nsites, nseasons = nseasons, nobs = nobs,
-  woody = alfl.covs[,"woody"], struct = alfl.covs[,"struct"], date = date, time = time))
+str(bdata <- list(y3d = y3d, nsites = nsites, nseasons = nseasons,
+    nobs = nobs, woody = alfl.covs[,"woody"], struct = alfl.covs[,"struct"],
+    date = date, time = time))
+
 # Dail-Madsen-type, open model for multinomial sampling protocol
 # Specify model in BUGS language
 cat(file = "mnDM.txt", "
@@ -90,7 +92,7 @@ model{
       y3d[i,1:7,t] ~ dmulti(cellprobs.cond[i,t,1:7], nobs[i,t])
       # Conditional observation model
       nobs[i,t] ~ dbin(pdet[i,t], N[i,t]) # Individuals detected
-    } # end t
+    }
      # Poisson regression model for abundance
     log(lambda0[i]) <- beta0 + beta1*woody[i] + beta2*struct[i]
     N[i,1] ~ dpois(lambda0[i]) # Population size
@@ -100,14 +102,14 @@ model{
       R[i,t] ~ dpois(gamma * N[i, t-1]) # Recruits
       N[i,t] <- S[i,t] + R[i,t] # N = Survivors + Recruits
       y[i,t] ~ dbin(pdet[i,t],N[i,t]) # Observation model
-    } # end t
-  } # end i
+    }
+  }
   # Derived parameters
   for(t in 1:nseasons){
     Ntot[t] <- sum(N[,t])
     D[t] <- Ntot[t] / (0.785*nsites) # 50 m point = 0.785 ha
-  } # end t
-} # end model
+  }
+}
 ")
 # Set up some sensible starting values for S and R
 nseasons <- 3
@@ -122,18 +124,19 @@ for(i in 1:nsites){
   }
 }
 # Initial values
-inits <- function(){list(N = yin, beta0 = runif(1), beta1 = runif(1), beta2 = runif(1),
-    beta3 = runif(1), alpha0 = runif(1, -3, -2), alpha1 = runif(1), phi = 0.6, gamma = 0.3, R = Rin,
-    S = Sin) }
+inits <- function(){list(N = yin, beta0 = runif(1), beta1 = runif(1),
+    beta2 = runif(1), beta3 = runif(1), alpha0 = runif(1, -3, -2),
+    alpha1 = runif(1), phi = 0.6, gamma = 0.3, R = Rin, S = Sin) }
+
 # Parameters monitored
-params <- c('beta0', 'beta1', 'beta2', 'beta3', 'alpha0', 'alpha1', 'phi', 'gamma',
-    'Ntot', 'D')
+params <- c('beta0', 'beta1', 'beta2', 'beta3', 'alpha0', 'alpha1',
+    'phi', 'gamma', 'Ntot', 'D')
 # MCMC settings
 na <- 5000 ; ni <- 100000 ; nb <- 50000 ; nt <- 50 ; nc <- 3
 # Run JAGS (ART 6 min), look at convergence and summarize posteriors
-out8 <- jags (bdata, inits, params, "mnDM.txt", n.adapt = na, n.iter=ni, n.burnin=nb,
-    n.thin=nt, n.chains=nc, parallel=TRUE)
-par(mfrow = c(3, 3)) ; traceplot(out8) ; par(mfrow = c(1, 1))
+out8 <- jags (bdata, inits, params, "mnDM.txt", n.adapt = na, n.iter=ni,
+    n.burnin=nb, n.thin=nt, n.chains=nc, parallel=TRUE)
+op <- par(mfrow = c(3, 3)) ; traceplot(out8) ; par(op)
 print(out8, 3)
 # mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
 # beta0 -1.122 0.415 -1.929 -1.112 -0.314 FALSE 0.998 1.001 2834

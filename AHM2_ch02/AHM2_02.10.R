@@ -4,11 +4,11 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
-# Code from proofs dated 2020-01-09
+# Code from proofs dated 2020-06-11
 
 library(jagsUI)
 
-# 2.10 SPATIALLY DYNAMIC DAIL-MADSEN MODELS
+# 2.10 Spatially dynamic Dail-Madsen models
 # =========================================
 
 # Set parameter values and sample sizes
@@ -44,16 +44,17 @@ for (t in 2:nyears) {
   E[,t-1] <- rbinom(nsites, S[,t-1], kappa)
   for (i in 1:nsites) {
     Ilambda[i,t-1] <- sum(E[,t-1] / nadj * adj[,i])
-  } # end i
+  }
   I[,t-1] <- rpois(nsites, Ilambda[,t-1])
   N[,t] <- S[,t-1] - E[,t-1] + R[,t-1] + I[,t-1]
-} # end t
+}
 for (j in 1:nsurveys) {
   y[,,j] <- rbinom(nsites*nyears, N, p)
-} # end j
+}
+
 # Bundle data
-str( bdata <- list(nsites = nsites, nyears = nyears, nsurveys = nsurveys, y = y,
-    adj = adj, nadj = nadj))
+str( bdata <- list(nsites = nsites, nyears = nyears, nsurveys = nsurveys,
+    y = y, adj = adj, nadj = nadj))
 # List of 6
 # $ nsites : num 25
 # $ nyears : num 20
@@ -62,7 +63,7 @@ str( bdata <- list(nsites = nsites, nyears = nyears, nsurveys = nsurveys, y = y,
 # $ adj : num [1:25, 1:25] 0 1 0 0 0 1 0 0 0 0 ...
 # $ nadj : num [1:25] 2 3 3 3 2 3 4 4 4 3 ...
 # Specify model in BUGS language
-cat(file="sdnm_poisson.txt", "
+cat(file="spatialDMmodel.txt", "
 model {
   # Prior distributions
   lambda0 ~ dgamma(0.001, 0.001)
@@ -80,33 +81,37 @@ model {
       Ilambda[i,t-1] <- sum(E[1:nsites,t-1]/ nadj[1:nsites] * adj[1:nsites,i])
       I[i,t-1] ~ dpois(Ilambda[i,t-1])
       N[i,t] <- S[i,t-1] - E[i,t-1] + R[i,t-1] + I[i,t-1]
-    } # end t
-  } # end i
+    }
+  }
   # Observation model
   for (i in 1:nsites) {
     for (t in 1:nyears) {
       for (j in 1:nsurveys) {
         y[i,t,j] ~ dbin(p, N[i,t])
-      } # end j
-    } # end t
-  } # end i
-} # end model
+      }
+    }
+  }
+}
 ")
 
-# Initial values. cheap.inits [ true values
+# Initial values. cheap.inits = true values
 Ni <- N + 20 ; Ni[,-1] <- NA ; Ri <- R + 10 ; Si <- S + 10
 Ei <- E + 5 ; Ii <- I + 5
-inits <- function() list(lambda0 = runif(1, 1, 5), phi = runif(1), gamma = runif(1),
-    kappa = runif(1), p = runif(1), N = Ni, R = Ri, S = Si, E = Ei, I = Ii)
+inits <- function() list(lambda0 = runif(1, 1, 5), phi = runif(1),
+    gamma = runif(1), kappa = runif(1), p = runif(1), N = Ni, R = Ri, S = Si,
+    E = Ei, I = Ii)
+
 # Parameters monitored
 params <- c("lambda0", "phi", "gamma", "kappa", "p")
+
 # MCMC settings
 na <- 2000 ; ni <- 20000 ; nt <- 10 ; nb <- 10000 ; nc <- 3
+
 # Call JAGS (ART 22 min), check convergence and summarize posteriors
-out11 <- jags(bdata, inits, params, model = "sdnm_poisson.txt",
+out11 <- jags(bdata, inits, params, model = "spatialDMmodel.txt",
     n.adapt = na, n.chains = nc, n.burnin = nb, n.iter = ni, n.thin = nt,
     parallel = TRUE)
-par(mfrow = c(2,2)) ; traceplot(out11) ; par(mfrow = c(1,1))
+op <- par(mfrow = c(2,2)) ; traceplot(out11) ; par(op)
 print(out11)
 # mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
 # lambda0 4.738 0.463 3.878 4.716 5.671 FALSE 1 1.000 3000
@@ -114,4 +119,3 @@ print(out11)
 # gamma 0.170 0.035 0.109 0.169 0.240 FALSE 1 1.009 234
 # kappa 0.272 0.034 0.211 0.272 0.341 FALSE 1 1.006 533
 # p 0.748 0.011 0.726 0.748 0.768 FALSE 1 1.000 3000
-

@@ -4,9 +4,11 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
-# Code from proofs dated 2020-01-09
+# Code from proofs dated 2020-06-11
 
 library(jagsUI)
+library(unmarked)
+library(AHMbook)
 
 # ~~~~ need the Green Woodpecker data prepared in 2.2 ~~~~~~~~
 source("AHM2-02.02.R")
@@ -51,19 +53,19 @@ fm5 <- pcount(~1 ~ elev + forest + trend, umf, se = F)
 fm6 <- pcount(~1 ~ elev + I(elev^2)+ forest + trend, umf, se = F)
 fm7 <- pcount(~date ~ elev + I(elev^2)+ forest + trend, umf, se = F)
 fm8 <- pcount(~date + I(date^2) ~ elev + I(elev^2)+ forest + trend, umf, se = F)
-system.time(fm9 <- pcount(~date + I(date^2) + int ~ elev + I(elev^2)+ forest + trend, umf,
-se = T)) # Later we want those SEs ... # 4 mins
+system.time(fm9 <- pcount(~date + I(date^2) + int ~ elev + I(elev^2)+
+    forest + trend, umf, se = T)) # Later we want those SEs ... # 4 mins
 
 # Negative binomial models: models with covariates and trend
 # ART for these NB models: 8 mins
-system.time(fm5nb <- pcount(~1 ~ elev + forest + trend, umf, mixture =
-"NB", se = F))
-fm6nb <- pcount(~1 ~ elev + I(elev^2)+ forest + trend, umf, mixture =
-"NB", se = F)
-fm7nb <- pcount(~date ~ elev + I(elev^2)+ forest + trend, umf, mixture =
-"NB", se = F)
+system.time(fm5nb <- pcount(~1 ~ elev + forest + trend, umf,
+    mixture = "NB", se = F))
+fm6nb <- pcount(~1 ~ elev + I(elev^2)+ forest + trend, umf,
+    mixture = "NB", se = F)
+fm7nb <- pcount(~date ~ elev + I(elev^2)+ forest + trend, umf,
+    mixture = "NB", se = F)
 fm8nb <- pcount(~date + I(date^2) ~ elev + I(elev^2)+ forest + trend,
-umf, mixture = "NB", se = F)
+    umf, mixture = "NB", se = F)
 system.time(fm9nb <- pcount(~date + I(date^2) + int ~ elev + I(elev^2)+
 forest + trend, umf, mixture = "NB", se = F))  # 2.6 mins
 
@@ -104,6 +106,7 @@ cbind('K = 100' = coef(fm9nb), 'K = 200' = coef(fm9nb.K200),
 # p(I(date^2)) 0.03958014 0.03936762 0.03936762
 # p(int) 0.25505006 0.25531341 0.25531341
 # alpha(alpha) -0.77469815 -0.77644326 -0.77644326
+
 rbind('AIC(K = 118)' = fm9nb@AIC, 'AIC(K = 200)' = fm9nb.K200@AIC,
     'AIC(K = 400)' = fm9nb.K400@AIC) # Compare AICs
 # [,1]
@@ -117,7 +120,8 @@ system.time(fm9nb <- pcount(~date + I(date^2) + int ~ elev + I(elev^2) +
 
 # Bootstrap simulation with 100 replicates for the AIC-best NegBin model
 # ART 2 hours
-system.time(pb1 <- parboot(fm9nb, fitstats, nsim = 100, report = 1))  # 20 mins
+# system.time(pb1 <- parboot(fm9nb, fitstats, nsim = 100, report = 1))  # 20 mins
+system.time(pb1 <- parboot(fm9nb, fitstats, nsim = 100, report = 1, ncores = 3))  # 20 mins
 # Call: parboot(object = fm9nb, statistic = fitstats, nsim = 100, report = 1)
 # Parametric Bootstrap Statistics:
 # t0 mean(t0 - t_B) StdDev(t0 - t_B) Pr(t_B > t0)
@@ -195,5 +199,129 @@ fm9
 # int 0.3094 0.0343 9.02 1.96e-19
 # AIC: 17731.46
 
+# ~~~~~~ figure code not in the book ~~~~~~~~~~~~
+
+# Predictions for every datum
+pred.nb <- predict(fm9nb, type="state", newdata=umf) ###, append = T)
+pred.p <- predict(fm9, type="state", newdata=umf)
+# Figure (not shown)
+plot(pred.p[,1], pred.nb[,1], xlab="N, Poisson abundance",
+    ylab="N, neg. binomial abundance", pch=20)
+abline(0, 1, lwd=2,col="red")
+
+# Figure 2.5
+# ----------
+# Comparative plots of abundance relationships with elevation, forest cover and time (i.e., trend) and detection with date underboth NegBin and Poisson models
+cnb <- coef(fm9nb) # Get coefficients or NegBin model
+cp <- coef(fm9)        # ... and for the Poisson model
+
+op <- par(mfrow  = c(2, 2), mar = c(5,5,4,3), cex.lab = 1.5,
+    cex.lab = 1.5, cex.main = 1.2)
+curve(exp(cnb[1] + cnb[2] * (x - 1190) / 637 + (cnb[3] * (x - 1190) / 637)^2),
+    200, 3000, xlab = 'Elevation (m)', ylab = 'Expected abundance E(N)',
+    ylim = c(0, 10), lwd = 3, col = 'red', frame = F,
+    main = 'Abundance predictions from NB model (red) \n and from Poisson model (blue)')
+curve(exp(cp[1] + cp[2] * (x - 1190) / 637 + (cp[3] * (x - 1190) / 637)^2),
+    200, 3000, lwd = 3, col = 'blue', add = TRUE)
+curve(exp(cnb[1] + cnb[4] * (x - 31.9) / 27.7), 0, 100,
+    xlab = 'Forest cover (%)', ylab = 'Expected abundance E(N)',
+    ylim = c(0, 5), lwd = 3, col = 'red', frame = F,
+    main = 'Abundance predictions from NB model (red) \n and from Poisson model (blue)')
+curve(exp(cp[1] + cp[4] * (x - 31.9) / 27.7), 0, 100, lwd = 3, col = 'blue',
+    add = TRUE)
+curve(exp(cnb[1] + cnb[5] * (x - 2005 - 7.5)), 2004, 2017, xlab = 'Year',
+    ylab = 'Expected abundance E(N)', ylim = c(0, 5), lwd = 3, col = 'red',
+    frame = F, main = 'Abundance predictions from NB model (red) \n and from Poisson model (blue)')
+curve(exp(cp[1] + cp[5] * (x - 2005 - 7.5)), 2004, 2017, lwd = 3, col = 'blue',
+    add = TRUE)
+curve(plogis(cnb[6] + cnb[7] * standardize2match(x, dateso) +
+    cnb[8] * standardize2match(x, dateso)^2), 100, 200, xlab = 'Julian Date',
+    ylab = 'Expected detection E(p)', ylim = c(0, 0.5), lwd = 3, col = 'red',
+    frame = FALSE, main = 'Detection predictions from NB model (red) \n and from Poisson model (blue)')
+curve(plogis(cp[6] + cp[7] * standardize2match(x, dateso) + cp[8] *
+    standardize2match(x, dateso)^2), 100, 200, lwd = 3, col = 'blue',
+    add = TRUE)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+# 2.3.4 Nonparametric bootstrapping to account for potential
+# dependence in stacked data
+# -------------------------------------------------------------------------
+
+# Create an array to hold coefficient estimates
+simrep <- 100
+npbs.esti <- array(NA, dim = c(length(coef(fm9nb)), simrep))
+rownames(npbs.esti) <- names(coef(fm9nb))
+# Other preps
+nyears <- 14
+trend <- rep(1:nyears, each = dim(C)[1]) - 7.5
+# Launch bootstrap
+for(b in 1:simrep){
+  cat(paste("\n*** Bootstrap rep", b, "***\n"))
+  # Get index of chosen sites
+  bs.samp <- sample(1:267, 267, replace = TRUE)
+  # Repeat data preparation with bootstrap sample
+  Cstacked <- NULL ; DATEstacked <- NULL ; INTstacked <- NULL
+  for(t in 1:nyears){ # Loop over years
+    Cstacked <- rbind(Cstacked,C[bs.samp,,t])
+    DATEstacked <- rbind(DATEstacked, DATE[bs.samp,,t])
+    INTstacked <- rbind(INTstacked, INT[bs.samp,,t])
+  }
+  elevstretched <- rep(elev[bs.samp], nyears)
+  foreststretched <- rep(forest[bs.samp], nyears)
+  # Create new unmarked data frame and fit model to bootstrapped data set
+  umf <- unmarkedFramePCount(y = Cstacked,
+  siteCovs = data.frame(elev = elevstretched, forest = foreststretched,
+  trend = trend), obsCovs = list(date = DATEstacked, int = INTstacked))
+  fm <- pcount(~date + I(date^2) + int ~ elev + I(elev^2) +
+  forest + trend, umf, K = 200, mixture = "NB", control = list(trace = TRUE,
+  REPORT = 10, maxit = 100), se = FALSE) # No SEs needed
+  # Save param estimates (could also make predictions and save them !)
+  npbs.esti[,b] <- coef(fm)
+}
+
+# Get bootstrap SE, CI and CI length for all 10 parameters
+se.bs <- apply(npbs.esti, 1, sd)
+ci.bs <- t(apply(npbs.esti, 1, function(x)quantile(x, c(0.025, 0.975))))
+cil.bs <- abs(ci.bs[,2] - ci.bs[,1]) # CI length
+# Extract SE and CI and compute CI length
+tmp <- summary(fm9nb)
+se <- c(tmp$state$SE, tmp$det$SE, tmp$alpha$SE)
+ci <- rbind(confint(fm9nb, type = 'state'), confint(fm9nb, type = 'det'),
+confint(fm9nb, type = 'alpha'))
+cil <- abs(ci[,2] - ci[,1])
+# Compare nominal and bootstrapped SE/CI/CI length
+print(cbind('Nominal SE' = se, ci), digits = 2)
+print(cbind('Boot SE' = se.bs, ci.bs, 'se/se.bs ratio (%)' =
+round(100*(se/se.bs),0), 'cil/cil.bs ratio (%)' = round(100*(cil/cil.bs),0)),
+digits = 2)
+# Nominal SE 0.025 0.975
+# lam(Int) 0.1363 0.88259 1.417
+# lam(elev) 0.0407 -0.70325 -0.544
+# lam(I(elev^2)) 0.0466 -0.34442 -0.162
+# lam(forest) 0.0378 0.11311 0.261
+# lam(trend) 0.0079 0.02803 0.059
+# p(Int) 0.1478 -2.13224 -1.553
+# p(date) 0.0231 -0.20797 -0.117
+# p(I(date^2)) 0.0200 0.00025 0.078
+# p(int) 0.0444 0.16834 0.342
+# alpha(alpha) 0.0503 -0.87502 -0.678
+# Boot SE 2.5% 97.5% se/se.bs ratio (%) cil/cil.bs ratio (%)
+# lam(Int) 0.2263 0.742 1.589 60 63
+# lam(elev) 0.1037 -0.787 -0.397 39 41
+# lam(I(elev^2)) 0.1297 -0.506 -0.069 36 42
+# lam(forest) 0.0817 0.026 0.326 46 50
+# lam(trend) 0.0087 0.027 0.063 90 87
+# p(Int) 0.1920 -2.243 -1.540 77 82
+# p(date) 0.0362 -0.235 -0.099 64 66
+# p(I(date^2)) 0.0264 -0.011 0.091 76 76
+# p(int) 0.0788 0.101 0.401 56 58
+# alpha(alpha) 0.0845 -0.940 -0.614 60 60
+
+# Compute average magnitude of nominal SE/CI length in % of bootstrapped
+mean(100*(se/se.bs))
+mean(100*(cil/cil.bs))
+# [1] 60.41515
+# [1] 62.59937
 
 

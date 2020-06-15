@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
-# Code from proofs dated 2020-01-09
+# Code from proofs dated 2020-06-11
 
 library(jagsUI)
 
@@ -18,8 +18,9 @@ source("AHM2-02.02.R")
 # 2.3.1 Adding covariates and estimating a common trend over time
 # ---------------------------------------------------------------
 # Bundle data
-str(bdata <- list(C = C, nsites = dim(C)[1], nsurveys = dim(C)[2], nyears = dim(C)[3],
-  elev = elev, forest = forest, DATE = DATE, INT = INT))
+str(bdata <- list(C = C, nsites = dim(C)[1], nsurveys = dim(C)[2],
+    nyears = dim(C)[3], elev = elev, forest = forest, DATE = DATE,
+    INT = INT))
 # List of 8
 # $ C : int [1:267, 1:3, 1:14] 0 3 0 0 0 0 0 0 0 0 ...
 # $ nsites : int 267
@@ -29,6 +30,7 @@ str(bdata <- list(C = C, nsites = dim(C)[1], nsurveys = dim(C)[2], nyears = dim(
 # $ forest : num [1:267] -1.1529 -0.467 0.0023 -0.9002 -0.106 ...
 # $ DATE : num [1:267, 1:3, 1:14] -1.09 -1.32 -1.23 -1.27 -1.36 ...
 # $ INT : num [1:267, 1:3, 1:14] -0.532 -0.959 0.168 -0.452 -0.865 ...
+
 # Specify model in BUGS language
 cat(file = "Nmix2.txt","
 model {
@@ -65,18 +67,20 @@ model {
   } # end t
 } # end model
 ")
+
 # Initial values
 Nst <- apply(C, c(1,3), max, na.rm = TRUE)+1 # Inits for latent N
 Nst[Nst == '-Inf'] <- 1
-inits <- function() list(N = Nst, alpha = c(runif(2), NA), beta0 = runif(1), beta = runif(4))
+inits <- function() list(N = Nst, alpha = c(runif(2), NA),
+    beta0 = runif(1), beta = runif(4))
 # Parameters monitored
 params <- c("alpha0", "alpha", "beta0", "beta", "totalN")
 # MCMC settings
 na <- 1000 ; ni <- 15000 ; nt <- 10 ; nb <- 5000 ; nc <- 3
 # Run JAGS (ART 22 mins), check convergence and summarize posteriors
 out2 <- jags(bdata, inits, params, "Nmix2.txt", n.adapt = na,
-  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-par(mfrow = c(3, 3)) ; traceplot(out2) ; par(mfrow = c(1, 1))
+    n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+op <- par(mfrow = c(3, 3)) ; traceplot(out2) ; par(op)
 print(out2, digits = 2) # shown partially only
 # mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
 # [...output truncated...]
