@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 1 : RELATIVE ABUNDANCE MODELS FOR POPULATION DYNAMICS
 # =============================================================
-# Code from proofs dated 2020-06-03
+# Code from proofs dated 2020-01-09
 
 library(jagsUI)
 
@@ -22,6 +22,7 @@ T <- ncol(C)
 # 1.5.2 A GLMM with trends in relative abundance
 # ----------------------------------------------
 
+
 # Bundle data (and center Year)
 str(bdata <- list(C = C, yr = year - mean(year), M = M, T = T) )
 # List of 4
@@ -32,7 +33,7 @@ str(bdata <- list(C = C, yr = year - mean(year), M = M, T = T) )
 # Specify model in BUGS language
 cat(file = "model3.txt","
 model {
-  # 'Priors'
+  # ’Priors’
   mu ~ dnorm(0, 0.1) # Grand mean (intercept)
   for(i in 1:M){
     gamma[i] ~ dnorm(mu.gamma, tau.gamma) # Random site-level trends
@@ -50,7 +51,7 @@ model {
   sd.year ~ dunif(0, 2)
   tau <- pow(sd, -2)
   sd ~ dunif(0, 1)
-  # 'Likelihood'
+  # ’Likelihood’
   for (i in 1:M){
     for(t in 1:T){
       C[i,t] ~ dpois(lambda[i,t])
@@ -70,20 +71,23 @@ model {
 ")
 
 # Initial values
-inits <- function() list(mu = rnorm(1), gamma = rnorm(M),
-  site = rnorm(M), year = rnorm(T), eps = array(1, dim = c(M, T)))
+inits <- function() list(mu = rnorm(1), gamma = rnorm(M), site = rnorm(M),
+  year = rnorm(T), eps = array(1, dim=c(M, T)))
+
 # Parameters monitored
-params <- c("mu", "mu.gamma", "sd.gamma", "sd.site", "sd.year", "sd",
-  "gamma", "site", "year", "popindex", "pred.lam1", "pred.lam2")
+params <- c("mu", "mu.gamma", "sd.gamma", "sd.site", "sd.year", "sd", "gamma",
+  "site", "year", "popindex", "pred.lam1", "pred.lam2")
 # MCMC settings
 # na <- 5000 ; ni <- 60000 ; nt <- 40 ; nb <- 20000 ; nc <- 3
-na <- 5000 ; ni <- 6000 ; nt <- 4 ; nb <- 2000 ; nc <- 3  # ~~~~ for testing, 6 mins
+na <- 5000 ; ni <- 6000 ; nt <- 4 ; nb <- 2000 ; nc <- 3  # ~~~~ for testing
+
 # Call JAGS (ART 88 min), check convergence and summarize posteriors
 out3 <- jags(bdata, inits, params, "model3.txt", n.adapt = na, n.chains = nc,
   n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-par(mfrow = c(3,2)) ; traceplot(out3)
+
+par(mfrow = c(3,2)) ; traceplot(out3) ; par(mfrow = c(1,1))
 summary(out3) ; jags.View(out3) ; print(out3$summary[1:800,-c(4:6)], 3)
-# mean sd 2.5% 97.5% Rhat n.eff overlap0 f
+# mean sd 2.5% 97.5% Rhat n.eff overlap 0 f
 # mu -0.456599 0.15677 -0.748280 -0.15097 1.04 55 0 0.998
 # mu.gamma 0.013879 0.00612 0.001937 0.02570 1.00 3000 0 0.986
 # sd.gamma 0.045594 0.00388 0.038483 0.05369 1.00 2744 0 1.000
@@ -99,6 +103,12 @@ summary(out3) ; jags.View(out3) ; print(out3$summary[1:800,-c(4:6)], 3)
 # pred.lam1[1,1] 0.465903 0.23323 0.147836 1.01941 1.00 1844 0 1.000
 # [ ..... ]
 
+# ~~~~~ code for figure 1.5 ~~~~~~~~~~~~~~~~
+op <- par(mfrow = c(1, 2), mar = c(5,5,3,3))
+matplot(year, t(out3$mean$pred.lam1), type = 'l', lty = 1, lwd = 2, xlab = 'Year', ylab = 'Expected abundance', frame = F, ylim = c(0, 32), las = 1)
+matplot(year, t(out3$mean$pred.lam2), type = 'l', lty = 1, lwd = 2, xlab = 'Year', ylab = 'Site-specific trends (standardized)', frame = F, ylim = c(0, 2.6), las = 1)
+par(op)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 table(out3$summary[7:273,'overlap0'])
 # 0 1
@@ -108,13 +118,14 @@ summary(apply(out3$sims.list$gamma > 0, 1, sum))
 # Min. 1st Qu. Median Mean 3rd Qu. Max.
 # 111.0 157.0 166.0 166.2 175.0 216.0
 
-(R2site <- 100 * (out2$mean$sd.site - out3$mean$sd.site) / out2$mean$sd.site)
-(R2year <- 100 * (out2$mean$sd.year - out3$mean$sd.year) / out2$mean$sd.year)
-(R2resi <- 100 * (out2$mean$sd - out3$mean$sd) / out2$mean$sd)
+load("AHM2-01.05.1_out2.RData")
+(R2site <- 100* (out2$mean$sd.site - out3$mean$sd.site) / out2$mean$sd.site)
+(R2year <- 100* (out2$mean$sd.year - out3$mean$sd.year) / out2$mean$sd.year)
+(R2resi <- 100* (out2$mean$sd - out3$mean$sd) / out2$mean$sd)
 # [1] -0.5243542
 # [1] 13.56628
 # [1] 29.6783
 
 # Save output for use in subsequent sections
-save(out3, file="AHM2-01.05.1_out3.RData")
+save(out3, file="AHM2-01.05.2_out3.RData")
 

@@ -8,7 +8,7 @@
 
 library(AHMbook)
 
-# 1.2 Risks in the Naive Interpretation of Relative Abundance
+# 1.2 Risks in the naive interpretation of relative abundance
 # ===========================================================
 
 # Choose constants

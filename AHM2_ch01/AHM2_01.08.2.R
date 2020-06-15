@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 1 : RELATIVE ABUNDANCE MODELS FOR POPULATION DYNAMICS
 # =============================================================
-# Code from proofs dated 2020-06-03
+# Code from proofs dated 2020-01-09
 
 library(AHMbook)
 library(jagsUI)
@@ -37,12 +37,12 @@ sd.lat <- sd(latitude)
 lat <- (latitude - mean.lat ) / sd.lat
 # Get standardized date
 jdate <- white$date - 150 # 1 = Day 151
-date <- (jdate/10) - mean((jdate/10)) # Express in units of 10 days
+date <- (jdate/ 10) - mean((jdate/ 10)) # Express in units of 10 days
 
 # Data bundle
-str(bdata <- list(C = white$C, pop = white$site, year = year, date = date,
-    lat = lat, lat2 = lat^2, npop = max(white$site), nyear = max(year),
-    nobs = length(year), pi = pi) )
+str(bdata <- list(C = white$C, pop = white$site, year = year, date = date, lat = lat,
+    lat2 = lat^2, npop = max(white$site), nyear = max(year), nobs = length(year),
+    pi = pi) )
 # List of 10
 # $ C : int [1:9651] 15 59 53 4 4 16 25 63 74 28 ...
 # $ pop : num [1:9651] 1 1 1 1 1 1 1 1 1 1 ...
@@ -63,7 +63,7 @@ model {
   for(i in 1:npop){
     expn1[i] <- exp(loglam[i])
     loglam[i] ~ dnorm(mu.llam[i], tau.llam)
-    mu.llam[i] <- alpha.llam + beta.llam[1] * lat[i] + beta.llam[2] * lat2[i]
+    mu.llam[i] <- alpha.llam + beta.llam[1]*lat[i] + beta.llam[2]*lat2[i]
   }
   alpha.llam <- log(mean.lambda)
   mean.lambda ~ dunif(1, 300)
@@ -76,8 +76,8 @@ model {
     for(i in 1:npop){
       gamma[i, t] <- exp(loggam[i, t])
       loggam[i,t] <- alpha0.lgam + alpha.lgam.site[i] + alpha.lgam.time[t] +
-      beta.lgam[1] * (t-13) + beta.lgam[2] * lat[i] + beta.lgam[3] * lat2[i] +
-      beta.lgam[4] * lat[i] * (t-13) + beta.lgam[5] * lat2[i] * (t-13)
+          beta.lgam[1] * (t-13) + beta.lgam[2]*lat[i] + beta.lgam[3]*lat2[i] +
+          beta.lgam[4]*lat[i] * (t-13) + beta.lgam[5]*lat2[i]*(t-13)
     }
   }
   alpha0.lgam <- log(mean.gamma)
@@ -98,9 +98,9 @@ model {
   # Mean (or peak) activity period
   for(t in 1:nyear){
     for(i in 1:npop){ # Peak activity period
-      mu[i, t] <- alpha0.mu + alpha.mu.site[i] + alpha.mu.time[t] +
-          beta.mu[1] * (t-13) + beta.mu[2] * lat[i] + beta.mu[3] * lat2[i] +
-          beta.mu[4] * lat[i] * (t-13) + beta.mu[5] * lat2[i] * (t-13)
+      mu[i, t] <- alpha0.mu + alpha.mu.site[i] + alpha.mu.time[t] + beta.mu[1] *
+      (t-13) + beta.mu[2]*lat[i] + beta.mu[3]*lat2[i] + beta.mu[4]*lat[i]*(t-13) +
+      beta.mu[5]*lat2[i]*(t-13)
     }
   }
   alpha0.mu <- mean.mu
@@ -123,8 +123,8 @@ model {
     for(i in 1:npop){ # Length of activity period
       sigma[i, t] <- exp(lsig[i,t]) # Width
       lsig[i,t] <- alpha0.lsig + alpha.lsig.site[i] + alpha.lsig.time[t] +
-          beta.lsig[1] * (t-13) + beta.lsig[2] * lat[i] + beta.lsig[3] * lat2[i] +
-          beta.lsig[4] * lat[i] * (t-13) + beta.lsig[5] * lat2[i] * (t-13)
+          beta.lsig[1] * (t-13) + beta.lsig[2]*lat[i] + beta.lsig[3]*lat2[i] +
+          beta.lsig[4]*lat[i] * (t-13) + beta.lsig[5]*lat2[i]*(t-13)
     }
   }
   alpha0.lsig <- log(mean.sigma)
@@ -142,7 +142,7 @@ model {
   sd.lsig.site ~ dunif(0.001, 1)
   tau.lsig.time <- pow(sd.lsig.time, -2)
   sd.lsig.time ~ dunif(0.001, 1)
-  # 'Likelihood'
+  # ’Likelihood’
   # Model for between-year dynamics
   for(i in 1:npop){
     # Initial year
@@ -150,32 +150,28 @@ model {
     n1[i] <- n[i,1]
     # Autoregressive transitions from t to t+1
     for(t in 2:nyear){
-      n[i,t] ~ dpois(gamma[i, t-1] * n[i,(t-1)])
+      n[i,t] ~ dpois(gamma[i, t-1]*n[i,(t-1)])
     }
   }
   # Phenomenological within-season population model
   for(i in 1:nobs){
     C[i] ~ dpois(lambda[i])
-    lambda[i] <- n[pop[i],year[i]] * (1 / (sigma[pop[i],year[i]] * sqrt(2 * pi)) ) *
-        exp( - pow((date[i] - mu[pop[i], year[i]]),2) / (2 * pow(sigma[pop[i],
-        year[i]], 2)) )
+    lambda[i] <- n[pop[i],year[i]]*(1 / (sigma[pop[i],year[i]]*sqrt(2*pi)) )*exp( -
+        pow((date[i] - mu[pop[i], year[i]]),2) / (2*pow(sigma[pop[i],year[i]], 2)) )
   }
 }
 ")
-
 # Initial values
 nst <- tapply(bdata$C, list(bdata$pop, bdata$year), max, na.rm = TRUE)
 nst[is.na(nst)] <- round(mean(nst, na.rm = TRUE))
 inits <- function() list(n = 2*nst)
-
 # Parameters monitored
 # Choose if want both hyperparams and latent variables
-params <- c("mu.llam", "mean.lambda", "alpha.llam", "beta.llam",
-    "sd.llam", "alpha0.lgam", "mean.gamma", "alpha.lgam", "beta.lgam",
-    "sd.lgam.site", "sd.lgam.time", "mean.mu", "alpha0.mu", "beta.mu",
-    "sd.mu.site", "sd.mu.time", "mean.sigma", "mu.lsig", "alpha0.lsig",
-    "beta.lsig", "sd.lsig.site", "sd.lsig.time", "expn1", "n1", "n",
-    "alpha.lgam.site", "alpha.lgam.time", "gamma", "alpha.mu.site",
+params <- c("mu.llam", "mean.lambda", "alpha.llam", "beta.llam", "sd.llam",
+    "alpha0.lgam", "mean.gamma", "alpha.lgam", "beta.lgam", "sd.lgam.site",
+    "sd.lgam.time", "mean.mu", "alpha0.mu", "beta.mu", "sd.mu.site", "sd.mu.time",
+    "mean.sigma", "mu.lsig", "alpha0.lsig", "beta.lsig", "sd.lsig.site", "sd.lsig.time",
+    "expn1", "n1", "n", "alpha.lgam.site", "alpha.lgam.time", "gamma", "alpha.mu.site",
     "alpha.mu.time", "mu", "alpha.lsig.site", "alpha.lsig.time", "sigma")
 # MCMC settings
 # na <- 10000 ; ni <- 150000 ; nt <- 50 ; nb <- 100000 ; nc <- 3
@@ -183,7 +179,7 @@ na <- 1000 ; ni <- 15000 ; nt <- 5 ; nb <- 10000 ; nc <- 3 # ~~~~ for testing
 # Call JAGS (ART 33 hours)
 out13 <- jags(bdata, inits, params, "modelPH.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-summary(out13) ; jags.View(out13)
+summary(out13) ; View(out13)
 # Convergence check
 par(mfrow = c(3,3), mar = c(3,3,3,2)) ; traceplot(out13) # All params
 # Posterior summary only for parameters with Rhat > 1.1
