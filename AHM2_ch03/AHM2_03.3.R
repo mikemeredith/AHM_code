@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 3 : HIERARCHICAL MODELS OF SURVIVAL
 # ===========================================
-# Code from proofs dated 2020-06-03
+# Code from proofs dated 2020-01-09
 
 library(AHMbook)
 library(jagsUI)
@@ -32,6 +32,7 @@ round(sort(phi),2) # not shown
 round(sort(p),2) # not shown
 
 str(ch <- array(NA, dim = c(100, 6, nspec)))
+
 # Simulate data set for 50 species
 for(s in 1:nspec){
   # Plug each pair (phi, p) into simCJSto create a data set
@@ -45,19 +46,17 @@ ch[1:5,,] # First 5 individuals only
 head(tmp <- apply(ch, c(1,3), sum)) # Number of captures (first 6 ind.)
 par(mfrow = c(3,3))
 devAskNewPage(dev.interactive(orNone=TRUE)) # ~~~~ prefered to 'browser()'
-
 for(k in 1:nspec){ # Capture-frequency for each species
-  plot(table(tmp[,k]), main = paste('Capture frequencies (species', k, ')'),
-  xlim = c(0, data$n.occ), ylab = 'Number of ind.', frame = F)
-  # browser()  # ~~~~ take out for testing
+  plot(table(tmp[,k]), main = paste('Capture frequencies (species', k, ')'), xlim = c(0,
+  data$n.occ), ylab = 'Number of ind.', frame = F)
+  # browser() # ~~~~ take out for autotesting
 }
 plot(table(tmp), main = 'Overall capture frequencies\n (all species)',
-    xlim = c(0, data$n.occ), ylab = 'Number of ind.', frame = F, type = 'h',
-    lend = 'butt', lwd = 10)
+    xlim = c(0, data$n.occ), ylab = 'Number of ind.', frame = F, type = 'h', lend = 'butt', lwd = 10)
 
 # Bundle and summarize data set
-str(bdata <- list(y = ch, f = data$f, n.ind = data$n.ind,
-    n.occ = data$n.occ, nspec = dim(ch)[3]))
+str(bdata <- list(y = ch, f = data$f, n.ind = data$n.ind, n.occ = data$n.occ,
+    nspec = dim(ch)[3]))
 # List of 5
 # $ y : num [1:100, 1:6, 1:50] 1 1 1 1 1 1 1 1 1 1 ...
 # $ f : int [1:100] 1 1 1 1 1 1 1 1 1 1 ...
@@ -69,7 +68,7 @@ str(bdata <- list(y = ch, f = data$f, n.ind = data$n.ind,
 cat(file = "cjs3.txt","
 model {
   # Priors and hyperpriors
-  # Define phi and p as random-effects from a prior distribution
+  # Define phi and p as random effects from a prior distribution
   # This is the submodel for how species vary in the community
   for(s in 1:nspec){
     phi[s] <- ilogit(lphi[s])
@@ -87,7 +86,7 @@ model {
   mean.p ~ dunif(0,1) # mean hyperparam.
   tau.lp <- pow(sigma.lp, -2)
   sigma.lp ~ dunif(0, 3) # sd hyperparam.
-  # 'Likelihood'
+  # ’Likelihood’
   for(s in 1:nspec){ # Loop over species
     for(i in 1:n.ind){ # Loop over individuals
       # Define latent state at first capture
@@ -95,7 +94,7 @@ model {
       for(t in (f[i]+1):n.occ){ # Loop over occasions
         # State process: the latent alive/dead state
         z[i,t,s] ~ dbern(z[i,t-1,s] * phi[s])# phi indexed by species now
-        # Obs. process: relates true state to observed state, y = ch
+        # Obs. process: relates true state to observed state, y [ ch
         y[i,t,s] ~ dbern(z[i,t,s] * p[s]) # p also indexed by species
       }
     }
@@ -110,14 +109,13 @@ for(s in 1:50){
 }
 inits <- function(){list(z = zst, mean.phi = runif(1), sigma.lphi = runif(1),
     mean.p = runif(1), sigma.lp = runif(1))}
-# Parameters monitored, could add z here
-params<- c("mean.phi", "mu.lphi", "sigma.lphi", "mean.p", "mu.lp",
-    "sigma.lp", "phi", "p")
+# Parameters monitored
+params<- c("mean.phi", "mu.lphi", "sigma.lphi", "mean.p", "mu.lp", "sigma.lp", "phi", "p") # could add "z"
 # MCMC settings
-na <- 1000 ; ni <- 10000 ; nt <- 5 ; nb <- 5000 ; nc <- 3  # 6 mins
+na <- 1000 ; ni <- 10000 ; nt <- 5 ; nb <- 5000 ; nc <- 3
 # Call JAGS (ART 12 min), check convergence and summarize posteriors
-out3 <- jags(bdata, inits, params, "cjs3.txt", n.adapt = na, n.chains = nc,
-    n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+out3 <- jags(bdata, inits, params, "cjs3.txt", n.adapt = na, n.chains = nc, n.thin = nt,
+    n.iter = ni, n.burnin = nb, parallel = TRUE)
 par(mfrow = c(3,3)) ; traceplot(out3)
 print(out3, 3)
 # mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
@@ -129,25 +127,61 @@ print(out3, 3)
 # sigma.lp 0.423 0.088 0.255 0.421 0.601 FALSE 1.000 1.003 2642
 # phi[1] 0.465 0.070 0.336 0.463 0.611 FALSE 1.000 1.000 2588
 # phi[2] 0.470 0.064 0.350 0.468 0.604 FALSE 1.000 1.000 3000
-# [ ... output truncated ... ]
+# [ ... Output truncated ... ]
 # p[49] 0.282 0.059 0.177 0.280 0.410 FALSE 1.000 1.000 3000
 # p[50] 0.216 0.057 0.119 0.211 0.337 FALSE 1.000 1.000 3000
+
+# ~~~~ plotting code from MS dated 2018-12-01 ~~~~~~~~~
+# ~~~ these do histograms instead of density plots ~~~~
+# Fig 3.3
+# Compare truth and estimates (marginal posteriors) for hyperparams
+par(mfrow = c(2, 2), las = 1)
+hist(out3$sims.list$mu.lphi, col = "gray", main = "logit(mean community survival)", xlab = "mu.lphi", ylab = "Frequency")
+abline(v = mean(out3$sims.list$mu.lphi), col = "blue", lwd = 2)
+abline(v = mu.lphi, col = "red", lwd = 2)
+
+hist(out3$sims.list$sigma.lphi, col = "gray", main = "logit(community survival heterogeneity)", xlab = "sigma.lphi", ylab = "Frequency")
+abline(v = mean(out3$sims.list$sigma.lphi), col = "blue", lwd = 2)
+abline(v = sigma.lphi, col = "red", lwd = 2)
+
+hist(out3$sims.list$mu.lp, col = "gray", main = "logit(mean community recapture)", xlab = "mu.lp", ylab = "Frequency")
+abline(v = mean(out3$sims.list$mu.lp), col = "blue", lwd = 2)
+abline(v = mu.lp, col = "red", lwd = 2)
+
+hist(out3$sims.list$sigma.lp, col = "gray", main = "logit(community recapture heterogeneity)", xlab = "sigma.lp", ylab = "Frequency")
+abline(v = mean(out3$sims.list$sigma.lp), col = "blue", lwd = 2)
+abline(v = sigma.lp, col = "red", lwd = 2)
+
+# Compare truth and estimates for species-level params
+par(mfrow = c(4, 4), las = 1)
+for(s in 1:nspec){ # Print 8 species per page
+  hist(out3$sims.list$phi[,s], col = "gray", main = paste("Survival for species", s), xlab = "Apparent survival (phi)", freq = F, xlim = c(0,1))
+  abline(v = mean(out3$sims.list$phi[,s]), col = "blue", lwd = 2)
+  abline(v = phi[s], col = "red", lwd = 2)
+  hist(out3$sims.list$p[,s], col = "gray", main = paste("Recapture for species", s), xlab = "Recapture (p)", freq = F, xlim = c(0,1))
+  abline(v = mean(out3$sims.list$p[,s]), col = "blue", lwd = 2)
+  abline(v = p[s], col = "red", lwd = 2)
+  # browser()  # ~~~ take out browser for testing
+}
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 # 3.3.2 Community CJS models for improved estimates of species-level parameters
 # -----------------------------------------------------------------------------
 
 # Create "hyperdata" for the 50 species: species-level phi and p
 set.seed(123)
-nspec <- 50 # Choose number of species
-range.phi <- c(0.3, 0.7) # Draw survival from a Uniform with these bounds
-range.p <- c(0.1, 0.5) # Draw recapture from another Uniform
+nspec <- 50 # choose number of species
+range.phi <- c(0.3, 0.7) # Draw survival from a uniform with these bounds
+range.p <- c(0.1, 0.5) # Draw recapture from another uniform
 # Draw values of survival and recapture on the probability scale
 phi <- runif(n = nspec, range.phi[1], range.phi[2]) # survival
 p <- runif(n = nspec, range.p[1], range.p[2]) # recapture
 round(sort(phi),2) # Look at simulated values for phi (not shown)
-round(sort(p),2) # ... and for p (not shown either)
+round(sort(p),2) # ... and for p (also not shown)
 
 ch <- array(NA, dim = c(20, 6, nspec))
+
 # Simulate data set for 50 species
 for(s in 1:nspec){
   # Plug each pair (phi, p) into simCJS to create a data set
@@ -155,10 +189,9 @@ for(s in 1:nspec){
   # Save the data in slice i of the 3D results array called ch
   ch[,,s] <- data$ch
 }
-
 # Bundle and summarize data set
-str(bdata <- list(y = ch, f = data$f, n.ind = data$n.ind,
-    n.occ = data$n.occ, nspec = dim(ch)[3]))
+str(bdata <- list(y = ch, f = data$f, n.ind = data$n.ind, n.occ = data$n.occ,
+  nspec = dim(ch)[3]))
 # List of 5
 # $ y : num [1:20, 1:6, 1:50] 1 1 1 1 0 0 0 0 0 0 ...
 # $ f : int [1:20] 1 1 1 1 2 2 2 2 3 3 ...
@@ -166,19 +199,17 @@ str(bdata <- list(y = ch, f = data$f, n.ind = data$n.ind,
 # $ n.occ: num 6
 # $ nspec: int 50
 
-# We first fit the fixed-effects, multispecies CJS model
-
 # Specify model in BUGS language
 cat(file = "cjs4f.txt","
 model {
-  # Priors
+# Priors
   # These are independent for each phi and p,
   # and there are no shared parameters that are estimated
   for(s in 1:nspec){
     phi[s] ~ dunif(0, 1)
     p[s] ~ dunif(0, 1)
   }
-  # 'Likelihood'
+  # ’Likelihood’
   for(s in 1:nspec){ # Loop over species
     for(i in 1:n.ind){ # Loop over individuals
       # Define latent state at first capture
@@ -186,7 +217,7 @@ model {
       for(t in (f[i]+1):n.occ){ # Loop over occasions
         # State process: the latent alive/dead state
         z[i,t,s] ~ dbern(z[i,t-1,s] * phi[s]) # phi indexed by species now
-        # Obs. process: relates true state to observed state, y = ch
+        # Obs. process: relates true state to observed state, y [ ch
         y[i,t,s] ~ dbern(z[i,t,s] * p[s]) # p also indexed by species
       }
     }
@@ -205,24 +236,22 @@ params <- c("phi", "p") # could add "z"
 # MCMC settings
 na <- 1000 ; ni <- 20000 ; nt <- 10 ; nb <- 10000 ; nc <- 3
 # Call JAGS (ART 3 min), check convergence and summarize posteriors
-out4f <- jags(bdata, inits, params, "cjs4f.txt", n.adapt = na,
-    n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+out4f <- jags(bdata, inits, params, "cjs4f.txt", n.adapt = na, n.chains = nc, n.thin = nt,
+    n.iter = ni, n.burnin = nb, parallel = TRUE)
 par(mfrow = c(3, 3)) ; traceplot(out4f)
 print(out4f, 3) # not shown
 
 # Next, we fit the random-effects CJS model.
-
 # Initial values
 inits <- function(){list(z = zst, mean.phi = runif(1), sigma.lphi = runif(1),
-    mean.p = runif(1), sigma.lp = runif(1))}
+  mean.p = runif(1), sigma.lp = runif(1))}
 # Parameters monitored
-params <- c("mean.phi", "mu.lphi", "sigma.lphi", "mean.p", "mu.lp",
-    "sigma.lp", "phi", "p")
+params <- c("mean.phi", "mu.lphi", "sigma.lphi", "mean.p", "mu.lp", "sigma.lp", "phi", "p")
 # MCMC settings
 na <- 1000 ; ni <- 20000 ; nt <- 10 ; nb <- 10000 ; nc <- 3
 # Call JAGS (ART 3 min), check convergence and summarize posteriors
-out4r <- jags(bdata, inits, params, "cjs3.txt", n.adapt = na, n.chains = nc,
-    n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+out4r <- jags(bdata, inits, params, "cjs3.txt", n.adapt = na, n.chains = nc, n.thin = nt,
+  n.iter = ni, n.burnin = nb, parallel = TRUE)
 par(mfrow = c(3, 3)) ; traceplot(out4r)
 print(out4r, 3) # not shown
 
@@ -272,8 +301,7 @@ mu.alpha.beija <- 0.7 # logit-linear intercept beijaflor=yes
 beta.nonbeija <- 0.03 # logit-linear slope for beijaflor=no
 beta.beija <- 0.01 # logit-linear slope for beijaflor=yes
 (PV <- c(mu.alpha.nonbeija, mu.alpha.beija, beta.nonbeija, beta.beija))
-
-# (3) Expected survival at link scale = linear predictor (LinP)
+# (3) Expected survival at link scale [ linear predictor (LinP)
 (LinP <- DM %*% PV) # %*% does matrix multiplication
 # [,1]
 # 1 0.5704
@@ -281,18 +309,16 @@ beta.beija <- 0.01 # logit-linear slope for beijaflor=yes
 # [ ... output truncated ... ]
 # 49 -0.4788
 # 50 -0.2688
-
 # (4) Add random species effects and pick value of hyperparameter sigma_phi
-sigma_phi
 sigma.phi <- 0.4
 alpha0 <- rnorm(50, 0, sigma.phi)
 lphi <- LinP + alpha0
 # (5) Inverse-logit transformation yields survival for every species
-exp.phi <- plogis(LinP) # Expected survival (w/o species random-effects)
-phi <- plogis(lphi) # Realized survival (with species random-effects)
+exp.phi <- plogis(LinP) # Expected survival (w/o species random effects)
+phi <- plogis(lphi) # Realized survival (with species random effects)
 # All the simulated data (not shown)
 data.frame(beija, mass, 'expected survival' = round(exp.phi,3),
-'realized survival' = round(phi, 3))
+  'realized survival' = round(phi, 3))
 
 # Simulate recapture probabilites for 50 species
 mu.lp <- -1 # mean recapture of all species on logit scale
@@ -307,10 +333,11 @@ for(s in 1:nspec){
   ch[,,s] <- data$ch
 }
 
+
 # Bundle and summarize data set
 new.beija <- rep(c(1, 2), each = 25) # 1 is non-beija, 2 is beija-flor
 str(bdata <- list(y = ch, f = data$f, n.ind = data$n.ind, n.occ = data$n.occ,
-    nspec = dim(ch)[3], beija = new.beija, massC = massC))
+  nspec = dim(ch)[3], beija = new.beija, massC = massC))
 # List of 7
 # $ y : num [1:100, 1:6, 1:50] 1 1 1 1 1 1 1 1 1 1 ...
 # $ f : int [1:100] 1 1 1 1 1 1 1 1 1 1 ...
@@ -345,7 +372,7 @@ model {
   mean.p ~ dunif(0,1) # Community average recapture
   tau.lp <- pow(sigma.lp, -2)
   sigma.lp ~ dunif(0, 1) # Community heterogeneity in recapture
-  # 'Likelihood'
+  # ’Likelihood’
   for(s in 1:nspec){ # Loop over species
     for(i in 1:n.ind){ # Loop over individuals
       # Define latent state at first capture
@@ -353,7 +380,7 @@ model {
       for(t in (f[i]+1):n.occ){ # Loop over occasions
         # State process: the latent alive/dead state
         z[i,t,s] ~ dbern(z[i,t-1,s] * phi[s]) # phi indexed by species now
-        # Obs. process: relates true state to observed state, y = ch
+        # Obs. process: relates true state to observed state, y [ ch
         y[i,t,s] ~ dbern(z[i,t,s] * p[s]) # p also indexed by species
       }
     }
@@ -369,13 +396,13 @@ for(s in 1:50){
 inits <- function(){list(z = zst, mean.phi = runif(2), sigma.lphi = runif(1),
     mean.p = runif(1), sigma.lp = runif(1))}
 # Parameters monitored
-params <- c('mean.phi', 'alpha.lphi', 'beta.lphi', 'sigma.lphi',
-    'mean.p', 'mu.lp', 'sigma.lp', 'mu.lphi', 'phi', 'p')
+params <- c('mean.phi', 'alpha.lphi', 'beta.lphi', 'sigma.lphi', 'mean.p', 'mu.lp',
+    'sigma.lp', 'mu.lphi', 'phi', 'p')
 # MCMC settings
 na <- 5000 ; ni <- 20000 ; nt <- 10 ; nb <- 10000 ; nc <- 3
 # Call JAGS (ART 14 min), check convergence and summarize posteriors
-out5 <- jags(bdata, inits, params, "cjs5.txt", n.adapt = na, n.chains = nc,
-    n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+out5 <- jags(bdata, inits, params, "cjs5.txt", n.adapt = na, n.chains = nc, n.thin = nt,
+    n.iter = ni, n.burnin = nb, parallel = TRUE)
 par(mfrow = c(3, 3)) ; traceplot(out5)
 print(out5, 2)
 # mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
@@ -390,3 +417,6 @@ print(out5, 2)
 # mu.lp -1.13 0.10 -1.32 -1.12 -0.95 FALSE 1.00 1.01 290
 # sigma.lp 0.45 0.09 0.29 0.45 0.65 FALSE 1.00 1.01 162
 # [ ... output truncated ... ]
+
+
+

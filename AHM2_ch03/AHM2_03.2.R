@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 3 : HIERARCHICAL MODELS OF SURVIVAL
 # ===========================================
-# Code from proofs dated 2020-06-03
+# Code from proofs dated 2020-01-09
 
 library(AHMbook)
 library(jagsUI)
@@ -13,6 +13,7 @@ library(jagsUI)
 # ====================================
 
 # 3.2.1 The basic CJS model as a state-space, or hierarchical, model
+# ------------------------------------------------------------------
 # (no code)
 
 # 3.2.2 A simulation function for data under basic CJS models
@@ -48,16 +49,16 @@ sd.lphi <- 1 # SD of logit-normal survival
 sd.lp <- 2 # ..... recapture
 nyear <- 20
 par(mfrow = c(1, 2))
-hist(plogis(rnorm(10^6, qlogis(mean.phi), sd.lphi)), col = 'grey',
+hist(plogis(rnorm(10^6, qlogis(mean.phi), sd.lphi)), col = 'gray',
     main = 'Distribution of phi', xlab = 'Apparent survival (phi)', freq = F)
-hist(plogis(rnorm(10^6, qlogis(mean.p), sd.lp)), col = 'grey', main = 'Distribution of p',
+hist(plogis(rnorm(10^6, qlogis(mean.p), sd.lp)), col = 'gray', main = 'Distribution of p',
     xlab = 'Recapture (p)', freq = F) # not shown
 phi <- plogis(rnorm(nyear-1, qlogis(mean.phi), sd.lphi))
 p <- plogis(rnorm(nyear-1, qlogis(mean.p), sd.lp))
 str(data <- simCJS(n.occ = nyear, n.marked = 20, phi = phi, p = p))
 
-# 3.2.3 Bayesian and frequentist analysis of the simplest possible CJS model
-# --------------------------------------------------------------------------
+# 3.2.3 BAYESIAN AND FREQUENTIST ANALYSIS OF THE SIMPLEST POSSIBLE CJS MODEL
+
 # Generate data set
 set.seed(1)
 str(data <- simCJS())
@@ -73,14 +74,12 @@ library(wiqid)
 # AIC: 244.6032
 
 # Bundle and summarize data set
-str(bdata <- list(y = data$ch, f = data$f, n.ind = data$n.ind,
-    n.occ = data$n.occ))
+str(bdata <- list(y = data$ch, f = data$f, n.ind = data$n.ind, n.occ = data$n.occ))
 # List of 4
 # $ y : num [1:100, 1:6] 1 1 1 1 1 1 1 1 1 1 ...
 # $ f : int [1:100] 1 1 1 1 1 1 1 1 1 1 ...
 # $ n.ind: num 100
 # $ n.occ: num 6
-
 # Specify model in BUGS language
 cat(file = "cjs1.txt","
 model {
@@ -94,10 +93,10 @@ model {
     for (t in (f[i]+1):n.occ){
       # State process: the latent alive/dead state
       z[i,t] ~ dbern(z[i,t-1] * phi)
-      # Observation process: relates true state to observed state, y = ch
+      # Observation process: relates true state to observed state, y [ ch
       y[i,t] ~ dbern(z[i,t] * p)
-    }
-  }
+    } #t
+  } #i
 }
 ")
 
@@ -108,8 +107,8 @@ params <- c("phi", "p", "z")
 # MCMC settings
 na <- 5000 ; ni <- 120000 ; nt <- 10 ; nb <- 20000 ; nc <- 3
 # Call JAGS (ART 1 min), check convergence and summarize posteriors
-out1 <- jags(bdata, inits, params, "cjs1.txt", n.adapt = na,
-    n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+out1 <- jags(bdata, inits, params, "cjs1.txt", n.adapt = na, n.chains = nc, n.thin = nt,
+    n.iter = ni, n.burnin = nb, parallel = TRUE)
 par(mfrow = c(2,3)) ; traceplot(out1)
 print(out1, 3)
 # mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
@@ -117,7 +116,7 @@ print(out1, 3)
 # p 0.443 0.076 0.302 0.441 0.597 FALSE 1 1.000 9372
 # z[1,1] 1.000 0.000 1.000 1.000 1.000 FALSE 1 NA 1
 # z[2,1] 1.000 0.000 1.000 1.000 1.000 FALSE 1 NA 1
-# [ ... output truncated ... ]
+# [ ... Output truncated ... ]
 # z[99,6] 0.479 0.500 0.000 0.000 1.000 TRUE 1 1.000 27604
 # z[100,6] 0.476 0.499 0.000 0.000 1.000 TRUE 1 1.000 30000
 
@@ -128,20 +127,18 @@ print(cbind(mle$real[c(1,6),], out1$summary[1:2, c(1, 3, 7)]), 3)
 
 # Plot estimates of z matrix (Fig. 3.2)
 mapPalette <- colorRampPalette(c("white", "black"))
-image(x = 1:data$n.occ, y = 1:data$n.ind, z = t(out1$mean$z),
-    col = mapPalette(10), axes = T, xlab = "Year", ylab = "Individual")
+image(x = 1:data$n.occ, y = 1:data$n.ind, z = t(out1$mean$z), col = mapPalette(10),
+    axes = T, xlab = "Year", ylab = "Individual")
 
+# 3.2.4 BAYESIAN ANALYSIS OF THE FULLY TIME-DEPENDENT CJS MODEL
 
-# 3.2.4 Bayesian analysis of the fully time-dependent CJS model
-# -------------------------------------------------------------
 # Generate a slightly larger data set
 set.seed(24)
 str(data <- simCJS(n.occ = 6, n.marked = 100, phi = runif(5, 0.2, 0.8),
     p = runif(5, 0.2, 0.9)))
 
 # Bundle and summarize data set
-str(bdata <- list(y = data$ch, f = data$f, n.ind = data$n.ind,
-    n.occ = data$n.occ))
+str(bdata <- list(y = data$ch, f = data$f, n.ind = data$n.ind, n.occ = data$n.occ))
 
 # Specify model in BUGS language
 cat(file = "cjs2.txt","
@@ -158,13 +155,12 @@ model {
     for (t in (f[i]+1):n.occ){
       # State process: the latent alive/dead state
       z[i,t] ~ dbern(z[i,t-1] * phi[t-1])
-      # Observation process: relates true state to observed state, y = ch
+      # Observation process: relates true state to observed state, y [ ch
       y[i,t] ~ dbern(z[i,t] * p[t-1])
-    }
-  }
+    } #t
+  } #i
 }
 ")
-
 # Initial values
 inits <- function(){list(z = zinit(data$ch))}
 # Parameters monitored
@@ -172,8 +168,8 @@ params <- c("phi", "p", "z")
 # MCMC settings
 na <- 1000 ; ni <- 20000 ; nt <- 5 ; nb <- 10000 ; nc <- 3
 # Call JAGS (ART 2 min), check convergence and summarize posteriors
-out2 <- jags(bdata, inits, params, "cjs2.txt", n.adapt = na,
-    n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = T)
+out2 <- jags(bdata, inits, params, "cjs2.txt", n.adapt = na, n.chains = nc, n.thin = nt,
+    n.iter = ni, n.burnin = nb, parallel = T)
 par(mfrow = c(2,3)) ; traceplot(out2)
 print(out2, 3) # not shown
 
@@ -189,3 +185,8 @@ print(cbind(truth=c(data$phi, data$p), out2$summary[1:10, c(1,3,7)]), 2)
 # p[3] 0.73 0.61 0.46 0.75
 # p[4] 0.76 0.86 0.69 0.97
 # p[5] 0.38 0.54 0.22 0.97
+
+
+
+
+

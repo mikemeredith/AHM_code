@@ -4,15 +4,16 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 3 : HIERARCHICAL MODELS OF SURVIVAL
 # ===========================================
+# Code from proofs dated 2020-06-03
 
 library(AHMbook)
 library(jagsUI)
 bugs.dir <- "C:/WinBUGS14"
 
-# 3.4 SPATIAL HIERARCHICAL CJS MODELS
+# 3.4 Spatial hierarchical CJS models
 # ===================================
 
-# 3.4.1 BRITISH WILLOW WARBLER DATA
+# 3.4.1 British willow warbler data
 # ---------------------------------
 
 # Load the data set (in library AHMbook)
@@ -57,6 +58,7 @@ summary(as.numeric(table(sitevec)))
 # Map of GDD covariate values and 193 CES locations (Fig. 3.11)
 library(raster)
 mapPalette <- colorRampPalette(c("gray", "yellow", "orange", "red"))
+
 r1 <- with(cells, rasterFromXYZ(data.frame(x = lon, y = lat, z = gdd)))
 plot(r1, col = mapPalette(100), axes = F, box = F,
     main ="Map of GDD covariate with 193 CES locations")
@@ -95,8 +97,7 @@ for(k in 1:nsite){
 }
 MARR ; R # Look at them and make sure you understand them
 
-# 3.4.2 A HIERARCHICAL CJS MODEL WITH RANDOM SITE AND RANDOM YEAR EFFECTS
-# -----------------------------------------------------------------------
+# 3.4.2 A hierarchical CJS model with random site and random year effects
 
 # Bundle and summarize data set
 str(bdata <- list(MARR = MARR, R = R, n.site = nsite, n.occ = nyear))
@@ -178,8 +179,9 @@ inits <- function(){list(mean.phi = runif(1), mean.p = runif(1))}
 # Parameters monitored
 params <- c("mean.phi", "mean.p", "sd.lphi.site", "sd.lp.site", "sd.lphi.time",
     "sd.lp.time", "mean.phi.site", "mean.p.site", "mean.phi.time", "mean.p.time")
-# MCMC settings# MCMC settings
-na <- 1000 ; ni <- 30000 ; nt <- 10 ; nb <- 20000 ; nc <- 3
+# MCMC settings
+# na <- 1000 ; ni <- 30000 ; nt <- 10 ; nb <- 20000 ; nc <- 3
+na <- 1000 ; ni <- 3000 ; nt <- 1 ; nb <- 2000 ; nc <- 3  # ~~~ for testing
 # Call JAGS (ART 192 min), check convergence and summarize posteriors
 out6 <- jags(bdata, inits, params, "cjs6.txt", n.adapt = na, n.chains = nc, n.thin = nt,
     n.iter = ni, n.burnin = nb, parallel = TRUE)
@@ -207,11 +209,11 @@ plot(1:193, out6$mean$mean.p.site, xlab = 'Site', ylab = 'Recapture', frame = F,
 segments(1:193, out6$q2.5$mean.p.site, 1:193, out6$q97.5$mean.p.site)
 abline(h = out6$mean$mean.p, lty = 1, lwd = 2)
 
-# 3.4.3 ADDING SPATIAL COVARIATES INTO THE HIERARCHICAL CJS MODEL
+# 3.4.3 Adding spatial covariates into the hierarchical CJS model
 # ---------------------------------------------------------------
 
 # Scale linear and squared GDD separately and latitude (for entire grid)
-scaled.gdd1 <- standardize(cells$gdd)  #################
+scaled.gdd1 <- standardize(cells$gdd)
 scaled.gdd2 <- standardize(cells$gdd^2)
 scaled.lat <- standardize(cells$lat)
 # Pull out GDD and LATITUDE values for 193 sites (using CellID)
@@ -318,7 +320,7 @@ params <- c("mean.phi", "mean.p", "alpha.mu.lphi", "mu.lp",
     "sd.lphi.site", "sd.lp.site", "sd.lphi.time", "sd.lp.time", "mean.phi.site",
     "mean.p.site", "mean.phi.time", "mean.p.time", "beta1", "beta2", "beta3")
     # , "phi.grid" # for predictions within JAGS
-    
+
 # MCMC settings
 # na <- 5000 ; ni <- 60000 ; nt <- 30 ; nb <- 30000 ; nc <- 3
 na <- 5000 ; ni <- 6000 ; nt <- 3 ; nb <- 3000 ; nc <- 3 # ~~~~~~~~~ for testing
@@ -345,7 +347,8 @@ print(out7, 3)
 # beta2 -0.735 0.506 -1.683 -0.730 0.248 TRUE 0.931 1.016 153
 # beta3 0.320 0.102 0.123 0.323 0.519 FALSE 0.999 1.003 664
 
-ncell <- nrow(cells) 
+# ncell <- nrow(cov.grid) ###############
+ncell <- nrow(cells) ###############
 phi.grid <- array(NA, dim = c(ncell, out7$mcmc.info$n.samples))
 # Derived quantities: predictions for entire grid
 sims <- out7$sims.list # Grab the posterior simulations
@@ -355,279 +358,4 @@ for (s in 1:ncell){
 }
 post.mean <- apply(phi.grid, 1, mean) # Posterior mean
 post.sd <- apply(phi.grid, 1, sd) # Posterior standard deviation
-
-# 3.4.4 FITTING A SPATIAL HIERARCHICAL CJS MODEL WITH SPATIAL AUTOCORRELATION ONLY
-# --------------------------------------------------------------------------------
-
-# Blocks with a distance between d1 and d2 comprise the neighborhood
-library(spdep)
-blockcoordgrid <- cbind(as.matrix(blocks))
-neigh <- dnearneigh(blockcoordgrid, d1 = 0, d2 = sqrt(2 * 25^2)+ 0.1)
-str(winnb <- nb2WB(neigh)) # Function to get CAR ingredients for BUGS
-# List of 3
-# $ adj : int [1:3458] 2 3 4 1 3 5 6 1 2 4 ... # ID of neighbors
-# $ weights: num [1:3458] 1 1 1 1 1 1 1 1 1 1 ... # Weights: here, equal
-# $ num : int [1:495] 3 4 6 5 3 6 6 6 5 5 ... # Number of neighbors
-
-# Frequency distribution of the number of neighbors
-table(winnb$num) # Every block is connected to at least two neighbors
-
-# Reformat the m-array for WinBUGS
-dim(MARR) # The nyear = 11 dimension (now #2) must come last for WinBUGS
-dim(MARRWB <- aperm (MARR, c(3, 1, 2))) # MARR for WinBUGS
-# Bundle and summarize data set for WinBUGS
-str(bdata <- list(MARRWB = MARRWB, R = R, n.site = nsite, n.occ = nyear, n.block = nblock,
-    BlockID = CES$BlockID, adj = winnb$adj, weights = winnb$weights, num = winnb$num))
-# List of 9
-# $ MARRWB : num [1:193, 1:10, 1:11] 1 3 0 2 0 0 0 0 0 0 ...
-# $ R : num [1:10, 1:193] 13 5 0 0 0 0 0 0 0 0 ...
-# $ n.site : int 193
-# $ n.occ : int 11
-# $ n.block: int 495
-# $ BlockID: int [1:193] 25 77 204 110 222 283 119 234 295 152 ...
-# $ adj : int [1:3458] 2 3 4 1 3 5 6 1 2 4 ...
-# $ weights: num [1:3458] 1 1 1 1 1 1 1 1 1 1 ...
-# $ num : int [1:495] 3 4 6 5 3 6 6 6 5 5 ...
-
-# Specify model in BUGS language
-cat(file = "cjs8.txt","
-model {
-  # Priors and linear models
-  for (s in 1:n.site){
-    for (t in 1:(n.occ-1)){
-      phi[t, s] <- 1 / (1 + exp(-lphi[t, s])) # survival
-      p[t, s] <- 1 / (1 + exp(-lp[t, s])) # recapture
-      lphi[t, s] <- alpha.lphi.site[s] + beta.lphi.time[t]
-      lp[t, s] <- alpha.lp.site[s] + beta.lp.time[t]
-    }
-    # rho is spatial effect at the block level
-    alpha.lphi.site[s] <- mu.lphi + eta[BlockID[s]]
-    alpha.lp.site[s] ~ dnorm(mu.lp, tau.lp.site) I(-12, 12)
-    # backtransform site means
-    mean.p.site[s] <- 1 / (1 + exp(-alpha.lp.site[s]))
-  }
-  for (t in 1:(n.occ-1)){
-    beta.lphi.time[t] ~ dnorm(0, tau.lphi.time) I(-12, 12)
-    beta.lp.time[t] ~ dnorm(0, tau.lp.time) I(-12, 12)
-    # backtransform time means
-    mean.phi.time[t] <- 1 / (1 + exp(-mu.lphi + beta.lphi.time[t]))
-    mean.p.time[t] <- 1 / (1 + exp(-mu.lphi + beta.lp.time[t]))
-  }
-  # Hyperpriors for hyperparams
-  mu.lphi <- logit(mean.phi)
-  mean.phi ~ dunif(0, 1)
-  mu.lp <- logit(mean.p)
-  mean.p ~ dunif(0, 1)
-  tau.lp.site <- pow(sd.lp.site, -2)
-  sd.lp.site ~ dunif(0, 2)
-  tau.lphi.time <- pow(sd.lphi.time, -2)
-  sd.lphi.time ~ dunif(0, 1)
-  tau.lp.time <- pow(sd.lp.time, -2)
-  sd.lp.time ~ dunif(0, 1)
-  # CAR prior distribution for spatial random effects eta
-  # NOTE: this is defined on the entire grid of 495 blocks
-  eta[1:n.block] ~ car.normal(adj[], weights[], num[], tau)
-  tau ~ dgamma(0.5, 0.0005) # cf. Lunn et al. (2013)
-  # curve(1/dgamma(x, 0.5, 0.0005), 0, 10) # howsit look like ?
-  veta <- 1/tau
-  sdeta <- sqrt(veta)
-  # Multinomial likelihood for the m-array data (WinBUGS style)
-  # Note ’open index’ in pr[t,s,] comes last
-  for (s in 1:n.site){
-    for (t in 1:(n.occ-1)){
-      MARRWB[s, t,1:n.occ] ~ dmulti(pr[t,s, ], R[t,s])
-    }
-  }
-  # Define the cell probabilities of the m-array
-  # Main diagonal
-  for (s in 1:n.site){
-    for (t in 1:(n.occ-1)){
-      q[t,s] <- 1-p[t,s] # Probability of non-recapture
-      pr[t,s,t] <- phi[t,s]*p[t,s]
-      # Above main diagonal
-      for (j in (t+1):(n.occ-1)){
-        pr[t,s,j] <- prod(phi[t:j,s])*prod(q[t:(j-1),s])*p[j,s]
-      } #j
-      # Below main diagonal
-      for (j in 1:(t-1)){
-        pr[t,s,j] <- 0
-      } #j
-    } #t
-  } #s
-  # Last column: probability of non-recapture
-  for (s in 1:n.site){
-    for (t in 1:(n.occ-1)){
-      pr[t,s,n.occ] <- 1-sum(pr[t,s,1:(n.occ-1)])
-    } #t
-  }#s
-}
-")
-
-# Initial values
-inits <- function(){list(mean.phi = runif(1), mean.p = runif(1), eta = rep(0, nblock))}
-# Parameters monitored
-params <- c("mean.phi", "mean.p", "mu.lphi", "mu.lp",
-    "sd.lp.site", "sd.lphi.time", "sd.lp.time", "mean.p.site", "mean.phi.time", "mean.p.time",
-    "veta", "sdeta", "eta")
-# MCMC settings
-# ni <- 100000 ; nt <- 50 ; nb <- 50000 ; nc <- 3 # 52 hours
-ni <- 1000 ; nt <- 5 ; nb <- 500 ; nc <- 3 # ~~~~~~~ for testing
-# Call WinBUGS from R (ART 52 h!) and summarize posteriors
-# bugs.dir must be set to WinBUGS location, e.g., "c:/WinBUGS14/"
-library(R2WinBUGS)
-out8 <- bugs(bdata, inits, params, "cjs8.txt", n.chains = nc, n.thin = nt, n.iter = ni,
-    n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
-print(out8$summary[c(1:7, 221,222),c(1:3,5,7:9)], 3)
-# mean sd 2.5% 50% 97.5% Rhat n.eff
-# mean.phi 0.287 0.0187 0.251397 0.2874 0.324 1.00 730
-# mean.p 0.381 0.0356 0.310497 0.3797 0.450 1.01 380
-# mu.lphi -0.910 0.0918 -1.091025 -0.9079 -0.736 1.00 730
-# mu.lp -0.490 0.1519 -0.797902 -0.4907 -0.201 1.01 390
-# sd.lp.site 1.129 0.1302 0.887167 1.1220 1.407 1.00 3000
-# sd.lphi.time 0.220 0.0834 0.101800 0.2063 0.423 1.00 3000
-# sd.lp.time 0.148 0.1117 0.006906 0.1266 0.424 1.00 3000
-# veta 0.060 0.0765 0.000452 0.0327 0.262 1.08 38
-# sdeta 0.204 0.1361 0.021259 0.1809 0.512 1.08 38
-
-# 3.4.5 FITTING A SPATIAL HIERARCHICAL CJS MODEL WITH SPATIAL AUTOCORRELATION AND WITH COVARIATES
-# -----------------------------------------------------------------------------------------------
-# Bundle and summarize data set for WinBUGS
-str(bdata <- list(MARRWB = MARRWB, R = R, n.site = nsite, n.occ = nyear, n.block = nblock,
-    BlockID = CES$BlockID, adj = winnb$adj, weights = winnb$weights, num = winnb$num,
-    gdd1.site = gdd1.site, gdd2.site = gdd2.site, lat.site = lat.site))
-# List of 12
-# $ MARRWB : num [1:193, 1:10, 1:11] 1 3 0 2 0 0 0 0 0 0 ...
-# $ R : num [1:10, 1:193] 13 5 0 0 0 0 0 0 0 0 ...
-# $ n.site : int 193
-# $ n.occ : int 11
-# $ n.block : int 495
-# $ BlockID : int [1:193] 25 77 204 110 222 283 119 234 295 152 ...
-# $ adj : int [1:3458] 2 3 4 1 3 5 6 1 2 4 ...
-# $ weights : num [1:3458] 1 1 1 1 1 1 1 1 1 1 ...
-# $ num : int [1:495] 3 4 6 5 3 6 6 6 5 5 ...
-# $ gdd1.site : num [1:193] 1.13 0.726 0.46 0.538 0.686 ...
-# $ gdd2.site : num [1:193] 1.228 0.703 0.38 0.473 0.653 ...
-# $ lat.site : num [1:193] -1.397 -1.11 -0.403 -0.881 -0.308 ...
-
-# Specify model in BUGS language
-cat(file = "cjs9.txt","
-model {
-  # Priors and linear models
-  for (s in 1:n.site){
-    for (t in 1:(n.occ-1)){
-      phi[t, s] <- 1 / (1 + exp(-lphi[t, s])) # survival
-      p[t, s] <- 1 / (1 + exp(-lp[t, s])) # recapture
-      lphi[t, s] <- alpha.lphi.site[s] + beta.lphi.time[t]
-      lp[t, s] <- alpha.lp.site[s] + beta.lp.time[t]
-    }
-    # Linear model for site-level effects: add covariates
-    alpha.lphi.site[s] <- mu.lphi + beta1 * gdd1.site[s] + beta2 * gdd2.site[s] + beta3 *
-    lat.site[s] + eta[BlockID[s]]
-    alpha.lp.site[s] ~ dnorm(mu.lp, tau.lp.site) I(-12, 12)
-    # backtransform site means
-    mean.p.site[s] <- 1 / (1 + exp(-alpha.lp.site[s]))
-  }
-  for (t in 1:(n.occ-1)){
-    beta.lphi.time[t] ~ dnorm(0, tau.lphi.time) I(-12, 12)
-    beta.lp.time[t] ~ dnorm(0, tau.lp.time) I(-12, 12)
-    # backtransform time means
-    mean.phi.time[t] <- 1 / (1 + exp(-mu.lphi + beta.lphi.time[t]))
-    mean.p.time[t] <- 1 / (1 + exp(-mu.lphi + beta.lp.time[t]))
-  }
-  # Hyperpriors for hyperparams
-  mu.lphi <- logit(mean.phi)
-  mean.phi ~ dunif(0, 1)
-  mu.lp <- logit(mean.p)
-  mean.p ~ dunif(0, 1)
-  tau.lp.site <- pow(sd.lp.site, -2)
-  sd.lp.site ~ dunif(0, 2)
-  tau.lphi.time <- pow(sd.lphi.time, -2)
-  sd.lphi.time ~ dunif(0, 1)
-  tau.lp.time <- pow(sd.lp.time, -2)
-  sd.lp.time ~ dunif(0, 1)
-  # Coefficients for gdd1, gdd2 and lat
-  beta1 ~ dunif(-3, 3)
-  beta2 ~ dunif(-3, 3)
-  beta3 ~ dunif(-3, 3)
-  # CAR prior distribution for spatial random effects
-  # NOTE: this is defined on the entire grid of 495 blocks
-  eta[1:n.block] ~ car.normal(adj[], weights[], num[], tau)
-  tau ~ dgamma(0.5, 0.0005) # cf. Lunn et al. (2013)
-  veta <- 1/tau
-  sdeta <- sqrt(veta)
-  # Multinomial likelihood for the m-array data (WinBUGS style)
-  for (s in 1:n.site){
-    for (t in 1:(n.occ-1)){
-      MARRWB[s, t,1:n.occ] ~ dmulti(pr[t,s, ], R[t,s])
-    }
-  }
-  # Define the cell probabilities of the m-array
-  # Main diagonal
-  for (s in 1:n.site){
-    for (t in 1:(n.occ-1)){
-      q[t,s] <- 1-p[t,s] # Probability of non-recapture
-      pr[t,s,t] <- phi[t,s]*p[t,s]
-      # Above main diagonal
-      for (j in (t+1):(n.occ-1)){
-        pr[t,s,j] <- prod(phi[t:j,s])*prod(q[t:(j-1),s])*p[j,s]
-      } #j
-      # Below main diagonal
-      for (j in 1:(t-1)){
-        pr[t,s,j] <- 0
-      } #j
-    } #t
-  } #s
-  # Last column of m-array: probability of non-recapture
-  for (s in 1:n.site){
-    for (t in 1:(n.occ-1)){
-      pr[t,s,n.occ] <- 1-sum(pr[t,s,1:(n.occ-1)])
-    } #t
-  }#s
-}
-")
-
-# Initial values
-inits <- function(){list(mean.phi = runif(1), mean.p = runif(1), eta = rep(0, nblock),
-    beta1 = rnorm(1)/3, beta2 = rnorm(1)/3, beta3 = rnorm(1) /3, tau = runif(1))}
-# Parameters monitored
-params <- c("mean.phi", "mean.p", "mu.lphi", "mu.lp",
-    "sd.lp.site", "sd.lphi.time", "sd.lp.time", "mean.p.site", "mean.phi.time", "mean.p.time",
-    "veta", "sdeta", "beta1", "beta2", "beta3", "eta")
-
-# MCMC settings
-# ni <- 200000 ; nt <- 100 ; nb <- 100000 ; nc <- 3 # c. 2 wk
-ni <- 2000 ; nt <- 1 ; nb <- 1000 ; nc <- 3 # ~~~~~~~~~~~~ for testing
-# You may have to launch WinBUGS a couple of times until you don’t get an “undefined real result”
-# crash (or alternatively, you could “stabilize” the logit, see Trick 15 in Appendix 1
-#  in Kéry and Schaub, 2012).
-# Call WinBUGS from R (ART = loooong) and summarize posteriors (for a subset of parameters only)
-library(R2WinBUGS)
-out9 <- bugs(bdata, inits, params, "cjs9.txt", n.chains = nc, n.thin = nt, n.iter = ni,
-    n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
-print(out9$summary[c(1:7, 221:225),c(1:3,5,7:9)], 3)
-# mean sd 2.5% 50% 97.5% Rhat n.eff
-# mean.phi 0.2675 0.0206 0.229485 0.26670 0.310 1.00 3000
-# mean.p 0.3824 0.0338 0.316297 0.38200 0.450 1.00 1100
-# mu.lphi -1.0099 0.1051 -1.211075 -1.01100 -0.799 1.00 3000
-# mu.lp -0.4820 0.1440 -0.770615 -0.48100 -0.202 1.00 1000
-# sd.lp.site 1.1052 0.1283 0.864600 1.09900 1.379 1.00 3000
-# sd.lphi.time 0.2186 0.0845 0.097788 0.20405 0.417 1.00 3000
-# sd.lp.time 0.1554 0.1140 0.009250 0.13480 0.430 1.00 1500
-# veta 0.0137 0.0380 0.000201 0.00212 0.118 1.06 48
-# sdeta 0.0788 0.0867 0.014189 0.04600 0.344 1.06 48
-# beta1 1.0107 0.5355 0.045398 1.01600 2.008 1.00 3000
-# beta2 -0.6984 0.4467 -1.527000 -0.70535 0.195 1.00 3000
-# beta3 0.2984 0.0976 0.115275 0.29945 0.490 1.01 320
-
-mean(out9$sims.list$beta1>0)
-mean(out9$sims.list$beta2<0)
-mean(out9$sims.list$beta3>0)
-# [1] 0.9696667 # Prob gdd1 has positive effect
-# [1] 0.9423333 # Prob gdd2 has negative effect
-# [1] 0.9993333 # Prob lat has positive effect
-
-
-
-
-
 
