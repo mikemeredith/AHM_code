@@ -169,4 +169,4 @@ print(out1b, 2)
 # p 0.70 0.02 0.66 0.70 0.73 FALSE 1 1 5387
 
 # ~~~ save the work so far
-save.image("AHM2-02.05.2.RData")
+save.image("AHM2_02.05.2.RData")

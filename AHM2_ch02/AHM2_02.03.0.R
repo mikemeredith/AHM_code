@@ -9,7 +9,7 @@
 library(jagsUI)
 
 # ~~~~ need the Green Woodpecker data prepared in 2.2 ~~~~~~~~
-source("AHM2-02.02.R")
+source("AHM2_02.02.R")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # 2.3 Year-stratified N-mixture model

@@ -16,7 +16,7 @@ library(AHMbook)
 # 2.5.6 Case study of the Swiss MHB data for the green woodpecker:
 # Bayesian analysis of the Dail-Madsen model for robust design data with BUGS
 # ---------------------------------------------------------------------------
-source(file="AHM2-02.02.R")
+source(file="AHM2_02.02.R")
 
 # ~~~~ code from Andy, 2020-06-13 ~~~~~~~~~~
 # Bundle data
@@ -189,7 +189,7 @@ print(out6, digits=2)
 # beta.int 0.24 0.04 0.16 0.24 0.31 FALSE 1.00 1.01 362
 # beta.int2 -0.09 0.02 -0.13 -0.09 -0.05 FALSE 1.00 1.00 4514
 # ~~~ save the work so far
-save.image("AHM2-02.05.6.RData")
+save.image("AHM2_02.05.6.RData")
 
 # 2.5.7 Likelihood analysis of the Swiss woodpecker data in unmarked
 # ------------------------------------------------------------------
@@ -297,4 +297,4 @@ dm8
 # I(int^2) -0.0879 0.0200 -4.39 1.13e-05
 
 # ~~~ save the work so far
-save.image("AHM2-02.05.7.RData")
+save.image("AHM2_02.05.7.RData")

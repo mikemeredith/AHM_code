@@ -10,7 +10,7 @@ library(AHMbook)
 library(jagsUI)
 
 # ~~~~~ Need to run 1.3 before this ~~~~~~~
-source("AHM2-01.03.R")
+source("AHM2_01.03.R")
 # ~~~~~ and this from 1.4 ~~~~~~~~~~~~~~~~~
 M <- nrow(C)
 T <- ncol(C)
@@ -128,7 +128,7 @@ par(mfrow = c(2,2)) ; traceplot(out10d) ; par(mfrow = c(1,1))
 summary(out10d) ; jags.View(out10d) ; print(out10d$summary[1:100,-c(4:6)], 2)
 
 # Save output for use in subsequent sections
-save(out10d, file="AHM2-01.07.2_out10d.RData")
+save(out10d, file="AHM2_01.07.2_out10d.RData")
 
 
 # 1.7.2.2 Demographic SSM with generalized markovian dynamics and with covariates
@@ -222,7 +222,7 @@ par(mfrow = c(2,2)) ; traceplot(out11) ; par(mfrow = c(1,1))
 summary(out11) ; jags.View(out11) ; print(out11$summary[1:100,-c(4:6)], 2)
 
 # Save output for use in subsequent sections
-save(out11, file="AHM2-01.07.2_out11.RData")
+save(out11, file="AHM2_01.07.2_out11.RData")
 
 # 1.7.2.3 Comparison of the inferences under the demographic state-space models
 # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''

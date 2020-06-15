@@ -14,10 +14,10 @@
 
 # ~~~~~~ figure 1.14, without model 8 ~~~~~~~~~~
 # Load output needed
-load("AHM2-01.04_out1.RData")
-load("AHM2-01.05.3_out4.RData")
+load("AHM2_01.04_out1.RData")
+load("AHM2_01.05.3_out4.RData")
 # model 8 not included in the book text
-load("AHM2-01.07.2_out11.RData")
+load("AHM2_01.07.2_out11.RData")
 
 # Compare GLM, GLMM, Gaussian and demographic SSM in terms of standardized population trajectory
 # Standardize to estimate in 2007

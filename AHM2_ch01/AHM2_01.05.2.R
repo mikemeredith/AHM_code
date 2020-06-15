@@ -9,7 +9,7 @@
 library(jagsUI)
 
 # ~~~~~ Need to run 1.3 before this ~~~~~~~
-source("AHM2-01.03.R")
+source("AHM2_01.03.R")
 # ~~~~~ and this from 1.4 ~~~~~~~~~~~~~~~~~
 M <- nrow(C)
 T <- ncol(C)
@@ -118,7 +118,7 @@ summary(apply(out3$sims.list$gamma > 0, 1, sum))
 # Min. 1st Qu. Median Mean 3rd Qu. Max.
 # 111.0 157.0 166.0 166.2 175.0 216.0
 
-load("AHM2-01.05.1_out2.RData")
+load("AHM2_01.05.1_out2.RData")
 (R2site <- 100* (out2$mean$sd.site - out3$mean$sd.site) / out2$mean$sd.site)
 (R2year <- 100* (out2$mean$sd.year - out3$mean$sd.year) / out2$mean$sd.year)
 (R2resi <- 100* (out2$mean$sd - out3$mean$sd) / out2$mean$sd)
@@ -127,5 +127,5 @@ load("AHM2-01.05.1_out2.RData")
 # [1] 29.6783
 
 # Save output for use in subsequent sections
-save(out3, file="AHM2-01.05.2_out3.RData")
+save(out3, file="AHM2_01.05.2_out3.RData")
 

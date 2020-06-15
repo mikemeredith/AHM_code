@@ -10,7 +10,7 @@
 library(jagsUI)
 
 # ~~~~~ Need to run 1.3 before this ~~~~~~~
-source("AHM2-01.03.R")
+source("AHM2_01.03.R")
 # ~~~~~ and this from 1.4 ~~~~~~~~~~~~~~~~~
 M <- nrow(C)
 T <- ncol(C)
@@ -81,4 +81,4 @@ summary(out5) ; jags.View(out5) ; print(out5, 3)
 # [ ... ]
 
 # Save output for use in subsequent sections
-save(out5, file="AHM2-01.05.4_out5.RData")
+save(out5, file="AHM2_01.05.4_out5.RData")

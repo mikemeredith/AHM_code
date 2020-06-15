@@ -7,7 +7,7 @@
 # Code from proofs dated 2020-01-09
 
 # ~~~~~ Need to run 1.3 before this ~~~~~~~
-source("AHM2-01.03.R")
+source("AHM2_01.03.R")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 library(coda)
@@ -65,7 +65,7 @@ par(mfrow = c(3,3)) ; traceplot(out1) ; par(mfrow = c(1,1))
 jags.View(out1) ; print(out1, 2) # Two formats for posterior summaries
 
 # ~~~~~ save output for use in subsequent sections
-save(out1, file="AHM2-01.04_out1.RData")
+save(out1, file="AHM2_01.04_out1.RData")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Reformat data for analysis in R using glm

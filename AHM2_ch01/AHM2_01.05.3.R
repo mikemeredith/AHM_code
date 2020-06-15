@@ -10,7 +10,7 @@ library(AHMbook)
 library(jagsUI)
 
 # ~~~~~ Need to run 1.3 before this ~~~~~~~
-source("AHM2-01.03.R")
+source("AHM2_01.03.R")
 # ~~~~~ and this from 1.4 ~~~~~~~~~~~~~~~~~
 M <- nrow(C)
 T <- ncol(C)
@@ -134,4 +134,4 @@ print(out4, 2)
 # [1] 31.38612
 
 # Save output for use in subsequent sections
-save(out4, file="AHM2-01.05.3_out4.RData")
+save(out4, file="AHM2_01.05.3_out4.RData")

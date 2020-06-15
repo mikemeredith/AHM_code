@@ -89,7 +89,7 @@ system.time(summary(fm4.4 <- pcountOpen(lam = ~ cov.lam,
     gam = ~cov.gamma, omega = ~1, p = ~ cov.p, data = umf, dynamics = "autoreg",
     se = FALSE, control = list(trace = TRUE, REPORT = 1), starts = inits) )) # 7.2 hrs
 # ~~~ save the work so far ~~~~~
-save.image("AHM2-02.05.5a.RData")
+save.image("AHM2_02.05.5a.RData")
 
 # Add in final covariate, the site covariate on phi/omega. ART ~ 2.6 hrs
 tmp <- coef(fm4.4)
@@ -99,7 +99,7 @@ system.time(summary(fm4.5 <- pcountOpen(lam = ~ cov.lam, gam = ~cov.gamma,
     dynamics = "autoreg", se = FALSE, control = list(trace = TRUE, REPORT = 1),
     starts = inits) ))   # 9.6 hrs / 14 hrs
 # ~~~ save the work so far ~~~~~
-save.image("AHM2-02.05.5b.RData")
+save.image("AHM2_02.05.5b.RData")
 
 # Put the fitted models in a "fitList"
 fms <- fitList(
@@ -146,7 +146,7 @@ if(FALSE) {
       gam = ~ cov.gamma, omega = ~1, p= ~ cov.p, data = umf, dynamics = "autoreg",
       control = list(trace = TRUE, REPORT = 1), starts = inits) ))  # 6.6 hrs
   # ~~~ save the work so far
-  save.image("AHM2-02.05.5c.RData")
+  save.image("AHM2_02.05.5c.RData")
 }
 
 # Add in final covariate, the site covariate on phi/omega
@@ -157,7 +157,7 @@ system.time(summary(fm4.5.se <- pcountOpen(lam = ~ cov.lam,
     gam = ~ cov.gamma, omega = ~ cov.phi, p= ~ cov.p, data = umf,
     dynamics = "autoreg", control = list(trace = TRUE, REPORT = 1), starts = inits) )) # 7.7 / 10.5 / 18 hrs
 # ~~~ save the work so far
-save.image("AHM2-02.05.5d.RData")
+save.image("AHM2_02.05.5d.RData")
 
 # To get a sense of the time comparison with and without SE computation, we ran model fm4.5 both
 # ways (here note the use of estimates from model fm4.5 as starting values in both cases):
@@ -267,7 +267,7 @@ na <- 1000 ; ni <- 50000 ; nt <- 25 ; nb <- 25000 ; nc <- 3 # ~~~ for testing, 4
 # Call JAGS (ART 66 min), check convergence and summarize posteriors
 out4 <- jags(bdata, inits, params, "DM2.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2, 3)) ; traceplot(out4) ; par(op))
+op <- par(mfrow = c(2, 3)) ; traceplot(out4) ; par(op)
 print(out4, 2) # not printed
 # Compare estimates with truth
 cbind('truth' = unlist(data[4:11]), round(out4$summary[1:8, c(1,3,7)],3))
@@ -282,4 +282,4 @@ cbind('truth' = unlist(data[4:11]), round(out4$summary[1:8, c(1,3,7)],3))
 # beta.p -1.0 -1.005 -1.140 -0.870
 
 # ~~~ save the work so far
-save.image("AHM2-02.05.5.RData")
+save.image("AHM2_02.05.5.RData")

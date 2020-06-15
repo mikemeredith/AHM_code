@@ -9,7 +9,7 @@
 library(jagsUI)
 
 # ~~~~~ Need to run 1.3 before this ~~~~~~~
-source("AHM2-01.03.R")
+source("AHM2_01.03.R")
 # ~~~~~ and this from 1.4 ~~~~~~~~~~~~~~~~~
 M <- nrow(C)
 T <- ncol(C)
@@ -78,10 +78,10 @@ summary(out2) ; jags.View(out2) ; print(out2, 3)
 # [ ...... ]
 
 # Save output for use in subsequent sections
-save(out2, file="AHM2-01.05.1_out2.RData")
+save(out2, file="AHM2_01.05.1_out2.RData")
 
 # ~~~~~~~~~ plot to compare results of out1 and out2 (figures not shown) ~~~~~~~~~~~~~~~~~
-load("AHM2-01.04_out1.RData")
+load("AHM2_01.04_out1.RData")
 # Plot population index under models 1 and 2
 plot(year-0.1, out1$mean$popindex, cex = 2, pch = 16, xlab = 'Year', ylab = 'Population index', col = 'red', type = 'b', frame = F, ylim = c(500, 1000), main = 'red: fixed-effects, blue: random-effects')
 segments(year-0.1, out1$q2.5$popindex, year-0.1, out1$q97.5$popindex, col = 'red')

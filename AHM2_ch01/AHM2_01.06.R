@@ -10,7 +10,7 @@
 library(jagsUI)
 
 # ~~~~~ Need to run 1.3 before this ~~~~~~~
-source("AHM2-01.03.R")
+source("AHM2_01.03.R")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -93,11 +93,11 @@ graphSSM(out6, bdata$C)
 
 # ~~~~ Produce Fig. 1.7 ~~~~~~~~~~~~~~~~
 # Load all the model output from previous sections
-load("AHM2-01.04_out1.RData")
-load("AHM2-01.05.1_out2.RData")
-load("AHM2-01.05.3_out3.RData")
-load("AHM2-01.05.3_out4.RData")
-load("AHM2-01.05.4_out5.RData")
+load("AHM2_01.04_out1.RData")
+load("AHM2_01.05.1_out2.RData")
+load("AHM2_01.05.3_out3.RData")
+load("AHM2_01.05.3_out4.RData")
+load("AHM2_01.05.4_out5.RData")
 off <- 0.15
 plot(year-2*off, out1$mean$popindex, cex = 2, pch = 16, xlab = 'Year',
     ylab = 'Population index', col = 'red', type = 'b', frame = FALSE,
