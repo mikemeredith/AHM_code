@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 3 : HIERARCHICAL MODELS OF SURVIVAL
 # ===========================================
-# Code from proofs dated 2020-01-09
+# Code from proofs dated 2020-06-03
 
 library(AHMbook)
 library(jagsUI)
