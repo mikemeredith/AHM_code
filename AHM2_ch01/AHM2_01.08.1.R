@@ -9,10 +9,10 @@
 library(AHMbook)
 library(jagsUI)
 
-# 1.8 MODELING POPULATION DYNAMICS AT TWO TEMPORAL SCALES
+# 1.8 Modeling population dynamics at two temporal scales
 # =======================================================
 
-# 1.8.1 ANALYSIS OF SIMULATED DATA UNDER A GAUSSIAN PHENOMENOLOGICAL MODEL
+# 1.8.1 Analysis of simulated data under a Gaussian phenomenological model
 # ------------------------------------------------------------------------
 
 str(out <- simPH(npop = 18, nyear = 17, nrep = 10, date.range = 1:150,
@@ -104,3 +104,53 @@ out12 <- jags(bugs.data, inits, params, "modelPH.txt", n.adapt = na, n.chains = 
   n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 par(mfrow = c(3,3)) ; traceplot(out12, c("expn1", "n1", "gamma", "sigma"))
 summary(out12) ; View(out12) ; print(out12, dig = 3)
+
+# ~~~~~~~~~~ extra code for figure 1.16 ~~~~~~~~~~~~
+# Compare estimates of N1, gamma, mu and sigma to the truth
+out <- out12
+op <- par(mfrow = c(3,2), mar = c(5,5,4,3))
+lims <- range(c(data$n[,1], out$mean$n[,1], out$q2.5$n[,1] , out$q97.5$n[,1]))
+plot(data$n[,1], out$mean$n[,1], xlab = "Truth",
+    ylab = "Estimate", pch = 16, 
+    main = "Initial relative abundance n1",
+    xlim = lims, ylim = lims, frame = FALSE)
+segments(data$n[,1], out$q2.5$n[,1], data$n[,1], out$q97.5$n[,1])
+abline(0,1)
+abline(lm(out$mean$n[,1] ~ data$n[,1]), col = 'blue')
+
+lims <- range(c(data$n, out$mean$n, out$q2.5$n , out$q97.5$n))
+plot(data$n, out$mean$n, xlab = "Truth", ylab = "Estimate",
+    pch = 16, main = "Relative abundance n (all pops, all years)",
+    xlim = lims, ylim = lims, frame = FALSE)
+segments(data$n, out$q2.5$n, data$n, out$q97.5$n)
+abline(0,1)
+abline(lm(c(out$mean$n) ~ c(data$n)), col = 'blue')
+
+lims <- range(c(data$gamma, out$mean$gamma, out$q2.5$gamma, out$q97.5$gamma))
+plot(data$gamma, out$mean$gamma, xlab = "Truth",
+    ylab = "Estimated", pch = 16,
+    main = "Productivity gamma (all years)",
+    xlim = lims, ylim = lims, frame = FALSE)
+segments(data$gamma, out$q2.5$gamma, data$gamma, out$q97.5$gamma)
+abline(0,1)
+abline(lm(out$mean$gamma ~ data$gamma), col = 'blue')
+
+lims <- range(c(data$mu, out$mean$mu, out$q2.5$mu, out$q97.5$mu))
+plot(data$mu, out$mean$mu, xlab = "Truth",
+    ylab = "Estimate", pch = 16, 
+    main = "Mean peak flight date mu (all pops, all years)", 
+    xlim = lims, ylim = lims, frame = FALSE)
+segments(data$mu, out$q2.5$mu, data$mu, out$q97.5$mu)
+abline(0,1)
+abline(lm(c(out$mean$mu) ~ c(data$mu)), col = 'blue')
+
+lims <- range(c(data$sigma, out$mean$sigma, out$q2.5$sigma, out$q97.5$sigma))
+plot(data$sigma, out$mean$sigma, xlab = " Truth",
+    ylab = "Estimate", pch = 16, 
+    main = "Length of flight period sigma (all years)",
+    xlim = lims, ylim = lims, frame = FALSE)
+segments(data$sigma, out$q2.5$sigma, data$sigma, out$q97.5$sigma)
+abline(0,1)
+abline(lm(out$mean$sigma ~ data$sigma), col = 'blue')
+par(op)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -237,7 +237,7 @@ hist(out10d$sims.list$sd.alpha.p, breaks = 30, freq = F, col = 'grey', main = 'D
 hist(out10d$sims.list$sd.rho, breaks = 30, freq = F, col = 'grey', main = 'Random immigration (SD)')
 par(op)
 
-# ~~~~~~~~ plot 1.12 ~~~~~~~~~~
+# ~~~~~~~~ figure 1.12 ~~~~~~~~~~
 # New covariates for predictionon the original scale
 elevo <- seq(250, 2750,, 100)
 foresto <- seq(0, 100,, 100)

@@ -163,7 +163,7 @@ ni <- 2000 ; nt <- 1 ; nb <- 1000 ; nc <- 3 # ~~~~~~~~~~~~ for testing
 # 2012).
 # Call WinBUGS from R (ART [ loooong) and summarize posteriors (for a subset of parameters only)
 out9 <- bugs(bdata, inits, params, "cjs9.txt", n.chains = nc, n.thin = nt, n.iter = ni,
-    n.burnin = nb, debug = TRUE, bugs.directory = bugs.dir)
+    n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
 print(out9$summary[c(1:7, 221:225),c(1:3,5,7:9)], 3)
 # mean sd 2.5% 50% 97.5% Rhat n.eff
 # mean.phi 0.2675 0.0206 0.229485 0.26670 0.310 1.00 3000

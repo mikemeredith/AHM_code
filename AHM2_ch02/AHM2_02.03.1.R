@@ -94,3 +94,17 @@ print(out2, digits = 2) # shown partially only
 # beta[4] 0.05 0.01 0.03 0.05 0.06 FALSE 1.00 1.01 2914
 # [... output truncated ...]
 
+# ~~~~~~~~~~~~ extra code for figure 2.3 ~~~~~~~~~~~~~~~~~~~~~
+# Quick plots of response curves of lambda and p to all covariates
+op <- par(mfrow = c(2, 3), mar = c(5, 5, 3, 3))
+ylim <- c(0, 2)
+curve(exp(out2$mean$beta0 + out2$mean$beta[1] * (x - mean(elevo)) / sd(elevo) + out2$mean$beta[2] * ((x - mean(elevo)) / sd(elevo))^2), 200, 3000, xlab = 'Elevation (m)', ylab = 'E(N)', main = 'lambda ~ elev', frame = FALSE, ylim = ylim)
+curve(exp(out2$mean$beta0 + out2$mean$beta[3] * (x - mean(foresto)) / sd(foresto)), 0, 100, xlab = 'Forest cover (%)', ylab = 'E(N)', main = 'lambda ~ forest', frame = FALSE, ylim = ylim)
+curve(exp(out2$mean$beta0 + out2$mean$beta[4] * (x - 7.5)), 1, 15, xlab = 'Time (years)', ylab = 'E(N)', main = 'lambda ~ year (Time trend in abundance)', frame = FALSE, ylim = ylim)
+ylim = c(0, 1)
+plot(2004:2017, plogis(out2$mean$alpha0), xlab = 'Year', ylab = 'p', main = 'p ~ year (Detection intercepts)', cex = 2, pch = 16, frame = FALSE, ylim = ylim)
+# curve(plogis(mean(out2$mean$alpha0) + out2$mean$alpha[1] * (x - mean.date) / sd.date + out2$mean$alpha[2] * ((x - mean.date) / sd.date)^2), 100, 200, xlab = 'Julian date', ylab = 'p', main = 'p ~ date', frame = FALSE, ylim = ylim)
+curve(plogis(mean(out2$mean$alpha0) + out2$mean$alpha[1] * standardize2match(x, dateso) + out2$mean$alpha[2] * standardize2match(x, dateso)^2), 100, 200, xlab = 'Julian date', ylab = 'p', main = 'p ~ date', frame = FALSE, ylim = ylim)
+curve(plogis(mean(out2$mean$alpha0) + out2$mean$alpha[3] * standardize2match(x, dateso)), 0, 200, xlab = 'Survey intensity (min / km)', ylab = 'p', main = 'p ~ intensity', frame = FALSE, ylim = ylim)
+par(op)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

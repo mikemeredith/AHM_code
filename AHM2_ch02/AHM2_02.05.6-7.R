@@ -149,8 +149,7 @@ Rst <- apply(C, c(1,3), max, na.rm = TRUE)
 Rst[Rst == '-Inf'] <- 1
 Rst[,1] <- NA
 Nst <- array(NA, dim = dim(Rst))
-tmp <- apply(C[,1], 1, max, na.rm = TRUE)
-# tmp <- apply(apply(C, c(1,3), max, na.rm = TRUE),1,max, na.rm = TRUE)
+tmp <- apply(C, 1, max, na.rm = TRUE)
 tmp[tmp == '-Inf'] <- 2
 Nst[,1] <- tmp
 # Initial values

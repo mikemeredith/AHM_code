@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 1 : RELATIVE ABUNDANCE MODELS FOR POPULATION DYNAMICS
 # =============================================================
-# Code from proofs dated 2020-06-03
+# Code from MS dated 2018-11-30
 
 # 1.7 “Demographic” state-space models for inference about relative abundance
 # ===========================================================================

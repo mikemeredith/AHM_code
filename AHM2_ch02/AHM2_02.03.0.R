@@ -62,3 +62,12 @@ out1 <- jags(bdata, inits, params, "Nmix1.txt", n.adapt = na,
 op <- par(mfrow = c(3, 3)) ; traceplot(out1) ; par(op)
 print(out1, digits = 2) # not shown
 
+# ~~~~ extra code for figure 2.2 ~~~~~~~~~~~~~~~~
+# Summarize counts and abundance estimates (with 95% CRI)
+op <- par(mar = c(5,5,3,2), cex.lab = 1.5, cex.axis = 1.5)
+plot(2004:2017, annual.mean, xlab = 'Year', type = 'b', ylab = 'Mean count or E(N)',
+  frame = FALSE, pch = 16, cex = 2, col = 'red', ylim = c(0, 2))
+points(2004:2017, out1$mean$lambda, type = 'b', pch = 16, cex = 2)
+segments(2004:2017, out1$q2.5$lambda, 2004:2017, out1$q97.5$lambda)
+par(op)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

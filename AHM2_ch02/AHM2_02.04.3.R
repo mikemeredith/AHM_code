@@ -154,7 +154,7 @@ getD(cswamods$Wh2Wc..Wh, covs=covs)
 # cswa.Dhat <- parboot(cswamods$Wh2Wc..Wh, statistic = getD, covs = covs, nsim = 500)
 cswa.Dhat <- parboot(cswamods$Wh2Wc..Wh, statistic = getD, covs = covs,
     nsim = 500, ncores=3)
-plot(cswa.Dhat); abline(v = 1.109612, col = 4) # Not shown
+plot(cswa.Dhat); abline(v = 1.109612, col = 4) # Figure 2.8
 summary(cswa.Dhat@t.star) # Not shown
 
 # Goodness-of-fit assessment (ART 6 min)
