@@ -6,6 +6,8 @@
 # ========================================================
 # Code from proofs dated 2020-06-11
 
+# Approximate run time for this script: 10 mins
+
 library(AHMbook)
 library(jagsUI)
 library(unmarked)

@@ -6,6 +6,8 @@
 # ===========================================
 # Code from proofs dated 2020-06-03
 
+# Approximate run time for this script: 1 hr
+
 library(AHMbook)
 library(jagsUI)
 bugs.dir <- "C:/WinBUGS14"

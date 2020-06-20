@@ -6,6 +6,8 @@
 # ========================================================
 # Code from proofs dated 2020-06-11
 
+# Approximate run time for this script: 15 mins
+
 library(jagsUI)
 
 # 2.10 Spatially dynamic Dail-Madsen models

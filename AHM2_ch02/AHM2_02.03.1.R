@@ -6,6 +6,8 @@
 # ========================================================
 # Code from proofs dated 2020-06-11
 
+# Approximate run time for this script: 20 mins
+
 library(jagsUI)
 
 # ~~~~ need the Green Woodpecker data prepared in 2.2 ~~~~~~~~

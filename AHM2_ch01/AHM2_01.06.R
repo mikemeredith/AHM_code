@@ -6,6 +6,8 @@
 # =============================================================
 # Code from proofs dated 2020-06-03
 
+# Approximate run time for this script: 35 mins
+
 # library(AHMbook)
 library(jagsUI)
 
@@ -95,7 +97,7 @@ graphSSM(out6, bdata$C)
 # Load all the model output from previous sections
 load("AHM2_01.04_out1.RData")
 load("AHM2_01.05.1_out2.RData")
-load("AHM2_01.05.2_out3.RData")
+load("AHM2_01.05.2_out3.RData") #### fixed
 load("AHM2_01.05.3_out4.RData")
 load("AHM2_01.05.4_out5.RData")
 off <- 0.15

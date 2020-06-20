@@ -6,6 +6,8 @@
 # ===========================================
 # Code from proofs dated 2020-06-03
 
+# Approximate run time for this script: 40 mins
+
 library(AHMbook)
 library(R2WinBUGS)
 bugs.dir <- "C:/WinBUGS14"
