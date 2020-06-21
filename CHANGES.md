@@ -2,6 +2,13 @@
 
 # CHANGES
 
+## 2020-06-21
+
+More material for AHM2
+
+* Added plotting code for most of the figures in chapters 1 to 3.
+* Added chapter 4, including bonus code and figure code.
+
 ## 2020-06-01
 
 Testing with R 4.0.1 RC and latest versions of packages.
