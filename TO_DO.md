@@ -17,8 +17,7 @@ The following are still outstanding:
 * Figure 2.10
 
 ### AHM2 chapter 3
-* 3.3.1  Code for the analysis for each of the 10-min samples (occasions).
-* Figure 2.10
+* 3.3.1  "We do this by browsing...(see webside for code)."
 
 ### AHM2 chapter 4
 * 4.7 Book text says "You will find all the code on the website", but not clear what is referred to.

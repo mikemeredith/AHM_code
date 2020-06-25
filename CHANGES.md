@@ -2,6 +2,11 @@
 
 # CHANGES
 
+## 2020-06-25
+
+* Added TO_DO file.
+* Added chapters 5 and 6, including bonus code and figure code.
+
 ## 2020-06-21
 
 More material for AHM2
