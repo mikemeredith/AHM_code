@@ -2,6 +2,16 @@
 
 # CHANGES
 
+## 2020-06-27
+
+Many small changes to AHM1 scripts
+
+* Added code execution times to scripts which take more than a minute or so to run.
+* Added `par(op)` to reset plotting parameters after each block of plotting code.
+* Changed indenting in many places to make it consistent across scripts.
+* Broke up long lines to keep line length <= 80 characters as far as possible.
+* `T` and `F` replaced with `TRUE` and `FALSE` wherever appropriate.
+
 ## 2020-06-25
 
 * Added TO_DO file.
