@@ -38,9 +38,9 @@ summary(umf <- unmarkedMultFrame(y = yy, numPrimary = data$nyears))
 summary(fm <- colext(~1, ~ 1, ~ 1, ~ 1, data = umf))
 # Compute Chi-square test statistic for actual data by season and
 # generate reference distribution of test statistic under H0 (~1.1 h)
-# system.time(gof <- mb.gof.test(fm, print.table = F, nsim = 1000,   # ~~~~~~~~~ reduce for testing
-system.time(gof <- mb.gof.test(fm, print.table = F, nsim = 100,   # ~~~~~~~~~ reduce for testing
-plot.hist = TRUE, plot.seasons = TRUE, report = 1) ) # load(AICcmodavg)
+# system.time(gof <- mb.gof.test(fm, print.table = FALSE, nsim = 1000,
+system.time(gof <- mb.gof.test(fm, print.table = FALSE, nsim = 100,   # ~~~~~~~~~ reduce for testing
+    plot.hist = TRUE, plot.seasons = TRUE, report = 1) ) # load(AICcmodavg)
 gof
 # Goodness-of-fit for dynamic occupancy model
 # Number of seasons: 10
@@ -287,19 +287,19 @@ par(mfrow = c(1,3), mar = c(5,5,5,4), cex.lab = 1.5, cex.axis = 1.5, cex.main = 
 # Plots of expected versus observed value of fit stats
 # Open part
 pl <- range(c(out.gof$sims.list$Chi2Open, out.gof$sims.list$Chi2repOpen))
-plot(out.gof$sims.list$Chi2Open, out.gof$sims.list$Chi2repOpen, xlab = "Chi2 observed data", ylab = "Chi2 expected data", main = "Open part of model ", xlim = pl, ylim = pl, frame.plot = F)
+plot(out.gof$sims.list$Chi2Open, out.gof$sims.list$Chi2repOpen, xlab = "Chi2 observed data", ylab = "Chi2 expected data", main = "Open part of model ", xlim = pl, ylim = pl, frame.plot = FALSE)
 abline(0, 1, lwd = 2)
 text(450, 1430, paste('Bpv = ', round(mean(out.gof$sims.list$Chi2repOpen > out.gof$sims.list$Chi2Open), 2)), cex = 2)
 
 # Closed part of model: Chi-squared
 pl <- range(c(out.gof$sims.list$Chi2Closed, out.gof$sims.list$Chi2repClosed))
-plot(out.gof$sims.list$Chi2Closed, out.gof$sims.list$Chi2repClosed, xlab = "Chi2 observed data", ylab = "Chi2 expected data", main = "Closed part of model (Chi-squared)", xlim = pl, ylim = pl, frame.plot = F)
+plot(out.gof$sims.list$Chi2Closed, out.gof$sims.list$Chi2repClosed, xlab = "Chi2 observed data", ylab = "Chi2 expected data", main = "Closed part of model (Chi-squared)", xlim = pl, ylim = pl, frame.plot = FALSE)
 abline(0, 1, lwd = 2)
 text(525, 720, paste('Bpv = ', round(mean(out.gof$sims.list$Chi2repClosed > out.gof$sims.list$Chi2Closed), 2)), cex = 2)
 
 # Closed part of model: Freeman-Tukey
 pl <- range(c(out.gof$sims.list$FTClosed, out.gof$sims.list$FTrepClosed))
-plot(out.gof$sims.list$FTClosed, out.gof$sims.list$FTrepClosed, xlab = "FT observed data", ylab = "FT expected data", main = "Closed part of model (Freeman-Tukey)", xlim = pl, ylim = pl, frame.plot = F)
+plot(out.gof$sims.list$FTClosed, out.gof$sims.list$FTrepClosed, xlab = "FT observed data", ylab = "FT expected data", main = "Closed part of model (Freeman-Tukey)", xlim = pl, ylim = pl, frame.plot = FALSE)
 abline(0, 1, lwd = 2)
 text(240, 335, paste('Bpv = ', round(mean(out.gof$sims.list$FTrepClosed > out.gof$sims.list$FTClosed), 2)), cex = 2)
 

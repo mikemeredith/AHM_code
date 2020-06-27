@@ -154,16 +154,16 @@ pred.det.dur <- predict(fm20, type="det", newdata=newData, appendData=TRUE)
 # Plot predictions against unstandardized 'prediction covs'
 op <- par(mfrow = c(2,2), mar = c(5,5,2,3), cex.lab = 1.2)
 plot(pred.occ.elev[[1]] ~ orig.elev, type = "l", lwd = 3, col = "blue",
-    ylim = c(0,1), las = 1, ylab = "Pred. occupancy prob.", xlab = "Elevation (m)", frame = F)
+    ylim = c(0,1), las = 1, ylab = "Pred. occupancy prob.", xlab = "Elevation (m)", frame = FALSE)
 matlines(orig.elev, pred.occ.elev[,3:4], lty = 1, lwd = 1, col = "grey")
 plot(pred.occ.forest[[1]] ~ orig.forest, type = "l", lwd = 3, col = "blue",
-    ylim = c(0,1), las = 1, ylab = "Pred. occupancy prob.", xlab = "Forest cover (%)", frame = F)
+    ylim = c(0,1), las = 1, ylab = "Pred. occupancy prob.", xlab = "Forest cover (%)", frame = FALSE)
 matlines(orig.forest, pred.occ.forest[,3:4], lty = 1, lwd = 1, col = "grey")
 plot(pred.det.date[[1]] ~ orig.date, type = "l", lwd = 3, col = "blue",
-    ylim = c(0,1), las = 1, ylab = "Pred. detection prob.", xlab = "Date (1 = 1 April)", frame = F)
+    ylim = c(0,1), las = 1, ylab = "Pred. detection prob.", xlab = "Date (1 = 1 April)", frame = FALSE)
 matlines(orig.date, pred.det.date[,3:4], lty = 1, lwd = 1, col = "grey")
 plot(pred.det.dur[[1]] ~ orig.duration, type = "l", lwd = 3, col = "blue",
-    ylim = c(0,1), las = 1, ylab = "Pred. detection prob.", xlab = "Survey duration (min)", frame = F)
+    ylim = c(0,1), las = 1, ylab = "Pred. detection prob.", xlab = "Survey duration (min)", frame = FALSE)
 matlines(orig.duration, pred.det.dur[,3:4], lty = 1, lwd = 1, col = "grey")
 par(op)
 
@@ -229,7 +229,7 @@ r1 <- mask(r1, elev)
 # Plot species distribution map (Fig. 10-14 left)
 par(mfrow = c(1,2), mar = c(1,2,2,5))
 mapPalette <- colorRampPalette(c("grey", "yellow", "orange", "red"))
-plot(r1, col = mapPalette(100), axes = F, box = F,
+plot(r1, col = mapPalette(100), axes = FALSE, box = FALSE,
     main = "Red squirrel distribution in 2007")
 # ~~~~~ shape files not available ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # lakes <- readOGR(".", "lakes")
@@ -243,7 +243,7 @@ plot(r1, col = mapPalette(100), axes = F, box = F,
 # Plot SE of the species distrbution map (Fig. 10-14 right)
 r2 <- rasterFromXYZ(data.frame(x = CH$x, y = CH$y, z = predCH$SE))
 r2 <- mask(r2, elev)
-plot(r2, col = mapPalette(100), axes = F, box = F, main = "Uncertainty map 2007")
+plot(r2, col = mapPalette(100), axes = FALSE, box = FALSE, main = "Uncertainty map 2007")
 # ~~~~~ shape files not available ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # plot(rivers, col = "dodgerblue", add = TRUE)
 # plot(border, col = "transparent", lwd = 1.5, add = TRUE)
