@@ -2,11 +2,13 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 2. What are hierarchical models and how do we analyze them?
 # =========================================================================
 
 
-# 2.2 Random variables, probability density functions, statistical models, probability, and statistical inference
+# 2.2 Random variables, probability density functions, statistical models,
+#    probability, and statistical inference
 # ==========================================================================
 
 dbinom(0:5, size = 5, prob = 0.2)

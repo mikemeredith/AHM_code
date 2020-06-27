@@ -44,13 +44,22 @@ psi.true <- mean(N>0)                   # True occupancy in sample
 
 # Plots
 if(show.plot){
-par(mfrow = c(2, 2), cex.main = 1)
-# devAskNewPage(ask = TRUE)
-devAskNewPage(ask = dev.interactive(orNone=TRUE))  # ~~~~~ for autotesting
-curve(exp(beta0 + beta1*x), -1, 1, col = "red", main = "Relationship lambda-elevation \nat average forest cover", frame.plot = F, xlab = "Scaled elevation")
-plot(elev, lambda, xlab = "Scaled elevation", main = "Relationship lambda-elevation \nat observed forest cover", frame.plot = F)
-curve(exp(beta0 + beta2*x), -1, 1, col = "red", main = "Relationship lambda-forest \ncover at average elevation", xlab = "Scaled forest cover", frame.plot = F)
-plot(forest, lambda, xlab = "Scaled forest cover", main = "Relationship lambda-forest cover \nat observed elevation", frame.plot = F)
+  op <- par(mfrow = c(2, 2), cex.main = 1)
+  # devAskNewPage(ask = TRUE)
+  devAskNewPage(ask = dev.interactive(orNone=TRUE))  # ~~~~~ for autotesting
+  curve(exp(beta0 + beta1*x), -1, 1, col = "red",
+      main = "Relationship lambda-elevation \nat average forest cover",
+      frame.plot = FALSE, xlab = "Scaled elevation")
+  plot(elev, lambda, xlab = "Scaled elevation",
+      main = "Relationship lambda-elevation \nat observed forest cover",
+      frame.plot = FALSE)
+  curve(exp(beta0 + beta2*x), -1, 1, col = "red",
+      main = "Relationship lambda-forest \ncover at average elevation",
+      xlab = "Scaled forest cover", frame.plot = FALSE)
+  plot(forest, lambda, xlab = "Scaled forest cover",
+      main = "Relationship lambda-forest cover \nat observed elevation",
+      frame.plot = FALSE)
+  par(op)
 }
 
 # Model for observations
@@ -58,28 +67,46 @@ alpha0 <- qlogis(mean.detection)        # mean detection on link scale
 p <- plogis(alpha0 + alpha1*elev + alpha2*wind + alpha3*elev*wind)
 C <- matrix(NA, nrow = M, ncol = J)     # Prepare matrix for counts
 for (i in 1:J){                         # Generate counts by survey
-   C[,i] <- rbinom(n = M, size = N, prob = p[,i])
+  C[,i] <- rbinom(n = M, size = N, prob = p[,i])
 }
 summaxC <- sum(apply(C,1,max))          # Sum of max counts (all sites)
 psi.obs <- mean(apply(C,1,max)>0)       # Observed occupancy in sample
 
 # More plots
 if(show.plot){
-par(mfrow = c(2, 2))
-curve(plogis(alpha0 + alpha1*x), -1, 1, col = "red", main = "Relationship p-elevation \nat average wind speed", xlab = "Scaled elevation", frame.plot = F)
-matplot(elev, p, xlab = "Scaled elevation", main = "Relationship p-elevation\n at observed wind speed", pch = "*", frame.plot = F)
-curve(plogis(alpha0 + alpha2*x), -1, 1, col = "red", main = "Relationship p-wind speed \n at average elevation", xlab = "Scaled wind speed", frame.plot = F)
-matplot(wind, p, xlab = "Scaled wind speed", main = "Relationship p-wind speed \nat observed elevation", pch = "*", frame.plot = F)
+  op <- par(mfrow = c(2, 2))
+  curve(plogis(alpha0 + alpha1*x), -1, 1, col = "red",
+      main = "Relationship p-elevation \nat average wind speed",
+      xlab = "Scaled elevation", frame.plot = FALSE)
+  matplot(elev, p, xlab = "Scaled elevation",
+      main = "Relationship p-elevation\n at observed wind speed",
+      pch = "*", frame.plot = FALSE)
+  curve(plogis(alpha0 + alpha2*x), -1, 1, col = "red",
+      main = "Relationship p-wind speed \n at average elevation",
+      xlab = "Scaled wind speed", frame.plot = FALSE)
+  matplot(wind, p, xlab = "Scaled wind speed",
+      main = "Relationship p-wind speed \nat observed elevation",
+      pch = "*", frame.plot = FALSE)
 
-matplot(elev, C, xlab = "Scaled elevation", main = "Relationship counts and elevation", pch = "*", frame.plot = F)
-matplot(forest, C, xlab = "Scaled forest cover", main = "Relationship counts and forest cover", pch = "*", frame.plot = F)
-matplot(wind, C, xlab = "Scaled wind speed", main = "Relationship counts and wind speed", pch = "*", frame.plot = F)
-desc <- paste('Counts at', M, 'sites during', J, 'surveys')
-hist(C, main = desc, breaks = 50, col = "grey")
+  matplot(elev, C, xlab = "Scaled elevation",
+      main = "Relationship counts and elevation",
+      pch = "*", frame.plot = FALSE)
+  matplot(forest, C, xlab = "Scaled forest cover",
+      main = "Relationship counts and forest cover",
+      pch = "*", frame.plot = FALSE)
+  matplot(wind, C, xlab = "Scaled wind speed",
+      main = "Relationship counts and wind speed", pch = "*", frame.plot = FALSE)
+  desc <- paste('Counts at', M, 'sites during', J, 'surveys')
+  hist(C, main = desc, breaks = 50, col = "grey")
+  par(op)
 }
 
 # Output
-return(list(M = M, J = J, mean.lambda = mean.lambda, beta0 = beta0, beta1 = beta1, beta2 = beta2, beta3 = beta3, mean.detection = mean.detection, alpha0 = alpha0, alpha1 = alpha1, alpha2 = alpha2, alpha3 = alpha3, elev = elev, forest = forest, wind = wind, lambda = lambda, N = N, p = p, C = C, Ntotal = Ntotal, psi.true = psi.true, summaxC = summaxC, psi.obs = psi.obs))
+return(list(M = M, J = J, mean.lambda = mean.lambda, beta0 = beta0, beta1 = beta1,
+    beta2 = beta2, beta3 = beta3, mean.detection = mean.detection, alpha0 = alpha0,
+    alpha1 = alpha1, alpha2 = alpha2, alpha3 = alpha3, elev = elev, forest = forest,
+    wind = wind, lambda = lambda, N = N, p = p, C = C, Ntotal = Ntotal,
+    psi.true = psi.true, summaxC = summaxC, psi.obs = psi.obs))
 }
 
 
@@ -95,14 +122,16 @@ for(i in 1:simrep){
    NTOTAL[i] <- data$Ntotal
    SUMMAXC[i] <- data$summaxC
 }
-plot(sort(NTOTAL), ylim = c(min(SUMMAXC), max(NTOTAL)), ylab = "", xlab = "Simulation", col = "red", frame = FALSE)
+plot(sort(NTOTAL), ylim = c(min(SUMMAXC), max(NTOTAL)), ylab = "",
+    xlab = "Simulation", col = "red", frame = FALSE)
 points(SUMMAXC[order(NTOTAL)], col = "blue")
 
 data.fn(J = 2)              # Only 2 surveys
 data.fn(J = 1)              # No temporal replicate
 data.fn(M = 1, J = 100)     # No spatial replicates, but 100 counts
 data.fn(alpha3 = 1)          # With interaction elev-wind on p ## see errata
-data.fn(M = 267, J = 3, mean.lambda = 2, beta1 = -2, beta2 = 2, beta3 = 1, mean.detection = 1)         # No obs. process (i.e., p = 1, perfect detection)
+data.fn(M = 267, J = 3, mean.lambda = 2, beta1 = -2, beta2 = 2, beta3 = 1,
+    mean.detection = 1)         # No obs. process (i.e., p = 1, perfect detection)
 data.fn(mean.lambda = 50)   # Really common species
 data.fn(mean.lambda = 0.05) # Really rare species
 

@@ -2,19 +2,22 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 9. Advanced Hierarchical Distance Sampling
 # =========================================================================
+
+# Approximate execution time for this code: 25 mins
 
 library(AHMbook)
 library(unmarked)
 library(raster)
 library(plotrix)
 
-# ~~~~~ Use the old buggy RNG for 'sample' for compatibility ~~~~~~~~~
-# The functions 'sim.spatialDS' and 'sim.spatialHDS' use 'sample' internally.
-if(getRversion() >= '3.6.0')
-  RNGkind(sample.kind = "Rounding")
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~ changes to RNG defaults ~~~~~~~~~~~~~~~~~~~~~~~~
+# The values in the book were generated with R 3.5; to get the same
+#   values in later versions you need the old RNG settings:
+RNGversion("3.5.0")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # 9.8 Spatial Distance Sampling: Modelling within-unit variation in density
 # =========================================================================
@@ -48,24 +51,24 @@ str(data <- list (B=B, nind=nind, u=u, y=y, nz=nz))
 cat("
 model{
 
-# Priors
-sigma ~ dunif(0,10)
-psi ~ dunif(0,1)
+  # Priors
+  sigma ~ dunif(0,10)
+  psi ~ dunif(0,1)
 
-# Categorical observation model
-for(i in 1:(nind+nz)){
-  z[i] ~ dbern(psi)
-  u[i,1] ~ dunif(0, 2*B)  # Here is the uniformity assumption made explicit
-  u[i,2] ~ dunif(0, 2*B)
-  # Compute distance as a derived quantity
-  d[i] <- pow( pow( u[i,1]-B,2) + pow(u[i,2]-B,2), 0.5) # Pythagoras
-  p[i] <- exp(-d[i]*d[i] / (2*sigma*sigma))
-  mu[i] <- p[i] * z[i]
-  y[i] ~ dbern(mu[i])
-}
-# Other derived quantity
-N <- sum(z[])
-D <- N / (B*B)
+  # Categorical observation model
+  for(i in 1:(nind+nz)){
+    z[i] ~ dbern(psi)
+    u[i,1] ~ dunif(0, 2*B)  # Here is the uniformity assumption made explicit
+    u[i,2] ~ dunif(0, 2*B)
+    # Compute distance as a derived quantity
+    d[i] <- pow( pow( u[i,1]-B,2) + pow(u[i,2]-B,2), 0.5) # Pythagoras
+    p[i] <- exp(-d[i]*d[i] / (2*sigma*sigma))
+    mu[i] <- p[i] * z[i]
+    y[i] ~ dbern(mu[i])
+  }
+  # Other derived quantity
+  N <- sum(z[])
+  D <- N / (B*B)
 }
 ",fill=TRUE,file="model1.txt")
 
@@ -94,62 +97,63 @@ print(out1, 2)
 # Simulator function for spatial distance sampling data
 sim.spatialDS <-
 function(N=1000, beta = 1, sigma=1, keep.all=FALSE, B=B, model="halfnorm"){
-# Function simulates coordinates of individuals on a square
-# Square is [0,2B] x [0,2B], with a count location on the point (B, B)
-#   N: total population size in the square
-#   beta: coefficient of SOEMTHING on spatial covariate x
-#   sigma: scale of half-normal detection function
-#   B: circle radius
-#   keep.all: return the data for y=0 individuals or not
-library(raster)      # Load required packages
-library(plotrix)
+  # Function simulates coordinates of individuals on a square
+  # Square is [0,2B] x [0,2B], with a count location on the point (B, B)
+  #   N: total population size in the square
+  #   beta: coefficient of SOEMTHING on spatial covariate x
+  #   sigma: scale of half-normal detection function
+  #   B: circle radius
+  #   keep.all: return the data for y=0 individuals or not
+  library(raster)      # Load required packages
+  library(plotrix)
 
-# Create coordinates for 30 x 30 grid
-delta <- (2*B-0)/30                # '2D bin width'
-grx <- seq(delta/2, 2*B - delta/2, delta) # mid-point coordinates
-gr <- expand.grid(grx,grx)         # Create grid coordinates
+  # Create coordinates for 30 x 30 grid
+  delta <- (2*B-0)/30                # '2D bin width'
+  grx <- seq(delta/2, 2*B - delta/2, delta) # mid-point coordinates
+  gr <- expand.grid(grx,grx)         # Create grid coordinates
 
-# Create spatially correlated covariate x and plot it
-V <- exp(-e2dist(gr,gr)/1)
-x <- t(chol(V))%*%rnorm(900)
-par(mar=c(3,3,3,6))
-image(rasterFromXYZ(cbind(gr,x)), col=topo.colors(10))
-draw.circle(3, 3, B)
-points(3, 3, pch="+", cex=3)
-image_scale(x, col=topo.colors(10))  ## function renamed
+  # Create spatially correlated covariate x and plot it
+  V <- exp(-e2dist(gr,gr)/1)
+  x <- t(chol(V))%*%rnorm(900)
+  op <- par(mar=c(3,3,3,6))
+  image(rasterFromXYZ(cbind(gr,x)), col=topo.colors(10))
+  draw.circle(3, 3, B)
+  points(3, 3, pch="+", cex=3)
+  image_scale(x, col=topo.colors(10))  ## function renamed
 
-# Simulate point locations as function of habitat covariate x
-probs <- exp(beta*x)/sum(exp(beta*x)) # probability of point in pixel (sum = 1)
-pixel.id <- sample(1:900, N, replace=TRUE, prob=probs)
-# could simulate randomly within the pixel but it won't matter so place centrally
-u1 <- gr[pixel.id,1]
-u2 <- gr[pixel.id,2]
-points(u1, u2, pch=20, col='black', cex = 0.8)  # plot points
-title("This is so cool !")         # express your appreciation of all this
+  # Simulate point locations as function of habitat covariate x
+  probs <- exp(beta*x)/sum(exp(beta*x)) # probability of point in pixel (sum = 1)
+  pixel.id <- sample(1:900, N, replace=TRUE, prob=probs)
+  # could simulate randomly within the pixel but it won't matter so place centrally
+  u1 <- gr[pixel.id,1]
+  u2 <- gr[pixel.id,2]
+  points(u1, u2, pch=20, col='black', cex = 0.8)  # plot points
+  title("This is so cool !")         # express your appreciation of all this
 
-d <- sqrt((u1 - B)^2 + (u2-B)^2)   # distance to center point of square
-#plot(u1, u2, pch = 1, main = "Point transect")
-N.real <- sum(d<= B)               # Population size inside of count circle
+  d <- sqrt((u1 - B)^2 + (u2-B)^2)   # distance to center point of square
+  #plot(u1, u2, pch = 1, main = "Point transect")
+  N.real <- sum(d<= B)               # Population size inside of count circle
 
-# Can only count individuals in the circle, so set to zero detection probability of individuals in the corners (thereby truncating them)
-# p <- ifelse(d< B, 1, 0) * exp(-d*d/(2*(sigma^2)))
-# We do away with the circle constraint here.
-if(model=="hazard")
-   p <- 1-exp(-exp(-d*d/(2*sigma*sigma)))
-if(model=="halfnorm")
-   p <- exp(-d*d/(2*sigma*sigma))
-# Now we decide whether each individual is detected or not
-y <- rbinom(N, 1, p)                                           # detected or not
-points(u1[d<= B], u2[d<= B], pch = 16, col = "black", cex = 1) # not detected
-points(u1[y==1], u2[y==1], pch = 16, col = "red", cex = 1)     # detected
+  # Can only count individuals in the circle, so set to zero detection probability of individuals in the corners (thereby truncating them)
+  # p <- ifelse(d< B, 1, 0) * exp(-d*d/(2*(sigma^2)))
+  # We do away with the circle constraint here.
+  if(model=="hazard")
+     p <- 1-exp(-exp(-d*d/(2*sigma*sigma)))
+  if(model=="halfnorm")
+     p <- exp(-d*d/(2*sigma*sigma))
+  # Now we decide whether each individual is detected or not
+  y <- rbinom(N, 1, p)                                           # detected or not
+  points(u1[d<= B], u2[d<= B], pch = 16, col = "black", cex = 1) # not detected
+  points(u1[y==1], u2[y==1], pch = 16, col = "red", cex = 1)     # detected
+  par(op)
 
-# Put all of the data in a matrix
-if(!keep.all){
-   u1 <- u1[y==1]
-   u2 <- u2[y==1]
-   d <- d[y==1]   }
-# Output
-return(list(model=model, N=N, beta=beta, B=B, u1=u1, u2=u2, d=d, y=y, N.real=N.real, Habitat=x, grid=gr))
+  # Put all of the data in a matrix
+  if(!keep.all){
+     u1 <- u1[y==1]
+     u2 <- u2[y==1]
+     d <- d[y==1]   }
+  # Output
+  return(list(model=model, N=N, beta=beta, B=B, u1=u1, u2=u2, d=d, y=y, N.real=N.real, Habitat=x, grid=gr))
 }
 
 # Generate one data set and harvest the output
@@ -192,30 +196,30 @@ str(data <- list (B=B, nind=nind, y=y, nz=nz, Habitat=Habitat,
 cat("
 model{
 
-# Prior distributions
-sigma ~ dunif(0,10)
-psi ~ dunif(0,1)
-beta ~ dnorm(0,0.01)
+  # Prior distributions
+  sigma ~ dunif(0,10)
+  psi ~ dunif(0,1)
+  beta ~ dnorm(0,0.01)
 
-for(g in 1:G){   # g is the pixel index, there are G total pixels
-   probs.num[g] <- exp(beta*Habitat[g])
-   probs[g] <- probs.num[g]/sum(probs.num[])
-}
+  for(g in 1:G){   # g is the pixel index, there are G total pixels
+    probs.num[g] <- exp(beta*Habitat[g])
+    probs[g] <- probs.num[g]/sum(probs.num[])
+  }
 
-# Models for DA variables and location (pixel)
-for(i in 1:(nind+nz)){
-   z[i] ~ dbern(psi)
-   pixel[i] ~ dcat(probs[])
-   s[i,1:2] <- Habgrid[pixel[i],]   # location = derived quantity
-   # compute distance = derived quantity
-   d[i] <- pow(   pow( s[i,1]-B,2) + pow(s[i,2]-B,2), 0.5)
-   p[i] <- exp(-d[i]*d[i]/(2*sigma*sigma))  # Half-normal detetion function
-   mu[i]<- p[i]*z[i]
-   y[i] ~ dbern(mu[i])                      # Observation model
-}
-# Derived parameters
-N <- sum(z[])                      # N is a derived parameter
-D <- N/9                           # area = 9 ha
+  # Models for DA variables and location (pixel)
+  for(i in 1:(nind+nz)){
+    z[i] ~ dbern(psi)
+    pixel[i] ~ dcat(probs[])
+    s[i,1:2] <- Habgrid[pixel[i],]   # location = derived quantity
+    # compute distance = derived quantity
+    d[i] <- pow(   pow( s[i,1]-B,2) + pow(s[i,2]-B,2), 0.5)
+    p[i] <- exp(-d[i]*d[i]/(2*sigma*sigma))  # Half-normal detetion function
+    mu[i]<- p[i]*z[i]
+    y[i] ~ dbern(mu[i])                      # Observation model
+  }
+  # Derived parameters
+  N <- sum(z[])                      # N is a derived parameter
+  D <- N/9                           # area = 9 ha
 }
 ",fill=TRUE, file="spatialDS.txt")
 
@@ -248,7 +252,7 @@ out2 <- jags (data, inits, params, "spatialDS.txt", n.thin=nthin,
 
 # Plot density maps
 library(raster)
-par(mfrow=c(1,2))
+op <- par(mfrow=c(1,2))
 pixel <- out2$sims.list$pixel
 post <- table(pixel)/nrow(pixel)   # Average number of locations in each pixel
 prior.mean <- mean(out2$sims.list$beta)*as.vector(Habitat)
@@ -259,7 +263,7 @@ title("Prior mean density (estimated)")
 plot(rast.post <- rasterFromXYZ(cbind(Habgrid,as.vector(post))),axes=FALSE,
        col=topo.colors(10) )
 title("Posterior mean density")
-
+par(op)
 
 # 9.8.4 Spatial HDS models in unmarked using the pcount function
 # ------------------------------------------------------------------------
@@ -380,37 +384,37 @@ str(data <- list (y=Ymat, pixel=pixmat, Habitat=Habitat,
 cat("
 model{
 
-# Prior distributions
-sigma ~ dunif(0,10)
-beta1 ~ dnorm(0,0.01)
-beta0 ~ dnorm(0,0.01)
-lam0 <- exp(beta0)*G           # Baseline lambda in terms of E(N) per sample unit
+  # Prior distributions
+  sigma ~ dunif(0,10)
+  beta1 ~ dnorm(0,0.01)
+  beta0 ~ dnorm(0,0.01)
+  lam0 <- exp(beta0)*G           # Baseline lambda in terms of E(N) per sample unit
 
-# For each site, construct the DA parameter as a function of lambda
-for(s in 1:nsites){
-  lamT[s] <- sum(lambda[,s])   # total abundance at a site
-  psi[s] <- lamT[s]/M
-    for(g in 1:G){             # g is the pixel index, there are G total pixels
-    lambda[g,s] <- exp(beta0 + beta1*Habitat[g,s])
-    probs[g,s] <- lambda[g,s]/sum(lambda[,s])
+  # For each site, construct the DA parameter as a function of lambda
+  for(s in 1:nsites){
+    lamT[s] <- sum(lambda[,s])   # total abundance at a site
+    psi[s] <- lamT[s]/M
+      for(g in 1:G){             # g is the pixel index, there are G total pixels
+      lambda[g,s] <- exp(beta0 + beta1*Habitat[g,s])
+      probs[g,s] <- lambda[g,s]/sum(lambda[,s])
+    }
   }
-}
 
-# DA variables and spatial location variables:
-for(s in 1:nsites){
-  for(i in 1:M){
-    z[i,s] ~ dbern(psi[s])
-    pixel[i,s] ~ dcat(probs[,s])
-    u[i,s,1:2] <- Habgrid[pixel[i,s],]   # location = derived quantity
-    # distance = derived quantity
-    d[i,s] <- pow(   pow( u[i,s,1]-B,2) + pow(u[i,s,2]-B,2), 0.5)
-    p[i,s] <- exp(-d[i,s]*d[i,s]/(2*sigma*sigma))  # Half-normal model
-    mu[i,s] <- p[i,s]*z[i,s]
-    y[i,s] ~ dbern(mu[i,s])    # Observation model
+  # DA variables and spatial location variables:
+  for(s in 1:nsites){
+    for(i in 1:M){
+      z[i,s] ~ dbern(psi[s])
+      pixel[i,s] ~ dcat(probs[,s])
+      u[i,s,1:2] <- Habgrid[pixel[i,s],]   # location = derived quantity
+      # distance = derived quantity
+      d[i,s] <- pow(   pow( u[i,s,1]-B,2) + pow(u[i,s,2]-B,2), 0.5)
+      p[i,s] <- exp(-d[i,s]*d[i,s]/(2*sigma*sigma))  # Half-normal model
+      mu[i,s] <- p[i,s]*z[i,s]
+      y[i,s] ~ dbern(mu[i,s])    # Observation model
+    }
+    # Derived parameters
+    N[s]<- sum(z[,s])            # Site specific abundance
   }
-# Derived parameters
-  N[s]<- sum(z[,s])            # Site specific abundance
- }
   Ntotal <- sum(N[])             # Total across all sites
   D <- Ntotal/(9*nsites)         # Density: point area = 9 ha
 }
@@ -430,13 +434,15 @@ params <- c("sigma", "Ntotal", "beta1", "beta0", "D", "lam0", "N")
 ni <- 1200   ;   nb <- 200   ;   nthin <- 1   ;   nc <- 3  # ~~~~~~~~ for testing
 
 # Call JAGS, check convergence and summarize the results
-out3 <- jags(data, inits, params, "spatialHDS.txt", n.thin=nthin, n.chains=nc, n.burnin=nb, n.iter=ni, parallel = TRUE)
+out3 <- jags(data, inits, params, "spatialHDS.txt", n.thin=nthin,
+    n.chains=nc, n.burnin=nb, n.iter=ni, parallel = TRUE)
 par(mfrow = c(2,3))   ;   traceplot(out3)
 print(out3, 3)
 
 Ntrue <- tmp$N
 Nhat <- out3$summary[7:106,1]
-plot(Ntrue, Nhat, xlab="Local population size, N, for each site", ylab="Posterior mean N for each site", pch=20)
+plot(Ntrue, Nhat, xlab="Local population size, N, for each site",
+    ylab="Posterior mean N for each site", pch=20)
 abline(0, 1, lwd=2)
 
 # ~~~~~ these were long runs, so maybe save ~~~~~~~~~~

@@ -2,9 +2,12 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 6. Modeling abundance with counts of unmarked individuals
 #    in closed populations: binomial N-mixture models
 # =========================================================================
+
+# Approximate execution time for this code: 70 mins
 
 library(AHMbook)
 library(unmarked)
@@ -33,13 +36,15 @@ date <- SwissTits$date[-NA.sites, , '2013']
 dur <- SwissTits$dur[-NA.sites, , '2013']
 
 # Plot observed data: counts vs survey date (Fig. 6-9)
-matplot(t(date), t(y), type = "l", lwd = 3, lty = 1, frame = F, xlab = "Survey data (1 = April 1)", ylab = "Count of Great Tits")
+matplot(t(date), t(y), type = "l", lwd = 3, lty = 1, frame = FALSE,
+    xlab = "Survey data (1 = April 1)", ylab = "Count of Great Tits")
 
 # Load unmarked, create unmarked data frame and inspect result
 library(unmarked)
 time <- matrix(rep(as.character(1:3), nrow(y)), ncol = 3, byrow = TRUE)
 umf <- unmarkedFramePCount(y = y,
-  siteCovs=data.frame(elev=scale(tits[,"elev"]), forest=scale(tits[,"forest"]), iLength=1/tits[,"rlength"]),
+  siteCovs=data.frame(elev=scale(tits[,"elev"]), forest=scale(tits[,"forest"]),
+      iLength=1/tits[,"rlength"]),
   obsCovs=list(time = time, date = scale(date), dur = scale(dur)))
 summary(umf)                            # Summarize unmarked data frame
 summary(apply(y, 1, max, na.rm = TRUE)) # Summarize max counts
@@ -159,40 +164,46 @@ print(cbind(y, fitted(fm5), residuals(fm5)), 2)  # For Poisson model
 plot_Nmix_resi(fm5, fm5NB, fm5ZIP)               # Produces Fig. 6–10 ## function renamed
 
 plot_Nmix_resi <- function(fmP, fmNB, fmZIP){  # ~~~~~ this function is in AHMbook package
-# Function does diagnostic plots for one Nmix model fitted with all three
-#   mixture distributions currently available in unmarked:
-#   Poisson, negative binomial and zero-inflated Poisson
-# For each, fitted values vs. observed data and
-#   residuals vs. fitted values are plotted.
-library(unmarked)
+  # Function does diagnostic plots for one Nmix model fitted with all three
+  #   mixture distributions currently available in unmarked:
+  #   Poisson, negative binomial and zero-inflated Poisson
+  # For each, fitted values vs. observed data and
+  #   residuals vs. fitted values are plotted.
+  library(unmarked)
 
-# Plot fitted vs. observed data
-par(mfrow = c(2,3), mar = c(4,4,2,2), cex = 1.2)
-tmp1 <- range(c(fitted(fmP), fitted(fmNB), fitted(fmZIP)), na.rm = T)
-limits1 = round(c(tmp1[1], tmp1[2]))
-tmp2 <- range(c(residuals(fmP), residuals(fmNB), residuals(fmZIP)), na.rm = T)
-limits2 = round(c(tmp2[1], tmp2[2]))
+  # Plot fitted vs. observed data
+  par(mfrow = c(2,3), mar = c(4,4,2,2), cex = 1.2)
+  tmp1 <- range(c(fitted(fmP), fitted(fmNB), fitted(fmZIP)), na.rm = T)
+  limits1 = round(c(tmp1[1], tmp1[2]))
+  tmp2 <- range(c(residuals(fmP), residuals(fmNB), residuals(fmZIP)), na.rm = T)
+  limits2 = round(c(tmp2[1], tmp2[2]))
 
-plot(fitted(fmP)~ fmP@data@y, xlab = "Observed data", ylab = "Fitted values (P)", frame = F, ylim = limits1)
-abline(0,1, lwd = 3 )
-abline(lm(c(fitted(fmP))~ c(fmP@data@y)), col = "blue", lwd = 3)
-plot(fitted(fmNB)~ fmP@data@y, xlab = "Observed data", ylab = "Fitted values (NB)", frame = F, ylim = limits1)
-abline(0,1, lwd = 3)
-abline(lm(c(fitted(fmNB))~ c(fmP@data@y)), col = "blue", lwd = 3)
-plot(fitted(fmZIP)~ fmP@data@y, xlab = "Observed data", ylab = "Fitted values (ZIP)", frame = F, ylim = limits1)
-abline(0,1, lwd = 3)
-abline(lm(c(fitted(fmZIP)) ~ c(fmP@data@y)), col = "blue", lwd = 3)
+  plot(fitted(fmP)~ fmP@data@y, xlab = "Observed data", ylab = "Fitted values (P)",
+      frame = FALSE, ylim = limits1)
+  abline(0,1, lwd = 3 )
+  abline(lm(c(fitted(fmP))~ c(fmP@data@y)), col = "blue", lwd = 3)
+  plot(fitted(fmNB)~ fmP@data@y, xlab = "Observed data", ylab = "Fitted values (NB)",
+      frame = FALSE, ylim = limits1)
+  abline(0,1, lwd = 3)
+  abline(lm(c(fitted(fmNB))~ c(fmP@data@y)), col = "blue", lwd = 3)
+  plot(fitted(fmZIP)~ fmP@data@y, xlab = "Observed data", ylab = "Fitted values (ZIP)",
+      frame = FALSE, ylim = limits1)
+  abline(0,1, lwd = 3)
+  abline(lm(c(fitted(fmZIP)) ~ c(fmP@data@y)), col = "blue", lwd = 3)
 
-# Plot residuals vs. fitted values
-plot(residuals(fmP)~ fitted(fmP), xlab = "Fitted values (P)", ylab = "Residuals", frame = F, xlim = limits1, ylim = limits2)
-abline(h = 0, lwd = 2)
-abline(lm(c(residuals(fmP)) ~ c(fitted(fmP))), col = "blue", lwd = 3)
-plot(residuals(fmNB)~ fitted(fmNB), xlab = "Fitted values (NB)", ylab = "Residuals", frame = F, xlim = limits1, ylim = limits2)
-abline(h = 0, lwd = 2)
-abline(lm(c(residuals(fmNB)) ~ c(fitted(fmNB))), col = "blue", lwd = 3)
-plot(residuals(fmZIP)~ fitted(fmZIP), xlab = "Fitted values (ZIP)", ylab = "Residuals", frame = F, xlim = limits1, ylim = limits2)
-abline(h = 0, lwd = 2)
-abline(lm(c(residuals(fmZIP)) ~ c(fitted(fmZIP))), col = "blue", lwd = 3)
+  # Plot residuals vs. fitted values
+  plot(residuals(fmP)~ fitted(fmP), xlab = "Fitted values (P)", ylab = "Residuals",
+      frame = FALSE, xlim = limits1, ylim = limits2)
+  abline(h = 0, lwd = 2)
+  abline(lm(c(residuals(fmP)) ~ c(fitted(fmP))), col = "blue", lwd = 3)
+  plot(residuals(fmNB)~ fitted(fmNB), xlab = "Fitted values (NB)", ylab = "Residuals",
+      frame = FALSE, xlim = limits1, ylim = limits2)
+  abline(h = 0, lwd = 2)
+  abline(lm(c(residuals(fmNB)) ~ c(fitted(fmNB))), col = "blue", lwd = 3)
+  plot(residuals(fmZIP)~ fitted(fmZIP), xlab = "Fitted values (ZIP)", ylab = "Residuals",
+      frame = FALSE, xlim = limits1, ylim = limits2)
+  abline(h = 0, lwd = 2)
+  abline(lm(c(residuals(fmZIP)) ~ c(fitted(fmZIP))), col = "blue", lwd = 3)
 }
 
 
@@ -203,16 +214,17 @@ abline(lm(c(residuals(fmZIP)) ~ c(fitted(fmZIP))), col = "blue", lwd = 3)
 
 
 map.Nmix.resi <- function(fm, x = tits$coordx, y = tits$coordy){
-# Function produces a map of the mean residuals from an N-mixture model
-#    object named fm, which was fit by function pcount in unmarked
-# Function arguments are the fitted model object and the x and y coordinates
-#    of every site
-library(sp)
-mean.resi <- apply(residuals(fm), 1, mean, na.rm = TRUE)
-mean.resi[mean.resi == "NaN"] <- mean(mean.resi, na.rm = TRUE)
-spdata <- data.frame(residuals = mean.resi, x = x, y = y)
-coordinates(spdata) <- c("x", "y")
-plot(bubble(spdata, "residuals", col = c("blue", "red"), main = paste("Average residuals of fitted N-mixture model")))
+  # Function produces a map of the mean residuals from an N-mixture model
+  #    object named fm, which was fit by function pcount in unmarked
+  # Function arguments are the fitted model object and the x and y coordinates
+  #    of every site
+  library(sp)
+  mean.resi <- apply(residuals(fm), 1, mean, na.rm = TRUE)
+  mean.resi[mean.resi == "NaN"] <- mean(mean.resi, na.rm = TRUE)
+  spdata <- data.frame(residuals = mean.resi, x = x, y = y)
+  coordinates(spdata) <- c("x", "y")
+  plot(bubble(spdata, "residuals", col = c("blue", "red"),
+      main = paste("Average residuals of fitted N-mixture model")))
 }
 
 map.Nmix.resi(fm5, x = tits$coordx, y = tits$coordy)    # Map of average residuals for Poisson model ## function defaults changed in AHMbook 0.1.3
@@ -228,16 +240,19 @@ binFittedNB <- fitted(fm5NB) %/% 2.5
 mMeanNB <- tapply(fitted(fm5NB)^2, binFittedNB, mean, na.rm = T)
 mVarNB <- tapply(residuals(fm5NB)^2, binFittedNB, mean, na.rm = T)
 nsampleNB <- table(binFittedNB)
-plot(mMeanP, mVarP, xlab = "Binned mean fitted response", ylab = "Mean variance of response", frame = F, cex = log(nsampleP), col = "grey", pch = 16, cex.lab = 1.5)
+plot(mMeanP, mVarP, xlab = "Binned mean fitted response",
+    ylab = "Mean variance of response", frame = FALSE, cex = log(nsampleP),
+    col = "grey", pch = 16, cex.lab = 1.5)
 points(mMeanNB, mVarNB, cex = log(nsampleNB), col = "green", pch = 16)
 
 
 # 6.9.4 Analysis of results
 # ------------------------------------------------------------------------
 # Two new data sets for prediction: for lambda and for p (200 data points each)
-lamNewData <- data.frame(elev = (seq(200, 2250,,200) - mean(tits[,"elev"]))/ sd(tits[,"elev"]), forest = 0, iLength = 1/5.1)
-pNewData <- data.frame(elev = 0, time = factor("2", levels = c("1", "2", "3")), dur = 0, date = (seq(1,90,,200) - mean(date, na.rm = T))/sd(date, na.rm = T))
-
+lamNewData <- data.frame(elev = (seq(200, 2250,,200) - mean(tits[,"elev"]))/ sd(tits[,"elev"]),
+    forest = 0, iLength = 1/5.1)
+pNewData <- data.frame(elev = 0, time = factor("2", levels = c("1", "2", "3")),
+    dur = 0, date = (seq(1,90,,200) - mean(date, na.rm = T))/sd(date, na.rm = T))
 
 # Predictions for lambda and p, with SE and CIs, but no overdispersion
 predict(fm5, type="state", newdata=lamNewData)    # Poisson model
@@ -254,40 +269,56 @@ predictSE(fm5ZIP, newdata=lamNewData, print.matrix = TRUE, type="response", parm
 
 # Predictions for lambda and p, incl. SE and with overdispersion, but no CIs
 # Poisson model, for natural and for link scale of both lambda and p
-modavgPred(cand.set = list(fm5), newdata=lamNewData, parm.type = "lambda", type = "response", c.hat = 3.82)
-modavgPred(cand.set = list(fm5), newdata=lamNewData, parm.type = "lambda", type = "link", c.hat = 3.82)    # Could be used to get 95% CIs
-modavgPred(cand.set = list(fm5), newdata=pNewData, parm.type = "detect", type = "response", c.hat = 3.82)
-modavgPred(cand.set = list(fm5), newdata=pNewData, parm.type = "detect", type = "link", c.hat = 3.82)      # Could be used to get 95% CIs
+modavgPred(cand.set = list(fm5), newdata=lamNewData, parm.type = "lambda",
+    type = "response", c.hat = 3.82)
+modavgPred(cand.set = list(fm5), newdata=lamNewData, parm.type = "lambda",
+    type = "link", c.hat = 3.82)    # Could be used to get 95% CIs
+modavgPred(cand.set = list(fm5), newdata=pNewData, parm.type = "detect",
+    type = "response", c.hat = 3.82)
+modavgPred(cand.set = list(fm5), newdata=pNewData, parm.type = "detect",
+    type = "link", c.hat = 3.82)      # Could be used to get 95% CIs
 
 # NegBin model, for natural and for link scale of both lambda and p
-modavgPred(cand.set = list(fm5NB), newdata=lamNewData, parm.type = "lambda", type = "response", c.hat = 1.79)
-modavgPred(cand.set = list(fm5NB), newdata=lamNewData, parm.type = "lambda", type = "link", c.hat = 1.79)    # Could be used to get 95% CIs
-modavgPred(cand.set = list(fm5NB), newdata=pNewData, parm.type = "detect", type = "response", c.hat = 1.79)
-modavgPred(cand.set = list(fm5NB), newdata=pNewData, parm.type = "detect", type = "link", c.hat = 1.79)         # Could be used to get 95% CIs
+modavgPred(cand.set = list(fm5NB), newdata=lamNewData, parm.type = "lambda",
+    type = "response", c.hat = 1.79)
+modavgPred(cand.set = list(fm5NB), newdata=lamNewData, parm.type = "lambda",
+    type = "link", c.hat = 1.79)    # Could be used to get 95% CIs
+modavgPred(cand.set = list(fm5NB), newdata=pNewData, parm.type = "detect",
+    type = "response", c.hat = 1.79)
+modavgPred(cand.set = list(fm5NB), newdata=pNewData, parm.type = "detect",
+    type = "link", c.hat = 1.79)         # Could be used to get 95% CIs
 
 # ZIP model, for natural and for link scale of both lambda and p
-modavgPred(cand.set = list(fm5ZIP), newdata=lamNewData, parm.type = "lambda", type = "response", c.hat = 2.47)
-modavgPred(cand.set = list(fm5ZIP), newdata=lamNewData, parm.type = "lambda", type = "link", c.hat = 2.47)     # Not yet implemented (May 2015)
-modavgPred(cand.set = list(fm5ZIP), newdata=pNewData, parm.type = "detect", type = "response", c.hat = 2.47)
-modavgPred(cand.set = list(fm5ZIP), newdata=pNewData, parm.type = "detect", type = "link", c.hat = 2.47)         # this works, so we could get 95% CIs
+modavgPred(cand.set = list(fm5ZIP), newdata=lamNewData, parm.type = "lambda",
+    type = "response", c.hat = 2.47)
+modavgPred(cand.set = list(fm5ZIP), newdata=lamNewData, parm.type = "lambda",
+    type = "link", c.hat = 2.47)     # Not yet implemented (May 2015)
+modavgPred(cand.set = list(fm5ZIP), newdata=pNewData, parm.type = "detect",
+    type = "response", c.hat = 2.47)
+modavgPred(cand.set = list(fm5ZIP), newdata=pNewData, parm.type = "detect",
+    type = "link", c.hat = 2.47)         # this works, so we could get 95% CIs
 
 
 rlength <- seq(1, 30, 0.01)         # Vary route length from 1 to 30 kms
 newData <- data.frame(elev=0, forest=0, iLength=1/rlength)
 pred <- predictSE(fm5ZIP, parm.type="lambda", newdata=newData, c.hat = 2.47)
 par(mar = c(5,5,3,2), cex.lab = 1.5, cex.axis = 1.3)
-plot(rlength, pred[[1]], type = "l", lwd = 3, col = "blue", frame = F, xlab = "Transect length (km)", ylab = "Exposed population (lambda)", ylim = c(0, 16), axes = F)
+plot(rlength, pred[[1]], type = "l", lwd = 3, col = "blue", frame = FALSE,
+    xlab = "Transect length (km)", ylab = "Exposed population (lambda)", ylim = c(0, 16), axes = FALSE)
 axis(1, at = seq(2,30,2))       ;      axis(2)
 abline(v = c(1.2, 5.135, 9.4), lwd = 2)
-matlines(rlength, cbind(pred[[1]]-pred[[2]], pred[[1]]+pred[[2]]), type = "l", lty = 1, lwd = 2, col = "gray")
+matlines(rlength, cbind(pred[[1]]-pred[[2]], pred[[1]]+pred[[2]]),
+    type = "l", lty = 1, lwd = 2, col = "gray")
 
 
-sat.pred <- predictSE(fm5ZIP, parm.type="lambda", newdata= data.frame(elev=0, forest=0, iLength=0), c.hat = 2.47)
+sat.pred <- predictSE(fm5ZIP, parm.type="lambda",
+    newdata= data.frame(elev=0, forest=0, iLength=0), c.hat = 2.47)
 abline(h = sat.pred$fit, lwd = 2, lty = 2)
 
 
 # Inspect the numbers
-print(cbind("Route length" = rlength, "Exp. pop" = pred[[1]], "Rel. exp. pop" = pred[[1]] / sat.pred$fit), 3)
+print(cbind("Route length" = rlength, "Exp. pop" = pred[[1]],
+    "Rel. exp. pop" = pred[[1]] / sat.pred$fit), 3)
 
 
 # Create covariate vectors for prediction and standardise as in analysis
@@ -310,36 +341,59 @@ durp <- (dur.orig - dur.mean) / dur.sd     # Standardised for prediction
 
 # ~~~~~~~ modavgPred now returns a list with 7 elements; for the plots we need [2:3] ~~~~~
 # Do predictions along single covariate gradient
-newData1 <- data.frame(elev=ep, forest=0, iLength=0, date=0, dur=0, time = factor("2", levels = c("1", "2", "3")))
+newData1 <- data.frame(elev=ep, forest=0, iLength=0, date=0, dur=0,
+    time = factor("2", levels = c("1", "2", "3")))
 pred1 <- predictSE(fm5ZIP, newdata=newData1, c.hat = 2.47)
 # pred2 <- modavgPred(cand.set = list(fm5ZIP), newdata=newData1, parm.type = "detect", type = "response", c.hat = 2.47)
-pred2 <- modavgPred(cand.set = list(fm5ZIP), newdata=newData1, parm.type = "detect", type = "response", c.hat = 2.47)[2:3] # ~~~~~
-newData3 <- data.frame(elev=0, forest=fp, iLength=0, date=0, dur=0, time = factor("2", levels = c("1", "2", "3")))
+pred2 <- modavgPred(cand.set = list(fm5ZIP), newdata=newData1,
+    parm.type = "detect", type = "response", c.hat = 2.47)[2:3] # ~~~~~
+newData3 <- data.frame(elev=0, forest=fp, iLength=0, date=0, dur=0,
+    time = factor("2", levels = c("1", "2", "3")))
 pred3 <- predictSE(fm5ZIP, newdata=newData3, c.hat = 2.47)
-newData4 <- data.frame(elev=0, forest=0, iLength=0, date=datep, dur=0, time = factor("2", levels = c("1", "2", "3")))
-pred4 <- modavgPred(cand.set = list(fm5ZIP), newdata=newData4, parm.type = "detect", type = "response", c.hat = 2.47)[2:3] # ~~~~~
-newData5 <- data.frame(elev=0, forest=0, iLength=0, date=0, dur=durp, time = factor("2", levels = c("1", "2", "3")))
-pred5 <- modavgPred(cand.set = list(fm5ZIP), newdata=newData5, parm.type = "detect", type = "response", c.hat = 2.47)[2:3] # ~~~~~
+newData4 <- data.frame(elev=0, forest=0, iLength=0, date=datep, dur=0,
+    time = factor("2", levels = c("1", "2", "3")))
+pred4 <- modavgPred(cand.set = list(fm5ZIP), newdata=newData4,
+    parm.type = "detect", type = "response", c.hat = 2.47)[2:3] # ~~~~~
+newData5 <- data.frame(elev=0, forest=0, iLength=0, date=0, dur=durp,
+    time = factor("2", levels = c("1", "2", "3")))
+pred5 <- modavgPred(cand.set = list(fm5ZIP), newdata=newData5,
+    parm.type = "detect", type = "response", c.hat = 2.47)[2:3] # ~~~~~
 newData6 <- data.frame(elev=0, forest=0, iLength=0, date=0, dur=0,
-  time = c("1", "2", "3"), stringsAsFactors=TRUE) # ~~~~ change in default for stringsAsFactors
-pred6 <- modavgPred(cand.set = list(fm5ZIP), newdata=newData6, parm.type = "detect", type = "response", c.hat = 2.47)[2:3] # ~~~~~
+    time = c("1", "2", "3"), stringsAsFactors=TRUE) # ~~~~ change in default for stringsAsFactors
+pred6 <- modavgPred(cand.set = list(fm5ZIP), newdata=newData6,
+    parm.type = "detect", type = "response", c.hat = 2.47)[2:3] # ~~~~~
 
 # Plot these predictions along single covariate gradient
-par(mfrow = c(3,2), mar = c(5,5,3,2), cex.lab = 1.3, cex.axis = 1.3)
-plot(ep.orig, pred1[[1]], type = "l", lwd = 2, col = "blue", xlab = "Elevation (m)", ylab = "Expected abundance", las = 1, ylim = c(0,50), frame = F)
-matlines(ep.orig, cbind(pred1[[1]]-pred1[[2]], pred1[[1]]+pred1[[2]]), type = "l", lty = 1, lwd = 1, col = "gray")
-plot(fp.orig, pred3[[1]], type = "l", lwd = 2, col = "blue", xlab = "Forest cover (%)", ylab = "Expected abundance", las = 1, ylim = c(0, 18), frame = F)
-matlines(fp.orig, cbind(pred3[[1]]-pred3[[2]], pred3[[1]]+pred3[[2]]), type = "l", lty = 1, lwd = 1, col = "gray")
-plot(ep.orig, pred2[[1]], type = "l", lwd = 2, col = "blue", xlab = "Elevation (m)", ylab = "Expected detection", las = 1, ylim = c(0,1), frame = F)
-matlines(ep.orig, cbind(pred2[[1]]-pred2[[2]], pred2[[1]]+pred2[[2]]), type = "l", lty = 1, lwd = 1, col = "gray")
-plot(date.orig, pred4[[1]], type = "l", lwd = 2, col = "blue", xlab = "Survey date (1 = April 1)", ylab = "Expected detection", las = 1, ylim = c(0,1), frame = F)
-matlines(date.orig, cbind(pred4[[1]]-pred4[[2]], pred4[[1]]+pred4[[2]]), type = "l", lty = 1, lwd = 1, col = "gray")
-plot(dur.orig, pred5[[1]], type = "l", lwd = 2, col = "blue", xlab = "Survey duration (min)", ylab = "Expected detection", las = 1, ylim = c(0,1), frame = F)
-matlines(dur.orig, cbind(pred5[[1]]-pred5[[2]], pred5[[1]]+pred5[[2]]), type = "l", lty = 1, lwd = 1, col = "gray")
+op <- par(mfrow = c(3,2), mar = c(5,5,3,2), cex.lab = 1.3, cex.axis = 1.3)
+plot(ep.orig, pred1[[1]], type = "l", lwd = 2, col = "blue",
+    xlab = "Elevation (m)", ylab = "Expected abundance", las = 1,
+    ylim = c(0,50), frame = FALSE)
+matlines(ep.orig, cbind(pred1[[1]]-pred1[[2]], pred1[[1]]+pred1[[2]]),
+    type = "l", lty = 1, lwd = 1, col = "gray")
+plot(fp.orig, pred3[[1]], type = "l", lwd = 2, col = "blue",
+    xlab = "Forest cover (%)", ylab = "Expected abundance", las = 1, ylim = c(0, 18), frame = FALSE)
+matlines(fp.orig, cbind(pred3[[1]]-pred3[[2]], pred3[[1]]+pred3[[2]]),
+    type = "l", lty = 1, lwd = 1, col = "gray")
+plot(ep.orig, pred2[[1]], type = "l", lwd = 2, col = "blue",
+    xlab = "Elevation (m)", ylab = "Expected detection",
+    las = 1, ylim = c(0,1), frame = FALSE)
+matlines(ep.orig, cbind(pred2[[1]]-pred2[[2]], pred2[[1]]+pred2[[2]]),
+    type = "l", lty = 1, lwd = 1, col = "gray")
+plot(date.orig, pred4[[1]], type = "l", lwd = 2, col = "blue",
+    xlab = "Survey date (1 = April 1)", ylab = "Expected detection",
+    las = 1, ylim = c(0,1), frame = FALSE)
+matlines(date.orig, cbind(pred4[[1]]-pred4[[2]], pred4[[1]]+pred4[[2]]),
+    type = "l", lty = 1, lwd = 1, col = "gray")
+plot(dur.orig, pred5[[1]], type = "l", lwd = 2, col = "blue",
+    xlab = "Survey duration (min)", ylab = "Expected detection",
+    las = 1, ylim = c(0,1), frame = FALSE)
+matlines(dur.orig, cbind(pred5[[1]]-pred5[[2]], pred5[[1]]+pred5[[2]]),
+    type = "l", lty = 1, lwd = 1, col = "gray")
 barplot(pred6[[1]], names.arg = c("1", "2", "3"), ylim = c(0,1),
-ylab = "Expected detection", xlab = "Survey Number")
-segments(c(0.7,1.9, 3.1), pred6[[1]]-pred6[[2]], c(0.7,1.9, 3.1), pred6[[1]]+pred6[[2]], lwd = 2)
-
+    ylab = "Expected detection", xlab = "Survey Number")
+segments(c(0.7,1.9, 3.1), pred6[[1]]-pred6[[2]], c(0.7,1.9, 3.1),
+    pred6[[1]]+pred6[[2]], lwd = 2)
+par(op)
 
 # Make predictions along two covariate gradients
 # (1) Expected abundance (lambda) for forest and elevation
@@ -348,7 +402,7 @@ for(i in 1:100){
   for(j in 1:100){
     newData <- data.frame(x=0, y=0, elev=ep[i], forest=fp[j], iLength=0)
     pred.matrix1[i,j] <- predict(fm5ZIP,type="state", newdata=newData)[1,1]
-   }
+  }
 }
 
 # (2) Expected detection (p) for elevation and survey date
@@ -356,9 +410,9 @@ pred.matrix2 <- array(NA, dim = c(100, 100))
 for(i in 1:100){
   for(j in 1:100){
     newData <- data.frame(elev=ep[i], date=datep[j], dur=0,
-    time = factor("2", levels = c("1", "2", "3")))
+        time = factor("2", levels = c("1", "2", "3")))
     pred.matrix2[i,j] <- predict(fm5ZIP, type="det", newdata=newData)[1,1]
-   }
+  }
 }
 
 # (3) Expected detection (p) for elevation and survey duration
@@ -366,47 +420,55 @@ pred.matrix3 <- array(NA, dim = c(100, 100))
 for(i in 1:100){
   for(j in 1:100){
     newData <- data.frame(elev=ep[i], date=0, dur=durp[j],
-    time = factor("2", levels = c("1", "2", "3")))
+        time = factor("2", levels = c("1", "2", "3")))
     pred.matrix3[i,j] <- predict(fm5ZIP, type="det", newdata=newData)[1,1]
   }
 }
 
 # Plot these prediction matrices
-par(mfrow = c(1, 3), mar = c(5,5,2,2), cex.lab = 1.5, cex.axis = 1.5)
+op <- par(mfrow = c(1, 3), mar = c(5,5,2,2), cex.lab = 1.5, cex.axis = 1.5)
 mapPalette <- colorRampPalette(c("grey", "yellow", "orange", "red"))
 
-image(x=ep.orig, y=fp.orig, z=pred.matrix1, col = mapPalette(100), axes = F, xlab = "Elevation (m)", ylab = "Forest cover (%)")
-contour(x=ep.orig, y=fp.orig, z=pred.matrix1, add = T, col = "blue", labcex = 1.5, lwd = 1.5)
+image(x=ep.orig, y=fp.orig, z=pred.matrix1, col = mapPalette(100), axes = FALSE,
+    xlab = "Elevation (m)", ylab = "Forest cover (%)")
+contour(x=ep.orig, y=fp.orig, z=pred.matrix1, add = T, col = "blue",
+    labcex = 1.5, lwd = 1.5)
 axis(1, at = seq(min(ep.orig), max(ep.orig), by = 250))
 axis(2, at = seq(0, 100, by = 10))
 box()
 title(main = "(A)", font.main = 2)
 points(tits$elev, tits$forest, pch="+", cex=1.5)
 
-image(x=ep.orig, y=date.orig, z=pred.matrix2, col = mapPalette(100), axes = F, xlab = "Elevation (m)", ylab = "Date (1 = April 1)")
-contour(x=ep.orig, y=date.orig, z=pred.matrix2, add = T, col = "blue", labcex = 1.5, lwd = 1.5)
+image(x=ep.orig, y=date.orig, z=pred.matrix2, col = mapPalette(100), axes = FALSE,
+    xlab = "Elevation (m)", ylab = "Date (1 = April 1)")
+contour(x=ep.orig, y=date.orig, z=pred.matrix2, add = T, col = "blue",
+    labcex = 1.5, lwd = 1.5)
 axis(1, at = seq(min(ep.orig), max(ep.orig), by = 250))
 axis(2, at = seq(10, 120, by = 10))
 box()
 title(main = "(B)", font.main =2)
 matpoints(tits$elev, date, pch="+", cex=1.5)
 
-image(x=ep.orig, y=dur.orig, z=pred.matrix3, col = mapPalette(100), axes = F, xlab = "Elevation (m)", ylab = "Duration (min)")
-contour(x=ep.orig, y=dur.orig, z=pred.matrix3, add = T, col = "blue", labcex = 1.5, lwd = 1.5)
+image(x=ep.orig, y=dur.orig, z=pred.matrix3, col = mapPalette(100), axes = FALSE,
+    xlab = "Elevation (m)", ylab = "Duration (min)")
+contour(x=ep.orig, y=dur.orig, z=pred.matrix3, add = T, col = "blue",
+    labcex = 1.5, lwd = 1.5)
 axis(1, at = seq(min(ep.orig), max(ep.orig), by = 250))
 axis(2, at = seq(90, 420, by = 20))
 box()
 title(main = "(C)", font.main = 2)
 matpoints(tits$elev, dur, pch="+", cex=1.5)
-
+par(op)
 
 data(Switzerland)             # Load Swiss landscape data in unmarked
 CH <- Switzerland
 
-
 # Predictions for lambda, with overdispersion
-newData <- data.frame(elev = (CH$elev-elev.mean)/elev.sd, forest = (CH$forest-forest.mean)/forest.sd, iLength = 0, date=0, dur=0, time = factor("2", levels = c("1", "2", "3")))
-predCH <- predictSE(fm5ZIP, newdata=newData, print.matrix = TRUE, type="response", parm.type = "lambda", c.hat = 2.47)
+newData <- data.frame(elev = (CH$elev-elev.mean)/elev.sd,
+    forest = (CH$forest-forest.mean)/forest.sd, iLength = 0, date=0, dur=0,
+    time = factor("2", levels = c("1", "2", "3")))
+predCH <- predictSE(fm5ZIP, newdata=newData, print.matrix = TRUE,
+    type="response", parm.type = "lambda", c.hat = 2.47)
 
 
 max(predCH[,1])                 # Look at the max prediction  --- 43.8
@@ -434,7 +496,7 @@ mapPalette <- colorRampPalette(c("grey", "yellow", "orange", "red"))
 
 # Map expected abundance of great tits in Switzerland in 2013
 par(mfrow = c(1,2), mar = c(1,1,2,4))
-plot(r1, col = mapPalette(100), axes = F, box = FALSE, main ="")
+plot(r1, col = mapPalette(100), axes = FALSE, box = FALSE, main ="")
 # ~~~~~ these shape files were not distributed ~~~~~~~~~~~~~~
 # lakes <- readOGR(".", "lakes")
 # rivers <- readOGR(".", "rivers")
@@ -451,7 +513,7 @@ elev[elev > 2250] <- NA
 r2 <- mask(r2, elev)
 
 # Map prediction SEs of expected abundance
-plot(r2, col = mapPalette(100), axes = F, box = FALSE, main ="")
+plot(r2, col = mapPalette(100), axes = FALSE, box = FALSE, main ="")
 # ~~~~~ these shape files were not distributed ~~~~~~~~~~~~~~
 # lakes <- readOGR(".", "lakes")
 # rivers <- readOGR(".", "rivers")
@@ -463,8 +525,10 @@ plot(r2, col = mapPalette(100), axes = F, box = FALSE, main ="")
 
 
 # Predictions for p with overdispersion (very slow!)
-newData <- data.frame(elev = (CH$elev-elev.mean)/elev.sd, date=0, dur=0, time = factor("2", levels = c("1", "2", "3")))
-predCHp <- modavgPred(cand.set = list(fm5ZIP), newdata = newData, parm.type = "detect", type = "response", c.hat = 2.47)
+newData <- data.frame(elev = (CH$elev-elev.mean)/elev.sd, date=0, dur=0,
+    time = factor("2", levels = c("1", "2", "3")))
+predCHp <- modavgPred(cand.set = list(fm5ZIP), newdata = newData,
+    parm.type = "detect", type = "response", c.hat = 2.47)
 
 (N <- sum(predCH[-which(CH$elev > 2250),1]))    # Nat'l population size
 
@@ -482,17 +546,17 @@ pforest <- (CH$forest - forest.mean)/forest.sd
 
 
 Nhat <- function(fm = fm5ZIP, iLength = 0, area = 1) {
-   betavec <- coef(fm)[1:8]
-   DM <- cbind(rep(1,length(pelev)), pelev, pelev^2, pforest,
-   pforest^2, rep(iLength,length(pelev)), pelev*pforest, pelev*pforest^2)
-   pred <- exp(DM %*% betavec) * (1-plogis(coef(fm)[25])) * (1/area)
-   pred2 <- pred
-   N1 <- sum(pred[-which(CH$elev > 2250),])# Drop quads > 2250 m
-   pred2[pred2 > 100] <- 100      # Censor freak-high estimates
-   N2 <- sum(pred2[-which(CH$elev > 2250),]) # Estimate with freaks censored
-   out <- which(CH$water > 50 | CH$elev > 2250)
-   N3 <- sum(pred2[-out,])  # Estimate excluding water bodies
-   return(c(N1 = N1, N2 = N2, N3 = N3))
+  betavec <- coef(fm)[1:8]
+  DM <- cbind(rep(1,length(pelev)), pelev, pelev^2, pforest,
+  pforest^2, rep(iLength,length(pelev)), pelev*pforest, pelev*pforest^2)
+  pred <- exp(DM %*% betavec) * (1-plogis(coef(fm)[25])) * (1/area)
+  pred2 <- pred
+  N1 <- sum(pred[-which(CH$elev > 2250),])# Drop quads > 2250 m
+  pred2[pred2 > 100] <- 100      # Censor freak-high estimates
+  N2 <- sum(pred2[-which(CH$elev > 2250),]) # Estimate with freaks censored
+  out <- which(CH$water > 50 | CH$elev > 2250)
+  N3 <- sum(pred2[-out,])  # Estimate excluding water bodies
+  return(c(N1 = N1, N2 = N2, N3 = N3))
 }
 
 
@@ -514,7 +578,8 @@ summary(bs)
 quantile(bs, prob = c(0.025, 0.975))  # Get 95% CI
 
 # Plot
-hist(bs, breaks = 100, col = "grey", xlab = "National population size of great tits", cex = 1.5, main = "", xlim = c(400000, 1000000))
+hist(bs, breaks = 100, col = "grey", xlab = "National population size of great tits",
+    cex = 1.5, main = "", xlim = c(400000, 1000000))
 abline(v = Nest[3], lwd = 3)
 abline(v = mean(bs), lwd = 3, col = "blue")
 abline(v = quantile(bs, prob = c(0.025, 0.975)), lwd = 3, col = "blue", lty = 2)
@@ -538,8 +603,9 @@ c.hat <- gof.ZIP$c.hat.est
 AHR <- seq(0.001, 100, 0.1)         # Area home range (in km2): 0.1-100
 RHR <- sqrt(AHR/pi)                 # Translate to home range radius (in km)
 ESA <- (1 + 2*RHR)^2                # Eff. sample area for 1km2 nominal area
-par(mfrow = c(1,2), mar = c(5,5,3,2), cex.lab = 1.3, cex.axis = 1.3)
-plot(AHR, ESA, xlab = "Home range size (km2)", ylab = "Effective sample area (km2)", type = "l", lwd = 3, frame = F)
+op <- par(mfrow = c(1,2), mar = c(5,5,3,2), cex.lab = 1.3, cex.axis = 1.3)
+plot(AHR, ESA, xlab = "Home range size (km2)", ylab = "Effective sample area (km2)",
+    type = "l", lwd = 3, frame = FALSE)
 abline(h = 1, col = "red", lwd = 3) # Nominal sample area
 abline(h = 0, col = "grey", lwd = 3)
 
@@ -551,6 +617,7 @@ NTOT <- numeric(length(ESA.GT))    # Adjusted national total population
 for(i in 1:length(NTOT)){
    NTOT[i] <- Nhat(fm5ZIP, 0, ESA.GT[i])[3]
 }
-plot(100*GT.HR, NTOT, xlab = "Great tit home-range (ha)", ylab = "Adjusted national total (pairs)", type = "l", lwd = 3, frame = F)
-
+plot(100*GT.HR, NTOT, xlab = "Great tit home-range (ha)",
+    ylab = "Adjusted national total (pairs)", type = "l", lwd = 3, frame = FALSE)
+par(op)
 

@@ -2,8 +2,11 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 8. Modeling abundance using hierarchical distance sampling (HDS)
 # =========================================================================
+
+# Approximate execution time for this code: 12 mins
 
 library(AHMbook)
 library(unmarked)
@@ -165,7 +168,9 @@ E.N <- predict(fall$C2E.C, type="state", newdata=newdat, appendData=TRUE)
 head(E.N)
 
 # Make a plot of the response curve for the grid of chaparral values
-plot(chap.orig, E.N[,"Predicted"], xlab="Proportion chaparral", ylab="Predicted jay abundance", type="l", ylim = c(0, 20), frame = F, lwd = 2)
+plot(chap.orig, E.N[,"Predicted"], xlab="Proportion chaparral",
+    ylab="Predicted jay abundance", type="l", ylim = c(0, 20),
+    frame = FALSE, lwd = 2)
 matlines(chap.orig, E.N[,3:4], lty = 1, col = "grey", lwd = 1)
 
 attributes(sc.s) # means are "scaled:center". SDs are "scaled:scale"
@@ -193,7 +198,8 @@ names(cruz.raster) # These should match the names in the formula
 
 plot(cruz.raster)                      #  not shown
 # Elevation map on the original scale (not shown)
-plot(cruz.raster[["elevation"]]*125 + 202, col=topo.colors(20), main="Elevation (in feet) and Survey Locations", asp = 1)
+plot(cruz.raster[["elevation"]]*125 + 202, col=topo.colors(20),
+    main="Elevation (in feet) and Survey Locations", asp = 1)
 points(issj[,c("x","y")], cex=0.8, pch = 16)
 
 

@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 7. Modeling abundance using multinomial N-mixture models
 # =========================================================================
 
@@ -136,33 +137,33 @@ str(data)
 cat("
 model {
 
-# Prior distributions
-p0 ~ dunif(0,1)
-alpha0 <- log(p0 / (1-p0))    # same as logit(p0)
-alpha1 ~ dnorm(0, 0.01)
-alpha2 ~ dnorm(0,0.01)
-beta0 ~ dnorm(0,0.01)
-beta1 ~ dnorm(0,0.01)
-psi <- sum(lambda[]) / M   # psi is a derived parameter
+  # Prior distributions
+  p0 ~ dunif(0,1)
+  alpha0 <- log(p0 / (1-p0))    # same as logit(p0)
+  alpha1 ~ dnorm(0, 0.01)
+  alpha2 ~ dnorm(0,0.01)
+  beta0 ~ dnorm(0,0.01)
+  beta1 ~ dnorm(0,0.01)
+  psi <- sum(lambda[]) / M   # psi is a derived parameter
 
-# log-linear model for abundance: lambda depends on WOODY
-for(s in 1:nsites){
-  log(lambda[s]) <- beta0 + beta1 * X[s,1]
-  probs[s] <- lambda[s] / sum(lambda[])
-}
-
-# Model for individual encounter histories
-for(i in 1:M){
-  group[i] ~ dcat(probs[])  # Group == site membership
-  z[i] ~ dbern(psi)         # Data augmentation variables
-
-  # Observation model: p depends on 2 covariates: STRUCT + TIME
-  for(j in 1:J){
-    logit(p[i,j]) <- alpha0 + alpha1 * X[group[i],2] + alpha2*X[group[i],3]
-    pz[i,j] <- p[i,j] * z[i]
-    y[i,j] ~ dbern(pz[i,j])
+  # log-linear model for abundance: lambda depends on WOODY
+  for(s in 1:nsites){
+    log(lambda[s]) <- beta0 + beta1 * X[s,1]
+    probs[s] <- lambda[s] / sum(lambda[])
   }
-}
+
+  # Model for individual encounter histories
+  for(i in 1:M){
+    group[i] ~ dcat(probs[])  # Group == site membership
+    z[i] ~ dbern(psi)         # Data augmentation variables
+
+    # Observation model: p depends on 2 covariates: STRUCT + TIME
+    for(j in 1:J){
+      logit(p[i,j]) <- alpha0 + alpha1 * X[group[i],2] + alpha2*X[group[i],3]
+      pz[i,j] <- p[i,j] * z[i]
+      y[i,j] ~ dbern(pz[i,j])
+    }
+  }
 }
 ",fill=TRUE,file="model.txt")
 
@@ -189,40 +190,41 @@ print(out, digits = 3)
 cat("
 model {
 
-# Prior distributions
-p0 ~ dunif(0,1)
-alpha0 <- log(p0/(1-p0))
-alpha1 ~ dnorm(0, 0.01)
-alpha2 ~ dnorm(0, 0.01)
-beta0 ~ dnorm(0, 0.01)
-beta1 ~ dnorm(0, 0.01)
-psi <- sum(lambda[])/M
-tau ~ dgamma(0.1,0.1) # New parameter, precision of ind. random effects
-sigma <- 1/sqrt(tau)
+  # Prior distributions
+  p0 ~ dunif(0,1)
+  alpha0 <- log(p0/(1-p0))
+  alpha1 ~ dnorm(0, 0.01)
+  alpha2 ~ dnorm(0, 0.01)
+  beta0 ~ dnorm(0, 0.01)
+  beta1 ~ dnorm(0, 0.01)
+  psi <- sum(lambda[])/M
+  tau ~ dgamma(0.1,0.1) # New parameter, precision of ind. random effects
+  sigma <- 1/sqrt(tau)
 
-# log-linear model for abundance: lambda depends on WOODY
-for(s in 1:nsites){
-  log(lambda[s])<- beta0 + beta1*X[s,1]
-  probs[s]<- lambda[s]/sum(lambda[])
-}
-
-# Model for individual encounter histories
-for(i in 1:M){
-  eta[i] ~ dnorm(alpha0, tau)  # Individual random effect
-  group[i] ~ dcat(probs[])  # Group == site membership
-  z[i] ~ dbern(psi)         # Data augmentation variables
-  # Observation model: p depends on STRUCT + TIME + ind. heterogeneity
-  for(j in 1:J){
-    logit(p[i,j]) <- alpha1 * X[group[i],2] + alpha2*X[group[i],3] + eta[i]
-    pz[i,j] <- p[i,j] * z[i]
-    y[i,j] ~ dbern(pz[i,j])
+  # log-linear model for abundance: lambda depends on WOODY
+  for(s in 1:nsites){
+    log(lambda[s])<- beta0 + beta1*X[s,1]
+    probs[s]<- lambda[s]/sum(lambda[])
   }
- }
+
+  # Model for individual encounter histories
+  for(i in 1:M){
+    eta[i] ~ dnorm(alpha0, tau)  # Individual random effect
+    group[i] ~ dcat(probs[])  # Group == site membership
+    z[i] ~ dbern(psi)         # Data augmentation variables
+    # Observation model: p depends on STRUCT + TIME + ind. heterogeneity
+    for(j in 1:J){
+      logit(p[i,j]) <- alpha1 * X[group[i],2] + alpha2*X[group[i],3] + eta[i]
+      pz[i,j] <- p[i,j] * z[i]
+      y[i,j] ~ dbern(pz[i,j])
+    }
+  }
 }
 ",fill=TRUE,file="model.txt")
 
 # Parameters monitored: add sigma
-parameters <- c("p0", "alpha0", "alpha1", "alpha2", "beta0", "beta1", "psi", "sigma")
+parameters <- c("p0", "alpha0", "alpha1", "alpha2", "beta0", "beta1",
+    "psi", "sigma")
 
 # Initial values: add tau
 inits <- function(){

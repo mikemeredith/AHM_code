@@ -2,8 +2,11 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 11. Hierarchical models for communities
 # =========================================================================
+
+# Approximate execution time for this code: 50 mins
 
 library(jagsUI)
 
@@ -11,7 +14,7 @@ library(jagsUI)
 source("AHM1_11.03.R")
 # ~~~~~~ and this code from section 11.6 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Collapse 3D detection/nondetection data to 2D detection frequencies
-ysum <- apply(y, c(1,3), sum, na.rm = T) # Collapse to detection frequency
+ysum <- apply(y, c(1,3), sum, na.rm = TRUE) # Collapse to detection frequency
 ysum[NAsites,] <- NA                     # Have to NA out sites with NA data
 # ~~~~~~ and this code from section 11.5 ~~~~~~~~~~
 # Quadrat elevation and forest cover
@@ -52,60 +55,61 @@ M <- nspec + nz          # Size of augmented data set ('superpopulation')
 yaug <- cbind(ysum, array(0, dim=c(nsite, nz))) # Add all zero histories
 
 # Bundle and summarize data set
-str( win.data <- list(yaug = yaug, nsite = nrow(ysum), nrep = MHB2014$sites$nsurvey, M = M, nspec = nspec, nz = nz) )
+str( win.data <- list(yaug = yaug, nsite = nrow(ysum),
+    nrep = MHB2014$sites$nsurvey, M = M, nspec = nspec, nz = nz) )
 
 # Specify model in BUGS language
 sink("model9.txt")
 cat("
 model {
 
-# Priors to describe heterogeneity among species in community
-for(k in 1:M){                  # Loop over all species in augmented list
-  lpsi[k] ~ dnorm(mu.lpsi, tau.lpsi)
-  lp[k] ~ dnorm(mu.lp, tau.lp)
-}
-
-# Hyperpriors to describe full community
-omega ~ dunif(0,1)              # Data augmentation or 'occupancy' parameter
-mu.lpsi ~ dnorm(0,0.001)        # Community mean of occupancy (logit)
-mu.lp ~ dnorm(0,0.001)          # Community mean of detection (logit)
-tau.lpsi <- pow(sd.lpsi, -2)
-sd.lpsi ~ dunif(0,5)            # Species heterogeneity in logit(psi)
-tau.lp <- pow(sd.lp, -2)
-sd.lp ~ dunif(0,5)              # Species heterogeneity in logit(p)
-
-# Superpopulation process:this is the 'paramater expansion' part of PX-DA
-for(k in 1:M){
-  w[k] ~ dbern(omega)           # Metacommunity membership indicator
-}                               # (or data augmentation variable)
-
-# Ecological model for latent occurrence z (process model)
-for(k in 1:M){
-  mu.psi[k] <- w[k] * psi[k]    # species not part of community zeroed out for z
-  logit(psi[k]) <- lpsi[k]
-  for (i in 1:nsite) {
-    z[i,k] ~ dbern(mu.psi[k])
+  # Priors to describe heterogeneity among species in community
+  for(k in 1:M){                  # Loop over all species in augmented list
+    lpsi[k] ~ dnorm(mu.lpsi, tau.lpsi)
+    lp[k] ~ dnorm(mu.lp, tau.lp)
   }
-}
 
-# Observation model for observed detection frequencies
-for(k in 1:M){
-  logit(p[k]) <- lp[k]
-  for (i in 1:nsite) {
-    mu.p[i,k] <- z[i,k] * p[k]  # non-occurring species are zeroed out for p
-    yaug[i,k] ~ dbin(mu.p[i,k], nrep[i])
+  # Hyperpriors to describe full community
+  omega ~ dunif(0,1)              # Data augmentation or 'occupancy' parameter
+  mu.lpsi ~ dnorm(0,0.001)        # Community mean of occupancy (logit)
+  mu.lp ~ dnorm(0,0.001)          # Community mean of detection (logit)
+  tau.lpsi <- pow(sd.lpsi, -2)
+  sd.lpsi ~ dunif(0,5)            # Species heterogeneity in logit(psi)
+  tau.lp <- pow(sd.lp, -2)
+  sd.lp ~ dunif(0,5)              # Species heterogeneity in logit(p)
+
+  # Superpopulation process:this is the 'paramater expansion' part of PX-DA
+  for(k in 1:M){
+    w[k] ~ dbern(omega)           # Metacommunity membership indicator
+  }                               # (or data augmentation variable)
+
+  # Ecological model for latent occurrence z (process model)
+  for(k in 1:M){
+    mu.psi[k] <- w[k] * psi[k]    # species not part of community zeroed out for z
+    logit(psi[k]) <- lpsi[k]
+    for (i in 1:nsite) {
+      z[i,k] ~ dbern(mu.psi[k])
+    }
   }
-}
 
-# Derived quantities
-for(k in 1:M){
-   Nocc.fs[k] <- sum(z[,k])     # Number of occupied sites among the 267
-}
-for (i in 1:nsite) {
-   Nsite[i] <- sum(z[i,])       # Number of occurring species at each site
-}
-n0 <- sum(w[(nspec+1):(nspec+nz)]) # Number of unseen species in metacommunity
-Ntotal <- sum(w[])              # Total metacommunity size (= nspec + n0)
+  # Observation model for observed detection frequencies
+  for(k in 1:M){
+    logit(p[k]) <- lp[k]
+    for (i in 1:nsite) {
+      mu.p[i,k] <- z[i,k] * p[k]  # non-occurring species are zeroed out for p
+      yaug[i,k] ~ dbin(mu.p[i,k], nrep[i])
+    }
+  }
+
+  # Derived quantities
+  for(k in 1:M){
+     Nocc.fs[k] <- sum(z[,k])     # Number of occupied sites among the 267
+  }
+  for (i in 1:nsite) {
+    Nsite[i] <- sum(z[i,])       # Number of occurring species at each site
+  }
+  n0 <- sum(w[(nspec+1):(nspec+nz)]) # Number of unseen species in metacommunity
+  Ntotal <- sum(w[])              # Total metacommunity size (= nspec + n0)
 }
 ",fill = TRUE)
 sink()
@@ -113,49 +117,56 @@ sink()
 # Initial values
 wst <- rep(1, nspec+nz)                   # Simply set everybody at 'occurring'
 zst <- array(1, dim = c(nsite, nspec+nz)) # ditto for z
-inits <- function() list(z = zst, w = wst, lpsi = rnorm(n = nspec+nz), lp = rnorm(n = nspec+nz))
+inits <- function() list(z = zst, w = wst, lpsi = rnorm(n = nspec+nz),
+    lp = rnorm(n = nspec+nz))
 
 # Parameters monitored
-params <- c("mu.lpsi", "sd.lpsi", "mu.lp", "sd.lp", "psi", "p", "Nsite", "Ntotal", "omega", "n0")
+params <- c("mu.lpsi", "sd.lpsi", "mu.lp", "sd.lp", "psi", "p", "Nsite",
+    "Ntotal", "omega", "n0")
 
 # MCMC settings
 # ni <- 22000   ;   nt <- 2   ;   nb <- 2000   ;   nc <- 3
 ni <- 2200   ;   nt <- 2   ;   nb <- 200   ;   nc <- 3  # ~~~~~ use for testing
 
 # Call JAGS from R (ART 62 min), check convergence and summarize posteriors
-out9 <- jags(win.data, inits, params, "model9.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-par(mfrow = c(2,2)) ; traceplot(out9, c('mu.lpsi', 'sd.lpsi', 'mu.lp', 'sd.lp'))
+out9 <- jags(win.data, inits, params, "model9.txt", n.chains = nc,
+    n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+op <- par(mfrow = c(2,2)) ; traceplot(out9, c('mu.lpsi', 'sd.lpsi', 'mu.lp', 'sd.lp'))
+par(op)
 print(out9, dig = 3)
 # ~~~~~ suggest saving for use later ~~~~~~~~~~~~~
 save(out9, file="AHM1_11.07_out9.RData")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Plot posterior distribution of site-specific species richness (Nsite)
-par(mfrow = c(3,3), mar = c(5,4,3,2))
+op <- par(mfrow = c(3,3), mar = c(5,4,3,2))
 oldask <- devAskNewPage(ask=dev.interactive(orNone=TRUE)) #~~~~ to replace browser call
 for(i in 1:267){
    plot(table(out9$sims.list$Nsite[,i]), main = paste("Quadrat", i),
-   xlab = "Local species richness", ylab = "", frame = F,
-   xlim = c((min(C[i], out9$sims.list$Nsite[,i], na.rm = T)-2),
+   xlab = "Local species richness", ylab = "", frame = FALSE,
+   xlim = c((min(C[i], out9$sims.list$Nsite[,i], na.rm = TRUE)-2),
    max(out9$sims.list$Nsite[,i]) ))
    abline(v = C[i], col = "grey", lwd = 4)
    # browser()  # ~~~~~ incompatible with automated testing
 }
 devAskNewPage(ask=oldask) #~~~~ clean up
+par(op)
 
 # Plot it only for a selection of sites
-par(mfrow = c(3,3), mar = c(5,4,3,2))
+op <- par(mfrow = c(3,3), mar = c(5,4,3,2))
 for(i in c(9, 32, 162, 12, 27, 30, 118, 159, 250)){
    plot(table(out9$sims.list$Nsite[,i]), main = paste("Quadrat", i),
-   xlab = "Local species richness", ylab = "", frame = F,
-   xlim = c((min(C[i], out9$sims.list$Nsite[,i], na.rm = T)-2),
+   xlab = "Local species richness", ylab = "", frame = FALSE,
+   xlim = c((min(C[i], out9$sims.list$Nsite[,i], na.rm = TRUE)-2),
    max(out9$sims.list$Nsite[,i]) ))
    abline(v = C[i], col = "grey", lwd = 4)
 }
-par(mfrow=c(1,1), mar=c(5,4,4,2)+0.1)  # ~~~~~ clean up!
+par(op)
 
 # Plot posterior distribution of total species richness (Ntotal)
-plot(table(out9$sims.list$Ntotal), main = "", ylab = "", xlab = "Avian metacommunity size in Swiss MHB survey (267 1km2 quadrats)", frame = F, xlim = c(144, 245))
+plot(table(out9$sims.list$Ntotal), main = "", ylab = "",
+    xlab = "Avian metacommunity size in Swiss MHB survey (267 1km2 quadrats)",
+    frame = FALSE, xlim = c(144, 245))
 abline(v = nspec, col = "grey", lwd = 4)
 
 
@@ -175,105 +186,106 @@ for(k in (nspec+1):(nspec+nz)){
 }
 
 # Bundle and summarize data
-str(win.data <- list(y = yaug, nsite = dim(y)[1], nrep = dim(y)[2], nspec = dim(y)[3], nz = nz, M = nspec + nz, ele = ele, forest = forest, DAT = DAT, DUR = DUR) )
-
+str(win.data <- list(y = yaug, nsite = dim(y)[1], nrep = dim(y)[2],
+    nspec = dim(y)[3], nz = nz, M = nspec + nz, ele = ele, forest = forest,
+    DAT = DAT, DUR = DUR) )
 
 # Specify model in BUGS language
 sink("model10.txt")
 cat("
 model {
 
-# Priors
-omega ~ dunif(0,1)
-# Priors for species-specific effects in occupancy and detection
-for(k in 1:M){
-  lpsi[k] ~ dnorm(mu.lpsi, tau.lpsi)    # Hyperparams describe community
-  betalpsi1[k] ~ dnorm(mu.betalpsi1, tau.betalpsi1)
-  betalpsi2[k] ~ dnorm(mu.betalpsi2, tau.betalpsi2)
-  betalpsi3[k] ~ dnorm(mu.betalpsi3, tau.betalpsi3)
-  lp[k] ~ dnorm(mu.lp, tau.lp)
-  betalp1[k] ~ dnorm(mu.betalp1, tau.betalp1)
-  betalp2[k] ~ dnorm(mu.betalp2, tau.betalp2)
-  betalp3[k] ~ dnorm(mu.betalp3, tau.betalp3)
-}
-
-# Hyperpriors
-# For the model of occupancy
-mu.lpsi ~ dnorm(0,0.01)
-tau.lpsi <- pow(sd.lpsi, -2)
-sd.lpsi ~ dunif(0,8)   # as always, bounds of uniform chosen by trial and error
-mu.betalpsi1 ~ dnorm(0,0.1)
-tau.betalpsi1 <- pow(sd.betalpsi1, -2)
-sd.betalpsi1 ~ dunif(0, 4)
-mu.betalpsi2 ~ dnorm(0,0.1)
-tau.betalpsi2 <- pow(sd.betalpsi2, -2)
-sd.betalpsi2 ~ dunif(0,2)
-mu.betalpsi3 ~ dnorm(0,0.1)
-tau.betalpsi3 <- pow(sd.betalpsi3, -2)
-sd.betalpsi3 ~ dunif(0,2)
-
-# For the model of detection
-mu.lp ~ dnorm(0,0.1)
-tau.lp <- pow(sd.lp, -2)
-sd.lp ~ dunif(0, 2)
-mu.betalp1 ~ dnorm(0,0.1)
-tau.betalp1 <- pow(sd.betalp1, -2)
-sd.betalp1 ~ dunif(0,1)
-mu.betalp2 ~ dnorm(0,0.1)
-tau.betalp2 <- pow(sd.betalp2, -2)
-sd.betalp2 ~ dunif(0,1)
-mu.betalp3 ~ dnorm(0,0.1)
-tau.betalp3 <- pow(sd.betalp3, -2)
-sd.betalp3 ~ dunif(0,1)
-
-# Superpopulation process: Ntotal species sampled out of M available
-for(k in 1:M){
-   w[k] ~ dbern(omega)
-}
-
-# Ecological model for true occurrence (process model)
-for(k in 1:M){
-  for (i in 1:nsite) {
-    logit(psi[i,k]) <- lpsi[k] + betalpsi1[k] * ele[i] +
-      betalpsi2[k] * pow(ele[i],2) + betalpsi3[k] * forest[i]
-    mu.psi[i,k] <- w[k] * psi[i,k]
-    z[i,k] ~ dbern(mu.psi[i,k])
+  # Priors
+  omega ~ dunif(0,1)
+  # Priors for species-specific effects in occupancy and detection
+  for(k in 1:M){
+    lpsi[k] ~ dnorm(mu.lpsi, tau.lpsi)    # Hyperparams describe community
+    betalpsi1[k] ~ dnorm(mu.betalpsi1, tau.betalpsi1)
+    betalpsi2[k] ~ dnorm(mu.betalpsi2, tau.betalpsi2)
+    betalpsi3[k] ~ dnorm(mu.betalpsi3, tau.betalpsi3)
+    lp[k] ~ dnorm(mu.lp, tau.lp)
+    betalp1[k] ~ dnorm(mu.betalp1, tau.betalp1)
+    betalp2[k] ~ dnorm(mu.betalp2, tau.betalp2)
+    betalp3[k] ~ dnorm(mu.betalp3, tau.betalp3)
   }
-}
 
-# Observation model for replicated detection/nondetection observations
-for(k in 1:M){
-  for (i in 1:nsite){
-    for(j in 1:nrep){
-      logit(p[i,j,k]) <- lp[k] + betalp1[k] * DAT[i,j] +
-        betalp2[k] * pow(DAT[i,j],2) + betalp3[k] * DUR[i,j]
-      mu.p[i,j,k] <- z[i,k] * p[i,j,k]
-      y[i,j,k] ~ dbern(mu.p[i,j,k])
+  # Hyperpriors
+  # For the model of occupancy
+  mu.lpsi ~ dnorm(0,0.01)
+  tau.lpsi <- pow(sd.lpsi, -2)
+  sd.lpsi ~ dunif(0,8)   # as always, bounds of uniform chosen by trial and error
+  mu.betalpsi1 ~ dnorm(0,0.1)
+  tau.betalpsi1 <- pow(sd.betalpsi1, -2)
+  sd.betalpsi1 ~ dunif(0, 4)
+  mu.betalpsi2 ~ dnorm(0,0.1)
+  tau.betalpsi2 <- pow(sd.betalpsi2, -2)
+  sd.betalpsi2 ~ dunif(0,2)
+  mu.betalpsi3 ~ dnorm(0,0.1)
+  tau.betalpsi3 <- pow(sd.betalpsi3, -2)
+  sd.betalpsi3 ~ dunif(0,2)
+
+  # For the model of detection
+  mu.lp ~ dnorm(0,0.1)
+  tau.lp <- pow(sd.lp, -2)
+  sd.lp ~ dunif(0, 2)
+  mu.betalp1 ~ dnorm(0,0.1)
+  tau.betalp1 <- pow(sd.betalp1, -2)
+  sd.betalp1 ~ dunif(0,1)
+  mu.betalp2 ~ dnorm(0,0.1)
+  tau.betalp2 <- pow(sd.betalp2, -2)
+  sd.betalp2 ~ dunif(0,1)
+  mu.betalp3 ~ dnorm(0,0.1)
+  tau.betalp3 <- pow(sd.betalp3, -2)
+  sd.betalp3 ~ dunif(0,1)
+
+  # Superpopulation process: Ntotal species sampled out of M available
+  for(k in 1:M){
+    w[k] ~ dbern(omega)
+  }
+
+  # Ecological model for true occurrence (process model)
+  for(k in 1:M){
+    for (i in 1:nsite) {
+      logit(psi[i,k]) <- lpsi[k] + betalpsi1[k] * ele[i] +
+        betalpsi2[k] * pow(ele[i],2) + betalpsi3[k] * forest[i]
+      mu.psi[i,k] <- w[k] * psi[i,k]
+      z[i,k] ~ dbern(mu.psi[i,k])
     }
   }
-}
 
-# Derived quantities
-#for(k in 1:M){
-#   Nocc.fs[k] <- sum(z[,k])       # Number of occupied sites among the 267
-#}
-for (i in 1:nsite){
-   Nsite[i] <- sum(z[i,])          # Number of occurring species at each site
-}
-n0 <- sum(w[(nspec+1):(nspec+nz)]) # Number of unseen species
-Ntotal <- sum(w[])                 # Total metacommunity size
+  # Observation model for replicated detection/nondetection observations
+  for(k in 1:M){
+    for (i in 1:nsite){
+      for(j in 1:nrep){
+        logit(p[i,j,k]) <- lp[k] + betalp1[k] * DAT[i,j] +
+            betalp2[k] * pow(DAT[i,j],2) + betalp3[k] * DUR[i,j]
+        mu.p[i,j,k] <- z[i,k] * p[i,j,k]
+        y[i,j,k] ~ dbern(mu.p[i,j,k])
+      }
+    }
+  }
 
-# Vectors to save (S for ‘save’; discard posterior samples for
-# all minus 1 of the potential species to save disk space)
-# we do this for nz = 250 (i.e., M = 395)
-lpsiS[1:(nspec+1)] <- lpsi[1:(nspec+1)]
-betalpsi1S[1:(nspec+1)] <- betalpsi1[1:(nspec+1)]
-betalpsi2S[1:(nspec+1)] <- betalpsi2[1:(nspec+1)]
-betalpsi3S[1:(nspec+1)] <- betalpsi3[1:(nspec+1)]
-lpS[1:(nspec+1)] <- lp[1:(nspec+1)]
-betalp1S[1:(nspec+1)] <- betalp1[1:(nspec+1)]
-betalp2S[1:(nspec+1)] <- betalp2[1:(nspec+1)]
-betalp3S[1:(nspec+1)] <- betalp3[1:(nspec+1)]
+  # Derived quantities
+  #for(k in 1:M){
+  #   Nocc.fs[k] <- sum(z[,k])       # Number of occupied sites among the 267
+  #}
+  for (i in 1:nsite){
+     Nsite[i] <- sum(z[i,])          # Number of occurring species at each site
+  }
+  n0 <- sum(w[(nspec+1):(nspec+nz)]) # Number of unseen species
+  Ntotal <- sum(w[])                 # Total metacommunity size
+
+  # Vectors to save (S for ‘save’; discard posterior samples for
+  # all minus 1 of the potential species to save disk space)
+  # we do this for nz = 250 (i.e., M = 395)
+  lpsiS[1:(nspec+1)] <- lpsi[1:(nspec+1)]
+  betalpsi1S[1:(nspec+1)] <- betalpsi1[1:(nspec+1)]
+  betalpsi2S[1:(nspec+1)] <- betalpsi2[1:(nspec+1)]
+  betalpsi3S[1:(nspec+1)] <- betalpsi3[1:(nspec+1)]
+  lpS[1:(nspec+1)] <- lp[1:(nspec+1)]
+  betalp1S[1:(nspec+1)] <- betalp1[1:(nspec+1)]
+  betalp2S[1:(nspec+1)] <- betalp2[1:(nspec+1)]
+  betalp3S[1:(nspec+1)] <- betalp3[1:(nspec+1)]
 }
 ",fill = TRUE)
 sink()
@@ -282,29 +294,45 @@ sink()
 # Initial values
 wst <- rep(1, nspec+nz)                   # Simply set everybody at occurring
 zst <- array(1, dim = c(nsite, nspec+nz)) # ditto
-inits <- function() list(z = zst, w = wst, lpsi = rnorm(n = nspec+nz), betalpsi1 = rnorm(n = nspec+nz), betalpsi2 = rnorm(n = nspec+nz), betalpsi3 = rnorm(n = nspec+nz), lp = rnorm(n = nspec+nz), betalp1 = rnorm(n = nspec+nz), betalp2 = rnorm(n = nspec+nz), betalp3 = rnorm(n = nspec+nz))
+inits <- function() list(z = zst, w = wst, lpsi = rnorm(n = nspec+nz),
+    betalpsi1 = rnorm(n = nspec+nz), betalpsi2 = rnorm(n = nspec+nz),
+    betalpsi3 = rnorm(n = nspec+nz), lp = rnorm(n = nspec+nz),
+    betalp1 = rnorm(n = nspec+nz), betalp2 = rnorm(n = nspec+nz),
+    betalp3 = rnorm(n = nspec+nz))
 
 # Set 1
-params1 <- c("omega", "mu.lpsi", "sd.lpsi", "mu.betalpsi1", "sd.betalpsi1", "mu.betalpsi2", "sd.betalpsi2", "mu.betalpsi3", "sd.betalpsi3", "mu.lp", "sd.lp", "mu.betalp1", "sd.betalp1", "mu.betalp2", "sd.betalp2", "mu.betalp3", "sd.betalp3", "Ntotal", "Nsite")
+params1 <- c("omega", "mu.lpsi", "sd.lpsi", "mu.betalpsi1", "sd.betalpsi1",
+    "mu.betalpsi2", "sd.betalpsi2", "mu.betalpsi3", "sd.betalpsi3", "mu.lp",
+    "sd.lp", "mu.betalp1", "sd.betalp1", "mu.betalp2", "sd.betalp2",
+    "mu.betalp3", "sd.betalp3", "Ntotal", "Nsite")
 
 # MCMC settings
 # ni <- 15000   ;   nt <- 10   ;   nb <- 5000   ;   nc <- 3
 ni <- 1500   ;   nt <- 1   ;   nb <- 500   ;   nc <- 3  # ~~~~~ use for testing
 
 # Run JAGS, check convergence and summarize posteriors
-out101 <- jags(win.data, inits, params1, "model10.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-par(mfrow = c(2, 2))
-traceplot(out101, c(c("omega", "mu.lpsi", "sd.lpsi", "mu.betalpsi1", "sd.betalpsi1", "mu.betalpsi2", "sd.betalpsi2", "mu.betalpsi3", "sd.betalpsi3", "mu.lp", "sd.lp", "mu.betalp1", "sd.betalp1", "mu.betalp2", "sd.betalp2", "mu.betalp3", "sd.betalp3", "Ntotal")) )
+out101 <- jags(win.data, inits, params1, "model10.txt", n.chains = nc,
+    n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+op <- par(mfrow = c(2, 2))
+traceplot(out101, c(c("omega", "mu.lpsi", "sd.lpsi", "mu.betalpsi1",
+    "sd.betalpsi1", "mu.betalpsi2", "sd.betalpsi2", "mu.betalpsi3",
+    "sd.betalpsi3", "mu.lp", "sd.lp", "mu.betalp1", "sd.betalp1",
+    "mu.betalp2", "sd.betalp2", "mu.betalp3", "sd.betalp3", "Ntotal")) )
+par(op)
 # ~~~~~ save for use in sections 11.8 and 11.9 ~~~~~~~~~~~~~
 out10 <- out101
 save(out10, file="AHM1_11.07_out10.RData")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Set 2
-params2 <- c("mu.lpsi", "sd.lpsi", "mu.betalpsi1", "sd.betalpsi1", "mu.betalpsi2", "sd.betalpsi2", "mu.betalpsi3", "sd.betalpsi3", "lpsi", "betalpsi1", "betalpsi2", "betalpsi3", "lp", "betalp1", "betalp2", "betalp3", "z", "w")
+params2 <- c("mu.lpsi", "sd.lpsi", "mu.betalpsi1", "sd.betalpsi1",
+    "mu.betalpsi2", "sd.betalpsi2", "mu.betalpsi3", "sd.betalpsi3",
+    "lpsi", "betalpsi1", "betalpsi2", "betalpsi3", "lp", "betalp1",
+    "betalp2", "betalp3", "z", "w")
 # ni <- 12000   ;   nt <- 20   ;   nb <- 2000   ;   nc <- 3  # 3 hrs
 ni <- 1200   ;   nt <- 2   ;   nb <- 200   ;   nc <- 3  # ~~~~~ use for testing
-out102 <- jags.basic(win.data, inits, params2, "model10.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+out102 <- jags.basic(win.data, inits, params2, "model10.txt", n.chains = nc,
+    n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 library(coda)
 all10 <- as.matrix(out102) # Put output from 3 chains into a matrix
 # ~~~~~ save for use in sections 11.8 and 11.9 ~~~~~~~~~~~~~
@@ -325,31 +353,42 @@ save(all10, file="AHM1_11.07_all10.RData")
 out10 <- out101
 
 
-par(mfrow = c(1,2))       # Fig. 11-16
+op <- par(mfrow = c(1,2))       # Fig. 11-16
 psi.sample <- plogis(rnorm(10^6, mean = out10$mean$mu.lpsi, sd = out10$mean$sd.lpsi))
 p.sample <- plogis(rnorm(10^6, mean = out10$mean$mu.lp, sd = out10$mean$sd.lp))
-hist(psi.sample, freq = F, breaks = 50, col = "grey", xlab = "Species occupancy probability", ylab = "Density", main = "")
-hist(p.sample, freq = F, breaks = 50, col = "grey", xlab = "Species detection probability", ylab = "Density", main = "")
+hist(psi.sample, freq = FALSE, breaks = 50, col = "grey",
+    xlab = "Species occupancy probability", ylab = "Density", main = "")
+hist(p.sample, freq = FALSE, breaks = 50, col = "grey",
+    xlab = "Species detection probability", ylab = "Density", main = "")
+par(op)
 summary(psi.sample)   ;   summary(p.sample)
 
-par(mfrow = c(2,4))  # Among-species variability in parameters (not shown)
-hist(out10$sims.list$sd.lpsi, breaks = 100, col = "grey", xlim = c(0,6), main = "Occupancy: intercept")
+op <- par(mfrow = c(2,4))  # Among-species variability in parameters (not shown)
+hist(out10$sims.list$sd.lpsi, breaks = 100, col = "grey", xlim = c(0,6),
+    main = "Occupancy: intercept")
 abline(v = mean(out10$sims.list$sd.lpsi), col = "blue", lwd = 3)
-hist(out10$sims.list$sd.betalpsi1, breaks = 100, col = "grey", xlim = c(0,3), main = "Occupancy: linear effect of elevation")
+hist(out10$sims.list$sd.betalpsi1, breaks = 100, col = "grey", xlim = c(0,3),
+    main = "Occupancy: linear effect of elevation")
 abline(v = mean(out10$sims.list$sd.betalpsi1), col = "blue", lwd = 3)
-hist(out10$sims.list$sd.betalpsi2, breaks = 100, col = "grey", xlim = c(0,3), main = "Occupancy: quadratic effect of elevation")
+hist(out10$sims.list$sd.betalpsi2, breaks = 100, col = "grey", xlim = c(0,3),
+    main = "Occupancy: quadratic effect of elevation")
 abline(v = mean(out10$sims.list$sd.betalpsi2), col = "blue", lwd = 3)
-hist(out10$sims.list$sd.betalpsi3, breaks = 100, col = "grey", xlim = c(0,3), main = "Occupancy: linear effect of forest cover")
+hist(out10$sims.list$sd.betalpsi3, breaks = 100, col = "grey", xlim = c(0,3),
+    main = "Occupancy: linear effect of forest cover")
 abline(v = mean(out10$sims.list$sd.betalpsi3), col = "blue", lwd = 3)
-hist(out10$sims.list$sd.lp, breaks = 100, col = "grey", xlim = c(0,2), main = "Detection: intercept")
+hist(out10$sims.list$sd.lp, breaks = 100, col = "grey", xlim = c(0,2),
+    main = "Detection: intercept")
 abline(v = mean(out10$sims.list$sd.lp), col = "blue", lwd = 3)
-hist(out10$sims.list$sd.betalp1, breaks = 100, col = "grey", xlim = c(0,1), main = "Detection: linear effect of survey date")
+hist(out10$sims.list$sd.betalp1, breaks = 100, col = "grey", xlim = c(0,1),
+    main = "Detection: linear effect of survey date")
 abline(v = mean(out10$sims.list$sd.betalp1), col = "blue", lwd = 3)
-hist(out10$sims.list$sd.betalp2, breaks = 100, col = "grey", xlim = c(0,1), main = "Detection: quadratic linear effect of survey date")
+hist(out10$sims.list$sd.betalp2, breaks = 100, col = "grey", xlim = c(0,1),
+    main = "Detection: quadratic linear effect of survey date")
 abline(v = mean(out10$sims.list$sd.betalp2), col = "blue", lwd = 3)
-hist(out10$sims.list$sd.betalp3, breaks = 100, col = "grey", xlim = c(0,1), main = "Detection: linear effect of survey duration")
+hist(out10$sims.list$sd.betalp3, breaks = 100, col = "grey", xlim = c(0,1),
+    main = "Detection: linear effect of survey duration")
 abline(v = mean(out10$sims.list$sd.betalp3), col = "blue", lwd = 3)
-
+par(op)
 
 # Visualize covariate mean relationships for the average species
 o.ele <- seq(200, 2500,,500)               # Get covariate values for prediction
@@ -379,44 +418,56 @@ for(i in 1:nsamp){
 pmC <- apply(predC, c(1,3), mean)
 criC <- apply(predC, c(1,3), function(x) quantile(x, prob = c(0.025, 0.975)))
 
-par(mfrow = c(2, 2))
-plot(o.ele, pmC[,1], col = "blue", lwd = 3, type = 'l', lty = 1, frame = F, ylim = c(0, 0.05), xlab = "Elevation (m a.s.l)", ylab = "Community mean occupancy")
+op <- par(mfrow = c(2, 2))
+plot(o.ele, pmC[,1], col = "blue", lwd = 3, type = 'l', lty = 1, frame = FALSE,
+    ylim = c(0, 0.05), xlab = "Elevation (m a.s.l)",
+    ylab = "Community mean occupancy")
 matlines(o.ele, t(criC[,,1]), col = "grey", lty = 1)
-plot(o.for, pmC[,2], col = "blue", lwd = 3, type = 'l', lty = 1, frame = F, ylim = c(0, 0.05), xlab = "Forest cover", ylab = "Community mean occupancy")
+plot(o.for, pmC[,2], col = "blue", lwd = 3, type = 'l', lty = 1, frame = FALSE,
+    ylim = c(0, 0.05), xlab = "Forest cover",
+    ylab = "Community mean occupancy")
 matlines(o.for, t(criC[,,2]), col = "grey", lty = 1)
-plot(o.dat, pmC[,3], col = "blue", lwd = 3, type = 'l', lty = 1, frame = F, ylim = c(0.2, 0.8), xlab = "Survey date", ylab = "Community mean detection")
+plot(o.dat, pmC[,3], col = "blue", lwd = 3, type = 'l', lty = 1, frame = FALSE,
+    ylim = c(0.2, 0.8), xlab = "Survey date",
+    ylab = "Community mean detection")
 matlines(o.dat, t(criC[,,3]), col = "grey", lty = 1)
-plot(o.dur, pmC[,4], col = "blue", lwd = 3, type = 'l', lty = 1, frame = F, ylim = c(0.2, 0.8), xlab = "Survey duration", ylab = "Community mean detection")
+plot(o.dur, pmC[,4], col = "blue", lwd = 3, type = 'l', lty = 1, frame = FALSE,
+    ylim = c(0.2, 0.8), xlab = "Survey duration",
+    ylab = "Community mean detection")
 matlines(o.dur, t(criC[,,4]), col = "grey", lty = 1)
-
+par(op)
 
 # Plot posterior distribution of site-specific species richness (Nsite)
-par(mfrow = c(3,3), mar = c(5,4,3,2))
+op <- par(mfrow = c(3,3), mar = c(5,4,3,2))
 oldask <- devAskNewPage(ask=dev.interactive(orNone=TRUE)) #~~~~ to replace browser call
 for(i in 1:267){
    plot(table(out10$sims.list$Nsite[,i]), main = paste("Quadrat", i),
-   xlab = "Local species richness", ylab = "", frame = F,
-   xlim = c((min(C[i], out10$sims.list$Nsite[,i], na.rm = T)-2),
+   xlab = "Local species richness", ylab = "", frame = FALSE,
+   xlim = c((min(C[i], out10$sims.list$Nsite[,i], na.rm = TRUE)-2),
    max(out10$sims.list$Nsite[,i]) ))
    abline(v = C[i], col = "grey", lwd = 4)
    # browser() #~~~~ incompatible with automated testing
 }
 devAskNewPage(ask=oldask) #~~~~ clean up
+par(op)
 
 # Plot it only for a selection of sites (Fig. 11-18)
-par(mfrow = c(3,3), mar = c(5,4,3,2))
+op <- par(mfrow = c(3,3), mar = c(5,4,3,2))
 for(i in c(9, 32, 162, 12, 27, 30, 118, 159, 250)){
    plot(table(out10$sims.list$Nsite[,i]), main = paste("Quadrat", i),
-   xlab = "Local species richness", ylab = "", frame = F,
-   xlim = c((min(C[i], out10$sims.list$Nsite[,i], na.rm = T)-2),
+   xlab = "Local species richness", ylab = "", frame = FALSE,
+   xlim = c((min(C[i], out10$sims.list$Nsite[,i], na.rm = TRUE)-2),
    max(out10$sims.list$Nsite[,i]) ))
    abline(v = C[i], col = "grey", lwd = 4)
 }
+par(op)
 
 # Plot Nsite estimates under models 9 & 10 vs. elevation (Fig. 11-19)
 elev <- orig.ele
 offset <- 30    # Set off elevation for better visibility
-plot(elev, out9$mean$Nsite, xlab = "Elevation (metres)", ylab = "Community size estimate (Nsite)", frame = F, ylim = c(0,60), pch = 16) # black: model 9
+plot(elev, out9$mean$Nsite, xlab = "Elevation (metres)",
+    ylab = "Community size estimate (Nsite)", frame = FALSE, ylim = c(0,60),
+    pch = 16) # black: model 9
 lines(smooth.spline(out9$mean$Nsite ~ elev), lwd = 3)
 points(elev+offset, out10$mean$Nsite, pch = 16, col = "blue") # red: model 10
 lines(smooth.spline(out10$mean$Nsite ~ elev), lwd = 3, col = "blue")
@@ -433,7 +484,7 @@ nms <- names(pm)
 
 # Effects of date (linear and quadratic) and of duration on detection
 #par(mfrow = c(1,3), cex.lab = 1.3, cex.axis = 1.3) # Can put all three in one
-par(mfrow = c(1,2), cex.lab = 1.3, cex.axis = 1.3)
+op <- par(mfrow = c(1,2), cex.lab = 1.3, cex.axis = 1.3)
 # Date linear (Fig. 11 – 20 left)
 # plot(pm[1:145], 1:145, xlim = c(-1.5, 1.5), xlab = "Parameter estimate", ylab = "Species number", main = "Effect of date (linear) on detection", pch = 16)
 # abline(v = 0, lwd = 2, col = "black")
@@ -444,13 +495,17 @@ par(mfrow = c(1,2), cex.lab = 1.3, cex.axis = 1.3)
 # abline(v = out101$summary[11,c(3,7)], lwd = 2, col = "red", lty = 2)
 
 this1 <- grep("^betalp1", nms)[1:145]
-plot(pm[this1], 1:145, xlim = c(-1.5, 1.5), xlab = "Parameter estimate", ylab = "Species number", main = "Effect of date (linear) on detection", pch = 16)
+plot(pm[this1], 1:145, xlim = c(-1.5, 1.5), xlab = "Parameter estimate",
+    ylab = "Species number", main = "Effect of date (linear) on detection",
+    pch = 16)
 abline(v = 0, lwd = 2, col = "black")
 segments(cri[1, this1], 1:145, cri[2, this1], 1:145, col = "grey", lwd = 1)
 sig1 <- (cri[1, this1] * cri[2, this1]) > 0
-segments(cri[1, this1][sig1 == 1], (1:145)[sig1 == 1], cri[2, this1][sig1 == 1], (1:145)[sig1 == 1], col = "blue", lwd = 2)
+segments(cri[1, this1][sig1 == 1], (1:145)[sig1 == 1], cri[2, this1][sig1 == 1],
+    (1:145)[sig1 == 1], col = "blue", lwd = 2)
 abline(v = out101$summary['mu.betalp1','mean'], lwd = 3, col = "red")
-abline(v = out101$summary['mu.betalp1',c('2.5%', '97.5%')], lwd = 2, col = "red", lty = 2)
+abline(v = out101$summary['mu.betalp1',c('2.5%', '97.5%')], lwd = 2,
+    col = "red", lty = 2)
 
 
 # Date quadratic (not shown)
@@ -463,11 +518,13 @@ abline(v = out101$summary['mu.betalp1',c('2.5%', '97.5%')], lwd = 2, col = "red"
 # abline(v = out101$summary[13, c(3,7)], lwd = 3, col = "red", lty = 2)
 
 this2 <- grep("^betalp2", nms)[1:145]
-plot(pm[this2], 1:145, xlim = c(-1.5, 1.5), xlab = "Parameter estimate", ylab = "Species number", main = "Effect of date (quadratic) on detection", pch = 16)
+plot(pm[this2], 1:145, xlim = c(-1.5, 1.5), xlab = "Parameter estimate",
+    ylab = "Species number", main = "Effect of date (quadratic) on detection", pch = 16)
 abline(v = 0, lwd = 2, col = "black")
 segments(cri[1, this2], 1:145, cri[2, this2], 1:145, col = "grey", lwd = 1)
 sig1 <- (cri[1, this2] * cri[2, this2]) > 0
-segments(cri[1, this2][sig1 == 1], (1:145)[sig1 == 1], cri[2, this2][sig1 == 1], (1:145)[sig1 == 1], col = "blue", lwd = 2)
+segments(cri[1, this2][sig1 == 1], (1:145)[sig1 == 1], cri[2, this2][sig1 == 1],
+    (1:145)[sig1 == 1], col = "blue", lwd = 2)
 abline(v = out101$summary['mu.betalp2','mean'], lwd = 3, col = "red")
 abline(v = out101$summary['mu.betalp2',c('2.5%', '97.5%')], lwd = 2, col = "red", lty = 2)
 
@@ -481,11 +538,13 @@ abline(v = out101$summary['mu.betalp2',c('2.5%', '97.5%')], lwd = 2, col = "red"
 # abline(v = out101$summary[15, c(3,7)], lwd = 3, col = "red", lty = 2)
 
 this3 <- grep("^betalp3", nms)[1:145]
-plot(pm[this3], 1:145, xlim = c(-1.5, 1.5), xlab = "Parameter estimate", ylab = "Species number", main = "Effect of survey duration on detection", pch = 16)
+plot(pm[this3], 1:145, xlim = c(-1.5, 1.5), xlab = "Parameter estimate",
+    ylab = "Species number", main = "Effect of survey duration on detection", pch = 16)
 abline(v = 0, lwd = 2, col = "black")
 segments(cri[1, this3], 1:145, cri[2, this3], 1:145, col = "grey", lwd = 1)
 sig1 <- (cri[1, this3] * cri[2, this3]) > 0
-segments(cri[1, this3][sig1 == 1], (1:145)[sig1 == 1], cri[2, this3][sig1 == 1], (1:145)[sig1 == 1], col = "blue", lwd = 2)
+segments(cri[1, this3][sig1 == 1], (1:145)[sig1 == 1], cri[2, this3][sig1 == 1],
+    (1:145)[sig1 == 1], col = "blue", lwd = 2)
 abline(v = out101$summary['mu.betalp3','mean'], lwd = 3, col = "red")
 abline(v = out101$summary['mu.betalp3',c('2.5%', '97.5%')], lwd = 2, col = "red", lty = 2)
 
@@ -501,11 +560,13 @@ abline(v = out101$summary['mu.betalp3',c('2.5%', '97.5%')], lwd = 2, col = "red"
 # abline(v = out101$summary[3,c(3,7)], lwd = 3, col = "red", lty = 2)
 
 this4 <- grep("^betalpsi1", nms)[1:145]
-plot(pm[this4], 1:145, xlim = c(-8, 8), xlab = "Parameter estimate", ylab = "Species number", main = "Effect of elevation (linear) on occupancy", pch = 16)
+plot(pm[this4], 1:145, xlim = c(-8, 8), xlab = "Parameter estimate",
+    ylab = "Species number", main = "Effect of elevation (linear) on occupancy", pch = 16)
 abline(v = 0, lwd = 2, col = "black")
 segments(cri[1, this4], 1:145, cri[2, this4], 1:145, col = "grey", lwd = 1)
 sig1 <- (cri[1, this4] * cri[2, this4]) > 0
-segments(cri[1, this4][sig1 == 1], (1:145)[sig1 == 1], cri[2, this4][sig1 == 1], (1:145)[sig1 == 1], col = "blue", lwd = 2)
+segments(cri[1, this4][sig1 == 1], (1:145)[sig1 == 1], cri[2, this4][sig1 == 1],
+    (1:145)[sig1 == 1], col = "blue", lwd = 2)
 abline(v = out101$summary['mu.betalpsi1','mean'], lwd = 3, col = "red")
 abline(v = out101$summary['mu.betalpsi1',c('2.5%', '97.5%')], lwd = 2, col = "red", lty = 2)
 
@@ -519,11 +580,13 @@ abline(v = out101$summary['mu.betalpsi1',c('2.5%', '97.5%')], lwd = 2, col = "re
 # abline(v = out101$summary[5,c(3,7)], lwd = 3, col = "red", lty = 2)
 
 this5 <- grep("^betalpsi2", nms)[1:145]
-plot(pm[this5], 1:145, xlim = c(-4, 2), xlab = "Parameter estimate", ylab = "Species number", main = "Effect of elevation (quadratic) on occupancy", pch = 16)
+plot(pm[this5], 1:145, xlim = c(-4, 2), xlab = "Parameter estimate",
+    ylab = "Species number", main = "Effect of elevation (quadratic) on occupancy", pch = 16)
 abline(v = 0, lwd = 2, col = "black")
 segments(cri[1, this5], 1:145, cri[2, this5], 1:145, col = "grey", lwd = 1)
 sig1 <- (cri[1, this5] * cri[2, this5]) > 0
-segments(cri[1, this5][sig1 == 1], (1:145)[sig1 == 1], cri[2, this5][sig1 == 1], (1:145)[sig1 == 1], col = "blue", lwd = 2)
+segments(cri[1, this5][sig1 == 1], (1:145)[sig1 == 1], cri[2, this5][sig1 == 1],
+    (1:145)[sig1 == 1], col = "blue", lwd = 2)
 abline(v = out101$summary['mu.betalpsi2','mean'], lwd = 3, col = "red")
 abline(v = out101$summary['mu.betalpsi2',c('2.5%', '97.5%')], lwd = 2, col = "red", lty = 2)
 
@@ -540,16 +603,18 @@ abline(v = out101$summary['mu.betalpsi2',c('2.5%', '97.5%')], lwd = 2, col = "re
 # possig6 <- (cri[1, 1076:1220] > 0 & cri[2, 1076:1220] > 0) == 1 # sig positive
 
 this6 <- grep("^betalpsi3", nms)[1:145]
-plot(pm[this6], 1:145, xlim = c(-3, 4), xlab = "Parameter estimate", ylab = "Species number", main = "Effect of forest cover on occupancy", pch = 16)
+plot(pm[this6], 1:145, xlim = c(-3, 4), xlab = "Parameter estimate",
+    ylab = "Species number", main = "Effect of forest cover on occupancy", pch = 16)
 abline(v = 0, lwd = 2, col = "black")
 segments(cri[1, this6], 1:145, cri[2, this6], 1:145, col = "grey", lwd = 1)
 sig1 <- (cri[1, this6] * cri[2, this6]) > 0
-segments(cri[1, this6][sig1 == 1], (1:145)[sig1 == 1], cri[2, this6][sig1 == 1], (1:145)[sig1 == 1], col = "blue", lwd = 2)
+segments(cri[1, this6][sig1 == 1], (1:145)[sig1 == 1], cri[2, this6][sig1 == 1],
+    (1:145)[sig1 == 1], col = "blue", lwd = 2)
 abline(v = out101$summary['mu.betalpsi3','mean'], lwd = 3, col = "red")
 abline(v = out101$summary['mu.betalpsi3',c('2.5%', '97.5%')], lwd = 2, col = "red", lty = 2)
 negsig6 <- (cri[1, this6] < 0 & cri[2, this6] < 0) == 1 # sig negative
 possig6 <- (cri[1, this6] > 0 & cri[2, this6] > 0) == 1 # sig positive
-
+par(op)
 
 # Predict detection for date and duration and occupancy for elevation and forest
 # for each of the 145 observed species
@@ -577,34 +642,34 @@ for(i in 1:nspec){          # Loop over 145 observed species
 }
 
 # Plots for detection probability and survey date and duration (Fig. 11-24)
-par(mfrow = c(1,2), cex.lab = 1.3, cex.axis = 1.3)
-plot(o.dat, predS[,1,1], lwd = 3, type = 'l', lty = 1, frame = F,
+op <- par(mfrow = c(1,2), cex.lab = 1.3, cex.axis = 1.3)
+plot(o.dat, predS[,1,1], lwd = 3, type = 'l', lty = 1, frame = FALSE,
    ylim = c(0, 1), xlab = "Survey date (1 = 1 April)",
    ylab = "Detection probability")
 for(i in 2:145){
    lines(o.dat, predS[,i,1], col = i, lwd = 3)
 }
 
-plot(o.dur, predS[,1,2], lwd = 3, type = 'l', lty = 1, frame = F,
+plot(o.dur, predS[,1,2], lwd = 3, type = 'l', lty = 1, frame = FALSE,
    ylim = c(0, 1), xlab = "Survey duration (min)",
    ylab = "Detection probability")
 for(i in 2:145){
    lines(o.dur, predS[,i,2], col = i, lwd = 3)
 }
-
+par(op)
 
 # Plots for occupancy probability and elevation and forest cover (Fig. 11-25)
-par(mfrow = c(1,2), cex.lab = 1.3, cex.axis = 1.3)
-plot(o.ele, predS[,1,3], lwd = 3, type = 'l', lty = 1, frame = F,
+op <- par(mfrow = c(1,2), cex.lab = 1.3, cex.axis = 1.3)
+plot(o.ele, predS[,1,3], lwd = 3, type = 'l', lty = 1, frame = FALSE,
    ylim = c(0, 1), xlab = "Elevation (m a.s.l.)",
    ylab = "Occupancy probability")
 for(i in 2:145){
    lines(o.ele, predS[,i,3], col = i, lwd = 3)
 }
 
-plot(o.for, predS[,1,4], lwd = 3, type = 'l', lty = 1, frame = F,
+plot(o.for, predS[,1,4], lwd = 3, type = 'l', lty = 1, frame = FALSE,
    ylim = c(0, 1), xlab = "Forest cover (%)", ylab = "Occupancy probability")
 for(i in 2:145){
    lines(o.for, predS[,i,4], col = i, lwd = 3)
 }
-
+par(op)

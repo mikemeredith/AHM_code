@@ -2,8 +2,11 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 9. Advanced Hierarchical Distance Sampling
 # =========================================================================
+
+# Approximate execution time for this code: 10 mins
 
 library(AHMbook)
 library(unmarked)
@@ -65,7 +68,8 @@ B <- 300
 
 # Simulate an ISSJ data set and harvest the data objects
 set.seed(2015)
-dat <- issj.sim(B=300, db = db, lam=lamnew, sigma=sigma, phi=phi, gamma=gamma, npoints=nsites, nyrs=nyrs)
+dat <- issj.sim(B=300, db = db, lam=lamnew, sigma=sigma, phi=phi, gamma=gamma,
+    npoints=nsites, nyrs=nyrs)
 
 y <- dat$y
 dclass <- dat$dclass
@@ -89,50 +93,51 @@ str(data1<-list(nsites=nsites, chap=as.vector(covs[,"chaparral"])[dat$cell],
 cat("
 model{
 
-# Prior distributions
-# Regression parameters
-alpha0 ~ dunif(0,20)
-alpha1 ~ dunif(-10,10)
-beta0 ~ dunif(-20,20)
-beta1 ~ dunif(-20,20)
-beta2 ~ dunif(-20,20)
-beta3 ~ dunif(-20,20)
-beta4 ~ dunif(-20,20) # Population trend parameter
-r ~ dunif(0,5)        # NegBin dispersion parameter
-rout <- log(r)
+  # Prior distributions
+  # Regression parameters
+  alpha0 ~ dunif(0,20)
+  alpha1 ~ dunif(-10,10)
+  beta0 ~ dunif(-20,20)
+  beta1 ~ dunif(-20,20)
+  beta2 ~ dunif(-20,20)
+  beta3 ~ dunif(-20,20)
+  beta4 ~ dunif(-20,20) # Population trend parameter
+  r ~ dunif(0,5)        # NegBin dispersion parameter
+  rout <- log(r)
 
-# 'Likelihood'
-for (s in 1:nsites){
-   # Linear model for detection function scale
-   log(sigma[s]) <- alpha0+alpha1*chap[s]
-   # Compute detection probability
-   for(k in 1:nD){
+  # 'Likelihood'
+  for (s in 1:nsites){
+    # Linear model for detection function scale
+    log(sigma[s]) <- alpha0+alpha1*chap[s]
+    # Compute detection probability
+    for(k in 1:nD){
       pi[k,s] <- (2*midpt[k]*delta )/(B*B)
       log(p[k,s]) <- -midpt[k]*midpt[k]/(2*sigma[s]*sigma[s])
       f[k,s] <- p[k,s]*pi[k,s]
       fc[k,s] <- f[k,s]/pcap[s]
       fct[k,s] <- fc[k,s]/sum(fc[1:nD,s])
-   }
-   pcap[s]<-sum(f[1:nD,s])  # Overall detection probability
+    }
+    pcap[s]<-sum(f[1:nD,s])  # Overall detection probability
 
-   # Process model
-   for (t in 1:T){
-      log(lambda[s,t]) <- beta0 + beta1*chap[s] + beta2*chap2[s] + beta3*elev[s] + beta4*(t - t/2)  # Note trend parameter here
+    # Process model
+    for (t in 1:T){
+      log(lambda[s,t]) <- beta0 + beta1*chap[s] + beta2*chap2[s] +
+          beta3*elev[s] + beta4*(t - t/2)  # Note trend parameter here
       y[s,t] ~ dbin(pcap[s], N[s,t])
       N[s,t] ~ dnegbin(prob[s,t], r)
       prob[s,t] <- r/(r+lambda[s,t])
-   } # End loop over years
-} # End loop over sites
+    } # End loop over years
+  } # End loop over sites
 
-# Distance sampling observation model for observed (binned) distance data
-for(i in 1:nind){
-   dclass[i] ~ dcat(fct[1:nD,site[i]])
-}
-# Derived parameters
-for(t in 1:6){
-   Ntot[t] <- sum(N[,t])
-   D[t] <- Ntot[t] / (28.27*nsites)   # 300 m point = 28.27 ha
-}
+  # Distance sampling observation model for observed (binned) distance data
+  for(i in 1:nind){
+    dclass[i] ~ dcat(fct[1:nD,site[i]])
+  }
+  # Derived parameters
+  for(t in 1:6){
+    Ntot[t] <- sum(N[,t])
+    D[t] <- Ntot[t] / (28.27*nsites)   # 300 m point = 28.27 ha
+  }
 }
 ", file="Sollmann1.txt")
 
@@ -157,8 +162,8 @@ open1 <- jags (data1, inits, params, "Sollmann1.txt",
   n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni,
   factories="bugs::Conjugate sampler FALSE", parallel=TRUE)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-par(mfrow = c(3,3))   ;   traceplot(open1)   ;   print(open1, 2)
-
+op <- par(mfrow = c(3,3))   ;   traceplot(open1)   ;   print(open1, 2)
+par(op)
 
 
 
@@ -168,56 +173,56 @@ par(mfrow = c(3,3))   ;   traceplot(open1)   ;   print(open1, 2)
 cat("
 model{
 
-# Prior distributions
-# Regression parameters
-alpha0 ~ dunif(0,20)
-alpha1 ~ dunif(-10,10)
-beta0 ~ dunif(-20,20)
-beta1 ~ dunif(-20,20)
-beta2 ~ dunif(-20,20)
-beta3 ~ dunif(-20,20)
-theta ~ dunif(0,5)
-# NegBin dispersion parameter
-r ~ dunif(0,5)
-rout <- log(r)
+  # Prior distributions
+  # Regression parameters
+  alpha0 ~ dunif(0,20)
+  alpha1 ~ dunif(-10,10)
+  beta0 ~ dunif(-20,20)
+  beta1 ~ dunif(-20,20)
+  beta2 ~ dunif(-20,20)
+  beta3 ~ dunif(-20,20)
+  theta ~ dunif(0,5)
+  # NegBin dispersion parameter
+  r ~ dunif(0,5)
+  rout <- log(r)
 
-# 'Likelihood'
-for (s in 1:nsites){
-   # Linear model for detection function scale
-   log(sigma[s]) <- alpha0+alpha1*chap[s]
-   # Compute detection probability
-   for(k in 1:nD){
+  # 'Likelihood'
+  for (s in 1:nsites){
+    # Linear model for detection function scale
+    log(sigma[s]) <- alpha0+alpha1*chap[s]
+    # Compute detection probability
+    for(k in 1:nD){
       log(p[k,s]) <- -midpt[k]*midpt[k]/(2*sigma[s]*sigma[s])
       f[k,s] <- p[k,s]*pi[k,s]
       fc[k,s] <- f[k,s]/pcap[s]
       fct[k,s] <- fc[k,s]/sum(fc[1:nD,s])
       pi[k,s] <- (2*midpt[k]*delta )/(B*B)
-   }
-   pcap[s]<-sum(f[1:nD,s])  # Overall detection probability
+    }
+    pcap[s]<-sum(f[1:nD,s])  # Overall detection probability
 
-   # Process model
-   # Abundance model for Yr1 as in Sillett et al 2012
-   log(lambda[s,1]) <- beta0 + beta1*chap[s] + beta2*chap2[s] + beta3*elev[s]
-   y[s,1] ~ dbin(pcap[s], N[s,1])
-   N[s,1] ~ dnegbin(prob[s,1], r)
-   prob[s,1] <- r/(r+lambda[s,1])
+    # Process model
+    # Abundance model for Yr1 as in Sillett et al 2012
+    log(lambda[s,1]) <- beta0 + beta1*chap[s] + beta2*chap2[s] + beta3*elev[s]
+    y[s,1] ~ dbin(pcap[s], N[s,1])
+    N[s,1] ~ dnegbin(prob[s,1], r)
+    prob[s,1] <- r/(r+lambda[s,1])
 
-   # Population dynamics model for subsequent years
-   for (t in 2:T){
+    # Population dynamics model for subsequent years
+    for (t in 2:T){
       N[s,t] ~ dpois(N[s, t-1] * theta)
       y[s,t] ~ dbin(pcap[s], N[s,t])
-   }
-}
-# Distance sampling observation model for observed (binned) distance data
-for(i in 1:nind){
-   dclass[i] ~ dcat(fct[1:nD,site[i]])
-}
+    }
+  }
+  # Distance sampling observation model for observed (binned) distance data
+  for(i in 1:nind){
+    dclass[i] ~ dcat(fct[1:nD,site[i]])
+  }
 
-# Derived parameters
-for(t in 1:6){
-   Ntot[t] <- sum(N[,t])
-   D[t] <- Ntot[t] / (28.27*nsites)  # 300 m point = 28.27 ha
-}
+  # Derived parameters
+  for(t in 1:6){
+    Ntot[t] <- sum(N[,t])
+    D[t] <- Ntot[t] / (28.27*nsites)  # 300 m point = 28.27 ha
+  }
 }
 ", file="Sollmann2.txt")
 
@@ -243,65 +248,65 @@ par(mfrow = c(3,3))   ;   traceplot(open2)   ;   print(open2, 2)
 # Write out the BUGS model file
 cat("
 model{
-# Prior distributions
-# Regression parameters
-alpha0 ~ dunif(0,20)
-alpha1 ~ dunif(-10,10)
-beta0 ~ dunif(-20,20)
-beta1 ~ dunif(-20,20)
-beta2 ~ dunif(-20,20)
-beta3 ~ dunif(-20,20)
+  # Prior distributions
+  # Regression parameters
+  alpha0 ~ dunif(0,20)
+  alpha1 ~ dunif(-10,10)
+  beta0 ~ dunif(-20,20)
+  beta1 ~ dunif(-20,20)
+  beta2 ~ dunif(-20,20)
+  beta3 ~ dunif(-20,20)
 
-# Priors for dynamics parameters: here they are constant across years
-# We could add covariate models for logit(phi) and log(gamma)
-phi ~ dunif(0,1)
-gamma ~ dunif(0,5)
+  # Priors for dynamics parameters: here they are constant across years
+  # We could add covariate models for logit(phi) and log(gamma)
+  phi ~ dunif(0,1)
+  gamma ~ dunif(0,5)
 
-# NegBin dispersion parameter
-r ~ dunif(0,5)
-rout <- log(r)
+  # NegBin dispersion parameter
+  r ~ dunif(0,5)
+  rout <- log(r)
 
-# 'Likelihood'
-for (s in 1:nsites){
-   # Linear model for detection function scale
-   log(sigma[s]) <- alpha0+alpha1*chap[s]
+  # 'Likelihood'
+  for (s in 1:nsites){
+    # Linear model for detection function scale
+    log(sigma[s]) <- alpha0+alpha1*chap[s]
 
-   # Compute detection probability
-   for(k in 1:nD){
+    # Compute detection probability
+    for(k in 1:nD){
       log(p[k,s]) <- -midpt[k]*midpt[k]/(2*sigma[s]*sigma[s])
       f[k,s] <- p[k,s]*pi[k,s]
       fc[k,s] <- f[k,s]/pcap[s]
       fct[k,s] <- fc[k,s]/sum(fc[1:nD,s])
       pi[k,s] <- (2*midpt[k]*delta )/(B*B)
-   }
-   pcap[s]<-sum(f[1:nD,s])  # Overall detection probability
+    }
+    pcap[s]<-sum(f[1:nD,s])  # Overall detection probability
 
-   # Process model
-   # Abundance model for year 1
-   log(lambda[s,1]) <- beta0 + beta1*chap[s] + beta2*chap2[s] + beta3*elev[s]
-   y[s,1] ~ dbin(pcap[s], N[s,1])
-   N[s,1] ~ dnegbin(prob[s,1], r)
-   prob[s,1] <- r/(r+lambda[s,1])
+    # Process model
+    # Abundance model for year 1
+    log(lambda[s,1]) <- beta0 + beta1*chap[s] + beta2*chap2[s] + beta3*elev[s]
+    y[s,1] ~ dbin(pcap[s], N[s,1])
+    N[s,1] ~ dnegbin(prob[s,1], r)
+    prob[s,1] <- r/(r+lambda[s,1])
 
-   # Population dynamics model for subsequent years
-   for (t in 2:T){                      # Loop over years
+    # Population dynamics model for subsequent years
+    for (t in 2:T){                      # Loop over years
       S[s,t] ~ dbinom(phi, N[s, t-1])   # Survivors
       R[s,t] ~ dpois(gamma * N[s, t-1]) # Recruits
       N[s,t] <- S[s,t] + R[s,t]         # N = Survivors + Recruits
      y[s,t]~ dbin(pcap[s],N[s,t])       # Measurement error
-   }
-}
+    }
+  }
 
-# Distance sampling observation model for observed (binned) distance data
-for(i in 1:nind){
-   dclass[i] ~ dcat(fct[1:nD,site[i]])
-}
+  # Distance sampling observation model for observed (binned) distance data
+  for(i in 1:nind){
+    dclass[i] ~ dcat(fct[1:nD,site[i]])
+  }
 
-# Derived parameters
-for(t in 1:6){
-   Ntot[t] <- sum(N[,t])
-   D[t] <- Ntot[t] / (28.27*nsites)     # 300 m point = 28.27 ha
-}
+  # Derived parameters
+  for(t in 1:6){
+    Ntot[t] <- sum(N[,t])
+    D[t] <- Ntot[t] / (28.27*nsites)     # 300 m point = 28.27 ha
+  }
 }
 ", file="Sollmann3.txt")
 
@@ -312,9 +317,9 @@ yin[,2:6] <- NA
 Sin <- Rin <- matrix(NA, nrow=nsites, ncol=nyrs)
 y1 <- y + 1
 for(s in 1:nsites){
-   for (t in 2:6){
-     Sin[s,t] <- rbinom(1,y1[s,t-1], phi )
-     Rin[s,t] <- ifelse((y1[s,t]-Sin[s,t])>0, y1[s,t]-Sin[s,t], 0)
+  for (t in 2:6){
+    Sin[s,t] <- rbinom(1,y1[s,t-1], phi )
+    Rin[s,t] <- ifelse((y1[s,t]-Sin[s,t])>0, y1[s,t]-Sin[s,t], 0)
   }
 }
 
@@ -330,7 +335,8 @@ ni <- 15200   ;   nb <- 200   ;   nt <- 1   ;   nc <- 3  # ~~~~~ for testing
 # Run JAGS, look at convergence and summarize the results
 library(jagsUI)
 set.seed(1) # ~~~ prevents "node incompatible..." error
-open3  <- jags (data1, inits, params, "Sollmann3.txt", n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni, parallel=TRUE)
+open3  <- jags (data1, inits, params, "Sollmann3.txt", n.thin=nt,
+    n.chains=nc, n.burnin=nb, n.iter=ni, parallel=TRUE)
 par(mfrow = c(3,3))   ;   traceplot(open3)   ;   print(open3, 2)
 
 

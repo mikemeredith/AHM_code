@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 7. Modeling abundance using multinomial N-mixture models
 # =========================================================================
 
@@ -39,40 +40,40 @@ str(data)                  # Good practice to always inspect your BUGS data
 cat("
 model {
 
-# Prior distributions
-p0 ~ dunif(0,1)
-alpha0 <- logit(p0)
-alpha1 ~ dnorm(0, 0.01)
-beta0 ~ dnorm(0, 0.01)
-beta1 ~ dnorm(0, 0.01)
-beta2 ~ dnorm(0, 0.01)
-beta3 ~ dnorm(0, 0.01)
+  # Prior distributions
+  p0 ~ dunif(0,1)
+  alpha0 <- logit(p0)
+  alpha1 ~ dnorm(0, 0.01)
+  beta0 ~ dnorm(0, 0.01)
+  beta1 ~ dnorm(0, 0.01)
+  beta2 ~ dnorm(0, 0.01)
+  beta3 ~ dnorm(0, 0.01)
 
-for(i in 1:M){ # Loop over sites
-   # Conditional multinomial cell probabilities
-   pi[i,1] <- p[i]
-   pi[i,2] <- p[i]*(1-p[i])
-   pi[i,3] <- p[i]*(1-p[i])*(1-p[i])
-   pi[i,4] <- p[i]*(1-p[i])*(1-p[i])*(1-p[i])
-   pi0[i] <- 1 - (pi[i,1] + pi[i,2] + pi[i,3] + pi[i,4])
-   pcap[i] <- 1 - pi0[i]
-   for(j in 1:4){
+  for(i in 1:M){ # Loop over sites
+    # Conditional multinomial cell probabilities
+    pi[i,1] <- p[i]
+    pi[i,2] <- p[i]*(1-p[i])
+    pi[i,3] <- p[i]*(1-p[i])*(1-p[i])
+    pi[i,4] <- p[i]*(1-p[i])*(1-p[i])*(1-p[i])
+    pi0[i] <- 1 - (pi[i,1] + pi[i,2] + pi[i,3] + pi[i,4])
+    pcap[i] <- 1 - pi0[i]
+    for(j in 1:4){
       pic[i,j] <- pi[i,j] / pcap[i]
-   }
+    }
 
-   # logit-linear model for detection: understory cover effect
-   logit(p[i]) <- alpha0 + alpha1 * X[i,1]
+    # logit-linear model for detection: understory cover effect
+    logit(p[i]) <- alpha0 + alpha1 * X[i,1]
 
-   # Model specification, three parts:
-   y[i,1:4] ~ dmulti(pic[i,1:4], n[i]) # component 1 uses the conditional
-                                       #    cell probabilities
-   n[i] ~ dbin(pcap[i], N[i])          # component 2 is a model for the
-                                       #    observed sample size
-   N[i] ~ dpois(lambda[i])             # component 3 is the process model
+    # Model specification, three parts:
+    y[i,1:4] ~ dmulti(pic[i,1:4], n[i]) # component 1 uses the conditional
+                                        #    cell probabilities
+    n[i] ~ dbin(pcap[i], N[i])          # component 2 is a model for the
+                                        #    observed sample size
+    N[i] ~ dpois(lambda[i])             # component 3 is the process model
 
-   # log-linear model for abundance: UFC + TRBA + UFC:TRBA
- log(lambda[i])<- beta0 + beta1*X[i,1] + beta2*X[i,2] + beta3*X[i,2]*X[i,1]
-}
+    # log-linear model for abundance: UFC + TRBA + UFC:TRBA
+    log(lambda[i])<- beta0 + beta1*X[i,1] + beta2*X[i,2] + beta3*X[i,2]*X[i,1]
+  }
 }
 ",fill=TRUE, file="model.txt")
 
@@ -114,58 +115,58 @@ print(out, 3)
 cat("
 model {
 
-# Prior distributions
-p0 ~ dunif(0,1)
-alpha0 <- logit(p0)
-alpha1 ~ dnorm(0, 0.01)
-beta0 ~ dnorm(0, 0.01)
-beta1 ~ dnorm(0, 0.01)
-beta2 ~ dnorm(0, 0.01)
-beta3 ~ dnorm(0, 0.01)
+  # Prior distributions
+  p0 ~ dunif(0,1)
+  alpha0 <- logit(p0)
+  alpha1 ~ dnorm(0, 0.01)
+  beta0 ~ dnorm(0, 0.01)
+  beta1 ~ dnorm(0, 0.01)
+  beta2 ~ dnorm(0, 0.01)
+  beta3 ~ dnorm(0, 0.01)
 
-for(i in 1:M){ # Loop over sites
-   # Conditional multinomial cell probabilities
-   pi[i,1] <- p[i]
-   pi[i,2] <- p[i]*(1-p[i])
-   pi[i,3] <- p[i]*(1-p[i])*(1-p[i])
-   pi[i,4] <- p[i]*(1-p[i])*(1-p[i])*(1-p[i])
-   pi0[i] <- 1 - (pi[i,1] + pi[i,2] + pi[i,3] + pi[i,4])
-   pcap[i] <- 1 - pi0[i]
-   for(j in 1:4){
+  for(i in 1:M){ # Loop over sites
+    # Conditional multinomial cell probabilities
+    pi[i,1] <- p[i]
+    pi[i,2] <- p[i]*(1-p[i])
+    pi[i,3] <- p[i]*(1-p[i])*(1-p[i])
+    pi[i,4] <- p[i]*(1-p[i])*(1-p[i])*(1-p[i])
+    pi0[i] <- 1 - (pi[i,1] + pi[i,2] + pi[i,3] + pi[i,4])
+    pcap[i] <- 1 - pi0[i]
+    for(j in 1:4){
       pic[i,j] <- pi[i,j] / pcap[i]
-   }
+    }
 
-   # logit-linear model for detection: understory cover effect
-   logit(p[i]) <- alpha0 + alpha1 * X[i,1]
+    # logit-linear model for detection: understory cover effect
+    logit(p[i]) <- alpha0 + alpha1 * X[i,1]
 
-   # Model specification, three parts:
-   y[i,1:4] ~ dmulti(pic[i,1:4], n[i]) # component 1 uses the conditional
-                                       #    cell probabilities
-   n[i] ~ dbin(pcap[i], N[i])          # component 2 is a model for the
-                                       #    observed sample size
-   N[i] ~ dpois(lambda[i])             # component 3 is the process model
+    # Model specification, three parts:
+    y[i,1:4] ~ dmulti(pic[i,1:4], n[i]) # component 1 uses the conditional
+                                        #    cell probabilities
+    n[i] ~ dbin(pcap[i], N[i])          # component 2 is a model for the
+                                        #    observed sample size
+    N[i] ~ dpois(lambda[i])             # component 3 is the process model
 
-   # log-linear model for abundance: UFC + TRBA + UFC:TRBA
-   log(lambda[i])<- beta0 + beta1*X[i,1] + beta2*X[i,2] + beta3*X[i,2]*X[i,1]
-}
-# ~~~ inserted code:
-for(i in 1:M){
-  n.pred[i] ~ dbin(pcap[i], N[i])
-  y.pred[i, 1:4] ~ dmulti(pic[i, 1:4], n[i]) #note this is cond'l on ncap[i]
-  for(k in 1:4) {
-    e1[i,k] <- pic[i,k]*n[i]
-    resid1[i,k] <- pow(pow(y[i,k],0.5)-pow(e1[i,k],0.5),2)
-    resid1.pred[i,k] <- pow(pow(y.pred[i,k],0.5)-pow(e1[i,k],0.5),2)
+    # log-linear model for abundance: UFC + TRBA + UFC:TRBA
+    log(lambda[i])<- beta0 + beta1*X[i,1] + beta2*X[i,2] + beta3*X[i,2]*X[i,1]
   }
-  e2[i] <- pcap[i]*lambda[i]
-  resid2[i] <- pow(pow(n[i],0.5)-pow(e2[i],0.5),2)
-  resid2.pred[i] <- pow(pow(n.pred[i],0.5)-pow(e2[i],0.5),2)
-}
-fit1.data <- sum(resid1[,])       # fit statistic for observed data y
-fit1.pred <- sum(resid1.pred[,])
+  # ~~~ inserted code:
+  for(i in 1:M){
+    n.pred[i] ~ dbin(pcap[i], N[i])
+    y.pred[i, 1:4] ~ dmulti(pic[i, 1:4], n[i]) #note this is cond'l on ncap[i]
+    for(k in 1:4) {
+      e1[i,k] <- pic[i,k]*n[i]
+      resid1[i,k] <- pow(pow(y[i,k],0.5)-pow(e1[i,k],0.5),2)
+      resid1.pred[i,k] <- pow(pow(y.pred[i,k],0.5)-pow(e1[i,k],0.5),2)
+    }
+    e2[i] <- pcap[i]*lambda[i]
+    resid2[i] <- pow(pow(n[i],0.5)-pow(e2[i],0.5),2)
+    resid2.pred[i] <- pow(pow(n.pred[i],0.5)-pow(e2[i],0.5),2)
+  }
+  fit1.data <- sum(resid1[,])       # fit statistic for observed data y
+  fit1.pred <- sum(resid1.pred[,])
 
-fit2.data <- sum(resid2[])       # fit statistic for new data n
-fit2.pred <- sum(resid2.pred[])
+  fit2.data <- sum(resid2[])       # fit statistic for new data n
+  fit2.pred <- sum(resid2.pred[])
 }
 ",fill=TRUE, file="model_gof.txt")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -193,43 +194,44 @@ mean(out$sims.list$fit2.pred > out$sims.list$fit2.data)
 cat("
 model {
 
-# Prior distributions
-p0 ~ dunif(0,1)
-alpha0 <- log(p0/(1-p0))
-alpha1 ~ dnorm(0, 0.1)
-beta0 ~ dnorm(0, 0.1)
-beta1 ~ dnorm(0, 0.1)
-beta2 ~ dnorm(0, 0.1)
-beta3 ~ dnorm(0, 0.1)
-w1 ~ dbern(0.5)
-w2 ~ dbern(0.5)
-w3 ~ dbern(0.5)
+  # Prior distributions
+  p0 ~ dunif(0,1)
+  alpha0 <- log(p0/(1-p0))
+  alpha1 ~ dnorm(0, 0.1)
+  beta0 ~ dnorm(0, 0.1)
+  beta1 ~ dnorm(0, 0.1)
+  beta2 ~ dnorm(0, 0.1)
+  beta3 ~ dnorm(0, 0.1)
+  w1 ~ dbern(0.5)
+  w2 ~ dbern(0.5)
+  w3 ~ dbern(0.5)
 
-for(i in 1:M){
-   # Conditional multinomial cell probabilities
-   pi[i,1] <- p[i]
-   pi[i,2] <- p[i] * (1-p[i])
-   pi[i,3] <- p[i] * (1-p[i]) * (1-p[i])
-   pi[i,4] <- p[i] * (1-p[i]) * (1-p[i]) * (1-p[i])
-   pi0[i] <- 1 - (pi[i,1] + pi[i,2] + pi[i,3]+ pi[i,4])
-   pcap[i] <- 1 - pi0[i]
-   for(j in 1:4){
+  for(i in 1:M){
+    # Conditional multinomial cell probabilities
+    pi[i,1] <- p[i]
+    pi[i,2] <- p[i] * (1-p[i])
+    pi[i,3] <- p[i] * (1-p[i]) * (1-p[i])
+    pi[i,4] <- p[i] * (1-p[i]) * (1-p[i]) * (1-p[i])
+    pi0[i] <- 1 - (pi[i,1] + pi[i,2] + pi[i,3]+ pi[i,4])
+    pcap[i] <- 1 - pi0[i]
+    for(j in 1:4){
       pic[i,j] <- pi[i,j] / pcap[i]
-   }
+    }
 
-   # logit-linear model for detection: understory cover effect
-   logit(p[i]) <- alpha0 + alpha1 * X[i,1]
+    # logit-linear model for detection: understory cover effect
+    logit(p[i]) <- alpha0 + alpha1 * X[i,1]
 
-   # Model specification, 3 parts:
-   y[i,1:4] ~ dmulti(pic[i,1:4], n[i]) # component 1 uses the conditional
-                                       #    cell probabilities
-   n[i] ~ dbin(pcap[i], N[i])          # component 2 is a model for the
-                                       #    observed sample size
-   N[i] ~ dpois(lambda[i])             # component 3 is the process model
+    # Model specification, 3 parts:
+    y[i,1:4] ~ dmulti(pic[i,1:4], n[i]) # component 1 uses the conditional
+                                        #    cell probabilities
+    n[i] ~ dbin(pcap[i], N[i])          # component 2 is a model for the
+                                        #    observed sample size
+    N[i] ~ dpois(lambda[i])             # component 3 is the process model
 
-   # log-linear model for abundance: effects of UFC and TRBA, with weights
-   log(lambda[i])<- beta0 + w1*beta1*X[i,1] + w2*beta2*X[i,2] + w1*w2*w3*beta3*X[i,2]*X[i,1]
-}
+    # log-linear model for abundance: effects of UFC and TRBA, with weights
+    log(lambda[i])<- beta0 + w1*beta1*X[i,1] + w2*beta2*X[i,2] +
+        w1*w2*w3*beta3*X[i,2]*X[i,1]
+  }
 }
 ",fill=TRUE,file="model.txt")
 
@@ -271,33 +273,33 @@ table(mod)
 cat("
 model {
 
-# Prior distributions
-p0 ~ dunif(0,1)
-alpha0 <- logit(p0)
-alpha1 ~ dnorm(0, 0.01)
-beta0 ~ dnorm(0, 0.01)
-beta1 ~ dnorm(0, 0.01)
-beta2 ~ dnorm(0, 0.01)
-beta3 ~ dnorm(0, 0.01)
+  # Prior distributions
+  p0 ~ dunif(0,1)
+  alpha0 <- logit(p0)
+  alpha1 ~ dnorm(0, 0.01)
+  beta0 ~ dnorm(0, 0.01)
+  beta1 ~ dnorm(0, 0.01)
+  beta2 ~ dnorm(0, 0.01)
+  beta3 ~ dnorm(0, 0.01)
 
-for(i in 1:M){
-   # logit-linear model for detection: understory cover effect
-   logit(p[i]) <- alpha0 + alpha1 * X[i,1]
-   # log-linear model for abundance: UFC + TRBA + UFC:TRBA
-   log(lambda[i])<- beta0 + beta1*X[i,1] + beta2*X[i,2] + beta3*X[i,2]*X[i,1]
+  for(i in 1:M){
+    # logit-linear model for detection: understory cover effect
+    logit(p[i]) <- alpha0 + alpha1 * X[i,1]
+    # log-linear model for abundance: UFC + TRBA + UFC:TRBA
+    log(lambda[i])<- beta0 + beta1*X[i,1] + beta2*X[i,2] + beta3*X[i,2]*X[i,1]
 
-   # Poisson parameter = multinomial cellprobs x expected abundance
-   pi[i,1] <- p[i] * lambda[i]
-   pi[i,2] <- p[i] * (1-p[i]) * lambda[i]
-   pi[i,3] <- p[i] * (1-p[i]) * (1-p[i]) * lambda[i]
-   pi[i,4] <- p[i] * (1-p[i]) * (1-p[i]) * (1-p[i]) * lambda[i]
+    # Poisson parameter = multinomial cellprobs x expected abundance
+    pi[i,1] <- p[i] * lambda[i]
+    pi[i,2] <- p[i] * (1-p[i]) * lambda[i]
+    pi[i,3] <- p[i] * (1-p[i]) * (1-p[i]) * lambda[i]
+    pi[i,4] <- p[i] * (1-p[i]) * (1-p[i]) * (1-p[i]) * lambda[i]
 
-   for(j in 1:4){
+    for(j in 1:4){
       y[i,j] ~ dpois(pi[i,j])
-   }
-   # Generate predictions of N[i]
-   N[i] ~ dpois(lambda[i])
-}
+    }
+    # Generate predictions of N[i]
+    N[i] ~ dpois(lambda[i])
+  }
 }
 ",fill=TRUE,file="modelP.txt")
 
@@ -324,38 +326,39 @@ print(out, 3)
 cat("
 model {
 
-# Prior distributions
-p0 ~ dunif(0,1)
-alpha0 <- logit(p0)
-alpha1 ~ dnorm(0, 0.01)
-beta0 ~ dnorm(0, 0.01)
-beta1 ~ dnorm(0, 0.01)
-beta2 ~ dnorm(0, 0.01)
-beta3 ~ dnorm(0, 0.01)
+  # Prior distributions
+  p0 ~ dunif(0,1)
+  alpha0 <- logit(p0)
+  alpha1 ~ dnorm(0, 0.01)
+  beta0 ~ dnorm(0, 0.01)
+  beta1 ~ dnorm(0, 0.01)
+  beta2 ~ dnorm(0, 0.01)
+  beta3 ~ dnorm(0, 0.01)
 
-tau ~ dgamma(0.1,0.1)  # Excess-Poisson variation (precision)
-sigma <- sqrt(1 / tau)
+  tau ~ dgamma(0.1,0.1)  # Excess-Poisson variation (precision)
+  sigma <- sqrt(1 / tau)
 
-for(i in 1:M){
-   # logit-linear model for detection: understory cover effect
-   logit(p[i]) <- alpha0 + alpha1 * X[i,1]
-   # Normal random effects
-   eta[i] ~ dnorm(0, tau)  # 'residuals' for extra-Poisson noise
-   # log-linear model for abundance: UFC + TRBA + UFC:TRBA + eta
-   log(lambda[i])<- beta0 + beta1*X[i,1] + beta2*X[i,2] + beta3*X[i,2]*X[i,1] + eta[i]     # note 'extra-residual' for overdispersion
+  for(i in 1:M){
+    # logit-linear model for detection: understory cover effect
+    logit(p[i]) <- alpha0 + alpha1 * X[i,1]
+    # Normal random effects
+    eta[i] ~ dnorm(0, tau)  # 'residuals' for extra-Poisson noise
+    # log-linear model for abundance: UFC + TRBA + UFC:TRBA + eta
+    log(lambda[i])<- beta0 + beta1*X[i,1] + beta2*X[i,2] + beta3*X[i,2]*X[i,1] + eta[i]
+        # note 'extra-residual' for overdispersion
 
-   # Poisson parameter = multinomial cellprobs x expected abundance
-   pi[i,1] <- p[i] * lambda[i]
-   pi[i,2] <- p[i] * (1-p[i]) * lambda[i]
-   pi[i,3] <- p[i] * (1-p[i]) * (1-p[i]) * lambda[i]
-   pi[i,4] <- p[i] * (1-p[i]) * (1-p[i]) * (1-p[i]) * lambda[i]
+    # Poisson parameter = multinomial cellprobs x expected abundance
+    pi[i,1] <- p[i] * lambda[i]
+    pi[i,2] <- p[i] * (1-p[i]) * lambda[i]
+    pi[i,3] <- p[i] * (1-p[i]) * (1-p[i]) * lambda[i]
+    pi[i,4] <- p[i] * (1-p[i]) * (1-p[i]) * (1-p[i]) * lambda[i]
 
-   for(j in 1:4){
+    for(j in 1:4){
       y[i,j] ~ dpois(pi[i,j])
-   }
-   # Generate predictions of N[i]
-   N[i] ~ dpois(lambda[i])
- }
+    }
+    # Generate predictions of N[i]
+    N[i] ~ dpois(lambda[i])
+  }
 }
 ",fill=TRUE,file="modelP.txt")
 

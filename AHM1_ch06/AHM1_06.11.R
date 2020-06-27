@@ -2,9 +2,12 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 6. Modeling abundance with counts of unmarked individuals
 #    in closed populations: binomial N-mixture models
 # =========================================================================
+
+# Approximate execution time for this code: 1.8 hrs
 
 library(AHMbook)
 library(unmarked)
@@ -66,96 +69,97 @@ sink("ZIPNmix.txt")
 cat("
 model {
 
-# Specify priors
-# zero-inflation/suitability
-phi ~ dunif(0,1)          # proportion of suitable sites
-theta <- 1-phi            # zero-inflation (proportion of unsuitable)
-ltheta <- logit(theta)
+  # Specify priors
+  # zero-inflation/suitability
+  phi ~ dunif(0,1)          # proportion of suitable sites
+  theta <- 1-phi            # zero-inflation (proportion of unsuitable)
+  ltheta <- logit(theta)
 
-# abundance
-beta0 ~ dnorm(0, 0.1)     # log(lambda) intercept
-for(k in 1:7){            # Regression params in lambda
-   beta[k] ~ dnorm(0, 1)
-}
-tau.lam <- pow(sd.lam, -2)
-sd.lam ~ dunif(0, 2)      # site heterogeneity in lambda
-
-# detection
-for(j in 1:3){
-   alpha0[j] <- logit(mean.p[j])
-   mean.p[j] ~ dunif(0, 1)# p intercept for occasions 1-3
-}
-for(k in 1:13){           # Regression params in p
-   alpha[k] ~ dnorm(0, 1)
-}
-tau.p.site <- pow(sd.p.site, -2)
-sd.p.site ~ dunif(0, 2)   # site heterogeneity in p
-tau.p.survey <- pow(sd.p.survey, -2)
-sd.p.survey ~ dunif(0, 2) # site-survey heterogeneity in p
-
-# ZIP model for abundance
-for (i in 1:nsite){
-   a[i] ~ dbern(phi)
-   eps.lam[i] ~ dnorm(0, tau.lam)       # Random site effects in log(abundance)
-   loglam[i] <- beta0 + inprod(beta[], lamDM[i,]) + eps.lam[i] * hlam.on
-   loglam.lim[i] <- min(250, max(-250, loglam[i]))  # ‘Stabilize’ log
-   lam[i] <- exp(loglam.lim[i])
-   mu.poisson[i] <- a[i] * lam[i]
-   N[i] ~ dpois(mu.poisson[i])
-}
-
-# Measurement error model
-for (i in 1:nsite){
-  eps.p.site[i] ~ dnorm(0, tau.p.site) # Random site effects in logit(p)
-  for (j in 1:nrep){
-    y[i,j] ~ dbin(p[i,j], N[i])
-    p[i,j] <- 1 / (1 + exp(-lp.lim[i,j]))
-    lp.lim[i,j] <- min(250, max(-250, lp[i,j]))  # ‘Stabilize’ logit
-    lp[i,j] <- alpha0[j] + alpha[1] * elev[i] + alpha[2] * elev2[i] +
-      alpha[3] * date[i,j] + alpha[4] * date2[i,j] +
-      alpha[5] * dur[i,j] + alpha[6] * dur2[i,j] +
-      alpha[7] * elev[i] * date[i,j] + alpha[8] * elev2[i] * date[i,j] +
-      alpha[9] * elev[i] * dur[i,j] + alpha[10] * elev[i] * dur2[i,j] +
-      alpha[11] * elev2[i] * dur[i,j] + alpha[12] * date[i,j] * dur[i,j] +
-      alpha[13] * date[i,j] * dur2[i,j] +
-      eps.p.site[i] * hp.site.on + eps.p.survey[i,j] * hp.survey.on
-      eps.p.survey[i,j] ~ dnorm(0, tau.p.survey) # Random site-survey effects
-   }
-}
-# Posterior predictive distributions of chi2 discrepancy
-for (i in 1:nsite) {
-  for (j in 1:nrep) {
-    y.sim[i,j] ~ dbin(p[i,j], N[i]) # Create new data set under model
-    e.count[i,j] <- N[i] * p[i,j]   # Expected datum
-    # Chi-square discrepancy for the actual data
-    chi2.actual[i,j] <- pow((y[i,j]-e.count[i,j]),2) / (e.count[i,j]+e)
-    # Chi-square discrepancy for the simulated ('perfect') data
-    chi2.sim[i,j] <- pow((y.sim[i,j]-e.count[i,j]),2) / (e.count[i,j]+e)
-    # Add small value e to denominator to avoid division by zero
+  # abundance
+  beta0 ~ dnorm(0, 0.1)     # log(lambda) intercept
+  for(k in 1:7){            # Regression params in lambda
+     beta[k] ~ dnorm(0, 1)
   }
-}
-# Add up individual chi2 values for overall fit statistic
-fit.actual <- sum(chi2.actual[,])  # Fit statistic for actual data set
-fit.sim <- sum(chi2.sim[,])        # Fit statistic for a fitting model
-bpv <- step(fit.sim-fit.actual)    # Bayesian p-value
-c.hat <- fit.actual/fit.sim        # c-hat estimate
+  tau.lam <- pow(sd.lam, -2)
+  sd.lam ~ dunif(0, 2)      # site heterogeneity in lambda
 
-# Derived parameters: Total abundance at 263 sampled sites
-Ntotal263 <- sum(N[])
+  # detection
+  for(j in 1:3){
+     alpha0[j] <- logit(mean.p[j])
+     mean.p[j] ~ dunif(0, 1)# p intercept for occasions 1-3
+  }
+  for(k in 1:13){           # Regression params in p
+     alpha[k] ~ dnorm(0, 1)
+  }
+  tau.p.site <- pow(sd.p.site, -2)
+  sd.p.site ~ dunif(0, 2)   # site heterogeneity in p
+  tau.p.survey <- pow(sd.p.survey, -2)
+  sd.p.survey ~ dunif(0, 2) # site-survey heterogeneity in p
+
+  # ZIP model for abundance
+  for (i in 1:nsite){
+     a[i] ~ dbern(phi)
+     eps.lam[i] ~ dnorm(0, tau.lam)       # Random site effects in log(abundance)
+     loglam[i] <- beta0 + inprod(beta[], lamDM[i,]) + eps.lam[i] * hlam.on
+     loglam.lim[i] <- min(250, max(-250, loglam[i]))  # ‘Stabilize’ log
+     lam[i] <- exp(loglam.lim[i])
+     mu.poisson[i] <- a[i] * lam[i]
+     N[i] ~ dpois(mu.poisson[i])
+  }
+
+  # Measurement error model
+  for (i in 1:nsite){
+    eps.p.site[i] ~ dnorm(0, tau.p.site) # Random site effects in logit(p)
+    for (j in 1:nrep){
+      y[i,j] ~ dbin(p[i,j], N[i])
+      p[i,j] <- 1 / (1 + exp(-lp.lim[i,j]))
+      lp.lim[i,j] <- min(250, max(-250, lp[i,j]))  # ‘Stabilize’ logit
+      lp[i,j] <- alpha0[j] + alpha[1] * elev[i] + alpha[2] * elev2[i] +
+        alpha[3] * date[i,j] + alpha[4] * date2[i,j] +
+        alpha[5] * dur[i,j] + alpha[6] * dur2[i,j] +
+        alpha[7] * elev[i] * date[i,j] + alpha[8] * elev2[i] * date[i,j] +
+        alpha[9] * elev[i] * dur[i,j] + alpha[10] * elev[i] * dur2[i,j] +
+        alpha[11] * elev2[i] * dur[i,j] + alpha[12] * date[i,j] * dur[i,j] +
+        alpha[13] * date[i,j] * dur2[i,j] +
+        eps.p.site[i] * hp.site.on + eps.p.survey[i,j] * hp.survey.on
+        eps.p.survey[i,j] ~ dnorm(0, tau.p.survey) # Random site-survey effects
+     }
+  }
+  # Posterior predictive distributions of chi2 discrepancy
+  for (i in 1:nsite) {
+    for (j in 1:nrep) {
+      y.sim[i,j] ~ dbin(p[i,j], N[i]) # Create new data set under model
+      e.count[i,j] <- N[i] * p[i,j]   # Expected datum
+      # Chi-square discrepancy for the actual data
+      chi2.actual[i,j] <- pow((y[i,j]-e.count[i,j]),2) / (e.count[i,j]+e)
+      # Chi-square discrepancy for the simulated ('perfect') data
+      chi2.sim[i,j] <- pow((y.sim[i,j]-e.count[i,j]),2) / (e.count[i,j]+e)
+      # Add small value e to denominator to avoid division by zero
+    }
+  }
+  # Add up individual chi2 values for overall fit statistic
+  fit.actual <- sum(chi2.actual[,])  # Fit statistic for actual data set
+  fit.sim <- sum(chi2.sim[,])        # Fit statistic for a fitting model
+  bpv <- step(fit.sim-fit.actual)    # Bayesian p-value
+  c.hat <- fit.actual/fit.sim        # c-hat estimate
+
+  # Derived parameters: Total abundance at 263 sampled sites
+  Ntotal263 <- sum(N[])
 }
 ",fill = TRUE)
 sink()
-
 
 # Initial values
 Nst <- apply(y, 1, max, na.rm = T) + 1
 Nst[is.na(Nst)] <- round(mean(y, na.rm = TRUE))
 Nst[Nst == "-Inf"] <- round(mean(y, na.rm = TRUE))
-inits <- function(){ list(N = Nst, beta0 = 0, mean.p = rep(0.5,3), beta = runif(7, 0,0), alpha = runif(13, 0,0))}
+inits <- function(){ list(N = Nst, beta0 = 0, mean.p = rep(0.5,3),
+    beta = runif(7, 0,0), alpha = runif(13, 0,0))}
 
 # Parameters monitored
-params <- c("theta", "ltheta", "phi", "beta0", "beta", "sd.lam", "alpha0", "mean.p", "alpha", "sd.p.site", "sd.p.survey", "fit.actual", "fit.sim", "bpv", "c.hat", "Ntotal263")
-
+params <- c("theta", "ltheta", "phi", "beta0", "beta", "sd.lam", "alpha0",
+    "mean.p", "alpha", "sd.p.site", "sd.p.survey", "fit.actual", "fit.sim",
+    "bpv", "c.hat", "Ntotal263")
 
 # Bundle data and choose to fit simple ZIP model (model 1)
 win.data1 <- list(y = y, nsite = nrow(y), nrep = ncol(y),
@@ -180,14 +184,17 @@ tmp <- summary(fm5ZIP)
 ord.MLE <- rbind(tmp$psi[,1:2], tmp$state[,1:2], tmp$det[c(7:9, 1:6, 10:16),1:2])
 ord.Bayes <- out1$summary[-c(1,3,12,16:18,32:39), 1:2]
 cbind(ord.MLE, ord.Bayes)
-par(mar = c(5,5,3,2), cex.lab = 1.5, cex.axis = 1.5)
-plot(ord.MLE[,1], ylim = c(-3,3), pch = 16, col = "black", main = "", frame = F, xlab = "Parameters (zero-inflation, abundance, detection)", ylab = "Parameter estimate (+/- 1 SE)", cex = 1.5)
+op <- par(mar = c(5,5,3,2), cex.lab = 1.5, cex.axis = 1.5)
+plot(ord.MLE[,1], ylim = c(-3,3), pch = 16, col = "black", main = "",
+    frame = FALSE, xlab = "Parameters (zero-inflation, abundance, detection)",
+    ylab = "Parameter estimate (+/- 1 SE)", cex = 1.5)
 segments(1:25, ord.MLE[,1]-ord.MLE[,2], 1:25, ord.MLE[,1]+ord.MLE[,2], lwd = 2)
 abline(h = 0)
 abline(v = c(1.5, 9.5), col = "grey")
 points((1:25)+0.3, ord.Bayes[,1], pch = 16, col = "blue", cex = 1.5)
-segments(1:25+0.3, ord.Bayes[,1]-ord.Bayes[,2], 1:25+0.3, ord.Bayes[,1]+ord.Bayes[,2], col = "blue", lwd = 2)
-
+segments(1:25+0.3, ord.Bayes[,1]-ord.Bayes[,2], 1:25+0.3,
+    ord.Bayes[,1]+ord.Bayes[,2], col = "blue", lwd = 2)
+par(op)
 
 library(unmarked)
 data(Switzerland)             # Load Swiss landscape data in unmarked
@@ -198,9 +205,10 @@ ELEV <- (CH$elev-elev.mean)/elev.sd
 ELEV2 <- ELEV^2
 FOREST <- (CH$forest-forest.mean)/forest.sd
 FOREST2 <- FOREST^2
-CHdata <- cbind(elev = ELEV, elev2 = ELEV2, forest = FOREST, forest2 = FOREST^2, iRoute = rep(0, length(CH$elev)), elev.forest = ELEV * FOREST, elev.forest2 = ELEV * FOREST2)
+CHdata <- cbind(elev = ELEV, elev2 = ELEV2, forest = FOREST, forest2 = FOREST^2,
+    iRoute = rep(0, length(CH$elev)), elev.forest = ELEV * FOREST,
+    elev.forest2 = ELEV * FOREST2)
 str(CHdata)                  # This is a design matrix
-
 
 MCMCout <- out1              # Choose results output from model 1
 (nsamp <- length(MCMCout$sims.list$theta))  # how many MCMC samples do we have ?
@@ -214,12 +222,11 @@ lamPred <- array(NA, dim =c(length(CH[,1]), sub.sample.size))
 
 # Fill the array
 for(i in 1:sub.sample.size){
-   MCMCstep <- selection[i]
-   lamPred[,i] <- (1-MCMCout$sims.list$theta[MCMCstep]) *
-   exp(MCMCout$sims.list$beta0[MCMCstep] +
+  MCMCstep <- selection[i]
+  lamPred[,i] <- (1-MCMCout$sims.list$theta[MCMCstep]) *
+      exp(MCMCout$sims.list$beta0[MCMCstep] +
       CHdata %*% MCMCout$sims.list$beta[MCMCstep,1:7])
 }
-
 
 # Get posterior means for every quadrat and check if sensible
 meanlam <- apply(lamPred, 1, mean)   # Get posterior mean
@@ -238,8 +245,8 @@ elevation <- rasterFromXYZ(cbind(CH$x, CH$y,CH$elevation))
 elevation[elevation > 2250] <- NA
 r <- mask(r, elevation)
 mapPalette <- colorRampPalette(c("grey", "yellow", "orange", "red"))
-par(mfrow = c(1,2), mar = c(5,5,1,5))
-plot(r, col = mapPalette(100), axes = F, box = F, main ="")
+op <- par(mfrow = c(1,2), mar = c(5,5,1,5))
+plot(r, col = mapPalette(100), axes = FALSE, box = FALSE, main ="")
 # ~~~~ shape files not available ~~~~~~~~~~~~~~
 # lakes <- readOGR(".", "lakes")
 # rivers <- readOGR(".", "rivers")
@@ -254,14 +261,16 @@ tmp <- aggregate(lamPred, by = list(elev.class), FUN = sum)
 N.elev <- as.matrix(tmp[,-1])              # Posterior sample of Ntotal per band
 band <- tmp[,1]                            # elevation band (in m)
 meanN <- apply(N.elev, 1, mean)
-barplot(meanN, col = "grey", horiz = T, xlab = "Number of Great tit territories", ylab = "Elevation band (100m)", xlim = c(0, 200000))
+barplot(meanN, col = "grey", horiz = T, xlab = "Number of Great tit territories",
+    ylab = "Elevation band (100m)", xlim = c(0, 200000))
 axis(2, at = 1:length(band), labels = band)
-
+par(op)
 
 # Posterior distribution of total number of great tit territories in 2013
 keep <- which((CH$water < 50) & (CH$elev < 2251))
 Ntot <- apply(lamPred[keep,], 2, sum)
-hist(Ntot, breaks = 100, col = "grey", main = "Posterior of national population size")
+hist(Ntot, breaks = 100, col = "grey",
+    main = "Posterior of national population size")
 
 # Point estimate and 95% CRI
 mean(Ntot)
@@ -275,8 +284,7 @@ quantile(Ntot, prob = c(0.025, 0.975))
 # ------------------------------------------------------------------------
 # MCMC settings
 # ni <- 10^6    ;    nt <- 80    ;    nb <- 200000    ;    nc <- 3
-# ~~~~ for testing I used:
-ni <- 12000    ;    nt <- 1     ;    nb <- 2000    ;    nc <- 3
+ni <- 12000    ;    nt <- 1     ;    nb <- 2000    ;    nc <- 3  # ~~~~ for testing
 
 # Bundle data and select model 2
 win.data2 <- list(y = y, nsite = nrow(y), nrep = ncol(y),
@@ -285,7 +293,8 @@ win.data2 <- list(y = y, nsite = nrow(y), nrep = ncol(y),
    hp.survey.on = 0)
 
 # Call WinBUGS from R (ART 4050 min ~ 3 days) and summarize posteriors
-out2 <- bugs(win.data2, inits, params, "ZIPNmix.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
+out2 <- bugs(win.data2, inits, params, "ZIPNmix.txt", n.chains = nc, n.thin = nt,
+    n.iter = ni, n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
 # ~~~ After running for 3 days, you should probably save the result ~~~~~~~~~
 save(out2, file="AHM1_06.11_out2.RData")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -299,7 +308,8 @@ win.data3 <- list(y = y, nsite = nrow(y), nrep = ncol(y),
    hp.survey.on = 0)
 
 # Call WinBUGS from R (ART 4200 min) and summarize posteriors
-out3 <- bugs(win.data3, inits, params, "ZIPNmix.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
+out3 <- bugs(win.data3, inits, params, "ZIPNmix.txt", n.chains = nc,
+    n.thin = nt, n.iter = ni, n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
 # ~~~ After running for 3 days, you should probably save the result ~~~~~~~~~~~
 save(out3, file="AHM1_06.11_out3.RData")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -313,7 +323,8 @@ win.data4 <- list(y = y, nsite = nrow(y), nrep = ncol(y),
    hp.survey.on = 1)
 
 # Call WinBUGS from R (ART 4020 min) and summarize posteriors
-out4 <- bugs(win.data4, inits, params, "ZIPNmix.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
+out4 <- bugs(win.data4, inits, params, "ZIPNmix.txt", n.chains = nc,
+    n.thin = nt, n.iter = ni, n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
 # ~~~ After running for 3 days, you should probably save the result ~~~~~~~~~
 save(out4, file="AHM1_06.11_out4.RData")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -327,7 +338,8 @@ win.data5 <- list(y = y, nsite = nrow(y), nrep = ncol(y),
    hp.survey.on = 0)
 
 # Call WinBUGS from R (ART 4250 min) and summarize posteriors
-out5 <- bugs(win.data5, inits, params, "ZIPNmix.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
+out5 <- bugs(win.data5, inits, params, "ZIPNmix.txt", n.chains = nc,
+    n.thin = nt, n.iter = ni, n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
 # ~~~ you should probably save the result ~~~~~~~~~~~~~~~~~
 save(out5, file="AHM1_06.11_out5.RData")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -341,7 +353,8 @@ win.data6 <- list(y = y, nsite = nrow(y), nrep = ncol(y),
    hp.survey.on = 1)
 
 # Call WinBUGS from R (ART 4230 min) and summarize posteriors
-out6 <- bugs(win.data6, inits, params, "ZIPNmix.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
+out6 <- bugs(win.data6, inits, params, "ZIPNmix.txt", n.chains = nc,
+    n.thin = nt, n.iter = ni, n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
 # ~~~ After running for 3 days, you should probably save the result:
 save(out6, file="AHM1_06.11_out6.RData")
 print(out6, dig = 3)
@@ -354,7 +367,8 @@ win.data7 <- list(y = y, nsite = nrow(y), nrep = ncol(y),
    hp.survey.on = 1)
 
 # Call WinBUGS from R (ART 4625 min) and summarize posteriors
-out7 <- bugs(win.data7, inits, params, "ZIPNmix.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
+out7 <- bugs(win.data7, inits, params, "ZIPNmix.txt", n.chains = nc,
+    n.thin = nt, n.iter = ni, n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
 # ~~~ you should probably save the result ~~~~~~~~~~~~
 save(out7, file="AHM1_06.11_out7.RData")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -362,11 +376,11 @@ print(out7, dig = 3)
 
 # Look at posteriors for random effects
 MCMCout <- out7       # Choose which model you want to plot random effects
-par(mfrow = c(1,3))
+op <- par(mfrow = c(1,3))
 hist(MCMCout$sims.list$sd.lam, breaks = 60, col = "grey")
 hist(MCMCout$sims.list$sd.p.site, breaks = 60, col = "grey")
 hist(MCMCout$sims.list$sd.p.survey, breaks = 60, col = "grey")
-
+par(op)
 
 # 6.11.2.2 Linear modeling of a variance in the N-mixture model
 # ------------------------------------------------------------------------
@@ -380,57 +394,57 @@ sink("Nmix.special.txt")
 cat("
 model {
 
-# Specify priors
-# abundance
-beta0 ~ dnorm(0, 0.1)     # log(lambda) intercept
-for(k in 1:7){            # Regression params in lambda
-   beta[k] ~ dnorm(0, 1)
-}
-# Model for unexplained variance in lambda among sites
-for (i in 1:nsite){
-   tau.lam[i] <- 1/var.lam[i]
-   log(var.lam[i]) <- alpha.var.lam + beta.var.lam * elev[i]
-}
-# Priors for intercept and slope of linear model for variance
-alpha.var.lam ~ dunif(-1, 1)
-beta.var.lam ~ dunif(0, 3)
+  # Specify priors
+  # abundance
+  beta0 ~ dnorm(0, 0.1)     # log(lambda) intercept
+  for(k in 1:7){            # Regression params in lambda
+    beta[k] ~ dnorm(0, 1)
+  }
+  # Model for unexplained variance in lambda among sites
+  for (i in 1:nsite){
+    tau.lam[i] <- 1/var.lam[i]
+    log(var.lam[i]) <- alpha.var.lam + beta.var.lam * elev[i]
+  }
+  # Priors for intercept and slope of linear model for variance
+  alpha.var.lam ~ dunif(-1, 1)
+  beta.var.lam ~ dunif(0, 3)
 
-# detection
-for(j in 1:3){
-   alpha0[j] <- logit(mean.p[j])
-   mean.p[j] ~ dunif(0, 1)# p intercept for occasions 1-3
-}
-for(k in 1:13){           # Regression params in p
-   alpha[k] ~ dnorm(0, 1)
-}
-tau.p.survey <- pow(sd.p.survey, -2)
-sd.p.survey ~ dunif(0, 1) # site-survey heterogeneity in p
+  # detection
+  for(j in 1:3){
+    alpha0[j] <- logit(mean.p[j])
+    mean.p[j] ~ dunif(0, 1)# p intercept for occasions 1-3
+  }
+  for(k in 1:13){           # Regression params in p
+    alpha[k] ~ dnorm(0, 1)
+  }
+  tau.p.survey <- pow(sd.p.survey, -2)
+  sd.p.survey ~ dunif(0, 1) # site-survey heterogeneity in p
 
-# Poisson-lognormal model for abundance
-for (i in 1:nsite){
-   eps.lam[i] ~ dnorm(0, tau.lam[i]) # Random site effects in log(abundance)
-   loglam[i] <- beta0 + inprod(beta[], lamDM[i,]) + eps.lam[i]
-   loglam.lim[i] <- min(250, max(-250, loglam[i]))  # ‘Stabilize’ log
-   mu.poisson[i] <- exp(loglam.lim[i])
-   N[i] ~ dpois(mu.poisson[i])
-}
+  # Poisson-lognormal model for abundance
+  for (i in 1:nsite){
+    eps.lam[i] ~ dnorm(0, tau.lam[i]) # Random site effects in log(abundance)
+    loglam[i] <- beta0 + inprod(beta[], lamDM[i,]) + eps.lam[i]
+    loglam.lim[i] <- min(250, max(-250, loglam[i]))  # ‘Stabilize’ log
+    mu.poisson[i] <- exp(loglam.lim[i])
+    N[i] ~ dpois(mu.poisson[i])
+  }
 
-# Binomial measurement error model with extra-binomial dispersion
-for (i in 1:nsite){
-  for (j in 1:nrep){
-    y[i,j] ~ dbin(p[i,j], N[i])
-    p[i,j] <- 1 / (1 + exp(-lp.lim[i,j]))
-    lp.lim[i,j] <- min(250, max(-250, lp[i,j]))  # ‘Stabilize’ logit
-    lp[i,j] <- alpha0[j] + alpha[1] * elev[i] + alpha[2] * elev2[i] +
-      alpha[3] * date[i,j] + alpha[4] * date2[i,j] +
-      alpha[5] * dur[i,j] + alpha[6] * dur2[i,j] +
-      alpha[7] * elev[i] * date[i,j] + alpha[8] * elev2[i] * date[i,j] +
-      alpha[9] * elev[i] * dur[i,j] + alpha[10] * elev[i] * dur2[i,j] +
-      alpha[11] * elev2[i] * dur[i,j] + alpha[12] * date[i,j] * dur[i,j] +
-      alpha[13] * date[i,j] * dur2[i,j] + eps.p.survey[i,j]
-      eps.p.survey[i,j] ~ dnorm(0, tau.p.survey) # Random site-survey effects
-   }
-}
+  # Binomial measurement error model with extra-binomial dispersion
+  for (i in 1:nsite){
+    for (j in 1:nrep){
+      y[i,j] ~ dbin(p[i,j], N[i])
+      p[i,j] <- 1 / (1 + exp(-lp.lim[i,j]))
+      lp.lim[i,j] <- min(250, max(-250, lp[i,j]))  # ‘Stabilize’ logit
+      lp[i,j] <- alpha0[j] + alpha[1] * elev[i] + alpha[2] * elev2[i] +
+        alpha[3] * date[i,j] + alpha[4] * date2[i,j] +
+        alpha[5] * dur[i,j] + alpha[6] * dur2[i,j] +
+        alpha[7] * elev[i] * date[i,j] + alpha[8] * elev2[i] * date[i,j] +
+        alpha[9] * elev[i] * dur[i,j] + alpha[10] * elev[i] * dur2[i,j] +
+        alpha[11] * elev2[i] * dur[i,j] + alpha[12] * date[i,j] * dur[i,j] +
+        alpha[13] * date[i,j] * dur2[i,j] + eps.p.survey[i,j]
+        eps.p.survey[i,j] ~ dnorm(0, tau.p.survey) # Random site-survey effects
+    }
+  }
 }
 ",fill = TRUE)
 sink()
@@ -440,15 +454,17 @@ sink()
 Nst <- apply(y, 1, max, na.rm = T) + 1
 Nst[is.na(Nst)] <- round(mean(y, na.rm = TRUE))
 Nst[Nst == "-Inf"] <- round(mean(y, na.rm = TRUE))
-inits <- function(){ list(N = Nst, beta0 = 0, mean.p = rep(0.5,3), beta = runif(7, 0,0), alpha = runif(13, 0,0), alpha.var.lam = 0, beta.var.lam = 1.5, sd.p.survey = 0.3)}
+inits <- function(){ list(N = Nst, beta0 = 0, mean.p = rep(0.5,3),
+    beta = runif(7, 0,0), alpha = runif(13, 0,0), alpha.var.lam = 0,
+    beta.var.lam = 1.5, sd.p.survey = 0.3)}
 
 # Parameters monitored
-params <- c("beta0", "beta", "alpha.var.lam", "beta.var.lam", "alpha0", "mean.p", "alpha", "sd.p.survey")
+params <- c("beta0", "beta", "alpha.var.lam", "beta.var.lam", "alpha0",
+    "mean.p", "alpha", "sd.p.survey")
 
 # MCMC settings
 # ni <- 180000    ;    nt <- 100    ;    nb <- 10000    ;    nc <- 3
-# ~~~~~~~~~~~~~~ for testing
-ni <- 18000    ;    nt <- 10    ;    nb <- 1000    ;    nc <- 3
+ni <- 18000    ;    nt <- 10    ;    nb <- 1000    ;    nc <- 3  # ~~~~ for testing
 
 # Call WinBUGS from R (ART 374 min) and summarize posteriors
 out8 <- bugs(win.data8, inits, params, "Nmix.special.txt",
@@ -471,11 +487,14 @@ elev.pred <- (orig.elev.pred - mean(tits$elev)) / sd(tits$elev)
 (n.mcmc <- length(out8$sims.list$alpha.var.lam))  # how many MCMC samples ?
 post.sd.lam <- array(NA, dim = c(length(elev.pred), n.mcmc))
 for(i in 1:length(elev.pred)){
-   post.sd.lam[i,] <- sqrt(exp(out8$sims.list$alpha.var.lam + out8$sims.list$beta.var.lam * elev.pred[i]))
+  post.sd.lam[i,] <- sqrt(exp(out8$sims.list$alpha.var.lam +
+      out8$sims.list$beta.var.lam * elev.pred[i]))
 }
 
 # Plot posterior mean and a sample of 500 regression lines from posterior
 show <- sample(1:n.mcmc, 500)
-matplot(orig.elev.pred, post.sd.lam[,show], xlab = "Elevation (m)", ylab = " sd.lam", type = "l", lty = 1, lwd = 1, col = "grey", frame = F, ylim = c(0, 6))
+matplot(orig.elev.pred, post.sd.lam[,show], xlab = "Elevation (m)",
+    ylab = " sd.lam", type = "l", lty = 1, lwd = 1, col = "grey",
+    frame = FALSE, ylim = c(0, 6))
 lines(orig.elev.pred, apply(post.sd.lam, 1, mean), lwd = 3, col = "blue")
 

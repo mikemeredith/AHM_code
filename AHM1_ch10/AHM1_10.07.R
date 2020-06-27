@@ -2,8 +2,11 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 10. Modeling static occurrence and species distributions using site-occupancy models
 # =========================================================================
+
+# Approximate execution time for this code: 10 mins
 
 library(AHMbook)
 

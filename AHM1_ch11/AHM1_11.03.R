@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 11. Hierarchical models for communities
 # =========================================================================
 
@@ -60,6 +61,7 @@ tmp <- apply(y, c(1,3), max, na.rm = TRUE)
 tmp[tmp == "-Inf"] <- NA
 sort(C <- apply(tmp, 1, sum))     # Compute and print sorted species counts
 
-plot(table(C), xlim = c(0, 60), xlab = "Observed number of species", ylab = "Number of quadrats", frame = FALSE)
+plot(table(C), xlim = c(0, 60), xlab = "Observed number of species",
+    ylab = "Number of quadrats", frame = FALSE)
 abline(v = mean(C, na.rm = TRUE), col = "blue", lwd = 3)
 

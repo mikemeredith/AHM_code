@@ -2,17 +2,20 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 10. Modeling static occurrence and species distributions using site-occupancy models
 # =========================================================================
 
-# ~~~~ impact of changes in R 4.0 ~~~~~~
-# The default for 'stringsAsFactors' in 'data.frame' changed from TRUE to FALSE.
-# This affects older versions of 'unmarked' and 'AICcmodavg', so reset the old default
-# as a temporary measure.
+library(unmarked)
+
+# ~~~~ impact of changes in R 4.0 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# The default for options("stringsAsFactors"), used in 'data.frame', changed from
+# TRUE to FALSE. This affects older versions of 'unmarked' and 'AICcmodavg', so
+# reset the old default as a temporary measure.
 if(packageVersion("unmarked") <= '1.0.0' || packageVersion("AICcmodavg") <= '2.2.2')
   options(stringsAsFactors = TRUE)
-# This has no effect in R versions prior to 4.0.0.
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# This will not work from 4.1.0 as 'data.frame' ignores options("stringsAsFactors").
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # 10.9 Distribution modeling and mapping of Swiss red squirrels
 # =============================================================
@@ -31,16 +34,21 @@ dur.orig <- as.matrix(data[,13:15])
 
 # Overview of covariates
 covs <- cbind(elev.orig, forest.orig, date.orig, dur.orig)
-par(mfrow = c(3,3))
-   for(i in 1:8){
-   hist(covs[,i], breaks = 50, col = "grey", main = colnames(covs)[i])
+op <- par(mfrow = c(3,3))
+for(i in 1:8){
+  hist(covs[,i], breaks = 50, col = "grey", main = colnames(covs)[i])
 }
 pairs(cbind(elev.orig, forest.orig, date.orig, dur.orig))
+par(op)
 
 # Standardize covariates and mean-impute date and duration
 # Compute means and standard deviations
-(means <- c(apply(cbind(elev.orig, forest.orig), 2, mean), date.orig = mean(c(date.orig), na.rm = TRUE), dur.orig=mean(c(dur.orig), na.rm = TRUE)))
-(sds <- c(apply(cbind(elev.orig, forest.orig), 2, sd), date.orig = sd(c(date.orig), na.rm = TRUE), dur.orig=sd(c(dur.orig), na.rm = TRUE)))
+(means <- c(apply(cbind(elev.orig, forest.orig), 2, mean),
+    date.orig = mean(c(date.orig), na.rm = TRUE), dur.orig=mean(c(dur.orig),
+    na.rm = TRUE)))
+(sds <- c(apply(cbind(elev.orig, forest.orig), 2, sd),
+    date.orig = sd(c(date.orig), na.rm = TRUE), dur.orig=sd(c(dur.orig),
+    na.rm = TRUE)))
 
 # Scale covariates
 elev <- (elev.orig - means[1]) / sds[1]
@@ -52,7 +60,8 @@ dur[is.na(dur)] <- 0
 
 # Load unmarked, format data and summarize
 library(unmarked)
-umf <- unmarkedFrameOccu(y = y, siteCovs = data.frame(elev = elev, forest = forest), obsCovs = list(time = time, date = date, dur = dur))
+umf <- unmarkedFrameOccu(y = y, siteCovs = data.frame(elev = elev, forest = forest),
+    obsCovs = list(time = time, date = date, dur = dur))
 summary(umf)
 
 # Fit a series of models for detection first and do model selection
@@ -94,22 +103,31 @@ cbind(fm13@AIC, fm14@AIC, fm15@AIC) # model 14 with elev2 best
 
 # Check effects of forest and interactions
 summary(fm16 <- occu(~date+dur+I(dur^2) ~elev+I(elev^2)+forest, data=umf))
-summary(fm17 <- occu(~date+dur+I(dur^2) ~elev+I(elev^2)+forest+I(forest^2), data=umf))
-summary(fm18 <- occu(~date+dur+I(dur^2) ~elev+I(elev^2)+forest+I(forest^2)+elev:forest, data=umf))
-summary(fm19 <- occu(~date+dur+I(dur^2) ~elev+I(elev^2)+forest+I(forest^2)+elev:forest+elev:I(forest^2), data=umf))
-summary(fm20 <- occu(~date+dur+I(dur^2) ~elev+I(elev^2)+forest+I(forest^2)+elev:forest+elev:I(forest^2)+I(elev^2):forest, data=umf))
-summary(fm21 <- occu(~date+dur+I(dur^2) ~elev+I(elev^2)+forest+I(forest^2)+elev:forest+elev:I(forest^2)+I(elev^2):forest+ I(elev^2):I(forest^2), data=umf))
+summary(fm17 <- occu(~date+dur+I(dur^2) ~elev+I(elev^2)+forest+I(forest^2),
+    data=umf))
+summary(fm18 <- occu(~date+dur+I(dur^2) ~elev+I(elev^2)+forest+I(forest^2)+
+    elev:forest, data=umf))
+summary(fm19 <- occu(~date+dur+I(dur^2) ~elev+I(elev^2)+forest+I(forest^2)+
+    elev:forest+elev:I(forest^2), data=umf))
+summary(fm20 <- occu(~date+dur+I(dur^2) ~elev+I(elev^2)+forest+I(forest^2)+
+    elev:forest+elev:I(forest^2)+I(elev^2):forest, data=umf))
+summary(fm21 <- occu(~date+dur+I(dur^2) ~elev+I(elev^2)+forest+I(forest^2)+
+    elev:forest+elev:I(forest^2)+I(elev^2):forest+ I(elev^2):I(forest^2), data=umf))
 cbind(fm16@AIC, fm17@AIC, fm18@AIC, fm19@AIC, fm20@AIC) # fm20 is best
 
 # Check for some additional effects in detection
-summary(fm22 <- occu(~date+dur+I(dur^2)+elev ~elev+I(elev^2)+forest+I(forest^2)+elev:forest+elev:I(forest^2)+I(elev^2):forest, data=umf))
-summary(fm23 <- occu(~dur+I(dur^2)+date*(elev+I(elev^2)) ~elev+I(elev^2)+forest+I(forest^2)+elev:forest+elev:I(forest^2)+I(elev^2):forest, data=umf))
-summary(fm24 <- occu(~dur+I(dur^2)+date*(elev+I(elev^2))+forest ~elev+I(elev^2)+forest+I(forest^2)+elev:forest+elev:I(forest^2)+I(elev^2):forest, data=umf))
+summary(fm22 <- occu(~date+dur+I(dur^2)+elev ~elev+I(elev^2)+
+    forest+I(forest^2)+elev:forest+elev:I(forest^2)+I(elev^2):forest, data=umf))
+summary(fm23 <- occu(~dur+I(dur^2)+date*(elev+I(elev^2)) ~elev+I(elev^2)+
+    forest+I(forest^2)+elev:forest+elev:I(forest^2)+I(elev^2):forest, data=umf))
+summary(fm24 <- occu(~dur+I(dur^2)+date*(elev+I(elev^2))+forest ~elev+I(elev^2)+
+    forest+I(forest^2)+elev:forest+elev:I(forest^2)+I(elev^2):forest, data=umf))
 cbind(fm22@AIC, fm23@AIC, fm24@AIC) # None better, hence, stay with model 20
 
 
 library(AICcmodavg)
-system.time(gof.boot <- mb.gof.test(fm20, nsim = 1000, parallel=FALSE))
+# system.time(gof.boot <- mb.gof.test(fm20, nsim = 1000, parallel=FALSE))
+system.time(gof.boot <- mb.gof.test(fm20, nsim = 100, parallel=FALSE))  # ~~~ for testing
 gof.boot
 
 
@@ -134,56 +152,65 @@ newData <- data.frame(date=0, dur=durp)
 pred.det.dur <- predict(fm20, type="det", newdata=newData, appendData=TRUE)
 
 # Plot predictions against unstandardized 'prediction covs'
-par(mfrow = c(2,2), mar = c(5,5,2,3), cex.lab = 1.2)
-plot(pred.occ.elev[[1]] ~ orig.elev, type = "l", lwd = 3, col = "blue", ylim = c(0,1), las = 1, ylab = "Pred. occupancy prob.", xlab = "Elevation (m)", frame = F)
+op <- par(mfrow = c(2,2), mar = c(5,5,2,3), cex.lab = 1.2)
+plot(pred.occ.elev[[1]] ~ orig.elev, type = "l", lwd = 3, col = "blue",
+    ylim = c(0,1), las = 1, ylab = "Pred. occupancy prob.", xlab = "Elevation (m)", frame = F)
 matlines(orig.elev, pred.occ.elev[,3:4], lty = 1, lwd = 1, col = "grey")
-plot(pred.occ.forest[[1]] ~ orig.forest, type = "l", lwd = 3, col = "blue", ylim = c(0,1), las = 1, ylab = "Pred. occupancy prob.", xlab = "Forest cover (%)", frame = F)
+plot(pred.occ.forest[[1]] ~ orig.forest, type = "l", lwd = 3, col = "blue",
+    ylim = c(0,1), las = 1, ylab = "Pred. occupancy prob.", xlab = "Forest cover (%)", frame = F)
 matlines(orig.forest, pred.occ.forest[,3:4], lty = 1, lwd = 1, col = "grey")
-plot(pred.det.date[[1]] ~ orig.date, type = "l", lwd = 3, col = "blue", ylim = c(0,1), las = 1, ylab = "Pred. detection prob.", xlab = "Date (1 = 1 April)", frame = F)
+plot(pred.det.date[[1]] ~ orig.date, type = "l", lwd = 3, col = "blue",
+    ylim = c(0,1), las = 1, ylab = "Pred. detection prob.", xlab = "Date (1 = 1 April)", frame = F)
 matlines(orig.date, pred.det.date[,3:4], lty = 1, lwd = 1, col = "grey")
-plot(pred.det.dur[[1]] ~ orig.duration, type = "l", lwd = 3, col = "blue", ylim = c(0,1), las = 1, ylab = "Pred. detection prob.", xlab = "Survey duration (min)", frame = F)
+plot(pred.det.dur[[1]] ~ orig.duration, type = "l", lwd = 3, col = "blue",
+    ylim = c(0,1), las = 1, ylab = "Pred. detection prob.", xlab = "Survey duration (min)", frame = F)
 matlines(orig.duration, pred.det.dur[,3:4], lty = 1, lwd = 1, col = "grey")
-
+par(op)
 
 # Predict abundance and detection jointly along two separate covariate gradients
 # abundance ~ (forest, elevation) and detection ~ (survey duration, date)
 pred.matrix1 <- pred.matrix2 <- array(NA, dim = c(100, 100)) # Define arrays
 for(i in 1:100){
-   for(j in 1:100){
-      newData1 <- data.frame(elev=ep[i], forest=fp[j])       # For abundance
-      pred <- predict(fm20, type="state", newdata=newData1)
-      pred.matrix1[i, j] <- pred$Predicted
-      newData2 <- data.frame(dur=durp[i], date=dp[j])        # For detection
-      pred <- predict(fm20, type="det", newdata=newData2)
-      pred.matrix2[i, j] <- pred$Predicted
-   }
+  for(j in 1:100){
+    newData1 <- data.frame(elev=ep[i], forest=fp[j])       # For abundance
+    pred <- predict(fm20, type="state", newdata=newData1)
+    pred.matrix1[i, j] <- pred$Predicted
+    newData2 <- data.frame(dur=durp[i], date=dp[j])        # For detection
+    pred <- predict(fm20, type="det", newdata=newData2)
+    pred.matrix2[i, j] <- pred$Predicted
+  }
 }
 
-par(mfrow = c(1,2), cex.lab = 1.2)
+op <- par(mfrow = c(1,2), cex.lab = 1.2)
 mapPalette <- colorRampPalette(c("grey", "yellow", "orange", "red"))
-image(x=orig.elev, y=orig.forest, z=pred.matrix1, col = mapPalette(100), axes = FALSE, xlab = "Elevation [m]", ylab = "Forest cover [%]")
-contour(x=orig.elev, y=orig.forest, z=pred.matrix1, add = TRUE, lwd = 1.5, col = "blue", labcex = 1.3)
+image(x=orig.elev, y=orig.forest, z=pred.matrix1, col = mapPalette(100),
+    axes = FALSE, xlab = "Elevation [m]", ylab = "Forest cover [%]")
+contour(x=orig.elev, y=orig.forest, z=pred.matrix1, add = TRUE, lwd = 1.5,
+    col = "blue", labcex = 1.3)
 axis(1, at = seq(min(orig.elev), max(orig.elev), by = 250))
 axis(2, at = seq(0, 100, by = 10))
 box()
 title(main = "Expected squirrel occurrence prob.", font.main = 1)
 points(data$ele, data$forest, pch="+", cex=1)
 
-image(x=orig.duration, y=orig.date, z=pred.matrix2, col = mapPalette(100), axes = FALSE, xlab = "Survey duration [min]", ylab = "Date (1 = April 1)")
-contour(x=orig.duration, y=orig.date, z=pred.matrix2, add = TRUE, lwd = 1.5, col = "blue", labcex = 1.3)
+image(x=orig.duration, y=orig.date, z=pred.matrix2, col = mapPalette(100),
+    axes = FALSE, xlab = "Survey duration [min]", ylab = "Date (1 = April 1)")
+contour(x=orig.duration, y=orig.date, z=pred.matrix2, add = TRUE, lwd = 1.5,
+    col = "blue", labcex = 1.3)
 axis(1, at = seq(min(orig.duration), max(orig.duration), by = 50))
 axis(2, at = seq(0, 100, by = 10))
 box()
 title(main = "Expected squirrel detection prob.", font.main = 1)
 matpoints(as.matrix(data[, 13:15]), as.matrix(data[, 10:12]), pch="+", cex=1)
-
+par(op)
 
 # Load the Swiss landscape data from unmarked
 data(Switzerland)             # Load Swiss landscape data in unmarked
 CH <- Switzerland
 
 # Get predictions of occupancy prob for each 1km2 quadrat of Switzerland
-newData <- data.frame(elev = (CH$elevation - means[1])/sds[1], forest = (CH$forest - means[2])/sds[2])
+newData <- data.frame(elev = (CH$elevation - means[1])/sds[1],
+    forest = (CH$forest - means[2])/sds[2])
 predCH <- predict(fm20, type="state", newdata=newData)
 
 # Prepare Swiss coordinates and produce map
@@ -202,7 +229,8 @@ r1 <- mask(r1, elev)
 # Plot species distribution map (Fig. 10-14 left)
 par(mfrow = c(1,2), mar = c(1,2,2,5))
 mapPalette <- colorRampPalette(c("grey", "yellow", "orange", "red"))
-plot(r1, col = mapPalette(100), axes = F, box = F, main = "Red squirrel distribution in 2007")
+plot(r1, col = mapPalette(100), axes = F, box = F,
+    main = "Red squirrel distribution in 2007")
 # ~~~~~ shape files not available ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # lakes <- readOGR(".", "lakes")
 # rivers <- readOGR(".", "rivers")
@@ -236,7 +264,8 @@ pforest <- (CH$forest - means[2]) / sds[2]
 # Define function that predicts occupancy under model 20
 Eocc <- function(fm) {
    betavec <- coef(fm)[1:8]       # Extract coefficients in psi
-   DM <- cbind(rep(1,length(pelev)), pelev, pelev^2, pforest, pforest^2, pelev*pforest, pelev*pforest^2, pelev^2*pforest) # design matrix
+   DM <- cbind(rep(1,length(pelev)), pelev, pelev^2, pforest, pforest^2,
+      pelev*pforest, pelev*pforest^2, pelev^2*pforest) # design matrix
    pred <- plogis(DM%*%(betavec)) # Prediction = DM * param. vector
    Eocc <- sum(pred)              # Sum over all Swiss quadrats (no mask)
    Eocc

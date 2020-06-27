@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 2. What are hierarchical models and how do we analyze them?
 # =========================================================================
 
@@ -53,7 +54,7 @@ mat <- as.matrix(expand.grid(seq(-10,10,0.1), seq(-10,10,0.1)))
                                                # above: Can vary resolution
 nll <- array(NA, dim = nrow(mat))
 for (i in 1:nrow(mat)){
-   nll[i] <- negLogLike(mat[i,], y = z, x = vegHt)
+  nll[i] <- negLogLike(mat[i,], y = z, x = vegHt)
 }
 which(nll == min(nll))
 mat[which(nll == min(nll)),]
@@ -199,9 +200,9 @@ Mhlik <- function(parms){
        lower=-Inf,upper=Inf)$value
    }
 
-# The negative log likelihood involves combinatorial terms computed
-# using lgamma()
--1*(lgamma(n0 + nind + 1) - lgamma(n0 + 1) + sum(c(n0, nx) * log(marg)))
+  # The negative log likelihood involves combinatorial terms computed
+  # using lgamma()
+  -1*(lgamma(n0 + nind + 1) - lgamma(n0 + 1) + sum(c(n0, nx) * log(marg)))
 }
 (tmp <- nlm(Mhlik, c(-1, 0, log(10)), hessian=TRUE))
 

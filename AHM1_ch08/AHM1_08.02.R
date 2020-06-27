@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 8. Modeling abundance using hierarchical distance sampling (HDS)
 # =========================================================================
 
@@ -22,30 +23,32 @@ g(30, sig=sigma)    # Detection probability at a distance of 30m
 
 # Plot the detection function
 par(mfrow=c(1,2))
-curve(g(x, sig=30), 0, 100, xlab="Distance (x)", ylab="Detection prob.", lwd = 2, frame = F)
+curve(g(x, sig=30), 0, 100, xlab="Distance (x)", ylab="Detection prob.",
+    lwd = 2, frame = FALSE)
 curve(g(x, sig=60), 0, 100, add=TRUE, lty = 2, lwd = 2)
 
 # Define function to simulate non-hierarchical line transect data
 sim.ldata <- function(N = 200, sigma = 30){
-# Function to simulate line transect data under CDS.
-# Function arguments:
-#    N: number of individuals along transect with distance u(-100, 100)
-#    sigma: scale parameter of half-normal detection function
-# Function subjects N individuals to sampling, and then retains the value
-# of x=distance only for individuals that are captured
-par(mfrow = c(1,2))
-# Plot the detection function
-curve(exp(-x^2/(2*sigma^2)), 0, 100, xlab="Distance (x)", ylab="Detection prob.", lwd = 2, main = "Detection function", ylim = c(0,1))
-text(80, 0.9, paste("sigma:", sigma))
-xall <- runif(N, -100,100) # Distances of all N individuals
-hist(abs(xall), nclass=10, xlab = "Distance (x)", col = "grey", main = "True (grey) \nand observed distances (blue)")
-g <- function(x, sig) exp(-x^2/(2*sig^2))
-p <- g(xall, sig=sigma) # detection probability
-y <- rbinom(N, 1, p) # some inds. are detected and their distance measured
-x <- xall[y==1]      # this has direction (right or left transect side)
-x <- abs(x)          # now it doesn't have direction
-hist(x, col = "blue", add = TRUE)
-return(list(N = N, sigma = sigma, xall = xall, x = x))
+  # Function to simulate line transect data under CDS.
+  # Function arguments:
+  #    N: number of individuals along transect with distance u(-100, 100)
+  #    sigma: scale parameter of half-normal detection function
+  # Function subjects N individuals to sampling, and then retains the value
+  # of x=distance only for individuals that are captured
+  op <- par(mfrow = c(1,2))
+  # Plot the detection function
+  curve(exp(-x^2/(2*sigma^2)), 0, 100, xlab="Distance (x)", ylab="Detection prob.", lwd = 2, main = "Detection function", ylim = c(0,1))
+  text(80, 0.9, paste("sigma:", sigma))
+  xall <- runif(N, -100,100) # Distances of all N individuals
+  hist(abs(xall), nclass=10, xlab = "Distance (x)", col = "grey", main = "True (grey) \nand observed distances (blue)")
+  g <- function(x, sig) exp(-x^2/(2*sig^2))
+  p <- g(xall, sig=sigma) # detection probability
+  y <- rbinom(N, 1, p) # some inds. are detected and their distance measured
+  x <- xall[y==1]      # this has direction (right or left transect side)
+  x <- abs(x)          # now it doesn't have direction
+  hist(x, col = "blue", add = TRUE)
+  par(op)
+  return(list(N = N, sigma = sigma, xall = xall, x = x))
 }
 
 # Obtain a data set for analysis
@@ -152,21 +155,21 @@ pi[length(p)+1] <- 1 - sum(pi)
 (y.obs2 <- y.obs2[1:nbins]) # Discard last cell for n0 (because not observed)
 
 Lik.binned <- function(parm, data, dist.breaks){
-# Note that the parameters are parm[1] = log(sigma), parm[2] = log(n0)
+  # Note that the parameters are parm[1] = log(sigma), parm[2] = log(n0)
 
-sigma <- exp(parm[1])
-n0 <- exp(parm[2])
-p <- rep(NA, length(dist.breaks)-1)
-for(j in 1:length(p)) {
-   p[j] <- integrate(g, dist.breaks[j], dist.breaks[j+1],
-      sig=sigma)$value / (dist.breaks[j+1]-dist.breaks[j])
-}
-psi <- interval.width/strip.width
-pi <- p * psi
-pi0 <- 1-sum(pi)
+  sigma <- exp(parm[1])
+  n0 <- exp(parm[2])
+  p <- rep(NA, length(dist.breaks)-1)
+  for(j in 1:length(p)) {
+     p[j] <- integrate(g, dist.breaks[j], dist.breaks[j+1],
+        sig=sigma)$value / (dist.breaks[j+1]-dist.breaks[j])
+  }
+  psi <- interval.width/strip.width
+  pi <- p * psi
+  pi0 <- 1-sum(pi)
 
-N <- sum(data) + n0
--1*(lgamma(N+1)-lgamma(n0+1) + sum(c(data,n0)*log(c(pi,pi0))))
+  N <- sum(data) + n0
+  -1*(lgamma(N+1)-lgamma(n0+1) + sum(c(data,n0)*log(c(pi,pi0))))
 }
 
 # Evaluate likelihood for some particular value of the parameters
@@ -207,46 +210,48 @@ detach(tmp)
 # 8.2.5.1 Simulating point transect data
 # ------------------------------------------------------------------------
 sim.pdata <- function(N=1000, sigma=1, B=3, keep.all=FALSE) {
-# Function simulates coordinates of individuals on a square
-# Square is [0,2*B] x[0,2*B], with a count location on the center
-# point (B,B)
-# Function arguments:
-#    N: total population size in the square
-#    sigma: scale of half-normal detection function
-#    B: circle radias
-#    keep.all: return the data for y = 0 individuals or not
+  # Function simulates coordinates of individuals on a square
+  # Square is [0,2*B] x[0,2*B], with a count location on the center
+  # point (B,B)
+  # Function arguments:
+  #    N: total population size in the square
+  #    sigma: scale of half-normal detection function
+  #    B: circle radias
+  #    keep.all: return the data for y = 0 individuals or not
 
-# Plot the detection function
-par(mfrow = c(1,2))
-curve(exp(-x^2/(2*sigma^2)), 0, B, xlab="Distance (x)", ylab="Detection prob.", lwd = 2, main = "Detection function", ylim = c(0,1))
-text(0.8*B, 0.9, paste("sigma:", sigma))
+  # Plot the detection function
+  op <- par(mfrow = c(1,2))
+  curve(exp(-x^2/(2*sigma^2)), 0, B, xlab="Distance (x)", ylab="Detection prob.",
+      lwd = 2, main = "Detection function", ylim = c(0,1))
+  text(0.8*B, 0.9, paste("sigma:", sigma))
 
-# Simulate and plot simulated data
-library(plotrix)
-u1 <-runif(N, 0, 2*B)           # (u1,u2) coordinates of N individuals
-u2 <- runif(N, 0, 2*B)
-d <- sqrt((u1 - B)^2 + (u2 - B)^2) # distance to center point of square
-plot(u1, u2, asp = 1, pch = 1, main = "Point transect")
-N.real <- sum(d<= B)           # Population size inside of count circle
+  # Simulate and plot simulated data
+  library(plotrix)
+  u1 <-runif(N, 0, 2*B)           # (u1,u2) coordinates of N individuals
+  u2 <- runif(N, 0, 2*B)
+  d <- sqrt((u1 - B)^2 + (u2 - B)^2) # distance to center point of square
+  plot(u1, u2, asp = 1, pch = 1, main = "Point transect")
+  N.real <- sum(d<= B)           # Population size inside of count circle
 
-# Can only count indidividuals in the circle, so set to zero detection probability of individuals in the corners (thereby truncating them):
-p <- ifelse(d < B, 1, 0) * exp(-d*d/(2*(sigma^2)))
-# Now we decide whether each individual is detected or not
-y <- rbinom(N, 1, p)
-points(u1[d <= B], u2[d <= B], pch = 16, col = "black")
-points(u1[y==1], u2[y==1], pch = 16, col = "blue")
-points(B, B, pch = "+", cex = 3, col = "red")
-draw.circle(B, B, B)
+  # Can only count indidividuals in the circle, so set to zero detection probability of individuals in the corners (thereby truncating them):
+  p <- ifelse(d < B, 1, 0) * exp(-d*d/(2*(sigma^2)))
+  # Now we decide whether each individual is detected or not
+  y <- rbinom(N, 1, p)
+  points(u1[d <= B], u2[d <= B], pch = 16, col = "black")
+  points(u1[y==1], u2[y==1], pch = 16, col = "blue")
+  points(B, B, pch = "+", cex = 3, col = "red")
+  draw.circle(B, B, B)
+  par(op)
 
-# Put all of the data in a matrix:
-#      (note we don't care about y, u, or v normally)
+  # Put all of the data in a matrix:
+  #      (note we don't care about y, u, or v normally)
 
-if(!keep.all){
-   u1 <- u1[y==1]
-   u2 <- u2[y==1]
-   d <- d[y==1]
-}
-return(list(N=N, sigma=sigma, B=B, u1=u1, u2=u2, d=d, y=y, N.real=N.real))
+  if(!keep.all){
+     u1 <- u1[y==1]
+     u2 <- u2[y==1]
+     d <- d[y==1]
+  }
+  return(list(N=N, sigma=sigma, B=B, u1=u1, u2=u2, d=d, y=y, N.real=N.real))
 }
 
 # obtain a data set by distance sampling a population of N=1000
@@ -356,30 +361,30 @@ delta <- 0.5                # Set width of bins
 
 # Begin simulation loop
 for(sim in 1:simrep){
-   tmp <- sim.pdata(N=1000, sigma=1, keep.all=FALSE, B=3)
-   B <- tmp$B
-   d <- tmp$d
-   N.real <- tmp$N.real
+  tmp <- sim.pdata(N=1000, sigma=1, keep.all=FALSE, B=3)
+  B <- tmp$B
+  d <- tmp$d
+  N.real <- tmp$N.real
 
-   # Bin data, tabulate frequencies and pad 0s if necessary
-   dist.breaks <- seq(0, B, delta)
-   dclass <- d%/%delta + 1      # Convert distances to categorical distances
-   nD <- length(dist.breaks) -1 # How many intervals do we have ?
-   y.obs <- table(dclass) # Next pad the frequency vector
-   y.padded <- rep(0, nD)
-   names(y.padded) <- 1:nD
-   y.padded[names(y.obs)] <- y.obs
-   y.obs <- y.padded
+  # Bin data, tabulate frequencies and pad 0s if necessary
+  dist.breaks <- seq(0, B, delta)
+  dclass <- d%/%delta + 1      # Convert distances to categorical distances
+  nD <- length(dist.breaks) -1 # How many intervals do we have ?
+  y.obs <- table(dclass) # Next pad the frequency vector
+  y.padded <- rep(0, nD)
+  names(y.padded) <- 1:nD
+  y.padded[names(y.obs)] <- y.obs
+  y.obs <- y.padded
 
-   # Obtain the MLEs using both models
-   binned.est <- optim(c(2,0), Lik.binned.point, data=y.obs,
+  # Obtain the MLEs using both models
+  binned.est <- optim(c(2,0), Lik.binned.point, data=y.obs,
       dist.breaks=dist.breaks)
-   cont.est <- optim(c(1, 6), Lik.cont.point, data=d, B=B, hessian=TRUE)
-   Nhat.binned <- length(d) + exp(binned.est$par[2])
-   Nhat.cont <- length(d) + exp(cont.est$par[2])
+  cont.est <- optim(c(1, 6), Lik.cont.point, data=d, B=B, hessian=TRUE)
+  Nhat.binned <- length(d) + exp(binned.est$par[2])
+  Nhat.cont <- length(d) + exp(cont.est$par[2])
 
-   # Store things in a matrix
-   simout[sim,] <- c(N.real, Nhat.binned, Nhat.cont)
+  # Store things in a matrix
+  simout[sim,] <- c(N.real, Nhat.binned, Nhat.cont)
 }
 
 # Now summarize the output

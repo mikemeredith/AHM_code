@@ -2,8 +2,11 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 8. Modeling abundance using hierarchical distance sampling (HDS)
 # =========================================================================
+
+# Approximate execution time for this code: 45 mins
 
 library(AHMbook)
 library(R2WinBUGS)
@@ -12,14 +15,12 @@ bd <- "C:/WinBUGS14" # Never forget this for WinBUGS
 # 8.5 Bayesian HDS
 # ================
 
-
 # 8.5.1 Simulating some HDS data
 # ------------------------------------------------------------------------
 set.seed(1234)
 tmp1 <- simHDS("point")   # Point transect
 tmp2 <- simHDS()          # Line transect (this is the default)
 str(tmp1)                 # Look at function output
-
 
 # 8.5.2 Bayesian HDS using data augmentation
 # ------------------------------------------------------------------------
@@ -37,47 +38,48 @@ site <- c(data[,1], rep(NA, nz)) # Augmented site indicator,
 d <- c(data[,5], rep(NA,nz))     # Augmented distance data (with NAs)
 
 # Bundle and summarize data set
-str( win.data <- list(nsites=nsites, habitat=habitat, wind=wind, B=B, nind=nind, nz=nz, y=y, d=d, site=site) )
+str( win.data <- list(nsites=nsites, habitat=habitat, wind=wind, B=B,
+    nind=nind, nz=nz, y=y, d=d, site=site) )
 win.data$site                    # unknown site cov. for augmented inds.
 
 
 # BUGS model for line transect HDS (NOT point transects!)
 cat("
 model{
-# Prior distributions
-beta0 ~ dunif(-10,10)   # Intercept of lambda-habitat regression
-beta1 ~ dunif(-10,10)   # Slope of log(lambda) on habitat
-alpha0 ~ dunif(-10,10)  # Intercept of log(sigma) (half-normal scale)
-alpha1 ~ dunif(-10,10)  # Slope of log(sigma) on wind
+  # Prior distributions
+  beta0 ~ dunif(-10,10)   # Intercept of lambda-habitat regression
+  beta1 ~ dunif(-10,10)   # Slope of log(lambda) on habitat
+  alpha0 ~ dunif(-10,10)  # Intercept of log(sigma) (half-normal scale)
+  alpha1 ~ dunif(-10,10)  # Slope of log(sigma) on wind
 
-# psi is a derived parameter under DA for stratified populations
-psi <- sum(lambda[]) / (nind+nz)
+  # psi is a derived parameter under DA for stratified populations
+  psi <- sum(lambda[]) / (nind+nz)
 
-# 'Likelihood' (sort of...)
-for(i in 1:(nind+nz)){                 # i is index for individuals
-  z[i] ~ dbern(psi)                    # Data augmentation variables
-  d[i] ~ dunif(0, B)                   # distance uniformly distributed
-  p[i] <- exp(-d[i]*d[i]/(2*sigma[site[i]]*sigma[site[i]])) # Det. function
-  mu[i] <- z[i]* p[i]                  # 'straw man' for WinBUGS
-  y[i] ~ dbern(mu[i])                  # basic Bernoulli random variable
-  site[i] ~ dcat(site.probs[1:nsites]) # Population distribution among sites
-}
+  # 'Likelihood' (sort of...)
+  for(i in 1:(nind+nz)){                 # i is index for individuals
+    z[i] ~ dbern(psi)                    # Data augmentation variables
+    d[i] ~ dunif(0, B)                   # distance uniformly distributed
+    p[i] <- exp(-d[i]*d[i]/(2*sigma[site[i]]*sigma[site[i]])) # Det. function
+    mu[i] <- z[i]* p[i]                  # 'straw man' for WinBUGS
+    y[i] ~ dbern(mu[i])                  # basic Bernoulli random variable
+    site[i] ~ dcat(site.probs[1:nsites]) # Population distribution among sites
+  }
 
-# Linear models for abundance and for detection
-for(s in 1:nsites){                    # s is index for sites
-  # Model for abundance
-  # next line not necessary, but allows to make predictions
-  N[s] ~ dpois(lambda[s])              # Realized abundance at site s
-  log(lambda[s]) <- beta0 + beta1*habitat[s] # Linear model abundance
-  site.probs[s] <- lambda[s] / sum(lambda[])
+  # Linear models for abundance and for detection
+  for(s in 1:nsites){                    # s is index for sites
+    # Model for abundance
+    # next line not necessary, but allows to make predictions
+    N[s] ~ dpois(lambda[s])              # Realized abundance at site s
+    log(lambda[s]) <- beta0 + beta1*habitat[s] # Linear model abundance
+    site.probs[s] <- lambda[s] / sum(lambda[])
 
-  # Linear model for detection
-   log(sigma[s]) <- alpha0 + alpha1*wind[s]
-}
-# Derived parameter: total population size across all sites
-Ntotal <- sum(z[])
-area<- nsites*1*2*B   # Unit length == 1, half-width = B
-D<- Ntotal/area
+    # Linear model for detection
+     log(sigma[s]) <- alpha0 + alpha1*wind[s]
+  }
+  # Derived parameter: total population size across all sites
+  Ntotal <- sum(z[])
+  area<- nsites*1*2*B   # Unit length == 1, half-width = B
+  D<- Ntotal/area
 }
 ",fill=TRUE , file = "model1.txt")
 
@@ -115,47 +117,48 @@ dclass <- d %/% delta + 1       # convert distances to cat. distances
 nD <- length(midpt)             # Number of distance intervals
 
 # Bundle and summarize data set
-str( win.data <- list (y=y, dclass=dclass, site=site, midpt=midpt, delta=delta, B=B, nind=nind, nz=nz, nsites=nsites, nD=nD, habitat=habitat, wind=wind) )
+str( win.data <- list (y=y, dclass=dclass, site=site, midpt=midpt, delta=delta,
+    B=B, nind=nind, nz=nz, nsites=nsites, nD=nD, habitat=habitat, wind=wind) )
 
 
 # BUGS model specification for line-transect HDS (NOT point transects!)
 cat("
 model{
-# Prior distributions
-alpha0 ~ dunif(-10,10)
-alpha1 ~ dunif(-10,10)
-beta0 ~ dunif(-10,10)
-beta1 ~ dunif(-10,10)
+  # Prior distributions
+  alpha0 ~ dunif(-10,10)
+  alpha1 ~ dunif(-10,10)
+  beta0 ~ dunif(-10,10)
+  beta1 ~ dunif(-10,10)
 
-psi <- sum(lambda[])/(nind+nz)     # psi is a derived parameter
+  psi <- sum(lambda[])/(nind+nz)     # psi is a derived parameter
 
-for(i in 1:(nind+nz)){             # Loop over individuals
-   z[i] ~ dbern(psi)               # DA variables
-   dclass[i] ~ dcat(pi[site[i],])  # Population distribution of dist class
-   mu[i] <- z[i] * p[site[i],dclass[i]] # p depends on site AND dist class
-   y[i] ~ dbern(mu[i])             # Basic Bernoulli response in DS model
-   site[i] ~ dcat(site.probs[1:nsites]) # Site membership of inds
-}
+  for(i in 1:(nind+nz)){             # Loop over individuals
+    z[i] ~ dbern(psi)               # DA variables
+    dclass[i] ~ dcat(pi[site[i],])  # Population distribution of dist class
+    mu[i] <- z[i] * p[site[i],dclass[i]] # p depends on site AND dist class
+    y[i] ~ dbern(mu[i])             # Basic Bernoulli response in DS model
+    site[i] ~ dcat(site.probs[1:nsites]) # Site membership of inds
+  }
 
-for(s in 1:nsites){                # Loop over sites
-# Construct cell probabilities for nG cells
-for(g in 1:nD){                    # midpt = mid point of each cell
-   log(p[s,g]) <- -midpt[g]*midpt[g]/(2*sigma[s]*sigma[s])
-   pi[s,g] <- delta/B              # probability of x per interval
-   f[s,g] <- p[s,g]*pi[s,g]        # pdf of observed distances
-}
+  for(s in 1:nsites){                # Loop over sites
+    # Construct cell probabilities for nG cells
+    for(g in 1:nD){                    # midpt = mid point of each cell
+      log(p[s,g]) <- -midpt[g]*midpt[g]/(2*sigma[s]*sigma[s])
+      pi[s,g] <- delta/B              # probability of x per interval
+      f[s,g] <- p[s,g]*pi[s,g]        # pdf of observed distances
+    }
 
-   # not necessary   N[s]~dpois(lambda[s]) except for prediction
-   N[s] ~ dpois(lambda[s])        # predict abundance at each site
-   log(lambda[s]) <- beta0 + beta1 * habitat[s] # linear model for N
-   site.probs[s] <- lambda[s]/sum(lambda[])
-   log(sigma[s]) <- alpha0 + alpha1*wind[s] # linear model for sigma
-}
+    # not necessary   N[s]~dpois(lambda[s]) except for prediction
+    N[s] ~ dpois(lambda[s])        # predict abundance at each site
+    log(lambda[s]) <- beta0 + beta1 * habitat[s] # linear model for N
+    site.probs[s] <- lambda[s]/sum(lambda[])
+    log(sigma[s]) <- alpha0 + alpha1*wind[s] # linear model for sigma
+  }
 
-# Derived parameter
-Ntotal <- sum(z[])   # Also sum(N[]) which is size of a new population
-area<- nsites*1*2*B  # Unit length == 1, half-width = B
-D<- Ntotal/area
+  # Derived parameter
+  Ntotal <- sum(z[])   # Also sum(N[]) which is size of a new population
+  area <- nsites*1*2*B  # Unit length == 1, half-width = B
+  D <- Ntotal/area
 }
 ",fill=TRUE, file = "model2.txt")
 
@@ -199,43 +202,44 @@ dclass <- dclass[!is.na(data[,2])] # Observed categorical observations
 nind <- length(dclass)             # Total number of individuals detected
 
 # Bundle and summarize data set
-str( win.data <- list(nsites=nsites, nind=nind, B=B, nD=nD, midpt=midpt, delta=delta, ncap=ncap, habitat=habitat, wind=wind, dclass=dclass, site=site) )
+str( win.data <- list(nsites=nsites, nind=nind, B=B, nD=nD, midpt=midpt,
+    delta=delta, ncap=ncap, habitat=habitat, wind=wind, dclass=dclass,
+    site=site) )
 
 # BUGS model specification for line-transect HDS (NOT point transects!)
 cat("
 model{
 # Priors
-alpha0 ~ dunif(-10,10)
-alpha1 ~ dunif(-10,10)
-beta0 ~ dunif(-10,10)
-beta1 ~ dunif(-10,10)
+  alpha0 ~ dunif(-10,10)
+  alpha1 ~ dunif(-10,10)
+  beta0 ~ dunif(-10,10)
+  beta1 ~ dunif(-10,10)
 
-for(i in 1:nind){
-   dclass[i] ~ dcat(fc[site[i],]) # Part 1 of HM
-}
-
-for(s in 1:nsites){
-# Construct cell probabilities for nD multinomial cells
-  for(g in 1:nD){                 # midpt = mid-point of each cell
-    log(p[s,g]) <- -midpt[g] * midpt[g] / (2*sigma[s]*sigma[s])
-    pi[s,g] <- delta / B          # probability per interval
-    f[s,g] <- p[s,g] * pi[s,g]
-    fc[s,g] <- f[s,g] / pcap[s]
+  for(i in 1:nind){
+    dclass[i] ~ dcat(fc[site[i],]) # Part 1 of HM
   }
-  pcap[s] <- sum(f[s,])           # Pr(capture): sum of rectangular areas
 
-  ncap[s] ~ dbin(pcap[s], N[s])   # Part 2 of HM
-  N[s] ~ dpois(lambda[s])         # Part 3 of HM
-  log(lambda[s]) <- beta0 + beta1 * habitat[s] # linear model abundance
-  log(sigma[s])<- alpha0 + alpha1*wind[s]      # linear model detection
-}
-# Derived parameters
-Ntotal <- sum(N[])
-area<- nsites*1*2*B  # Unit length == 1, half-width = B
-D<- Ntotal/area
+  for(s in 1:nsites){
+    # Construct cell probabilities for nD multinomial cells
+    for(g in 1:nD){                 # midpt = mid-point of each cell
+      log(p[s,g]) <- -midpt[g] * midpt[g] / (2*sigma[s]*sigma[s])
+      pi[s,g] <- delta / B          # probability per interval
+      f[s,g] <- p[s,g] * pi[s,g]
+      fc[s,g] <- f[s,g] / pcap[s]
+    }
+    pcap[s] <- sum(f[s,])           # Pr(capture): sum of rectangular areas
+
+    ncap[s] ~ dbin(pcap[s], N[s])   # Part 2 of HM
+    N[s] ~ dpois(lambda[s])         # Part 3 of HM
+    log(lambda[s]) <- beta0 + beta1 * habitat[s] # linear model abundance
+    log(sigma[s])<- alpha0 + alpha1*wind[s]      # linear model detection
+  }
+  # Derived parameters
+  Ntotal <- sum(N[])
+  area<- nsites*1*2*B  # Unit length == 1, half-width = B
+  D<- Ntotal/area
 }
 ",fill=TRUE, file = "model3.txt")
-
 
 # Inits
 Nst <- ncap + 1
@@ -280,41 +284,41 @@ nind <- length(dclass)             # Total number of individuals detected
 
 # Bundle and summarize data set
 str( win.data <- list(nsites=nsites, nind=nind, B=B, nD=nD, midpt=midpt,
-delta=delta, ncap=ncap, habitat=habitat, wind=wind, dclass=dclass,
-site=site) )
+    delta=delta, ncap=ncap, habitat=habitat, wind=wind, dclass=dclass,
+    site=site) )
 
 # BUGS model specification for point transect data
 cat("
 model{
-# Priors
-alpha0 ~ dunif(-10,10)
-alpha1 ~ dunif(-10,10)
-beta0 ~ dunif(-10,10)
-beta1 ~ dunif(-10,10)
+  # Priors
+  alpha0 ~ dunif(-10,10)
+  alpha1 ~ dunif(-10,10)
+  beta0 ~ dunif(-10,10)
+  beta1 ~ dunif(-10,10)
 
-for(i in 1:nind){
-  dclass[i] ~ dcat(fc[site[i],]) # Part 1 of HM
-}
-for(s in 1:nsites){
-  # Construct cell probabilities for nD distance bands
-  for(g in 1:nD){                # midpt = mid-point of each band
-    log(p[s,g]) <- -midpt[g] * midpt[g] / (2 * sigma[s] * sigma[s])
-    pi[s,g] <- ((2 * midpt[g] ) / (B * B)) * delta # prob. per interval
-    f[s,g] <- p[s,g] * pi[s,g]
-    fc[s,g] <- f[s,g] / pcap[s]
+  for(i in 1:nind){
+    dclass[i] ~ dcat(fc[site[i],]) # Part 1 of HM
   }
-  pcap[s] <- sum(f[s,])           # Pr(capture): sum of rectangular areas
+  for(s in 1:nsites){
+    # Construct cell probabilities for nD distance bands
+    for(g in 1:nD){                # midpt = mid-point of each band
+      log(p[s,g]) <- -midpt[g] * midpt[g] / (2 * sigma[s] * sigma[s])
+      pi[s,g] <- ((2 * midpt[g] ) / (B * B)) * delta # prob. per interval
+      f[s,g] <- p[s,g] * pi[s,g]
+      fc[s,g] <- f[s,g] / pcap[s]
+    }
+    pcap[s] <- sum(f[s,])           # Pr(capture): sum of rectangular areas
 
-  ncap[s] ~ dbin(pcap[s], N[s])   # Part 2 of HM
-  N[s] ~ dpois(lambda[s])         # Part 3 of HM
-  log(lambda[s]) <- beta0 + beta1 * habitat[s] # linear model abundance
-  log(sigma[s]) <- alpha0 + alpha1*wind[s]     # linear model detection
-}
+    ncap[s] ~ dbin(pcap[s], N[s])   # Part 2 of HM
+    N[s] ~ dpois(lambda[s])         # Part 3 of HM
+    log(lambda[s]) <- beta0 + beta1 * habitat[s] # linear model abundance
+    log(sigma[s]) <- alpha0 + alpha1*wind[s]     # linear model detection
+  }
 
-# Derived parameters
-Ntotal <- sum(N[])
-area <- nsites*3.141*B*B
-D <- Ntotal/area
+  # Derived parameters
+  Ntotal <- sum(N[])
+  area <- nsites*3.141*B*B
+  D <- Ntotal/area
 }
 ",fill=TRUE, file="model4.txt")
 
@@ -365,54 +369,57 @@ chaparral <- as.vector(scale(issj[,"chaparral"]))
 
 # Bundle and summarize data set
 str( win.data <- list(nsites=nsites, nind=nind, B=B, nD=nD, midpt=midpt,
-delta=delta, ncap=ncap, chaparral=chaparral, elevation=elevation, dclass=dclass) )
+    delta=delta, ncap=ncap, chaparral=chaparral, elevation=elevation,
+    dclass=dclass) )
 
 # BUGS model specification
 cat("
 model{
-# Priors
-sigma ~ dunif(0,1000)
-beta0 ~ dunif(-10,10)
-beta1 ~ dunif(-10,10)
-beta2 ~ dunif(-10,10)
-beta3 ~ dunif(-10,10)
-sigma.site ~ dunif(0,10)
-tau <- 1/(sigma.site*sigma.site)
+  # Priors
+  sigma ~ dunif(0,1000)
+  beta0 ~ dunif(-10,10)
+  beta1 ~ dunif(-10,10)
+  beta2 ~ dunif(-10,10)
+  beta3 ~ dunif(-10,10)
+  sigma.site ~ dunif(0,10)
+  tau <- 1/(sigma.site*sigma.site)
 
-# Specify hierarchical model
-for(i in 1:nind){
-   dclass[i] ~ dcat(fc[]) # Part 1 of HM
-}
+  # Specify hierarchical model
+  for(i in 1:nind){
+    dclass[i] ~ dcat(fc[]) # Part 1 of HM
+  }
 
-# construct cell probabilities for nG cells
-for(g in 1:nD){                # midpt = mid-point of each cell
-  log(p[g]) <- -midpt[g] * midpt[g] / (2 * sigma * sigma)
-  pi[g] <- ((2 * midpt[g]) / (B * B)) * delta # prob. per interval
-  f[g] <- p[g] * pi[g]
-  fc[g] <- f[g] / pcap
-}
-pcap <- sum(f[])               # Pr(capture): sum of rectangular areas
+  # construct cell probabilities for nG cells
+  for(g in 1:nD){                # midpt = mid-point of each cell
+    log(p[g]) <- -midpt[g] * midpt[g] / (2 * sigma * sigma)
+    pi[g] <- ((2 * midpt[g]) / (B * B)) * delta # prob. per interval
+    f[g] <- p[g] * pi[g]
+    fc[g] <- f[g] / pcap
+  }
+  pcap <- sum(f[])               # Pr(capture): sum of rectangular areas
 
-for(s in 1:nsites){
-  ncap[s] ~ dbin(pcap, N[s])   # Part 2 of HM
-  N[s] ~ dpois(lambda[s])      # Part 3 of HM
-  log(lambda[s]) <- beta0 + beta1*elevation[s] + beta2*chaparral[s] + beta3*chaparral[s]*chaparral[s] + site.eff[s] # linear model for abundance
-  site.eff[s] ~ dnorm(0, tau)   # Site log-normal 'residuals'
-}
-# Derived params
-Ntotal <- sum(N[])
-area<- nsites*3.141*300*300/10000   # Total area sampled, ha
-D<- Ntotal/area
+  for(s in 1:nsites){
+    ncap[s] ~ dbin(pcap, N[s])   # Part 2 of HM
+    N[s] ~ dpois(lambda[s])      # Part 3 of HM
+    log(lambda[s]) <- beta0 + beta1*elevation[s] + beta2*chaparral[s] + beta3*chaparral[s]*chaparral[s] + site.eff[s] # linear model for abundance
+    site.eff[s] ~ dnorm(0, tau)   # Site log-normal 'residuals'
+  }
+  # Derived params
+  Ntotal <- sum(N[])
+  area <- nsites*3.141*300*300/10000   # Total area sampled, ha
+  D <- Ntotal/area
 }
 ",fill=TRUE, file="model5.txt")
 
 
 # Inits
 Nst <- ncap + 1
-inits <- function(){list (sigma = runif(1, 30, 100), beta0 = 0, beta1 = 0, beta2 = 0, beta3 = 0, N = Nst, sigma.site = 0.2)}
+inits <- function(){list (sigma = runif(1, 30, 100), beta0 = 0, beta1 = 0,
+    beta2 = 0, beta3 = 0, N = Nst, sigma.site = 0.2)}
 
 # Params to save
-params <- c("sigma", "beta0", "beta1", "beta2", "beta3", "sigma.site", "Ntotal","D")
+params <- c("sigma", "beta0", "beta1", "beta2", "beta3", "sigma.site",
+    "Ntotal","D")
 
 # MCMC settings
 # ni <- 52000   ;   nb <- 2000   ;   nt <- 2   ;   nc <- 3

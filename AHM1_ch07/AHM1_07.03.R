@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 7. Modeling abundance using multinomial N-mixture models
 # =========================================================================
 
@@ -57,8 +58,8 @@ dhfreq <- array(NA, dim = c(data$nsite, 7),
   dimnames = list(NULL, c("100", "010", "001", "110", "101", "011", "111")))
 for(i in 1:data$nsite){
   dhfreq[i,] <- table(factor(paste(data$DH[i,1,], data$DH[i,2,],
-  data$DH[i,3,], sep = ""),
-  levels = c("100", "010", "001", "110", "101", "011", "111")))
+      data$DH[i,3,], sep = ""),
+      levels = c("100", "010", "001", "110", "101", "011", "111")))
 }
 
 head(dhfreq)      # Data for first 6 sites

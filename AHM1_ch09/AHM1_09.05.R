@@ -2,8 +2,11 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 9. Advanced Hierarchical Distance Sampling
 # =========================================================================
+
+# Approximate execution time for this code: 1.9 hrs
 
 library(AHMbook)
 library(unmarked)
@@ -34,8 +37,10 @@ breaks <- wagtail$breaks
 
 # Look at the distance data
 str(Y)
-tmp <- apply(Y, 2, sum, na.rm = T)
-matplot(1:6, t(matrix(tmp, nrow = 4, byrow= T)), type = "b", ylim = c(0, 90), xlab = "Distance class", ylab = "Number of wagtails", frame = F, lwd = 3, lty = 1)
+tmp <- apply(Y, 2, sum, na.rm = TRUE)
+matplot(1:6, t(matrix(tmp, nrow = 4, byrow= TRUE)), type = "b", ylim = c(0, 90),
+    xlab = "Distance class", ylab = "Number of wagtails", frame = FALSE,
+    lwd = 3, lty = 1)
 
 # Standardize all continuous covariates
 mn.potato <- mean(potato)   ;   sd.potato <- sd(potato)
@@ -82,8 +87,10 @@ backTransform(fm0.haz, type="lambda")
 
 backTransform(fm0.haz, type="det")
 
-# plot(1:300, gxhaz(1:300, shape = exp(5.13), scale=1.59), frame = F, type = "l", xlab = "Distance Wagtail–Observer (metres)", ylab = "Detection probability", lwd=3)
-plot(1:300, gxhaz(1:300, shape = exp(5.13), scale=exp(1.59)), frame = F, type = "l", xlab = "Distance Wagtail–Observer (metres)", ylab = "Detection probability", lwd=3)
+# plot(1:300, gxhaz(1:300, shape = exp(5.13), scale=1.59), frame = FALSE, type = "l", xlab = "Distance Wagtail–Observer (metres)", ylab = "Detection probability", lwd=3)
+plot(1:300, gxhaz(1:300, shape = exp(5.13), scale=exp(1.59)), frame = FALSE,
+    type = "l", xlab = "Distance Wagtail–Observer (metres)",
+    ylab = "Detection probability", lwd=3)
 # See errata, 8 Nov 2018
 
 # Model with time-dependent phi
@@ -134,7 +141,8 @@ summary(fm3 <- gdistsamp(lambdaformula = ~ POTATO+GRASS+LSCALE,
 #     and, in addition, date and hour on detection
 # linear effects on detection
 tmp <- fm3@estimates@estimates
-starts <- c(tmp$lambda@estimates, tmp$phi@estimates, tmp$det@estimates, 0, 0, tmp$scale@estimates)
+starts <- c(tmp$lambda@estimates, tmp$phi@estimates, tmp$det@estimates,
+    0, 0, tmp$scale@estimates)
 summary(fm4A <- gdistsamp(lambdaformula = ~ POTATO+GRASS+LSCALE,
    phiformula = ~(rep-1)+ POTATO+GRASS+LSCALE, pformula = ~ DATE + HOUR,
    keyfun = "haz", output = "density", unitsOut = "ha",
@@ -187,39 +195,48 @@ set.seed(1234)
 newdat1 <- data.frame(POTATO=0, GRASS=0, LSCALE = seq(-1.8,4.33,,100))
 newdat2 <- data.frame(POTATO=seq(-0.75,3,,100), GRASS=0, LSCALE = 0)
 newdat3 <- data.frame(POTATO=0, GRASS=seq(-0.4, 3.6,,100), LSCALE = 0)
-pred1 <- predict(fm5, type="lambda", newdata=newdat1, append = T)
-pred2 <- predict(fm5, type="lambda", newdata=newdat2, append = T)
-pred3 <- predict(fm5, type="lambda", newdata=newdat3, append = T)
+pred1 <- predict(fm5, type="lambda", newdata=newdat1, append = TRUE)
+pred2 <- predict(fm5, type="lambda", newdata=newdat2, append = TRUE)
+pred3 <- predict(fm5, type="lambda", newdata=newdat3, append = TRUE)
 
 # Predictions of phi for POTATO, GRASS and LSCALE and for rep = 1
-newdat4 <- data.frame(rep = factor('1', levels = c('1','2','3','4')), POTATO=0, GRASS=0, LSCALE = seq(-1.8,4.33,,100))
-newdat5 <- data.frame(rep = factor('1', levels = c('1','2','3','4')), POTATO=seq(-0.75,3,,100), GRASS=0, LSCALE = 0)
-newdat6 <- data.frame(rep = factor('1', levels = c('1','2','3','4')), POTATO=0, GRASS=seq(-0.4, 3.6,,100), LSCALE = 0)
-pred4 <- predict(fm5, type="phi", newdata=newdat4, append = T)
-pred5 <- predict(fm5, type="phi", newdata=newdat5, append = T)
-pred6 <- predict(fm5, type="phi", newdata=newdat6, append = T)
+newdat4 <- data.frame(rep = factor('1', levels = c('1','2','3','4')),
+    POTATO=0, GRASS=0, LSCALE = seq(-1.8,4.33,,100))
+newdat5 <- data.frame(rep = factor('1', levels = c('1','2','3','4')),
+    POTATO=seq(-0.75,3,,100), GRASS=0, LSCALE = 0)
+newdat6 <- data.frame(rep = factor('1', levels = c('1','2','3','4')),
+    POTATO=0, GRASS=seq(-0.4, 3.6,,100), LSCALE = 0)
+pred4 <- predict(fm5, type="phi", newdata=newdat4, append = TRUE)
+pred5 <- predict(fm5, type="phi", newdata=newdat5, append = TRUE)
+pred6 <- predict(fm5, type="phi", newdata=newdat6, append = TRUE)
 
 # Predictions of detection function sigma for DATE and HOUR
 newdat7 <- data.frame(DATE = seq(-1.51,1.69,,100), HOUR = 0)
 newdat8 <- data.frame(DATE=0, HOUR = seq(-1.92,3.1,,100))
-pred7 <- predict(fm5, type="det", newdata=newdat7, append = T)
-pred8 <- predict(fm5, type="det", newdata=newdat8, append = T)
+pred7 <- predict(fm5, type="det", newdata=newdat7, append = TRUE)
+pred8 <- predict(fm5, type="det", newdata=newdat8, append = TRUE)
 
-par(mfrow = c(1,3), mar = c(5,5,2,2), cex.lab = 1.5, cex.axis = 1.5)
-plot(newdat1$LSCALE, pred1[,1], xlab="Standardized covariate", ylab="Density (birds/ha)", lwd=3,type="l", frame = F)
+op <- par(mfrow = c(1,3), mar = c(5,5,2,2), cex.lab = 1.5, cex.axis = 1.5)
+plot(newdat1$LSCALE, pred1[,1], xlab="Standardized covariate",
+    ylab="Density (birds/ha)", lwd=3,type="l", frame = FALSE)
 lines(newdat2$POTATO, pred2[,1], lwd=3, col="red")
 lines(newdat3$GRASS, pred3[,1], lwd=3, col="blue")
-legend(-1.6, 1.65, c("LSCALE", "POTATO", "GRASS"), col=c("black", "red", "blue"), lty=1, lwd=3, cex=1.2)
+legend(-1.6, 1.65, c("LSCALE", "POTATO", "GRASS"),
+    col=c("black", "red", "blue"), lty=1, lwd=3, cex=1.2)
 
-plot(newdat4$LSCALE, pred4[,1], xlab="Standardized covariate", ylab="Availability (phi)", lwd=3,type="l", frame = F)
+plot(newdat4$LSCALE, pred4[,1], xlab="Standardized covariate",
+    ylab="Availability (phi)", lwd=3,type="l", frame = FALSE)
 lines(newdat5$POTATO, pred5[,1], lwd=3, col="red")
 lines(newdat6$GRASS, pred6[,1], lwd=3, col="blue")
-legend(2, 0.65, c("LSCALE", "POTATO", "GRASS"), col=c("black", "red", "blue"), lty=1, lwd=3, cex=1.2)
+legend(2, 0.65, c("LSCALE", "POTATO", "GRASS"),
+    col=c("black", "red", "blue"), lty=1, lwd=3, cex=1.2)
 
-plot(newdat7$DATE, pred7[,1], xlab="Standardized covariate", ylab="Detection function (sigma)", lwd=3,type="l", frame = F, ylim = c(100, 200))
+plot(newdat7$DATE, pred7[,1], xlab="Standardized covariate",
+    ylab="Detection function (sigma)", lwd=3,type="l", frame = FALSE,
+    ylim = c(100, 200))
 lines(newdat8$HOUR, pred8[,1], lwd=3, col="red")
-legend(0.5, 140, c("DATE", "HOUR"), col=c("black", "red"), lty=1, lwd=3, cex=1.2)
-
+legend(0.5, 140, c("DATE", "HOUR"), col=c("black", "red"),
+    lty=1, lwd=3, cex=1.2)
 
 
 # 9.5.4 Fitting temporary emigration HDS models in BUGS
@@ -227,7 +244,9 @@ legend(0.5, 140, c("DATE", "HOUR"), col=c("black", "red"), lty=1, lwd=3, cex=1.2
 
 # 9.5.4.1 Simulating a temporary emigration system
 # ------------------------------------------------------------------------
-simHDSopen(type="line", nsites = 100, mean.lam = 2, beta.lam = 0, mean.sig = 1, beta.sig = 0, B = 3, discard0=TRUE, nreps=2, phi=0.7, nyears=5, beta.trend = 0)
+simHDSopen(type="line", nsites = 100, mean.lam = 2, beta.lam = 0, mean.sig = 1,
+    beta.sig = 0, B = 3, discard0=TRUE, nreps=2, phi=0.7, nyears=5,
+    beta.trend = 0)
 
 # Obtain a temporary emigration data set
 set.seed(1234)
@@ -266,54 +285,54 @@ y3d <- y4d[,,,1]
 
 # Bundle and summarize the data set
 nobs <- apply(y3d, c(1,3), sum)  # Total detections per site and occasion
-str( data <- list(y3d=y3d, nsites=nsites, K=K, nD=nD, midpt=midpt, delta=delta, habitat=habitat, B=B, nobs = nobs) )
+str( data <- list(y3d=y3d, nsites=nsites, K=K, nD=nD, midpt=midpt, delta=delta,
+    habitat=habitat, B=B, nobs = nobs) )
 
 
 # Define model in BUGS
 cat("
 model {
-# Prior distributions
-beta0 ~ dnorm(0, 0.01)  # Intercept for log(lambda)
-mean.lam <- exp(beta0)
-beta1 ~ dnorm(0, 0.01)  # Coefficient of lambda on habitat
-phi ~ dunif(0,1)        # Probability of availability
-sigma ~ dunif(0.01,5)   # Distance function parameter
+  # Prior distributions
+  beta0 ~ dnorm(0, 0.01)  # Intercept for log(lambda)
+  mean.lam <- exp(beta0)
+  beta1 ~ dnorm(0, 0.01)  # Coefficient of lambda on habitat
+  phi ~ dunif(0,1)        # Probability of availability
+  sigma ~ dunif(0.01,5)   # Distance function parameter
 
-# Detection probs for each distance interval and related things
-for(b in 1:nD){
-  log(g[b]) <- -midpt[b]*midpt[b]/(2*sigma*sigma) # half-normal
-  f[b] <- (2*midpt[b]*delta)/(B*B)    # radial density function
-  cellprobs[b] <- g[b]*f[b]
-  cellprobs.cond[b] <- cellprobs[b]/sum(cellprobs[1:nD])
-}
-cellprobs[nD+1]<- 1-sum(cellprobs[1:nD])
+  # Detection probs for each distance interval and related things
+  for(b in 1:nD){
+    log(g[b]) <- -midpt[b]*midpt[b]/(2*sigma*sigma) # half-normal
+    f[b] <- (2*midpt[b]*delta)/(B*B)    # radial density function
+    cellprobs[b] <- g[b]*f[b]
+    cellprobs.cond[b] <- cellprobs[b]/sum(cellprobs[1:nD])
+  }
+  cellprobs[nD+1]<- 1-sum(cellprobs[1:nD])
 
-for (s in 1:nsites) {
-  for (k in 1:K) {
-    pdet[s,k] <- sum(cellprobs[1:nD])   # Distance class probabilities
-    pmarg[s,k] <- pdet[s,k]*phi         # Marginal probability
+  for (s in 1:nsites) {
+    for (k in 1:K) {
+      pdet[s,k] <- sum(cellprobs[1:nD])   # Distance class probabilities
+      pmarg[s,k] <- pdet[s,k]*phi         # Marginal probability
 
-    # Model part 4: distance class frequencies
-    y3d[s,1:nD,k] ~ dmulti(cellprobs.cond[1:nD], nobs[s,k])
-    # Model part 3: total number of detections:
-    nobs[s,k] ~ dbin(pmarg[s,k], M[s])
-    # nobs[s,k] ~ dbin(pdet[s,k], Navail[s,k]) # Alternative formulation
-    # Model part 2: Availability. Not used in this model but simulated.
-    Navail[s,k] ~ dbin(phi, M[s])
-  }  # end k loop
-  # Model part 1: Abundance model
-  M[s] ~ dpois(lambda[s])
-  log(lambda[s]) <- beta0 + beta1*habitat[s]
-}  # End s loop
+      # Model part 4: distance class frequencies
+      y3d[s,1:nD,k] ~ dmulti(cellprobs.cond[1:nD], nobs[s,k])
+      # Model part 3: total number of detections:
+      nobs[s,k] ~ dbin(pmarg[s,k], M[s])
+      # nobs[s,k] ~ dbin(pdet[s,k], Navail[s,k]) # Alternative formulation
+      # Model part 2: Availability. Not used in this model but simulated.
+      Navail[s,k] ~ dbin(phi, M[s])
+    }  # end k loop
+    # Model part 1: Abundance model
+    M[s] ~ dpois(lambda[s])
+    log(lambda[s]) <- beta0 + beta1*habitat[s]
+  }  # End s loop
 
-# Derived quantities
-Mtot <- sum(M[])
-for(k in 1:K){
-  Ntot[k]<- sum(Navail[,k])
-}
+  # Derived quantities
+  Mtot <- sum(M[])
+  for(k in 1:K){
+    Ntot[k]<- sum(Navail[,k])
+  }
 } # End model
 ",file="model.txt")
-
 
 # Assemble the initial values and parameters to save for JAGS
 Navail.st <- apply(y3d, c(1,3),sum)
@@ -347,7 +366,9 @@ truth <- c(tmp$parms[c(1:3,5)], Mtot = sum(tmp$M[,1]),
     Ntot = (apply(tmp$Na.real[,,1],2,sum)))
 
 # Get posterior means and 2.5% and 97.5% percentiles (95% CRI)
-post <- outTE1$summary[c("mean.lam", "beta1", "sigma", "phi", "Mtot", "Ntot[1]", "Ntot[2]", "Ntot[3]" ,"Ntot[4]", "Ntot[5]", "Ntot[6]", "Ntot[7]"), c(1,3,7)]
+post <- outTE1$summary[c("mean.lam", "beta1", "sigma", "phi", "Mtot",
+    "Ntot[1]", "Ntot[2]", "Ntot[3]" ,"Ntot[4]", "Ntot[5]", "Ntot[6]",
+    "Ntot[7]"), c(1,3,7)]
 
 # Table compares truth with posterior mean and 95% CRI from JAGS
 cbind(truth, posterior = round(post, 3))
@@ -376,46 +397,46 @@ str(data <- list(y3d=y3d, nsites=nsites, K=K, nD=nD, midpt=midpt, delta=delta,
 cat("
 model {
 
-# Priors
-# Abundance parameters
-beta0 ~ dnorm(0, 0.01)
-beta1 ~ dnorm(0, 0.01)
+  # Priors
+  # Abundance parameters
+  beta0 ~ dnorm(0, 0.01)
+  beta1 ~ dnorm(0, 0.01)
 
-# Availability parameter
-phi ~ dunif(0,1)
+  # Availability parameter
+  phi ~ dunif(0,1)
 
-# Detection parameter
-sigma ~ dunif(0,500)
+  # Detection parameter
+  sigma ~ dunif(0,500)
 
-# Multinomial cell probabilities
-for(b in 1:nD){
-  log(g[b]) <- -midpt[b]*midpt[b]/(2*sigma*sigma)  # Half-normal model
-  f[b] <- (2*midpt[b]*delta)/(B*B) # Scaled radial density function
-  cellprobs[b] <- g[b]*f[b]
-  cellprobs.cond[b] <- cellprobs[b]/sum(cellprobs[1:nD])
-}
-cellprobs[nD+1] <- 1-sum(cellprobs[1:nD])
+  # Multinomial cell probabilities
+  for(b in 1:nD){
+    log(g[b]) <- -midpt[b]*midpt[b]/(2*sigma*sigma)  # Half-normal model
+    f[b] <- (2*midpt[b]*delta)/(B*B) # Scaled radial density function
+    cellprobs[b] <- g[b]*f[b]
+    cellprobs.cond[b] <- cellprobs[b]/sum(cellprobs[1:nD])
+  }
+  cellprobs[nD+1] <- 1-sum(cellprobs[1:nD])
 
-for (s in 1:nsites) {
-  for (k in 1:K) {
-    # Conditional 4-part version of the model
-    pdet[s,k] <- sum(cellprobs[1:nD])
-    pmarg[s,k] <- pdet[s,k]*phi
-    y3d[s,1:nD,k] ~ dmulti(cellprobs.cond[1:nD], nobs[s,k]) # Part 4: distance
-    nobs[s,k] ~ dbin(pmarg[s,k], M[s])  # Part 3: number of detected individuals
-    Navail[s,k] ~ dbin(phi,M[s])        # Part 2: Number of available individuals
-  }  # end k loop
+  for (s in 1:nsites) {
+    for (k in 1:K) {
+      # Conditional 4-part version of the model
+      pdet[s,k] <- sum(cellprobs[1:nD])
+      pmarg[s,k] <- pdet[s,k]*phi
+      y3d[s,1:nD,k] ~ dmulti(cellprobs.cond[1:nD], nobs[s,k]) # Part 4: distance
+      nobs[s,k] ~ dbin(pmarg[s,k], M[s])  # Part 3: number of detected individuals
+      Navail[s,k] ~ dbin(phi,M[s])        # Part 2: Number of available individuals
+    }  # end k loop
 
-M[s] ~ dpois(lambda[s])    #  Part 1: Abundance model
-log(lambda[s]) <- beta0    #  Habitat variables would go here
-}  # end s loop
+  M[s] ~ dpois(lambda[s])    #  Part 1: Abundance model
+  log(lambda[s]) <- beta0    #  Habitat variables would go here
+  }  # end s loop
 
-# Derived quantities
-for(k in 1:K){
-  Davail[k] <- phi*exp(beta0)/area
-}
-Mtotal <- sum(M[])
-Dtotal<- exp(beta0)/area
+  # Derived quantities
+  for(k in 1:K){
+    Davail[k] <- phi*exp(beta0)/area
+  }
+  Mtotal <- sum(M[])
+  Dtotal<- exp(beta0)/area
 } # end model
 ",fill=TRUE,file="wagtail.txt")
 
@@ -432,8 +453,10 @@ ni <- 12000   ;   nb <- 2000   ;   nt <- 2   ;   nc <- 3
 
 # Run JAGS (ART 3 min)
 library("jagsUI")
-wag1 <- jags(data, inits, params, "wagtail.txt", n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni, parallel = TRUE)
-par(mfrow = c(3,3))    ;   traceplot(wag1)
+wag1 <- jags(data, inits, params, "wagtail.txt", n.thin=nt,
+    n.chains=nc, n.burnin=nb, n.iter=ni, parallel = TRUE)
+op <- par(mfrow = c(3,3))    ;   traceplot(wag1)
+par(op)
 summary(wag1)
 
 exp(-2.06)
@@ -442,86 +465,90 @@ exp(-2.06)
 # Bundle and summmarize data set for BUGS
 rep <- matrix(as.numeric(rep), ncol=4)
 area <- pi*(300^2)/10000
-str(data <- list(y3d=y3d, nsites=nsites, K=K, nD=nD, midpt = midpt, delta=delta, B=B, nobs=nobs, POTATO=POTATO, GRASS=GRASS, LSCALE=LSCALE, rep=rep, DATE=DATE,
-HOUR=HOUR, area=area))
+str(data <- list(y3d=y3d, nsites=nsites, K=K, nD=nD, midpt = midpt,
+    delta=delta, B=B, nobs=nobs, POTATO=POTATO, GRASS=GRASS, LSCALE=LSCALE,
+    rep=rep, DATE=DATE, HOUR=HOUR, area=area))
 
 # Define model in BUGS
 cat("
 model {
 
-# Priors
-# Abundance parameters
-beta0 ~ dnorm(0, 0.01)
-beta1 ~ dnorm(0, 0.01)
-beta2 ~ dnorm(0, 0.01)
-beta3 ~ dnorm(0, 0.01)
+  # Priors
+  # Abundance parameters
+  beta0 ~ dnorm(0, 0.01)
+  beta1 ~ dnorm(0, 0.01)
+  beta2 ~ dnorm(0, 0.01)
+  beta3 ~ dnorm(0, 0.01)
 
-# Availability parameters
-phi0 ~ dunif(0,1)
-logit.phi0 <- log(phi0/(1-phi0))
-for(k in 1:4){
-  gamma1[k] ~ dunif(0, 1) # Availability effects of surveys 1 - 4
-  logit.gamma1[k]<- log(gamma1[k]/(1-gamma1[k]))
-}
-gamma2 ~ dnorm(0, 0.01)
-gamma3 ~ dnorm(0, 0.01)
-gamma4 ~ dnorm(0, 0.01)
+  # Availability parameters
+  phi0 ~ dunif(0,1)
+  logit.phi0 <- log(phi0/(1-phi0))
+  for(k in 1:4){
+    gamma1[k] ~ dunif(0, 1) # Availability effects of surveys 1 - 4
+    logit.gamma1[k]<- log(gamma1[k]/(1-gamma1[k]))
+  }
+  gamma2 ~ dnorm(0, 0.01)
+  gamma3 ~ dnorm(0, 0.01)
+  gamma4 ~ dnorm(0, 0.01)
 
-# Detection parameters
-sigma0 ~ dunif(0.1,500)   # Intercept
-alpha2 ~ dnorm(0, 0.01)   # effect of DATE (linear)
-alpha3 ~ dnorm(0, 0.01)   # effect of DATE (squared)
-alpha4 ~ dnorm(0, 0.01)   # effect of HOUR
-theta ~ dgamma(0.1, 0.1)
-r ~ dunif(0, 10)
+  # Detection parameters
+  sigma0 ~ dunif(0.1,500)   # Intercept
+  alpha2 ~ dnorm(0, 0.01)   # effect of DATE (linear)
+  alpha3 ~ dnorm(0, 0.01)   # effect of DATE (squared)
+  alpha4 ~ dnorm(0, 0.01)   # effect of HOUR
+  theta ~ dgamma(0.1, 0.1)
+  r ~ dunif(0, 10)
 
-for (s in 1:nsites) {
-  for (k in 1:K) {
-    # Availability parameter
-    logit.phi[s,k] <- logit.gamma1[k] + gamma2*POTATO[s] + gamma3*GRASS[s] + gamma4*LSCALE[s]
-    phi[s,k] <- exp(logit.phi[s,k])/(1+ exp(logit.phi[s,k]))
-    # Distance sampling parameter
-    log(sigma[s,k]) <- log(sigma0) + alpha2*DATE[s,k] + alpha3*pow(HOUR[s,k],2) + alpha4*HOUR[s,k]
-    # Multinomial cell probability construction
-    for(b in 1:nD){
-      #log(g[s,b,k]) <- -midpt[b]*midpt[b]/(2*sigma[s,k]*sigma[s,k]) # half-normal
-      cloglog(g[s,b,k]) <- theta*log(sigma[s,k])  - theta*log(midpt[b])  # hazard
-      f[s,b,k] <- (2*midpt[b]*delta)/(B*B)
-      cellprobs[s,b,k] <- g[s,b,k]*f[s,b,k]
-      cellprobs.cond[s,b,k] <- cellprobs[s,b,k]/sum(cellprobs[s,1:nD,k])
-    }
-    cellprobs[s,nD+1,k]<- 1-sum(cellprobs[s,1:nD,k])
+  for (s in 1:nsites) {
+    for (k in 1:K) {
+      # Availability parameter
+      logit.phi[s,k] <- logit.gamma1[k] + gamma2*POTATO[s] + gamma3*GRASS[s] + gamma4*LSCALE[s]
+      phi[s,k] <- exp(logit.phi[s,k])/(1+ exp(logit.phi[s,k]))
+      # Distance sampling parameter
+      log(sigma[s,k]) <- log(sigma0) + alpha2*DATE[s,k] + alpha3*pow(HOUR[s,k],2) + alpha4*HOUR[s,k]
+      # Multinomial cell probability construction
+      for(b in 1:nD){
+        #log(g[s,b,k]) <- -midpt[b]*midpt[b]/(2*sigma[s,k]*sigma[s,k]) # half-normal
+        cloglog(g[s,b,k]) <- theta*log(sigma[s,k])  - theta*log(midpt[b])  # hazard
+        f[s,b,k] <- (2*midpt[b]*delta)/(B*B)
+        cellprobs[s,b,k] <- g[s,b,k]*f[s,b,k]
+        cellprobs.cond[s,b,k] <- cellprobs[s,b,k]/sum(cellprobs[s,1:nD,k])
+      }
+      cellprobs[s,nD+1,k]<- 1-sum(cellprobs[s,1:nD,k])
 
-    #  Conditional 4-part hierarchical model
-    pdet[s,k] <- sum(cellprobs[s,1:nD,k])
-    pmarg[s,k] <- pdet[s,k]*phi[s,k]
-    y3d[s,1:nD,k] ~ dmulti(cellprobs.cond[s,1:nD,k], nobs[s,k]) # Part 4
-    nobs[s,k] ~ dbin(pmarg[s,k], M[s])  # Part 3: Number of detected individuals
-    Navail[s,k] ~ dbin(phi[s,k],M[s])   # Part 2: Number of available individuals
-  } # end k loop
+      #  Conditional 4-part hierarchical model
+      pdet[s,k] <- sum(cellprobs[s,1:nD,k])
+      pmarg[s,k] <- pdet[s,k]*phi[s,k]
+      y3d[s,1:nD,k] ~ dmulti(cellprobs.cond[s,1:nD,k], nobs[s,k]) # Part 4
+      nobs[s,k] ~ dbin(pmarg[s,k], M[s])  # Part 3: Number of detected individuals
+      Navail[s,k] ~ dbin(phi[s,k],M[s])   # Part 2: Number of available individuals
+    } # end k loop
 
-   M[s] ~ dnegbin(prob[s], r)
-   prob[s] <- r/(r+lambda[s])
-   # M[s] ~ dpois(lambda[s])         # Part 1: Abundance model
-   log(lambda[s]) <- beta0 + beta1*POTATO[s] + beta2*GRASS[s] + beta3*LSCALE[s]
-}  # end s loop
+     M[s] ~ dnegbin(prob[s], r)
+     prob[s] <- r/(r+lambda[s])
+     # M[s] ~ dpois(lambda[s])         # Part 1: Abundance model
+     log(lambda[s]) <- beta0 + beta1*POTATO[s] + beta2*GRASS[s] + beta3*LSCALE[s]
+  }  # end s loop
 
-# Derived quantities
-for(k in 1:K){
-  Davail[k] <- mean(phi[,k])*exp(beta0)/area
-}
-Mtotal <- sum(M[])
-Dtotal <- exp(beta0)/area
+  # Derived quantities
+  for(k in 1:K){
+    Davail[k] <- mean(phi[,k])*exp(beta0)/area
+  }
+  Mtotal <- sum(M[])
+  Dtotal <- exp(beta0)/area
 } # End model
 ",fill=TRUE,file="wagtail2.txt")
 
 # Inits
 Navail.st <- apply(y3d, c(1,3),sum)
 Mst <- apply(Navail.st, c( 1), max,na.rm=TRUE) + 2
-inits <- function() list(M=Mst, sigma0 = 100, alpha2=0, alpha3=0, alpha4=0, gamma2=0, gamma3=0, gamma4=0, beta1=0,beta2=0,beta3=0, r = 1)
+inits <- function() list(M=Mst, sigma0 = 100, alpha2=0, alpha3=0, alpha4=0,
+    gamma2=0, gamma3=0, gamma4=0, beta1=0,beta2=0,beta3=0, r = 1)
 
 # Parameters to save
-params <- c("r","sigma0", "beta0", "beta1", "beta2", "beta3", "Mtotal", "alpha2", "alpha3",  "alpha4", "theta", "Dtotal", "Davail", "phi0", "gamma1", "gamma2", "gamma3", "gamma4" ,"logit.gamma1")
+params <- c("r","sigma0", "beta0", "beta1", "beta2", "beta3", "Mtotal",
+    "alpha2", "alpha3",  "alpha4", "theta", "Dtotal", "Davail", "phi0",
+    "gamma1", "gamma2", "gamma3", "gamma4" ,"logit.gamma1")
 
 # MCMC settings
 ni <- 32000   ;   nb <- 2000   ;   nt <- 2   ;   nc <- 5

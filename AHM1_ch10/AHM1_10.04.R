@@ -2,8 +2,11 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 10. Modeling static occurrence and species distributions using site-occupancy models
 # =========================================================================
+
+# Approximate execution time for this code: 12 mins
 
 library(R2WinBUGS)
 bugs.dir <- "C:/WinBUGS14"
@@ -34,9 +37,10 @@ z <- rbinom(M, 1, psi)        # True presence/absence
 table(z)
 
 # Plot the true system state
-par(mfrow = c(1, 3), mar = c(5,5,2,2), cex.axis = 1.5, cex.lab = 1.5)
-plot(vegHt, z, xlab="Vegetation height", ylab="True presence/absence (z)", frame = F, cex = 1.5)
-plot(function(x) plogis(beta0 + beta1*x), -1, 1, add=T, lwd=3, col = "red")
+op <- par(mfrow = c(1, 3), mar = c(5,5,2,2), cex.axis = 1.5, cex.lab = 1.5)
+plot(vegHt, z, xlab="Vegetation height", ylab="True presence/absence (z)",
+    frame = FALSE, cex = 1.5)
+plot(function(x) plogis(beta0 + beta1*x), -1, 1, add=TRUE, lwd=3, col = "red")
 
 # Create a covariate called wind
 wind <- array(runif(M * J, -1, 1), dim = c(M, J))
@@ -54,8 +58,10 @@ for(j in 1:J) {
 sum(apply(y, 1, max))               # Number of sites with observed presences
 
 # Plot observed data and true effect of wind on detection probability
-plot(wind, y, xlab="Wind", ylab="Observed det./nondetection data (y)", frame = F, cex = 1.5)
-plot(function(x) plogis(alpha0 + alpha1*x), -1, 1, add=T, lwd=3, col = "red")
+plot(wind, y, xlab="Wind", ylab="Observed det./nondetection data (y)",
+    frame = FALSE, cex = 1.5)
+plot(function(x) plogis(alpha0 + alpha1*x), -1, 1, add=TRUE, lwd=3, col = "red")
+par(op)
 
 # Look at the data: occupancy, true presence/absence (z), and measurements (y)
 cbind(psi=round(psi,2), z=z, y1=y[,1], y2=y[,2], y3=y[,3])
@@ -87,20 +93,22 @@ pred.det <- predict(fm.occ1, type="det", newdata=newdat)
 
 # Predictions for specified values of vegHt, say 0.2 and 2.1
 newdat <- data.frame(vegHt=c(0.2, 2.1))
-predict(fm.occ1, type="state", newdata=newdat, append = T)
+predict(fm.occ1, type="state", newdata=newdat, append = TRUE)
 
 # ... for values of wind of -1 to 1
 newdat <- data.frame(wind=seq(-1, 1, , 5))
-predict(fm.occ1, type="det", newdata=newdat, append = T)
+predict(fm.occ1, type="det", newdata=newdat, append = TRUE)
 
 
 # Fit detection-naive GLM to observed occurrence and plot comparison
 summary(fm.glm <- glm(apply(y, 1, max) ~ vegHt, family=binomial))
-plot(vegHt, apply(y, 1, max), xlab="Vegetation height", ylab="Observed occurrence ('ever observed ?')", frame = F, cex = 1.5)
-plot(function(x) plogis(beta0 + beta1*x), -1, 1, add=T, lwd=3, col = "red")
+plot(vegHt, apply(y, 1, max), xlab="Vegetation height",
+    ylab="Observed occurrence ('ever observed ?')", frame = FALSE, cex = 1.5)
+plot(function(x) plogis(beta0 + beta1*x), -1, 1, add=TRUE, lwd=3, col = "red")
 lines(vegHt, predict(fm.glm,,"response"), type = "l", lwd = 3)
 lines(vegHt, predict(fm.occ1, type="state")[,1], col = "blue", lwd = 3)
-legend(-1, 0.9, c("Truth", "'LR' with p", "LR without p"), col=c("red", "blue", "black"), lty = 1, lwd=3, cex = 1.2)
+legend(-1, 0.9, c("Truth", "'LR' with p", "LR without p"),
+    col=c("red", "blue", "black"), lty = 1, lwd=3, cex = 1.2)
 
 
 ranef(fm.occ1)
@@ -133,13 +141,14 @@ summary(pb.fs@t.star)
 (tmp2 <- quantile(pb.fs@t.star[,2], prob = c(0.025, 0.975)))
 
 # Plot bootstrap distribution of number of occupied sites (Fig. 10-3 left)
-par(mfrow = c(1,2), mar = c(5,4,3,2))
-hist(pb.fs@t.star[,1], col = "grey", breaks = 80, xlim = c(20, 100), main = "", freq = F)
+op <- par(mfrow = c(1,2), mar = c(5,4,3,2))
+hist(pb.fs@t.star[,1], col = "grey", breaks = 80, xlim = c(20, 100),
+    main = "", freq = FALSE)
 abline(v = fs.hat[1], col = "blue", lwd = 3)    # add point estimate
 abline(v = tmp1, col = "grey", lwd = 3)         # add 95% CI
 abline(v = sum(apply(y, 1, max)), lty = 2, lwd = 3) # observed #occ sites
 abline(v = sum(z), col = "red", lwd = 3)        # true #occ sites
-
+par(op)
 
 # Fit model p(time+wind), psi(hab+vegHt)
 summary(fm2.occ <- occu(~time+wind-1 ~hab+vegHt-1, data=umf))
@@ -160,7 +169,9 @@ summary(fm3.occ <- occu(~time*wind-1-wind ~hab*vegHt-1-vegHt, data=umf))
 LRT(fm2.occ, fm3.occ)
 
 # Bundle and summarize data set
-str( win.data <- list(y = y, vegHt = vegHt, wind = wind, M = nrow(y), J = ncol(y), XvegHt = seq(-1, 1, length.out=100), Xwind = seq(-1, 1, length.out=100)) )
+str( win.data <- list(y = y, vegHt = vegHt, wind = wind, M = nrow(y),
+    J = ncol(y), XvegHt = seq(-1, 1, length.out=100),
+    Xwind = seq(-1, 1, length.out=100)) )
 
 
 # Specify model in BUGS language
@@ -168,44 +179,46 @@ sink("model.txt")
 cat("
 model {
 
-# Priors
-mean.p ~ dunif(0, 1)         # Detection intercept on prob. scale
-alpha0 <- logit(mean.p)      # Detection intercept
-alpha1 ~ dunif(-20, 20)      # Detection slope on wind
-mean.psi ~ dunif(0, 1)       # Occupancy intercept on prob. scale
-beta0 <- logit(mean.psi)     # Occupancy intercept
-beta1 ~ dunif(-20, 20)       # Occupancy slope on vegHt
+  # Priors
+  mean.p ~ dunif(0, 1)         # Detection intercept on prob. scale
+  alpha0 <- logit(mean.p)      # Detection intercept
+  alpha1 ~ dunif(-20, 20)      # Detection slope on wind
+  mean.psi ~ dunif(0, 1)       # Occupancy intercept on prob. scale
+  beta0 <- logit(mean.psi)     # Occupancy intercept
+  beta1 ~ dunif(-20, 20)       # Occupancy slope on vegHt
 
-# Likelihood
-for (i in 1:M) {
-   # True state model for the partially observed true state
-   z[i] ~ dbern(psi[i])      # True occupancy z at site i
-   logit(psi[i]) <- beta0 + beta1 * vegHt[i]
-   for (j in 1:J) {
+  # Likelihood
+  for (i in 1:M) {
+    # True state model for the partially observed true state
+    z[i] ~ dbern(psi[i])      # True occupancy z at site i
+    logit(psi[i]) <- beta0 + beta1 * vegHt[i]
+    for (j in 1:J) {
       # Observation model for the actual observations
       y[i,j] ~ dbern(p.eff[i,j])    # Detection-nondetection at i and j
       p.eff[i,j] <- z[i] * p[i,j]   # 'straw man' for WinBUGS
       logit(p[i,j]) <- alpha0 + alpha1 * wind[i,j]
-   }
-}
+    }
+  }
 
-# Derived quantities
-N.occ <- sum(z[])       # Number of occupied sites among sample of M
-psi.fs <- N.occ/M       # Proportion of occupied sites among sample of M
-for(k in 1:100){
-   logit(psi.pred[k]) <- beta0 + beta1 * XvegHt[k] # psi predictions
-   logit(p.pred[k]) <- alpha0 + alpha1 * Xwind[k]  # p predictions
-}
+  # Derived quantities
+  N.occ <- sum(z[])       # Number of occupied sites among sample of M
+  psi.fs <- N.occ/M       # Proportion of occupied sites among sample of M
+  for(k in 1:100){
+    logit(psi.pred[k]) <- beta0 + beta1 * XvegHt[k] # psi predictions
+    logit(p.pred[k]) <- alpha0 + alpha1 * Xwind[k]  # p predictions
+  }
 }
 ",fill = TRUE)
 sink()
 
 # Initial values: must give for same quantities as priors given !
 zst <- apply(y, 1, max)        # Avoid data/model/inits conflict
-inits <- function(){list(z = zst, mean.p = runif(1), alpha1 = runif(1), mean.psi = runif(1), beta1 = runif(1))}
+inits <- function(){list(z = zst, mean.p = runif(1), alpha1 = runif(1),
+    mean.psi = runif(1), beta1 = runif(1))}
 
 # Parameters monitored
-params <- c("alpha0", "alpha1", "beta0", "beta1", "N.occ", "psi.fs", "psi.pred", "p.pred", "z") # Also estimate z = "conditional occ. prob."
+params <- c("alpha0", "alpha1", "beta0", "beta1", "N.occ", "psi.fs",
+    "psi.pred", "p.pred", "z") # Also estimate z = "conditional occ. prob."
 
 # MCMC settings
 ni <- 25000   ;   nt <- 10   ;   nb <- 2000   ;   nc <- 3
@@ -221,34 +234,40 @@ print(out1B, dig = 3)
 # Compare truth with MLEs and bayesian posterior inference in table ...
 truth <- c(alpha0, alpha1, beta0, beta1, sum(z), sum(z)/M)
 tmp <- summary(fm.occ1)
-MLEs <- rbind(tmp[[2]][1:2,1:2], tmp[[1]][1:2,1:2], sumZ = c(mean(pb.fs@t.star[,1]), sd(pb.fs@t.star[,1])), psi.fs = c(mean(pb.fs@t.star[,2]), sd(pb.fs@t.star[,2])))
+MLEs <- rbind(tmp[[2]][1:2,1:2], tmp[[1]][1:2,1:2],
+    sumZ = c(mean(pb.fs@t.star[,1]), sd(pb.fs@t.star[,1])),
+    psi.fs = c(mean(pb.fs@t.star[,2]), sd(pb.fs@t.star[,2])))
 print(cbind(truth, MLEs, out1B$summary[1:6, 1:2]))
 
 # .... and in a graph (Fig. 10-4)
-par(mfrow = c(2, 2), mar = c(4, 5, 2, 2), las = 1, cex.lab = 1, cex = 1.2)
-plot(vegHt, z, xlab="Vegetation height", ylab="Occupancy prob. (MLE)", ylim = c(0, 1), frame = F)   # True presence/absence
+op <- par(mfrow = c(2, 2), mar = c(4, 5, 2, 2), las = 1, cex.lab = 1, cex = 1.2)
+plot(vegHt, z, xlab="Vegetation height", ylab="Occupancy prob. (MLE)",
+    ylim = c(0, 1), frame = FALSE)   # True presence/absence
 lines(seq(-1,1, 0.01), pred.occ[,1], col = "blue", lwd = 2)
 matlines(seq(-1,1, 0.01), pred.occ[,3:4], col = "grey", lty = 1)
 lines(vegHt, psi, lwd=3, col="red")   # True psi
-plot(wind, y, xlab="Wind", ylab="Detection prob. (MLE)", ylim = c(0,1), frame=F)
+plot(wind, y, xlab="Wind", ylab="Detection prob. (MLE)",
+    ylim = c(0,1), frame=FALSE)
 lines(seq(-1, 1, 0.1), pred.det[,1], col = "blue", lwd = 2)
 matlines(seq(-1, 1, 0.1), pred.det[,3:4], col = "grey", lty = 1)
-plot(function(x) plogis(alpha0 + alpha1*x), -1, 1, add=T, lwd=3, col = "red")
-plot(vegHt, z, xlab="Vegetation height", ylab="Occupancy prob. (P. mean)", las = 1, frame = F)   # True presence/absence
+plot(function(x) plogis(alpha0 + alpha1*x), -1, 1, add=TRUE, lwd=3, col = "red")
+plot(vegHt, z, xlab="Vegetation height", ylab="Occupancy prob. (P. mean)",
+    las = 1, frame = FALSE)   # True presence/absence
 lines(vegHt, psi, lwd=3, col="red")   # True psi
 lines(win.data$XvegHt, out1B$summary[7:106,1], col="blue", lwd = 2)
 matlines(win.data$XvegHt, out1B$summary[7:106,c(3,7)], col="grey", lty = 1)
-plot(wind, y, xlab="Wind", ylab="Detection prob. (P. mean)", frame = F)
-plot(function(x) plogis(alpha0 + alpha1*x), -1, 1, add=T, lwd=3, col = "red")
+plot(wind, y, xlab="Wind", ylab="Detection prob. (P. mean)", frame = FALSE)
+plot(function(x) plogis(alpha0 + alpha1*x), -1, 1, add=TRUE, lwd=3, col = "red")
 lines(win.data$Xwind, out1B$summary[107:206,1], col="blue", lwd = 2)
 matlines(win.data$Xwind, out1B$summary[107:206,c(3,7)], col="grey", lty = 1)
-
+par(op)
 
 # Plot posterior distribution of number of occupied sites (see Fig. 10-3, right)
+op <- par(mfrow = c(1,2), mar = c(5,4,3,2))
 hist(out1B$sims.list$N.occ, col = "grey", breaks = 60, xlim = c(20, 100),
-main = "", freq = F)
+main = "", freq = FALSE)
 abline(v = out1B$mean$N.occ, col = "blue", lwd = 3)   # add point estimate
 abline(v = out1B$summary[5,c(3,7)], col = "grey", lwd = 3)   # add 95% CRI
 abline(v = sum(apply(y, 1, max)), lty = 2, lwd = 3)   # observed #occ sites
 abline(v = sum(z), col = "red", lwd = 2)              # true #occ sites
-
+par(op)

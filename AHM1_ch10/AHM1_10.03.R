@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 10. Modeling static occurrence and species distributions using site-occupancy models
 # =========================================================================
 
@@ -48,18 +49,18 @@ str( win.data <- list(y = y, M = nrow(y), J = ncol(y)) )
 sink("model.txt")
 cat("
 model {
-# Priors
-   psi ~ dunif(0, 1)
-   p ~ dunif(0, 1)
-# Likelihood
-   for (i in 1:M) {    # Loop over sites
-      z[i] ~ dbern(psi)         # State model
-      for (j in 1:J) { # Loop over replicate surveys
-         y[i,j] ~ dbern(z[i]*p)  # Observation model (only JAGS !)
-#        y[i,j] ~ dbern(mu[i])  # For WinBUGS define 'straw man'
-      }
-#   mu[i] <- z[i]*p          # Only WinBUGS
-   }
+  # Priors
+  psi ~ dunif(0, 1)
+  p ~ dunif(0, 1)
+  # Likelihood
+  for (i in 1:M) {    # Loop over sites
+    z[i] ~ dbern(psi)         # State model
+    for (j in 1:J) { # Loop over replicate surveys
+      y[i,j] ~ dbern(z[i]*p)  # Observation model (only JAGS !)
+      # y[i,j] ~ dbern(mu[i])  # For WinBUGS define 'straw man'
+    }
+    # mu[i] <- z[i]*p          # Only WinBUGS
+  }
 }
 ",fill = TRUE)
 sink()

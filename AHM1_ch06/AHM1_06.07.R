@@ -19,16 +19,16 @@ simreps <- 100                    # ~~~~ reduced number for testing
 MLE <- array(dim = c(5, simreps)) # Array to hold MLEs
 
 for(i in 1:simreps){              # Create and analyse 1000 data sets
-   cat("*** Simrep number", i, "***\n")
-   # Create data set with some extra (here: open populations)
-   data <- simNmix(mean.lam=exp(1), mean.p=0.5, beta2.lam=1,
-      beta3.p=1, beta.p.survey=1, open.N=TRUE, show.plot=F)
-   # Analyse data set with standard model (here: assuming closure)
-   umf <- unmarkedFramePCount(y=data$C, siteCovs =
-      data.frame(cov2=data$site.cov[,2], cov3=data$site.cov[,3]),
-      obsCovs = list(survey.cov = data$survey.cov))
-   fm <- pcount(~cov3+survey.cov ~cov2, umf, se = F)
-   # Save MLEs
-   MLE[,i] <- coef(fm)
+  cat("*** Simrep number", i, "***\n")
+  # Create data set with some extra (here: open populations)
+  data <- simNmix(mean.lam=exp(1), mean.p=0.5, beta2.lam=1,
+    beta3.p=1, beta.p.survey=1, open.N=TRUE, show.plot=FALSE)
+  # Analyse data set with standard model (here: assuming closure)
+  umf <- unmarkedFramePCount(y=data$C, siteCovs =
+    data.frame(cov2=data$site.cov[,2], cov3=data$site.cov[,3]),
+    obsCovs = list(survey.cov = data$survey.cov))
+  fm <- pcount(~cov3+survey.cov ~cov2, umf, se = FALSE)
+  # Save MLEs
+  MLE[,i] <- coef(fm)
 }
 

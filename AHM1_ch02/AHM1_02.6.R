@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 2. What are hierarchical models and how do we analyze them?
 # =========================================================================
 
@@ -138,16 +139,16 @@ for(i in 1:niter){
 }
 
 # Plot
+op <- par("mfrow", oma=c(0,0,0,0),mar=c(5,4,1,1))
 layout(rbind(c(1,1),
              c(2,2),
-             c(3,4)), respect = T) # <- play with these settings
+             c(3,4)), respect = TRUE) # <- play with these settings
 
-par(oma=c(0,0,0,0),mar=c(5,4,1,1))
 plot(out[,1], type="l", xlab="Iteration", ylab="beta0")
 plot(out[,2], type="l", xlab="Iteration", ylab="beta1")
 plot(density(out[,1]), xlab="beta0", main="")
 plot(density(out[,2]), xlab="beta1", main="")
-
+par(op)
 
 # 2.6.4 Why we need to use MCMC for logistic regression (no code)
 # 2.6.5 Gibbs sampling (no code)

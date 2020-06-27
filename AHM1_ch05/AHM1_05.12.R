@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+
 # Chapter 5. Fitting models using the Bayesian modeling software BUGS and JAGS
 # =========================================================================
 
@@ -27,18 +28,18 @@ win.data <- list(y = data$C, M = nrow(data$C), J = ncol(data$C), elev = elev, N 
 cat(file = "squeezed_count_GLM.txt","
 model {
 
-# Priors
-alpha ~ dnorm(0, 1.0E-06)
-beta ~ dnorm(0, 1.0E-06)
+  # Priors
+  alpha ~ dnorm(0, 1.0E-06)
+  beta ~ dnorm(0, 1.0E-06)
 
-# Likelihood
-for (i in 1:M){
-   mu[i] <- alpha + beta * elev[i] # linear model for expected response
-   logit(p[i]) <- logit(mu[i] / N) # express param as function of first moment
-   for(j in 1:J){
+  # Likelihood
+  for (i in 1:M){
+    mu[i] <- alpha + beta * elev[i] # linear model for expected response
+    logit(p[i]) <- logit(mu[i] / N) # express param as function of first moment
+    for(j in 1:J){
       y[i,j] ~ dbin(p[i], N)
+    }
   }
-}
 }
 ")
 

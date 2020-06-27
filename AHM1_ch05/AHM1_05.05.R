@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 5. Fitting models using the Bayesian modeling software BUGS and JAGS
 # =========================================================================
 
@@ -24,35 +25,34 @@ cat(file = "multiple_linear_regression_model.txt",
 "   # --- Code in BUGS language starts with this quotation mark ---
 model {
 
-# Priors
-alpha0 ~ dnorm(0, 1.0E-06)           # Prior for intercept
-alpha1 ~ dnorm(0, 1.0E-06)           # Prior for slope of elev
-alpha2 ~ dnorm(0, 1.0E-06)           # Prior for slope of forest
-alpha3 ~ dnorm(0, 1.0E-06)           # Prior for slope of interaction
-tau <- pow(sd, -2)                   # Precision tau = 1/(sd^2)
-sd ~ dunif(0, 1000)                  # Prior for dispersion on sd scale
+  # Priors
+  alpha0 ~ dnorm(0, 1.0E-06)           # Prior for intercept
+  alpha1 ~ dnorm(0, 1.0E-06)           # Prior for slope of elev
+  alpha2 ~ dnorm(0, 1.0E-06)           # Prior for slope of forest
+  alpha3 ~ dnorm(0, 1.0E-06)           # Prior for slope of interaction
+  tau <- pow(sd, -2)                   # Precision tau = 1/(sd^2)
+  sd ~ dunif(0, 1000)                  # Prior for dispersion on sd scale
 
-# Likelihood
-for (i in 1:M){
-   Cmean[i] ~ dnorm(mu[i], tau)      # dispersion tau is precision (1/variance)
-   mu[i] <- alpha0 + alpha1*elev[i] + alpha2*forest[i] + alpha3*elev[i]*forest[i]
-}
+  # Likelihood
+  for (i in 1:M){
+    Cmean[i] ~ dnorm(mu[i], tau)      # dispersion tau is precision (1/variance)
+    mu[i] <- alpha0 + alpha1*elev[i] + alpha2*forest[i] + alpha3*elev[i]*forest[i]
+  }
 
-# Derived quantities
-for (i in 1:M){
-   resi[i] <- Cmean[i] - mu[i]
-}
+  # Derived quantities
+  for (i in 1:M){
+    resi[i] <- Cmean[i] - mu[i]
+  }
 }"#  --- Code in BUGS language ends on this line ---
 )
 
 # Initial values (have to give for at least some estimands)
-inits <- function() list(alpha0 = rnorm(1,0,10), alpha1 = rnorm(1,0,10), alpha2 = rnorm(1,0,10), alpha3 = rnorm(1,0,10))
+inits <- function() list(alpha0 = rnorm(1,0,10), alpha1 = rnorm(1,0,10),
+    alpha2 = rnorm(1,0,10), alpha3 = rnorm(1,0,10))
 
 # MCMC settings
 ni <- 6000   ;   nt <- 1   ;   nb <- 1000   ;  nc <- 3
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
 
 
 # 5.5 Missing values in a Bayesian analysis
@@ -80,11 +80,13 @@ out1.1 <- bugs(win.data, inits, params, "multiple_linear_regression_model.txt",
   # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd(), DIC = FALSE)
   debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd(), DIC = FALSE) # ~~~ for autotesting
 
-out1.1 <- jags(win.data, inits, params, "multiple_linear_regression_model.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
+out1.1 <- jags(win.data, inits, params, "multiple_linear_regression_model.txt",
+    n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
 
 print(out1.1, 2)
 
-print(cbind(Truth=Cmean[1:10], out1.1$summary[6:15,c(1:3,7)], out1.1$summary[16:25, c(1:3,7)]),3)
+print(cbind(Truth=Cmean[1:10], out1.1$summary[6:15,c(1:3,7)],
+    out1.1$summary[16:25, c(1:3,7)]),3)
 
 
 # 5.5.2 All responses missing
@@ -107,7 +109,7 @@ out1.2 <- bugs(win.data, inits, params, "multiple_linear_regression_model.txt",
 
 print(out1.2, 2)
 
-par(mfrow = c(3, 2), mar = c(5,5,3,2), cex.lab = 1.5, cex.axis = 1.5)
+op <- par(mfrow = c(3, 2), mar = c(5,5,3,2), cex.lab = 1.5, cex.axis = 1.5)
 hist(out1.2$sims.list$alpha0, breaks = 100, col = "grey", main = "")
 text(-3500, 600, "A", cex = 2)
 hist(out1.2$sims.list$alpha1, breaks = 100, col = "grey", main = "", ylab = "")
@@ -120,7 +122,7 @@ hist(out1.2$sims.list$mu[,1], breaks = 100, col = "grey", main = "")
 text(-4000, 480, "E", cex = 2)
 hist(out1.2$sims.list$mu[,2], breaks = 100, col = "grey", main = "", ylab = "")
 text(-4000, 480, "F", cex = 2)
-
+par(op)
 
 
 # 5.5.3 Missing values in a covariate
@@ -136,28 +138,29 @@ win.data <- list(Cmean = Cmean, M = length(Cmean), elev = ele, forest = forest)
 cat(file = "missing_cov_imputation_model_1.txt","
 model {
 
-# Priors
-alpha0 ~ dnorm(0, 1.0E-06)           # Prior for intercept
-alpha1 ~ dnorm(0, 1.0E-06)           # Prior for slope of elev
-alpha2 ~ dnorm(0, 1.0E-06)           # Prior for slope of forest
-alpha3 ~ dnorm(0, 1.0E-06)           # Prior for slope of interaction
-tau <- pow(sd, -2)
-sd ~ dunif(0, 1000)                  # Prior for dispersion on sd scale
+  # Priors
+  alpha0 ~ dnorm(0, 1.0E-06)           # Prior for intercept
+  alpha1 ~ dnorm(0, 1.0E-06)           # Prior for slope of elev
+  alpha2 ~ dnorm(0, 1.0E-06)           # Prior for slope of forest
+  alpha3 ~ dnorm(0, 1.0E-06)           # Prior for slope of interaction
+  tau <- pow(sd, -2)
+  sd ~ dunif(0, 1000)                  # Prior for dispersion on sd scale
 
-# Likelihood
-for (i in 1:M){
-   Cmean[i] ~ dnorm(mu[i], tau)      # precision tau = 1 / variance
-   mu[i] <- alpha0 + alpha1 * elev[i] + alpha2 * forest[i] + alpha3 * elev[i] * forest[i]
-}
+  # Likelihood
+  for (i in 1:M){
+    Cmean[i] ~ dnorm(mu[i], tau)      # precision tau = 1 / variance
+    mu[i] <- alpha0 + alpha1 * elev[i] + alpha2 * forest[i] + alpha3 * elev[i] * forest[i]
+  }
 
-# Model for missing covariates
-for (i in 1:M){
-   elev[i] ~ dnorm(0, 0.001)
-}
+  # Model for missing covariates
+  for (i in 1:M){
+    elev[i] ~ dnorm(0, 0.001)
+  }
 }")
 
 # Initial values
-inits <- function() list(alpha0 = rnorm(1,,10), alpha1 = rnorm(1,,10), alpha2 = rnorm(1,,10), alpha3 = rnorm(1,,10))
+inits <- function() list(alpha0 = rnorm(1,,10), alpha1 = rnorm(1,,10),
+    alpha2 = rnorm(1,,10), alpha3 = rnorm(1,,10))
 
 # Parameters monitored
 params <- c("alpha0", "alpha1", "alpha2", "alpha3", "sd", "elev")
@@ -176,31 +179,32 @@ out1.3 <- bugs(win.data, inits, params, "missing_cov_imputation_model_1.txt",
 cat(file = "missing_cov_imputation_model_2.txt","
 model {
 
-# Priors
-alpha0 ~ dnorm(0, 1.0E-06)           # Prior for intercept
-alpha1 ~ dnorm(0, 1.0E-06)           # Prior for slope of elev
-alpha2 ~ dnorm(0, 1.0E-06)           # Prior for slope of forest
-alpha3 ~ dnorm(0, 1.0E-06)           # Prior for slope of interaction
-tau <- pow(sd, -2)
-sd ~ dunif(0, 1000)                  # Prior for dispersion on sd scale
+  # Priors
+  alpha0 ~ dnorm(0, 1.0E-06)           # Prior for intercept
+  alpha1 ~ dnorm(0, 1.0E-06)           # Prior for slope of elev
+  alpha2 ~ dnorm(0, 1.0E-06)           # Prior for slope of forest
+  alpha3 ~ dnorm(0, 1.0E-06)           # Prior for slope of interaction
+  tau <- pow(sd, -2)
+  sd ~ dunif(0, 1000)                  # Prior for dispersion on sd scale
 
-# Likelihood
-for (i in 1:M){
-   Cmean[i] ~ dnorm(mu[i], tau)      # precision tau = 1 / variance
-   mu[i] <- alpha0 + alpha1 * elev[i] + alpha2 * forest[i] + alpha3 * elev[i] * forest[i]
-}
+  # Likelihood
+  for (i in 1:M){
+    Cmean[i] ~ dnorm(mu[i], tau)      # precision tau = 1 / variance
+    mu[i] <- alpha0 + alpha1 * elev[i] + alpha2 * forest[i] + alpha3 * elev[i] * forest[i]
+  }
 
-# Covariate mean as a model for missing covariates
-for (i in 1:M){
-   elev[i] ~ dnorm(mu.elev, tau.elev)    # Assume elevation normally distributed
-}
-mu.elev ~ dnorm(0, 0.0001)
-tau.elev <- pow(sd.elev, -2)
-sd.elev ~ dunif(0, 100)
+  # Covariate mean as a model for missing covariates
+  for (i in 1:M){
+    elev[i] ~ dnorm(mu.elev, tau.elev)    # Assume elevation normally distributed
+  }
+  mu.elev ~ dnorm(0, 0.0001)
+  tau.elev <- pow(sd.elev, -2)
+  sd.elev ~ dunif(0, 100)
 }")
 
 # Initial values
-inits <- function() list(alpha0 = rnorm(1,,10), alpha1 = rnorm(1,,10), alpha2 = rnorm(1,,10), alpha3 = rnorm(1,,10))
+inits <- function() list(alpha0 = rnorm(1,,10), alpha1 = rnorm(1,,10),
+    alpha2 = rnorm(1,,10), alpha3 = rnorm(1,,10))
 
 # Parameters monitored
 params <- c("alpha0", "alpha1", "alpha2", "alpha3", "sd", "elev", "mu.elev", "sd.elev")
@@ -214,11 +218,14 @@ out1.4 <- bugs(win.data, inits, params, "missing_cov_imputation_model_2.txt",
   # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
   debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd()) # ~~~ for autotesting
 
-graphics.off() # ~~~~~~~ start new plot ~~~~~~~~~~~~~~~
-par(cex = 1.5, lwd = 2)
-plot(elev[1:10]-0.01, out1.3$summary[6:15,1], ylim = c(-10, 10), col = "red", xlab = "True value of covariate", ylab = "Estimate (with 95% CRI)", frame.plot =F)
-segments(elev[1:10]-0.01, out1.3$summary[6:15,3], elev[1:10]-0.01, out1.3$summary[6:15,7], col = "red")
+op <- par(cex = 1.5, lwd = 2)
+plot(elev[1:10]-0.01, out1.3$summary[6:15,1], ylim = c(-10, 10), col = "red",
+    xlab = "True value of covariate", ylab = "Estimate (with 95% CRI)",
+    frame.plot =FALSE)
+segments(elev[1:10]-0.01, out1.3$summary[6:15,3], elev[1:10]-0.01,
+    out1.3$summary[6:15,7], col = "red")
 points(elev[1:10]+0.01, out1.4$summary[6:15,1], ylim = c(-3, 3), col = "blue")
-segments(elev[1:10]+0.01, out1.4$summary[6:15,3], elev[1:10]+0.01, out1.4$summary[6:15,7], col = "blue")
+segments(elev[1:10]+0.01, out1.4$summary[6:15,3], elev[1:10]+0.01,
+    out1.4$summary[6:15,7], col = "blue")
 abline(0,1)
-
+par(op)

@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 7. Modeling abundance using multinomial N-mixture models
 # =========================================================================
 
@@ -40,13 +41,13 @@ fm6 <- multinomPois(~ ufc ~ ufc + trba + ufc:trba, ovenFrame)
 
 # Rank models by AIC
 ms <- fitList(
-"lam(.)p(.)"                                = fm0,
-"lam(ufc)p(.)"                              = fm1,
-"lam(trba)p(.)"                             = fm2,
-"lam(ufc+trba)p(.)"                         = fm3,
-"lam(ufc+trba+ufc:trba)p(.)"                = fm4,
-"lam(ufc+trba)p(ufc)"                       = fm5,
-"lam(ufc+trba+ufc:trba)p(ufc)"              = fm6)
+    "lam(.)p(.)"                                = fm0,
+    "lam(ufc)p(.)"                              = fm1,
+    "lam(trba)p(.)"                             = fm2,
+    "lam(ufc+trba)p(.)"                         = fm3,
+    "lam(ufc+trba+ufc:trba)p(.)"                = fm4,
+    "lam(ufc+trba)p(ufc)"                       = fm5,
+    "lam(ufc+trba+ufc:trba)p(ufc)"              = fm6)
 
 (ms1 <- modSel(ms))
 
@@ -55,18 +56,14 @@ coef(ms1)[,1:4]  # Only first 4 columns shown
 
 output <- as(ms1, "data.frame")
 
-
-
 # 7.5.3 Fitting models using function gmultmix
 # ------------------------------------------------------------------------
 ovenFrame <- unmarkedFrameGMM(ovendata.list$data,
     siteCovs=as.data.frame(scale(ovendata.list$covariates[,-1])),
        numPrimary=1,type = "removal")
 
-
 fm0 <- gmultmix(lambdaformula = ~1, phiformula = ~1, pformula = ~1,
        data=ovenFrame)
-
 
 # Fit Poisson models
 fm1 <- gmultmix(~ ufc, ~ 1, ~  1, data = ovenFrame)
@@ -92,20 +89,20 @@ fm6nb <- gmultmix(~ ufc + trba + ufc:trba, ~ 1, ~ ufc, mixture = "NB",
 
 # Rank models by AIC
 gms <- fitList(
-"lam(.)p(.)"                                = fm0,
-"lam(ufc)p(.)"                              = fm1,
-"lam(trba)p(.)"                             = fm2,
-"lam(ufc+trba)p(.)"                         = fm3,
-"lam(ufc+trba+ufc:trba)p(.)"                = fm4,
-"lam(ufc+trba)p(ufc)"                       = fm5,
-"lam(ufc+trba+ufc:trba)p(ufc)"              = fm6,
-"NB,lam(.)p(.)"                             = fm0nb,
-"NB,lam(ufc)p(.)"                           = fm1nb,
-"NB,lam(trba)p(.)"                          = fm2nb,
-"NB,lam(ufc+trba)p(.)"                      = fm3nb,
-"NB,lam(ufc+trba+ufc:trba)p(.)"             = fm4nb,
-"NB,lam(ufc+trba)p(ufc)"                    = fm5nb,
-"NB,lam(ufc+trba+ufc:trba)p(ufc)"           = fm6nb)
+    "lam(.)p(.)"                                = fm0,
+    "lam(ufc)p(.)"                              = fm1,
+    "lam(trba)p(.)"                             = fm2,
+    "lam(ufc+trba)p(.)"                         = fm3,
+    "lam(ufc+trba+ufc:trba)p(.)"                = fm4,
+    "lam(ufc+trba)p(ufc)"                       = fm5,
+    "lam(ufc+trba+ufc:trba)p(ufc)"              = fm6,
+    "NB,lam(.)p(.)"                             = fm0nb,
+    "NB,lam(ufc)p(.)"                           = fm1nb,
+    "NB,lam(trba)p(.)"                          = fm2nb,
+    "NB,lam(ufc+trba)p(.)"                      = fm3nb,
+    "NB,lam(ufc+trba+ufc:trba)p(.)"             = fm4nb,
+    "NB,lam(ufc+trba)p(ufc)"                    = fm5nb,
+    "NB,lam(ufc+trba+ufc:trba)p(ufc)"           = fm6nb)
 
 (gms1 <- modSel(gms))
 

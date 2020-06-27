@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 11. Hierarchical models for communities
 # =========================================================================
 
@@ -100,7 +101,7 @@ for(i in 1:nkm2){
 
 library(raster)
 library(rgdal)
-par(mfrow = c(1,2), mar = c(2,2,3,5))
+op <- par(mfrow = c(1,2), mar = c(2,2,3,5))
 # Posterior mean map
 r1 <- rasterFromXYZ(data.frame(x = ch$x, y = ch$y, z = pmSR))
 elev <- rasterFromXYZ(cbind(ch$x, ch$y,ch$elevation))
@@ -132,7 +133,7 @@ plot(r1, col = mapPalette(100), axes = F, box = FALSE, main ="")
 # plot(border, col = "transparent", lwd = 1.5, add = TRUE)
 # plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+par(op)
 
 # Get 3,000 posterior samples of omega, and the mean and sd hyperparameters
 omega <- out101$sims.list$omega
@@ -164,8 +165,7 @@ for (i in 1:ndraws) {
     zsum <- rep(NA, Nmax)
     if (j>1) {
       zsum <- apply(z[i, , 1:j], 1, sum)
-    }
-    else {
+    } else {
       zsum <- z[i, , 1]
     }
     Ntot[i,j] <- sum(zsum>0)
@@ -183,7 +183,7 @@ for (j in 1:nsites) {
 # Plot species accumulation curve
 ylim = c(min(nSpeciesPresent[2,]), max(nSpeciesPresent[3,]))
 plot(1:nsites, nSpeciesPresent[1,], pch=16, ylim=ylim, type="b",
-xlab="Number of sample locations", ylab="Number of occurring species",
-las=1, cex.axis=1.2, cex.lab=1.5, cex=1.2, frame = F)
+    xlab="Number of sample locations", ylab="Number of occurring species",
+    las=1, cex.axis=1.2, cex.lab=1.5, cex=1.2, frame = FALSE)
 segments(1:nsites, nSpeciesPresent[2,], 1:nsites, nSpeciesPresent[3,])
 

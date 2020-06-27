@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 11. Hierarchical models for communities
 # =========================================================================
 
@@ -77,8 +78,10 @@ cbind('post. mean' = pm, 'post. sd' = psd, '2.5%' = cri[1,], '97.5%' = cri[2,])
 
 # Make a map of Jaccard site indices (Fig. 11-26)
 x <- 3        # poportional size of plotting symbol
-plot(MHB2014$sites$coordx, MHB2014$sites$coordy, xlab = "x coordinate", ylab = "y coordinate", cex = x*pm, asp = 1, pch = 16)
-points(MHB2014$sites$coordx[which(pm == 1)], MHB2014$sites$coordy[which(pm == 1)], cex = x*pm, col = "red", pch = 16)
+plot(MHB2014$sites$coordx, MHB2014$sites$coordy, xlab = "x coordinate",
+    ylab = "y coordinate", cex = x*pm, asp = 1, pch = 16)
+points(MHB2014$sites$coordx[which(pm == 1)], MHB2014$sites$coordy[which(pm == 1)],
+    cex = x*pm, col = "red", pch = 16)
 
 
 # Jaccard index for species, compared to reference species

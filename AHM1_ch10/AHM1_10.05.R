@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 10. Modeling static occurrence and species distributions using site-occupancy models
 # =========================================================================
 
@@ -11,11 +12,15 @@ library(AHMbook)
 # =============================================================================
 
 
-simOcc(M = 267, J = 3, mean.occupancy = 0.6, beta1 = -2, beta2 = 2, beta3 = 1, mean.detection = 0.3, time.effects = c(-1, 1), alpha1 = -1, alpha2 = -3, alpha3 = 0, sd.lp = 0.5, b = 2, show.plot = TRUE)
+simOcc(M = 267, J = 3, mean.occupancy = 0.6, beta1 = -2, beta2 = 2, beta3 = 1,
+    mean.detection = 0.3, time.effects = c(-1, 1), alpha1 = -1, alpha2 = -3,
+    alpha3 = 0, sd.lp = 0.5, b = 2, show.plot = TRUE)
 
 simOcc()                  # Execute function with default arguments
 simOcc(show.plot = FALSE) #    same, without plots
-simOcc(M = 267, J = 3, mean.occupancy = 0.6, beta1 = -2, beta2 = 2, beta3 = 1, mean.detection = 0.3, time.effects = c(-1, 1), alpha1 = -1, alpha2 = -3, alpha3 = 0, sd.lp = 0.5, b = 2, show.plot = TRUE) # Explicit defaults
+simOcc(M = 267, J = 3, mean.occupancy = 0.6, beta1 = -2, beta2 = 2, beta3 = 1,
+    mean.detection = 0.3, time.effects = c(-1, 1), alpha1 = -1, alpha2 = -3,
+    alpha3 = 0, sd.lp = 0.5, b = 2, show.plot = TRUE) # Explicit defaults
 
 # Create a 'fix' data set and look at what we created
 set.seed(24)
@@ -24,7 +29,8 @@ str(data)
 
 
 # Simplest possible occupancy model, with constant occupancy and detection
-tmp <- simOcc(mean.occ=0.6, beta1=0, beta2=0, beta3=0, mean.det=0.3, time.effects=c(0, 0), alpha1=0, alpha2=0, alpha3=0, sd.lp=0, b=0)
+tmp <- simOcc(mean.occ=0.6, beta1=0, beta2=0, beta3=0, mean.det=0.3,
+    time.effects=c(0, 0), alpha1=0, alpha2=0, alpha3=0, sd.lp=0, b=0)
 str(tmp)                 # give overview of results
 
 # psi = 1 (i.e., species occurs at every site)

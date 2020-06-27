@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 9. Advanced Hierarchical Distance Sampling
 # =========================================================================
 
@@ -45,58 +46,59 @@ for(yr in 1:nyears){
 
 # Bundle and summarize the data set
 nobs <- apply(y4d, c(1,3,4), sum)  # Total detections per site and occasion
-str( data <- list(y4d=y4d, nsites=nsites, K=K, nD=nD, midpt=midpt, delta=delta, habitat=habitat, B=B, nobs = nobs, T=tmp$nyears) )
+str( data <- list(y4d=y4d, nsites=nsites, K=K, nD=nD, midpt=midpt, delta=delta,
+    habitat=habitat, B=B, nobs = nobs, T=tmp$nyears) )
 
 # Define model in BUGS
 cat("
 model {
 
-# Prior distributions
-beta0 ~ dnorm(0, 0.01)  # Intercept for log(lambda)
-mean.lam <- exp(beta0)
-beta1 ~ dnorm(0, 0.01)  # Coefficient on habitat
-phi ~ dunif(0,1)        # Probability of availability
-sigma ~ dunif(0,5)      # Detection function parameter
-beta.trend ~ dnorm(0, 0.01)
+  # Prior distributions
+  beta0 ~ dnorm(0, 0.01)  # Intercept for log(lambda)
+  mean.lam <- exp(beta0)
+  beta1 ~ dnorm(0, 0.01)  # Coefficient on habitat
+  phi ~ dunif(0,1)        # Probability of availability
+  sigma ~ dunif(0,5)      # Detection function parameter
+  beta.trend ~ dnorm(0, 0.01)
 
-# Construct the multinomial cell probabilities
-for(b in 1:nD){
-  log(g[b]) <- -midpt[b]*midpt[b]/(2*sigma*sigma) # half-normal
-  f[b] <- (2*midpt[b]*delta)/(B*B)                # radial density function
-  cellprobs[b] <- g[b]*f[b]
-  cellprobs.cond[b] <- cellprobs[b]/sum(cellprobs[1:nD])
-}
-cellprobs[nD+1] <- 1-sum(cellprobs[1:nD])
-for (s in 1:nsites) {
-  for (k in 1:K) {
-    pdet[s,k] <- sum(cellprobs[1:nD]) # Distance class probabilities
-    pmarg[s,k] <- pdet[s,k]*phi       # Marginal probability
+  # Construct the multinomial cell probabilities
+  for(b in 1:nD){
+    log(g[b]) <- -midpt[b]*midpt[b]/(2*sigma*sigma) # half-normal
+    f[b] <- (2*midpt[b]*delta)/(B*B)                # radial density function
+    cellprobs[b] <- g[b]*f[b]
+    cellprobs.cond[b] <- cellprobs[b]/sum(cellprobs[1:nD])
   }
-}
-
-for(t in 1:T){                        # Years
-  for (s in 1:nsites) {               # Sites
-    for (k in 1:K) {                  # Replicates
-      # Model part 4: distance class frequencies
-      y4d[s,1:nD,k,t] ~ dmulti(cellprobs.cond[1:nD], nobs[s,k,t])
-      # Model part 3: total number of detections:
-      nobs[s,k,t] ~ dbin(pmarg[s,k], M[s,t])
-      # Model part 2: Availability. Not used in this model but simulated.
-      Navail[s,k,t] ~ dbin(phi, M[s,t])
-    }  # end k loop
-    # Model part 1: Abundance model
-    M[s,t] ~ dpois(lambda[s,t])
-    log(lambda[s,t]) <- beta0 + beta1*habitat[s] + beta.trend*(t-2.5)
-  }  # end s loop
-} # end t loop
-
-# Derived quantities
-for(t in 1:T){
-  Mtot[t] <- sum(M[,t])
-    for(k in 1:K){
-      Ntot[k,t] <- sum(Navail[,k,t])
+  cellprobs[nD+1] <- 1-sum(cellprobs[1:nD])
+  for (s in 1:nsites) {
+    for (k in 1:K) {
+      pdet[s,k] <- sum(cellprobs[1:nD]) # Distance class probabilities
+      pmarg[s,k] <- pdet[s,k]*phi       # Marginal probability
+    }
   }
-}
+
+  for(t in 1:T){                        # Years
+    for (s in 1:nsites) {               # Sites
+      for (k in 1:K) {                  # Replicates
+        # Model part 4: distance class frequencies
+        y4d[s,1:nD,k,t] ~ dmulti(cellprobs.cond[1:nD], nobs[s,k,t])
+        # Model part 3: total number of detections:
+        nobs[s,k,t] ~ dbin(pmarg[s,k], M[s,t])
+        # Model part 2: Availability. Not used in this model but simulated.
+        Navail[s,k,t] ~ dbin(phi, M[s,t])
+      }  # end k loop
+      # Model part 1: Abundance model
+      M[s,t] ~ dpois(lambda[s,t])
+      log(lambda[s,t]) <- beta0 + beta1*habitat[s] + beta.trend*(t-2.5)
+    }  # end s loop
+  } # end t loop
+
+  # Derived quantities
+  for(t in 1:T){
+    Mtot[t] <- sum(M[,t])
+      for(k in 1:K){
+        Ntot[k,t] <- sum(Navail[,k,t])
+    }
+  }
 } # End model
 ",file="tempemig4d.txt")
 
@@ -123,6 +125,7 @@ set.seed(1)
 outRD <- jags(data, inits, params, "tempemig4d.txt",
   # n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni, parallel = FALSE)
   n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni, parallel = TRUE)  # ~~~~ for faster testing
-par(mfrow = c(3,3))   ;   traceplot(outRD)
+op <- par(mfrow = c(3,3))   ;   traceplot(outRD)
+par(op)
 summary(outRD)
 

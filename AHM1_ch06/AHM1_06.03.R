@@ -2,13 +2,13 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 6. Modeling abundance with counts of unmarked individuals
 #    in closed populations: binomial N-mixture models
 # =========================================================================
 
 # 6.3. Simulation and analysis of the simplest possible N-mixture model
 # ------------------------------------------------------------------------
-
 
 # Choose sample sizes and prepare observed data array C
 set.seed(24)                # So we all get same data set
@@ -61,16 +61,16 @@ str(win.data)                      # Look at data
 sink("model1.txt")
 cat("
 model {
-# Priors
-   lambda ~ dgamma(0.001, 0.001)
-   p ~ dunif(0, 1)
-# Likelihood
-   for (i in 1:M) {
-      N[i] ~ dpois(lambda)      # State model
-      for (j in 1:J) {
-         C[i,j] ~ dbin(p, N[i]) # Observation model
-      }
-   }
+  # Priors
+  lambda ~ dgamma(0.001, 0.001)
+  p ~ dunif(0, 1)
+  # Likelihood
+  for (i in 1:M) {
+    N[i] ~ dpois(lambda)      # State model
+    for (j in 1:J) {
+      C[i,j] ~ dbin(p, N[i]) # Observation model
+    }
+  }
 }
 ",fill = TRUE)
 sink()

@@ -2,10 +2,11 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 7. Modeling abundance using multinomial N-mixture models
 # =========================================================================
 
-### SLOW: the unmarked analysis takes almost 1 hr.
+# Approximate execution time for this code: 40 mins
 
 library(unmarked)
 library(jagsUI)
@@ -119,17 +120,17 @@ fm17 <- multinomPois(~day + I(day^2) + intensity + I(intensity^2) ~forest + elev
 
 # Assemble the models into a fitList
 mspart2 <- fitList(
-"lam(.)p(best)"                               = fm7,
-"lam(elev)p(best)"                            = fm8,
-"lam(forest)p(best)"                          = fm9,
-"lam(length)p(best)"                          = fm10,
-"lam(forest + elev)p(best)"                   = fm11,
-"lam(forest + iLength)p(best)"                = fm12,
-"lam(elev + iLength)p(best)"                  = fm13,
-"lam(forest + elev + length)p(best)"          = fm14,
-"lam(elev + elev^2)p(best)"                   = fm15,
-"lam(forest + elev + elev^2)p(best)"          = fm16,
-"lam(forest + elev + elev^2 + iLength)p(best)"= fm17)
+    "lam(.)p(best)"                               = fm7,
+    "lam(elev)p(best)"                            = fm8,
+    "lam(forest)p(best)"                          = fm9,
+    "lam(length)p(best)"                          = fm10,
+    "lam(forest + elev)p(best)"                   = fm11,
+    "lam(forest + iLength)p(best)"                = fm12,
+    "lam(elev + iLength)p(best)"                  = fm13,
+    "lam(forest + elev + length)p(best)"          = fm14,
+    "lam(elev + elev^2)p(best)"                   = fm15,
+    "lam(forest + elev + elev^2)p(best)"          = fm16,
+    "lam(forest + elev + elev^2 + iLength)p(best)"= fm17)
 
 # Rank them by AIC
 (mspart2 <- modSel(mspart2))
@@ -137,13 +138,15 @@ mspart2 <- fitList(
 fm17
 
 mhb.umf2 <- unmarkedFrameGMM(y=caphist, numPrimary = 1,
-siteCovs=as.data.frame(sitecovs), obsCovs=obscovs, obsToY=o2y, piFun="crPiFun")
+    siteCovs=as.data.frame(sitecovs), obsCovs=obscovs, obsToY=o2y, piFun="crPiFun")
 
 fm1NB <- gmultmix(~1, ~1, ~1, mix = "NB", data = mhb.umf2)
 
-fm17P <- gmultmix(~forest + elev + I(elev^2) + iLength, ~1, ~day + I(day^2) + intensity + I(intensity^2), mix = "P",   data = mhb.umf2)
+fm17P <- gmultmix(~forest + elev + I(elev^2) + iLength, ~1, ~day + I(day^2) +
+    intensity + I(intensity^2), mix = "P",   data = mhb.umf2)
 
-fm17NB <- gmultmix(~forest + elev + I(elev^2) + iLength, ~1, ~day + I(day^2) + intensity + I(intensity^2), mix = "NB",   data = mhb.umf2)
+fm17NB <- gmultmix(~forest + elev + I(elev^2) + iLength, ~1, ~day + I(day^2) +
+    intensity + I(intensity^2), mix = "NB",   data = mhb.umf2)
 
 
 fm17P    # AIC-best Poisson mixture model
@@ -186,7 +189,7 @@ pb.mhbNB@t0[2] / mean(pb.mhbNB@t.star[,2])
 n.obs <- apply(caphist, 1, sum, na.rm=TRUE)
 n.predP <- apply(fitted(fm17P), 1, sum, na.rm=TRUE)
 n.predNB <- apply(fitted(fm17NB), 1, sum, na.rm=TRUE)
-plot(n.obs, n.predP, frame = F)   # Fig. 7-7
+plot(n.obs, n.predP, frame = FALSE)   # Fig. 7-7
 abline(0,1)
 points(smooth.spline(n.predP ~ n.obs, df = 4), type = "l", lwd = 2, col = "blue")
 points(smooth.spline(n.predNB ~ n.obs, df=4), type= "l", lwd = 2, col = "red")
@@ -203,14 +206,16 @@ elev.orig <- elev.sd*seq(-1.5, 2.42,,500)  + elev.mean
 
 
 # Remember length = 0 is saturation sampling because length = 1/L
-newL <- data.frame(elev = seq(-1.5,2.42,,500), elev.orig, forest = 0, iLength = 1/5.1)           # 'Low' prediction
-newH <- data.frame(elev = seq(-1.5,2.42,,500), elev.orig, forest = 0, iLength = 0)           # 'High' prediction
+newL <- data.frame(elev = seq(-1.5,2.42,,500), elev.orig,
+    forest = 0, iLength = 1/5.1)           # 'Low' prediction
+newH <- data.frame(elev = seq(-1.5,2.42,,500), elev.orig,
+    forest = 0, iLength = 0)           # 'High' prediction
 predL <- predict(fm17NB, type="lambda", newdata=newL, appendData=TRUE)
 predH <- predict(fm17NB, type="lambda", newdata=newH, appendData=TRUE)
 head(cbind(low = predL[,1:2], high = predH[,1:2]))
 
 plot(Predicted ~ elev.orig, predL, type="l", lwd = 3, xlab="Elevation",
- ylab="Expected # territories", ylim=c(0, 13), frame=F, col = "red")
+ ylab="Expected # territories", ylim=c(0, 13), frame=FALSE, col = "red")
 points(Predicted ~ elev.orig, predH, type="l", lwd = 3, col = "blue")
 matlines(elev.orig, predL[,3:4], lty = 1, lwd = 1, col = "red")
 matlines(elev.orig, predH[,3:4], lty = 1, lwd = 1, col = "blue")
@@ -225,8 +230,11 @@ require(AICcmodavg)
 model.list <- list(fm17NB) # candidate model list with single model
 model.names <- c("AIC-best model")
 
-# Compute model-averaged predictions of abundance for values of elevation, with uncertainty (SE, CIs) adjusted for overdispersion (c.hat), with latter estimated from bootstrapped Chisquare
-pred.c.hatL <- modavgPred(cand.set = model.list, modnames = model.names, newdata = newL, parm.type = "lambda", type = "response", c.hat = 1.11)
+# Compute model-averaged predictions of abundance for values of elevation,
+#  with uncertainty (SE, CIs) adjusted for overdispersion (c.hat), with latter
+#  estimated from bootstrapped Chisquare
+pred.c.hatL <- modavgPred(cand.set = model.list, modnames = model.names,
+    newdata = newL, parm.type = "lambda", type = "response", c.hat = 1.11)
 
 # Compare predictions and SE without and with c.hat adjustment
 head(cbind(predL[1:2], pred.c.hatL[2:3]), 10) ## see errata
@@ -235,14 +243,18 @@ head(cbind(predL[1:2], pred.c.hatL[2:3]), 10) ## see errata
 rlength <- seq(1, 30, 0.01)         # Vary route length from 1 to 30 kms
 newData <- data.frame(elev=0, forest=0, iLength=1/rlength)
 pred <- predict(fm17NB, type="lambda", newdata=newData, c.hat = 1.11)
-par(mar = c(5,5,3,2), cex.lab = 1.5, cex.axis = 1.3)
-plot(rlength, pred[[1]], type = "l", lwd = 3, col = "blue", frame = F, xlab = "Transect length (km)", ylab = "Exposed population (lambda)", ylim = c(0, 16), axes = F)
+op <- par(mar = c(5,5,3,2), cex.lab = 1.5, cex.axis = 1.3)
+plot(rlength, pred[[1]], type = "l", lwd = 3, col = "blue", frame = FALSE,
+    xlab = "Transect length (km)", ylab = "Exposed population (lambda)",
+    ylim = c(0, 16), axes = FALSE)
 axis(1, at = seq(2,30,2))       ;      axis(2)
 abline(v = c(1.2, 5.135, 9.4), lwd = 2)
-matlines(rlength, cbind(pred[[1]]-pred[[2]], pred[[1]]+pred[[2]]), type = "l", lty = 1, lwd = 2, col = "gray")
-
-sat.pred <- predict(fm17NB, type="lambda", newdata= data.frame(elev=0, forest=0, iLength=0), c.hat = 1.11)
+matlines(rlength, cbind(pred[[1]]-pred[[2]], pred[[1]]+pred[[2]]),
+    type = "l", lty = 1, lwd = 2, col = "gray")
+sat.pred <- predict(fm17NB, type="lambda",
+    newdata= data.frame(elev=0, forest=0, iLength=0), c.hat = 1.11)
 abline(as.numeric(sat.pred[1]),0, lwd = 2, lty = 2)
+par(op)
 
 
 pred[round(rlength,2)==1.2,]/as.numeric(sat.pred[1])
@@ -314,11 +326,13 @@ r2 <- mask(r2, elev)
 
 # Draw maps of jay density and standard error of density (Fig. 7–11)
 par(mfrow = c(1,2), mar = c(1,2,3,5))
-plot(r1, col = mapPalette1(100), axes = FALSE, box = FALSE, main = "Density of European Jay", zlim = c(0, 10))
+plot(r1, col = mapPalette1(100), axes = FALSE, box = FALSE,
+    main = "Density of European Jay", zlim = c(0, 10))
 # plot(rivers, col = "dodgerblue", add = TRUE)
 # plot(border, col = "transparent", lwd = 1.5, add = TRUE)
 # plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
-plot(r2, col = mapPalette1(100), axes = FALSE, box = FALSE, main = "Standard errors of density", zlim = c(0, 1.5))
+plot(r2, col = mapPalette1(100), axes = FALSE, box = FALSE,
+    main = "Standard errors of density", zlim = c(0, 1.5))
 # plot(rivers, col = "dodgerblue", add = TRUE)
 # plot(border, col = "transparent", lwd = 1.5, add = TRUE)
 # plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
@@ -357,17 +371,17 @@ y <- as.matrix(getY(mhb.umf))
 
 # Now  we have to stretch out the encounter frequencies into individuals...
 # There were 439 unique individuals observed during the survey
-eh<- unlist(dimnames(y)[2])
-ehid<- col(y)[y>0 & !is.na(y)]  # Column ids, index to encounter history
-eh<- eh[ehid]
-siteid<- row(y)[y>0 & !is.na(y)] # Site ids
-y<- y[y>0 & !is.na(y)]   # Positive counts
-eh<- rep(eh, y)
-siteid<- rep(siteid, y)
+eh <- unlist(dimnames(y)[2])
+ehid <- col(y)[y>0 & !is.na(y)]  # Column ids, index to encounter history
+eh <- eh[ehid]
+siteid <- row(y)[y>0 & !is.na(y)] # Site ids
+y <- y[y > 0 & !is.na(y)]   # Positive counts
+eh <- rep(eh, y)
+siteid <- rep(siteid, y)
 
-eh.mat<- matrix(NA,nrow=length(eh),ncol=3)
+eh.mat <- matrix(NA,nrow=length(eh),ncol=3)
 for(i in 1:length(eh)){
-    eh.mat[i,]<- as.numeric(unlist(strsplit(eh[i],split="")))
+  eh.mat[i,]<- as.numeric(unlist(strsplit(eh[i],split="")))
 }
 
 
@@ -381,52 +395,54 @@ y <- rbind(eh.mat, matrix(0, nrow=(M-nind), ncol=3))
 site <- c(siteid, rep(NA, M-nind))
 sitecovs <- siteCovs(mhb.umf)
 
-obscovs<- obsCovs(mhb.umf)
-Intensity<- matrix(obscovs[,"intensity"], nrow=nsites, ncol=3,byrow=TRUE)
+obscovs <- obsCovs(mhb.umf)
+Intensity <- matrix(obscovs[,"intensity"], nrow=nsites, ncol=3,byrow=TRUE)
 
 # Bundle data for BUGS
-data <- list(y = y, J = 3, M = M , nsites=nsites, X = as.matrix(sitecovs), Intensity= Intensity, group=site)
+data <- list(y = y, J = 3, M = M , nsites=nsites, X = as.matrix(sitecovs),
+    Intensity= Intensity, group=site)
 str(data)
 
 # Specify model in BUGS language
 cat("
 model {
 
-# Prior distributions
-p0 ~ dunif(0,1)
-alpha0 <- log(p0 / (1-p0))
-alpha1 ~ dnorm(0, 0.01)
+  # Prior distributions
+  p0 ~ dunif(0,1)
+  alpha0 <- log(p0 / (1-p0))
+  alpha1 ~ dnorm(0, 0.01)
 
-beta0 ~ dnorm(0,0.01)
-beta1 ~ dnorm(0,0.01)
-beta2 ~ dnorm(0,0.01)
-beta3 ~ dnorm(0,0.01)
-psi <- sum(lambda[]) / M   # psi is a derived parameter
+  beta0 ~ dnorm(0,0.01)
+  beta1 ~ dnorm(0,0.01)
+  beta2 ~ dnorm(0,0.01)
+  beta3 ~ dnorm(0,0.01)
+  psi <- sum(lambda[]) / M   # psi is a derived parameter
 
-# Model for abundance: lambda depends on Elev, Length, Forest
-for(s in 1:nsites){
-  log(lambda[s]) <- beta0 + beta1 * X[s,1] + (beta2/X[s,2]) + beta3*X[s,3]
-  probs[s] <- lambda[s] / sum(lambda[])
-}
-
-# Model for individual encounter histories
-for(i in 1:M){
-  group[i] ~ dcat(probs[])  # Group == site membership
-  z[i] ~ dbern(psi)         # Data augmentation variables
-
-  # Observation model: p depends on Intensity
-  for(j in 1:J){
-    logit(p[i,j]) <- alpha0 + alpha1 * Intensity[group[i],j]
-
-    pz[i,j] <- p[i,j] * z[i]
-    y[i,j] ~ dbern(pz[i,j])
+  # Model for abundance: lambda depends on Elev, Length, Forest
+  for(s in 1:nsites){
+    log(lambda[s]) <- beta0 + beta1 * X[s,1] + (beta2/X[s,2]) + beta3*X[s,3]
+    probs[s] <- lambda[s] / sum(lambda[])
   }
-}
+
+  # Model for individual encounter histories
+  for(i in 1:M){
+    group[i] ~ dcat(probs[])  # Group == site membership
+    z[i] ~ dbern(psi)         # Data augmentation variables
+
+    # Observation model: p depends on Intensity
+    for(j in 1:J){
+      logit(p[i,j]) <- alpha0 + alpha1 * Intensity[group[i],j]
+
+      pz[i,j] <- p[i,j] * z[i]
+      y[i,j] ~ dbern(pz[i,j])
+    }
+  }
 }
 ",fill=TRUE,file="model.txt")
 
 # Parameters monitored
-parameters <- c("p0", "alpha0", "alpha1", "beta0", "beta1", "beta2", "beta3", "psi")
+parameters <- c("p0", "alpha0", "alpha1", "beta0", "beta1", "beta2",
+    "beta3", "psi")
 
 # Initial values
 zst <- c(rep(1,M-100), rep(0,100)) ## see errata

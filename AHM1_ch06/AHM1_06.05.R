@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 6. Modeling abundance with counts of unmarked individuals
 #    in closed populations: binomial N-mixture models
 # =========================================================================
@@ -16,7 +17,13 @@ library(unmarked)
 data <- simNmix()                   # Default arguments
 data <- simNmix(show.plot = FALSE)  # Default args, no plots
 set.seed(24)
-str(data <- simNmix(nsite = 267, nvisit = 3, mean.theta = 1, mean.lam = 2, mean.p = 0.6, area = FALSE, beta1.theta = 0, beta2.theta = 0, beta3.theta = 0, beta2.lam = 0, beta3.lam = 0, beta4.lam = 0, beta3.p = 0, beta5.p = 0, beta6.p = 0, beta.p.survey = 0, beta.p.N = 0, sigma.lam = 0, dispersion = 10, sigma.p.site = 0, sigma.p.visit = 0, sigma.p.survey = 0, sigma.p.ind = 0, Neg.Bin = FALSE, open.N = FALSE, show.plot = TRUE))  # All default args explicit
+str(data <- simNmix(nsite = 267, nvisit = 3, mean.theta = 1, mean.lam = 2,
+    mean.p = 0.6, area = FALSE, beta1.theta = 0, beta2.theta = 0,
+    beta3.theta = 0, beta2.lam = 0, beta3.lam = 0, beta4.lam = 0,
+    beta3.p = 0, beta5.p = 0, beta6.p = 0, beta.p.survey = 0, beta.p.N = 0,
+    sigma.lam = 0, dispersion = 10, sigma.p.site = 0, sigma.p.visit = 0,
+    sigma.p.survey = 0, sigma.p.ind = 0, Neg.Bin = FALSE, open.N = FALSE, show.plot = TRUE))
+    # All default args explicit
 
 
 str(data <- simNmix())                  # Null data-generating model

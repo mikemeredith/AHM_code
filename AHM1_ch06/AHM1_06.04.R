@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 6. Modeling abundance with counts of unmarked individuals
 #    in closed populations: binomial N-mixture models
 # =========================================================================
@@ -32,8 +33,8 @@ points(vegHt, N)              # Add realized abundance to plot
 table(N)
 
 # Plot the true system state (Fig. 6–2, left)
-par(mfrow = c(1, 3), mar = c(5,5,2,2), cex.axis = 1.5, cex.lab = 1.5)
-plot(vegHt, N, xlab="Vegetation height", ylab="True abundance (N)", frame = F, cex = 1.5)
+op <- par(mfrow = c(1, 3), mar = c(5,5,2,2), cex.axis = 1.5, cex.lab = 1.5)
+plot(vegHt, N, xlab="Vegetation height", ylab="True abundance (N)", frame = FALSE, cex = 1.5)
 lines(seq(-1,1,,100), exp(beta0 + beta1* seq(-1,1,,100)), lwd=3, col = "red")
 
 
@@ -52,7 +53,7 @@ for(j in 1:J) {
 }
 
 # Plot observed data and effect of wind on det. probability (Fig. 6–2, middle)
-plot(wind, C/max(C), xlab="Wind", ylab="Scaled counts: C/max(C)", frame = F, cex = 1.5)
+plot(wind, C/max(C), xlab="Wind", ylab="Scaled counts: C/max(C)", frame = FALSE, cex = 1.5)
 lines(seq(-1,1,,100), plogis(alpha0 + alpha1*seq(-1,1,,100)), lwd=3, col="red")
 
 
@@ -108,12 +109,14 @@ pred.det <- predict(fm.Nmix1, type="det", newdata=newdat)
 
 # Fit detection-naive GLM to counts and plot comparison (Fig. 6–2, right)
 summary(fm.glm <- glm(c(C) ~ rep(vegHt, 3), family=poisson)) # p-naive  model
-matplot(vegHt, C, xlab="Vegetation height", ylab="Counts", frame = F, cex = 1.5, pch = 1, col = "black")
+matplot(vegHt, C, xlab="Vegetation height", ylab="Counts", frame = FALSE,
+    cex = 1.5, pch = 1, col = "black")
 lines(seq(-1,1,,100), exp(beta0 + beta1* seq(-1,1,,100)), lwd=3, col = "red")
 curve(exp(coef(fm.glm)[1]+coef(fm.glm)[2]*x), -1, 1, type ="l", lwd=3, add=TRUE)
 lines(vegHt, predict(fm.Nmix1, type="state")[,1], col = "blue", lwd = 3)
-legend(-1, 7, c("Truth", "'Poisson GLM' with p", "Poisson GLM without p"), col=c("red", "blue", "black"), lty = 1, lwd=3, cex = 1.2)
-
+legend(-1, 7, c("Truth", "'Poisson GLM' with p", "Poisson GLM without p"),
+    col=c("red", "blue", "black"), lty = 1, lwd=3, cex = 1.2)
+par(op)
 
 ranef(fm.Nmix1)
 
@@ -183,81 +186,93 @@ LRT(fm.Nmix3, fm.Nmix1)
 
 
 # Bundle data
-win.data <- list(C = C, M = nrow(C), J = ncol(C), wind = wind, vegHt = vegHt, hab = as.numeric(factor(hab)), XvegHt = seq(-1, 1,, 100), Xwind = seq(-1, 1,,100) )
+win.data <- list(C = C, M = nrow(C), J = ncol(C), wind = wind, vegHt = vegHt,
+    hab = as.numeric(factor(hab)), XvegHt = seq(-1, 1,, 100),
+    Xwind = seq(-1, 1,,100) )
 str(win.data)
 
 # Specify model in BUGS language
 cat(file = "model2.txt", "
 model {
-# Priors
-for(k in 1:3){                # Loop over 3 levels of hab or time factors
-   alpha0[k] ~ dunif(-10, 10) # Detection intercepts
-   alpha1[k] ~ dunif(-10, 10) # Detection slopes
-   beta0[k] ~ dunif(-10, 10)  # Abundance intercepts
-   beta1[k] ~ dunif(-10, 10)  # Abundance slopes
-}
+  # Priors
+  for(k in 1:3){                # Loop over 3 levels of hab or time factors
+    alpha0[k] ~ dunif(-10, 10) # Detection intercepts
+    alpha1[k] ~ dunif(-10, 10) # Detection slopes
+    beta0[k] ~ dunif(-10, 10)  # Abundance intercepts
+    beta1[k] ~ dunif(-10, 10)  # Abundance slopes
+  }
 
-# Likelihood
-# Ecological model for true abundance
-for (i in 1:M){
-   N[i] ~ dpois(lambda[i])
-   log(lambda[i]) <- beta0[hab[i]] + beta1[hab[i]] * vegHt[i]
-   # Some intermediate derived quantities
-   critical[i] <- step(2-N[i])# yields 1 whenever N is 2 or less
-   z[i] <- step(N[i]-0.5)     # Indicator for occupied site
-   # Observation model for replicated counts
-   for (j in 1:J){
+  # Likelihood
+  # Ecological model for true abundance
+  for (i in 1:M){
+    N[i] ~ dpois(lambda[i])
+    log(lambda[i]) <- beta0[hab[i]] + beta1[hab[i]] * vegHt[i]
+    # Some intermediate derived quantities
+    critical[i] <- step(2-N[i])# yields 1 whenever N is 2 or less
+    z[i] <- step(N[i]-0.5)     # Indicator for occupied site
+    # Observation model for replicated counts
+    for (j in 1:J){
       C[i,j] ~ dbin(p[i,j], N[i])
       logit(p[i,j]) <- alpha0[j] + alpha1[j] * wind[i,j]
-   }
-}
+    }
+  }
 
-# Derived quantities
-Nocc <- sum(z[])         # Number of occupied sites among sample of M
-Ntotal <- sum(N[])       # Total population size at M sites combined
-Nhab[1] <- sum(N[1:33])  # Total abundance for sites in hab A
-Nhab[2] <- sum(N[34:66]) # Total abundance for sites in hab B
-Nhab[3] <- sum(N[67:100])# Total abundance for sites in hab C
-for(k in 1:100){         # Predictions of lambda and p ...
-   for(level in 1:3){    #    ... for each level of hab and time factors
+  # Derived quantities
+  Nocc <- sum(z[])         # Number of occupied sites among sample of M
+  Ntotal <- sum(N[])       # Total population size at M sites combined
+  Nhab[1] <- sum(N[1:33])  # Total abundance for sites in hab A
+  Nhab[2] <- sum(N[34:66]) # Total abundance for sites in hab B
+  Nhab[3] <- sum(N[67:100])# Total abundance for sites in hab C
+  for(k in 1:100){         # Predictions of lambda and p ...
+    for(level in 1:3){    #    ... for each level of hab and time factors
       lam.pred[k, level] <- exp(beta0[level] + beta1[level] * XvegHt[k])
       logit(p.pred[k, level]) <- alpha0[level] + alpha1[level] * Xwind[k]
-   }
-}
-N.critical <- sum(critical[]) # Number of populations with critical size
+    }
+  }
+  N.critical <- sum(critical[]) # Number of populations with critical size
 }")
 
 # Initial values
 Nst <- apply(C, 1, max)+1   # Important to give good inits for latent N
-inits <- function() list(N = Nst, alpha0 = rnorm(3), alpha1 = rnorm(3), beta0 = rnorm(3), beta1 = rnorm(3))
+inits <- function() list(N = Nst, alpha0 = rnorm(3), alpha1 = rnorm(3),
+    beta0 = rnorm(3), beta1 = rnorm(3))
 
 # Parameters monitored
-params <- c("alpha0", "alpha1", "beta0", "beta1", "Nocc", "Ntotal", "Nhab", "N.critical", "lam.pred", "p.pred") # could also estimate N, bayesian counterpart to BUPs before: simply add "N" to the list
+params <- c("alpha0", "alpha1", "beta0", "beta1", "Nocc", "Ntotal", "Nhab",
+    "N.critical", "lam.pred", "p.pred") # could also estimate N, bayesian counterpart to BUPs before: simply add "N" to the list
 
 # MCMC settings
 nc <- 3   ;   ni <- 22000   ;   nb <- 2000   ;   nt <- 10
 
 # Call JAGS, time run (ART 1 min) and summarize posteriors
 system.time(out <- jags(win.data, inits, params, "model2.txt", n.chains = nc,
-n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+    n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 )
-traceplot(out, param = c('alpha0', 'alpha1', 'beta0', 'beta1', 'Nocc', 'Ntotal', 'Nhab', 'N.critical'))
+traceplot(out, param = c('alpha0', 'alpha1', 'beta0', 'beta1', 'Nocc', 'Ntotal',
+    'Nhab', 'N.critical'))
 print(out, 2)
 
 
-plot(table(out$sims.list$N.critical), xlab="Number of populations with critical size", ylab="Frequency", frame = F)
+plot(table(out$sims.list$N.critical), xlab="Number of populations with critical size",
+    ylab="Frequency", frame = FALSE)
 abline(v = 74.5, col = "red", lwd = 3)
 
 
 (metapop.extinction.risk <- mean(out$sims.list$N.critical > 74))
 
 
-par(mfrow = c(1,2), mar = c(5,5,3,2), cex.axis = 1.5, cex.lab = 1.5)
+op <- par(mfrow = c(1,2), mar = c(5,5,3,2), cex.axis = 1.5, cex.lab = 1.5)
 X <- seq(-1, 1,, 100)
-plot(X, out$summary[219:318,1], xlab = "Vegetation Height", ylab = "Expected abundance (lambda)", ylim = c(0, 11), frame = F, type = "l")
-polygon(c(X, rev(X)), c(out$summary[219:318,3], rev(out$summary[219:318,7])), col = "gray", border = F)
+plot(X, out$summary[219:318,1], xlab = "Vegetation Height",
+    ylab = "Expected abundance (lambda)", ylim = c(0, 11),
+    frame = FALSE, type = "l")
+polygon(c(X, rev(X)), c(out$summary[219:318,3], rev(out$summary[219:318,7])),
+    col = "gray", border = FALSE)
 lines(X, out$summary[219:318,1], lty = 1, lwd = 3, col = "blue")
-plot(X, out$summary[519:618,1], xlab = "Wind speed", ylab = "Detection probability (p)", ylim = c(0, 1), frame = F, type = "l")
-polygon(c(X, rev(X)), c(out$summary[519:618,3], rev(out$summary[519:618,7])), col = "gray", border = F)
+plot(X, out$summary[519:618,1], xlab = "Wind speed",
+    ylab = "Detection probability (p)", ylim = c(0, 1),
+    frame = FALSE, type = "l")
+polygon(c(X, rev(X)), c(out$summary[519:618,3], rev(out$summary[519:618,7])),
+    col = "gray", border = FALSE)
 lines(X, out$summary[519:618,1], lty = 1, lwd = 3, col = "blue")
-
+par(op)

@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 8. Modeling abundance using hierarchical distance sampling (HDS)
 # =========================================================================
 
@@ -17,13 +18,13 @@ library(AHMbook)
 # Get data and do data-augmentation
 # Observed distances (meters)
 x <- c(71.93, 26.05, 58.47, 92.35, 163.83, 84.52, 163.83, 157.33,
-22.27, 72.11, 86.99, 50.8, 0, 73.14, 0, 128.56, 163.83, 71.85,
-30.47, 71.07, 150.96, 68.83, 90, 64.98, 165.69, 38.01, 378.21,
-78.15, 42.13, 0, 400, 175.39, 30.47, 35.07, 86.04, 31.69, 200,
-271.89, 26.05, 76.6, 41.04, 200, 86.04, 0, 93.97, 55.13, 10.46,
-84.52, 0, 77.65, 0, 96.42, 0, 64.28, 187.94, 0, 160.7, 150.45,
-63.6, 193.19, 106.07, 114.91, 143.39, 128.56, 245.75, 123.13,
-123.13, 153.21, 143.39, 34.2, 96.42, 259.81, 8.72)
+    22.27, 72.11, 86.99, 50.8, 0, 73.14, 0, 128.56, 163.83, 71.85,
+    30.47, 71.07, 150.96, 68.83, 90, 64.98, 165.69, 38.01, 378.21,
+    78.15, 42.13, 0, 400, 175.39, 30.47, 35.07, 86.04, 31.69, 200,
+    271.89, 26.05, 76.6, 41.04, 200, 86.04, 0, 93.97, 55.13, 10.46,
+    84.52, 0, 77.65, 0, 96.42, 0, 64.28, 187.94, 0, 160.7, 150.45,
+    63.6, 193.19, 106.07, 114.91, 143.39, 128.56, 245.75, 123.13,
+    123.13, 153.21, 143.39, 34.2, 96.42, 259.81, 8.72)
 
 B <- 500 # Strip half-width. Larger than max distance
 nind <- length(x)
@@ -40,24 +41,24 @@ str( win.data <- list(nind=nind, nz=nz, x=x, y=y, B=B) )
 cat("
 model {
 
-# Priors
-sigma ~ dunif(0,1000)  # Half-normal scale
-psi ~ dunif(0,1)       # DA parameter
+  # Priors
+  sigma ~ dunif(0,1000)  # Half-normal scale
+  psi ~ dunif(0,1)       # DA parameter
 
-# Likelihood
-for(i in 1:(nind+nz)){
-   # Process model
-   z[i] ~ dbern(psi)   # DA variables
-   x[i] ~ dunif(0, B)  # Distribution of distances
-   # Observation model
-   logp[i] <- -((x[i]*x[i])/(2*sigma*sigma)) # Half-normal detection fct.
-   p[i] <- exp(logp[i])
-   mu[i] <- z[i] * p[i]
-   y[i] ~ dbern(mu[i]) # Simple Bernoulli measurement error process
-}
-# Derived quantities
-N <- sum(z[1:(nind + nz)]) # Population size
-D <- N / 60                # Density, with A = 60 km^2 when B = 500
+  # Likelihood
+  for(i in 1:(nind+nz)){
+    # Process model
+    z[i] ~ dbern(psi)   # DA variables
+    x[i] ~ dunif(0, B)  # Distribution of distances
+    # Observation model
+    logp[i] <- -((x[i]*x[i])/(2*sigma*sigma)) # Half-normal detection fct.
+    p[i] <- exp(logp[i])
+    mu[i] <- z[i] * p[i]
+    y[i] ~ dbern(mu[i]) # Simple Bernoulli measurement error process
+  }
+  # Derived quantities
+  N <- sum(z[1:(nind + nz)]) # Population size
+  D <- N / 60                # Density, with A = 60 km^2 when B = 500
 }
 ",fill=TRUE,file="model1.txt")
 
@@ -93,26 +94,26 @@ str( win.data <- list (nind=nind, nz=nz, dclass=dclass, y=y, B=B,
 # BUGS model specification
 cat("
 model{
-# Priors
-psi ~ dunif(0, 1)
-sigma ~ dunif(0, 1000)
+  # Priors
+  psi ~ dunif(0, 1)
+  sigma ~ dunif(0, 1000)
 
-# Likelihood
-# construct conditional detection probability and Pr(x) for each bin
-for(g in 1:nD){        # midpt = mid point of each cell
-   log(p[g]) <- -midpt[g] * midpt[g] / (2 * sigma * sigma)
-   pi[g] <- delta / B  # probability of x in each interval
-}
+  # Likelihood
+  # construct conditional detection probability and Pr(x) for each bin
+  for(g in 1:nD){        # midpt = mid point of each cell
+    log(p[g]) <- -midpt[g] * midpt[g] / (2 * sigma * sigma)
+    pi[g] <- delta / B  # probability of x in each interval
+  }
 
-for(i in 1:(nind+nz)){
-   z[i] ~ dbern(psi)             # model for individual covariates
-   dclass[i] ~ dcat(pi[])        # population distribution of distance class
-   mu[i] <- z[i] * p[dclass[i]]  # p depends on distance class
-   y[i] ~ dbern(mu[i])
-}
-# Derived quantities: Population size and density
-N <- sum(z[])
-D <- N / 60
+  for(i in 1:(nind+nz)){
+    z[i] ~ dbern(psi)             # model for individual covariates
+    dclass[i] ~ dcat(pi[])        # population distribution of distance class
+    mu[i] <- z[i] * p[dclass[i]]  # p depends on distance class
+    y[i] ~ dbern(mu[i])
+  }
+  # Derived quantities: Population size and density
+  N <- sum(z[])
+  D <- N / 60
 }
 ",fill=TRUE, file = "model2.txt")
 
@@ -176,32 +177,33 @@ nD <- length(midpt) # how many intervals
 nind <- length(dclass)
 
 # Bundle and summarize data set
-str( win.data <- list(midpt=midpt, delta=delta, B=B, nind=nind, nD=nD, dclass=dclass) )
+str( win.data <- list(midpt=midpt, delta=delta, B=B, nind=nind,
+    nD=nD, dclass=dclass) )
 
 
 # BUGS model specification, conditional version
 cat("
 model{
 
-# Prior for single parameter
-sigma ~ dunif(0, 10)
+  # Prior for single parameter
+  sigma ~ dunif(0, 10)
 
-# Construct cell probabilities for nG cells (rectangle approximation)
-for(g in 1:nD){    # midpt[g] = midpoint of each distance band
-   log(p[g]) <- -midpt[g] * midpt[g] / (2*sigma*sigma)
-   pi[g] <- (( 2 * midpt[g] ) / (B*B)) * delta
-   f[g] <- p[g] * pi[g]
-   fc[g] <- f[g] / pcap
-}
-pcap <- sum(f[]) # capture prob. is the sum of all rectangular areas
+  # Construct cell probabilities for nG cells (rectangle approximation)
+  for(g in 1:nD){    # midpt[g] = midpoint of each distance band
+    log(p[g]) <- -midpt[g] * midpt[g] / (2*sigma*sigma)
+    pi[g] <- (( 2 * midpt[g] ) / (B*B)) * delta
+    f[g] <- p[g] * pi[g]
+    fc[g] <- f[g] / pcap
+  }
+  pcap <- sum(f[]) # capture prob. is the sum of all rectangular areas
 
-# Categorical observation model
-for(i in 1:nind){
-   dclass[i] ~ dcat(fc[])
-}
-# Derived quantity: population size
-N <- nind / pcap
-D<- N/(3.141*B*B)
+  # Categorical observation model
+  for(i in 1:nind){
+    dclass[i] ~ dcat(fc[])
+  }
+  # Derived quantity: population size
+  N <- nind / pcap
+  D<- N/(3.141*B*B)
 }
 ",fill=TRUE, file="model3.txt")
 
@@ -235,32 +237,32 @@ str( win.data <- list(midpt=midpt, delta=delta, B=B, nind=nind, nD=nD, dclass=dc
 cat("
 model{
 
-# Priors
-sigma ~ dunif(0, 10)
-psi ~ dunif(0, 1)
+  # Priors
+  sigma ~ dunif(0, 10)
+  psi ~ dunif(0, 1)
 
-# Construct cell probabilities for nG cells (rectangle approximation)
-for(g in 1:nD){           # midpt[g] = midpoint of each distance band
-   log(p[g]) <- -midpt[g] * midpt[g] / (2*sigma*sigma)
-   pi[g] <- ((2 * midpt[g]) / (B * B)) * delta
-   pi.probs[g] <- pi[g] / norm
-   f[g] <- p[g] * pi[g]
-   fc[g] <- f[g] / pcap   # conditional probabilities
-}
-pcap <- sum(f[])# capture prob. is the sum of all rectangular areas
-norm <- sum(pi[])
+  # Construct cell probabilities for nG cells (rectangle approximation)
+  for(g in 1:nD){           # midpt[g] = midpoint of each distance band
+    log(p[g]) <- -midpt[g] * midpt[g] / (2*sigma*sigma)
+    pi[g] <- ((2 * midpt[g]) / (B * B)) * delta
+    pi.probs[g] <- pi[g] / norm
+    f[g] <- p[g] * pi[g]
+    fc[g] <- f[g] / pcap   # conditional probabilities
+  }
+  pcap <- sum(f[])# capture prob. is the sum of all rectangular areas
+  norm <- sum(pi[])
 
-# Categorical observation model
-for(i in 1:(nind+nz)){
-   z[i] ~ dbern(psi)
-   dclass[i] ~ dcat(pi.probs[])
-   mu[i] <- p[dclass[i]] * z[i]
-   y[i] ~ dbern(mu[i])
-}
+  # Categorical observation model
+  for(i in 1:(nind+nz)){
+    z[i] ~ dbern(psi)
+    dclass[i] ~ dcat(pi.probs[])
+    mu[i] <- p[dclass[i]] * z[i]
+    y[i] ~ dbern(mu[i])
+  }
 
-# Derived quantity: population size
-N <- sum(z[])
-D<- N/(3.141*B*B)
+  # Derived quantity: population size
+  N <- sum(z[])
+  D<- N/(3.141*B*B)
 
 }
 ",fill=TRUE,file="model4.txt")
