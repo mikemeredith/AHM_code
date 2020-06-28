@@ -39,8 +39,9 @@ summary(fm <- colext(~1, ~ 1, ~ 1, ~ 1, data = umf))
 # Compute Chi-square test statistic for actual data by season and
 # generate reference distribution of test statistic under H0 (~1.1 h)
 # system.time(gof <- mb.gof.test(fm, print.table = FALSE, nsim = 1000,
+    # plot.hist = TRUE, plot.seasons = TRUE, report = 1) ) # load(AICcmodavg)
 system.time(gof <- mb.gof.test(fm, print.table = FALSE, nsim = 100,   # ~~~~~~~~~ reduce for testing
-    plot.hist = TRUE, plot.seasons = TRUE, report = 1) ) # load(AICcmodavg)
+    plot.hist = TRUE, plot.seasons = TRUE, report = 1, parallel = TRUE) )
 gof
 # Goodness-of-fit for dynamic occupancy model
 # Number of seasons: 10

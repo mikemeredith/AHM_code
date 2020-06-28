@@ -194,27 +194,6 @@ op <- par(mfrow = c(3,3)) ; traceplot(out2)
 par(op)
 summary(out2) ; jags.View(out2) ; print(out2, 3) # not shown
 
-# ~~~~~ code to produce the table shown ~~~~~~~
-RMSE <- array(NA, dim = c(4, 3), dimnames = list(c('psi1', 'phi', 'gamma', 'n.occ'), c('Fixed-eff. (DCM1)', 'Random-eff. (DCM2)', 'Ratio DCM2/DCM1')))
-RMSE[1, 1] <- sqrt(mean(out1$mean$psi1-psi1.true)^2)
-RMSE[1, 2] <- sqrt(mean(out2$mean$psi1-psi1.true)^2)
-RMSE[2, 1] <- sqrt(mean(out1$mean$phi-phi.true)^2)
-RMSE[2, 2] <- sqrt(mean(out2$mean$phi-phi.true)^2)
-RMSE[3, 1] <- sqrt(mean(out1$mean$gamma-gamma.true)^2)
-RMSE[3, 2] <- sqrt(mean(out2$mean$gamma-gamma.true)^2)
-RMSE[4, 1] <- sqrt(mean(out1$mean$n.occ-nocc.true)^2)
-RMSE[4, 2] <- sqrt(mean(out2$mean$n.occ-nocc.true)^2)
-RMSE[,3] <- RMSE[,2]/RMSE[,1]
-print(RMSE, 2)
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# Table of RMSE for both models and RMSE ratio
-# Fixed-eff. (DCM1) Random-eff. (DCM2) Ratio DCM2/DCM1
-# psi1 0.0504 0.027 0.529
-# phi 0.0079 0.020 2.488
-# gamma 0.0324 0.002 0.062
-# n.occ 2.6752 1.067 0.399
-
 
 # ~~~~~~~~~ Additional plotting code from MS dated 2019-01-01 ~~~~~~~~~~~
 
@@ -314,3 +293,27 @@ segments(nocc.true, out2$q2.5$n.occ, nocc.true, out2$q97.5$n.occ)
 abline(0,1, lwd = 2, col = 'red')
 abline(lm(c(out2$mean$n.occ) ~ c(nocc.true)), col = 'blue', lwd = 2, lty = 2)
 # ~~~~~~~~~~~~~~~~~~~~~~~
+
+# ~~~~~ code to produce the table shown ~~~~~~~
+RMSE <- array(NA, dim = c(4, 3), dimnames = list(c('psi1', 'phi', 'gamma', 'n.occ'),
+    c('Fixed-eff. (DCM1)', 'Random-eff. (DCM2)', 'Ratio DCM2/DCM1')))
+RMSE[1, 1] <- sqrt(mean(out1$mean$psi1-psi1.true)^2)
+RMSE[1, 2] <- sqrt(mean(out2$mean$psi1-psi1.true)^2)
+RMSE[2, 1] <- sqrt(mean(out1$mean$phi-phi.true)^2)
+RMSE[2, 2] <- sqrt(mean(out2$mean$phi-phi.true)^2)
+RMSE[3, 1] <- sqrt(mean(out1$mean$gamma-gamma.true)^2)
+RMSE[3, 2] <- sqrt(mean(out2$mean$gamma-gamma.true)^2)
+RMSE[4, 1] <- sqrt(mean(out1$mean$n.occ-nocc.true)^2)
+RMSE[4, 2] <- sqrt(mean(out2$mean$n.occ-nocc.true)^2)
+RMSE[,3] <- RMSE[,2]/RMSE[,1]
+print(RMSE, 2)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Table of RMSE for both models and RMSE ratio
+# Fixed-eff. (DCM1) Random-eff. (DCM2) Ratio DCM2/DCM1
+# psi1 0.0504 0.027 0.529
+# phi 0.0079 0.020 2.488
+# gamma 0.0324 0.002 0.062
+# n.occ 2.6752 1.067 0.399
+
+

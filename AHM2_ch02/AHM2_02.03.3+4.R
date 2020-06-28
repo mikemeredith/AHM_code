@@ -46,30 +46,30 @@ summary(umf <- unmarkedFramePCount(y = Cstacked,
 
 # Fit some models with default Poisson mixture for abundance.
 # ART for this whole block of 9 models: 5 mins
-system.time(fm0 <- pcount(~1 ~ 1, umf, se = F)) # 13 secs
-fm1 <- pcount(~1 ~ trend, umf, se = F)
-fm2 <- pcount(~date ~ 1, umf, se = F)
-fm3 <- pcount(~1 ~ elev, umf, se = F)
-fm4 <- pcount(~1 ~ elev + forest, umf, se = F)
-fm5 <- pcount(~1 ~ elev + forest + trend, umf, se = F)
-fm6 <- pcount(~1 ~ elev + I(elev^2)+ forest + trend, umf, se = F)
-fm7 <- pcount(~date ~ elev + I(elev^2)+ forest + trend, umf, se = F)
-fm8 <- pcount(~date + I(date^2) ~ elev + I(elev^2)+ forest + trend, umf, se = F)
+system.time(fm0 <- pcount(~1 ~ 1, umf, se = FALSE)) # 13 secs
+fm1 <- pcount(~1 ~ trend, umf, se = FALSE)
+fm2 <- pcount(~date ~ 1, umf, se = FALSE)
+fm3 <- pcount(~1 ~ elev, umf, se = FALSE)
+fm4 <- pcount(~1 ~ elev + forest, umf, se = FALSE)
+fm5 <- pcount(~1 ~ elev + forest + trend, umf, se = FALSE)
+fm6 <- pcount(~1 ~ elev + I(elev^2)+ forest + trend, umf, se = FALSE)
+fm7 <- pcount(~date ~ elev + I(elev^2)+ forest + trend, umf, se = FALSE)
+fm8 <- pcount(~date + I(date^2) ~ elev + I(elev^2)+ forest + trend, umf, se = FALSE)
 system.time(fm9 <- pcount(~date + I(date^2) + int ~ elev + I(elev^2)+
-    forest + trend, umf, se = T)) # Later we want those SEs ... # 4 mins
+    forest + trend, umf, se = TRUE)) # Later we want those SEs ... # 4 mins
 
 # Negative binomial models: models with covariates and trend
 # ART for these NB models: 8 mins
 system.time(fm5nb <- pcount(~1 ~ elev + forest + trend, umf,
-    mixture = "NB", se = F))
+    mixture = "NB", se = FALSE))
 fm6nb <- pcount(~1 ~ elev + I(elev^2)+ forest + trend, umf,
-    mixture = "NB", se = F)
+    mixture = "NB", se = FALSE)
 fm7nb <- pcount(~date ~ elev + I(elev^2)+ forest + trend, umf,
-    mixture = "NB", se = F)
+    mixture = "NB", se = FALSE)
 fm8nb <- pcount(~date + I(date^2) ~ elev + I(elev^2)+ forest + trend,
-    umf, mixture = "NB", se = F)
+    umf, mixture = "NB", se = FALSE)
 system.time(fm9nb <- pcount(~date + I(date^2) + int ~ elev + I(elev^2)+
-forest + trend, umf, mixture = "NB", se = F))  # 2.6 mins
+forest + trend, umf, mixture = "NB", se = FALSE))  # 2.6 mins
 
 # Organize models into a fitList and create a model selection table
 fl <- fitList(fm0 = fm0, fm1 = fm1, fm2 = fm2, fm3 = fm3, fm4 = fm4, fm5 = fm5, fm6 = fm6,
@@ -88,12 +88,12 @@ modSel(fl)
 # K = 200, ART 250 secs
 fm9nb.K200 <- pcount(~date + I(date^2) + int ~ elev + I(elev^2) + forest +
     trend, umf, K = 200, mixture = "NB", control = list(trace = TRUE,
-    REPORT = 1, maxit = 500), se = F) # Also monitor fitting criterion
+    REPORT = 1, maxit = 500), se = FALSE) # Also monitor fitting criterion
 
 # K = 400, ART 500 secs
 fm9nb.K400 <- pcount(~date + I(date^2) + int ~ elev + I(elev^2) + forest +
     trend, umf, K = 400, mixture = "NB", control = list(trace = TRUE,
-    REPORT = 1, maxit = 500), se = F)
+    REPORT = 1, maxit = 500), se = FALSE)
 
 cbind('K = 100' = coef(fm9nb), 'K = 200' = coef(fm9nb.K200),
   'K = 400' =coef(fm9nb.K400))
@@ -118,7 +118,7 @@ rbind('AIC(K = 118)' = fm9nb@AIC, 'AIC(K = 200)' = fm9nb.K200@AIC,
 
 system.time(fm9nb <- pcount(~date + I(date^2) + int ~ elev + I(elev^2) +
     forest + trend, umf, K = 200, mixture = "NB",
-    control = list(trace = TRUE, REPORT = 1, maxit = 500), se = T))  # 9 mins
+    control = list(trace = TRUE, REPORT = 1, maxit = 500), se = TRUE))  # 9 mins
 
 # Bootstrap simulation with 100 replicates for the AIC-best NegBin model
 # ART 2 hours
@@ -161,7 +161,7 @@ fm9nb
 # Call:
 # pcount(formula = ~date + I(date^2) + int ~ elev + I(elev^2) +
 # forest + trend, data = umf, K = 200, mixture = "NB",
-# se = T, control = list(trace = TRUE, REPORT = 1, maxit = 500))
+# se = TRUE, control = list(trace = TRUE, REPORT = 1, maxit = 500))
 # Abundance:
 # Estimate SE z P(>|z|)
 # (Intercept) 1.1497 0.13627 8.44 3.26e-17
@@ -185,7 +185,7 @@ fm9nb
 fm9
 # Call:
 # pcount(formula = ~date + I(date^2) + int ~ elev + I(elev^2) +
-# forest + trend, data = umf, K = 100, se = T)
+# forest + trend, data = umf, K = 100, se = TRUE)
 # Abundance:
 # Estimate SE z P(>|z|)
 # (Intercept) 0.0903 0.03574 2.53 1.15e-02
@@ -204,7 +204,7 @@ fm9
 # ~~~~~~ figure code not in the book ~~~~~~~~~~~~
 
 # Predictions for every datum
-pred.nb <- predict(fm9nb, type="state", newdata=umf) ###, append = T)
+pred.nb <- predict(fm9nb, type="state", newdata=umf) ###, append = TRUE)
 pred.p <- predict(fm9, type="state", newdata=umf)
 # Figure (not shown)
 plot(pred.p[,1], pred.nb[,1], xlab="N, Poisson abundance",
@@ -213,7 +213,9 @@ abline(0, 1, lwd=2,col="red")
 
 # Figure 2.5
 # ----------
-# Comparative plots of abundance relationships with elevation, forest cover and time (i.e., trend) and detection with date underboth NegBin and Poisson models
+# Comparative plots of abundance relationships with elevation, forest cover and
+#   time (i.e., trend) and detection with date underboth NegBin and Poisson
+#   models
 cnb <- coef(fm9nb) # Get coefficients or NegBin model
 cp <- coef(fm9)        # ... and for the Poisson model
 
@@ -221,19 +223,19 @@ op <- par(mfrow  = c(2, 2), mar = c(5,5,4,3), cex.lab = 1.5,
     cex.lab = 1.5, cex.main = 1.2)
 curve(exp(cnb[1] + cnb[2] * (x - 1190) / 637 + (cnb[3] * (x - 1190) / 637)^2),
     200, 3000, xlab = 'Elevation (m)', ylab = 'Expected abundance E(N)',
-    ylim = c(0, 10), lwd = 3, col = 'red', frame = F,
+    ylim = c(0, 10), lwd = 3, col = 'red', frame = FALSE,
     main = 'Abundance predictions from NB model (red) \n and from Poisson model (blue)')
 curve(exp(cp[1] + cp[2] * (x - 1190) / 637 + (cp[3] * (x - 1190) / 637)^2),
     200, 3000, lwd = 3, col = 'blue', add = TRUE)
 curve(exp(cnb[1] + cnb[4] * (x - 31.9) / 27.7), 0, 100,
     xlab = 'Forest cover (%)', ylab = 'Expected abundance E(N)',
-    ylim = c(0, 5), lwd = 3, col = 'red', frame = F,
+    ylim = c(0, 5), lwd = 3, col = 'red', frame = FALSE,
     main = 'Abundance predictions from NB model (red) \n and from Poisson model (blue)')
 curve(exp(cp[1] + cp[4] * (x - 31.9) / 27.7), 0, 100, lwd = 3, col = 'blue',
     add = TRUE)
 curve(exp(cnb[1] + cnb[5] * (x - 2005 - 7.5)), 2004, 2017, xlab = 'Year',
     ylab = 'Expected abundance E(N)', ylim = c(0, 5), lwd = 3, col = 'red',
-    frame = F, main = 'Abundance predictions from NB model (red) \n and from Poisson model (blue)')
+    frame = FALSE, main = 'Abundance predictions from NB model (red) \n and from Poisson model (blue)')
 curve(exp(cp[1] + cp[5] * (x - 2005 - 7.5)), 2004, 2017, lwd = 3, col = 'blue',
     add = TRUE)
 curve(plogis(cnb[6] + cnb[7] * standardize2match(x, dateso) +
@@ -273,11 +275,11 @@ for(b in 1:simrep){
   foreststretched <- rep(forest[bs.samp], nyears)
   # Create new unmarked data frame and fit model to bootstrapped data set
   umf <- unmarkedFramePCount(y = Cstacked,
-  siteCovs = data.frame(elev = elevstretched, forest = foreststretched,
-  trend = trend), obsCovs = list(date = DATEstacked, int = INTstacked))
+      siteCovs = data.frame(elev = elevstretched, forest = foreststretched,
+      trend = trend), obsCovs = list(date = DATEstacked, int = INTstacked))
   fm <- pcount(~date + I(date^2) + int ~ elev + I(elev^2) +
-  forest + trend, umf, K = 200, mixture = "NB", control = list(trace = TRUE,
-  REPORT = 10, maxit = 100), se = FALSE) # No SEs needed
+      forest + trend, umf, K = 200, mixture = "NB", control = list(trace = TRUE,
+      REPORT = 10, maxit = 100), se = FALSE) # No SEs needed
   # Save param estimates (could also make predictions and save them !)
   npbs.esti[,b] <- coef(fm)
 }

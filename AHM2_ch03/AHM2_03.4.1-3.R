@@ -62,7 +62,7 @@ library(raster)
 mapPalette <- colorRampPalette(c("gray", "yellow", "orange", "red"))
 
 r1 <- with(cells, rasterFromXYZ(data.frame(x = lon, y = lat, z = gdd)))
-plot(r1, col = mapPalette(100), axes = F, box = F,
+plot(r1, col = mapPalette(100), axes = FALSE, box = FALSE,
     main ="Map of GDD covariate with 193 CES locations")
 with(CES, points(cesx, cesy, pch=16, col='blue', cex = 0.8))
 
@@ -202,11 +202,11 @@ print(out6, 3)
 # [ ... output truncated ... ]
 # Visualizations (Fig. 3.12)
 par(mfrow = c(2, 1), mar = c(3,5,2,1))
-plot(1:193, out6$mean$mean.phi.site, xlab = 'Site', ylab = 'Apparent survival', frame = F,
+plot(1:193, out6$mean$mean.phi.site, xlab = 'Site', ylab = 'Apparent survival', frame = FALSE,
     pch = 16, ylim = c(0.14, 0.45))
 segments(1:193, out6$q2.5$mean.phi.site, 1:193, out6$q97.5$mean.phi.site)
 abline(h = out6$mean$mean.phi, lty = 1, lwd = 2)
-plot(1:193, out6$mean$mean.p.site, xlab = 'Site', ylab = 'Recapture', frame = F, pch = 16,
+plot(1:193, out6$mean$mean.p.site, xlab = 'Site', ylab = 'Recapture', frame = FALSE, pch = 16,
     ylim = c(0, 1))
 segments(1:193, out6$q2.5$mean.p.site, 1:193, out6$q97.5$mean.p.site)
 abline(h = out6$mean$mean.p, lty = 1, lwd = 2)
