@@ -6,6 +6,8 @@
 # =======================================
 # Code from proofs dated 2020-06-24
 
+# Approximate time with full number of iterations: 14 mins
+
 library(jagsUI)
 
 # ~~~~~~~~~~~ need data preparation from 6.4.1 ~~~~~~~~~~~~~~~~~~

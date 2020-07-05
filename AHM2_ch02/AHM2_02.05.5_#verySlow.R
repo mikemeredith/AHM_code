@@ -6,6 +6,10 @@
 # ========================================================
 # Code from proofs dated 2020-06-11
 
+# Approximate execution time for this code: 1.9 days
+#   excluding the 2 blocks wrapped in if(FALSE){} which take
+#   9 hrs and 5 days respectively.
+
 library(jagsUI)
 library(unmarked)
 library(AHMbook)
@@ -122,6 +126,7 @@ toExport <- as(ms, "data.frame")
 str(toExport) # output not printed
 
 # ~~~~ These models can be skipped to save time, the results are not used subsequently ~~~~
+# ~~~~ They take around 10 hours to run ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 if(FALSE) {
   # Fit the basic model with no covariates
   system.time(summary(fm4.1.se <- pcountOpen(lam = ~1, gam = ~1,
@@ -262,7 +267,7 @@ params <- c("mean.lambda", "mean.phi", "mean.gamma", "mean.p",
     "beta.lam", "beta.phi", "beta.gamma", "beta.p", "alpha.lam", "alpha.phi",
     "alpha.gamma", "alpha.p")
 # MCMC settings
-# na <- 1000 ; ni <- 500000 ; nt <- 250 ; nb <- 250000 ; nc <- 3
+# na <- 1000 ; ni <- 500000 ; nt <- 250 ; nb <- 250000 ; nc <- 3  # 35 mins
 na <- 1000 ; ni <- 50000 ; nt <- 25 ; nb <- 25000 ; nc <- 3 # ~~~ for testing, 4 mins
 # Call JAGS (ART 66 min), check convergence and summarize posteriors
 out4 <- jags(bdata, inits, params, "DM2.txt", n.adapt = na,

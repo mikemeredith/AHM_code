@@ -8,6 +8,7 @@
 # =========================================================================
 
 # Approximate execution time for this code: 70 mins
+# Run time with the full number of iterations: 31 hrs
 
 library(AHMbook)
 library(unmarked)

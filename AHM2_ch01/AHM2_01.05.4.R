@@ -7,6 +7,7 @@
 # Code from proofs dated 2020-06-03
 
 # Approximate run time for this script: 30 mins
+# Run time with the full number of iterations: 6 hrs
 
 # library(AHMbook)
 library(jagsUI)

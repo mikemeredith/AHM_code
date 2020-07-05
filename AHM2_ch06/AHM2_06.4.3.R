@@ -7,6 +7,7 @@
 # Code from proofs dated 2020-06-24
 
 # Approximate code execution time for this script: 2 hrs
+# With full number of iterations: 19 hrs
 
 library(jagsUI)
 

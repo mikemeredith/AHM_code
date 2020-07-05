@@ -7,6 +7,7 @@
 # =========================================================================
 
 # Approximate execution time for this code: 5 mins
+# Run time with the full number of iterations: 55 mins
 
 library(AHMbook)
 library(jagsUI)

@@ -7,6 +7,7 @@
 # Code from proofs dated 2020-06-23
 
 # Approximate run time for this script: 20 mins
+# With the full number of iterations: 52 hrs
 
 library(AHMbook)
 library(jagsUI)
@@ -158,7 +159,8 @@ params <- c("omega", "Ntotal", "mu.lpsi1", "sd.lpsi1", "mu.lphi", "sd.lphi",
 
 # MCMC settings
 # na <- 1000 ; ni <- 50000 ; nt <- 25 ; nb <- 25000 ; nc <- 20 # 4.8 hrs
-na <- 1000 ; ni <- 500 ; nt <- 25 ; nb <- 250 ; nc <- 3 # ~~~ for testing, 9mins
+na <- 1000 ; ni <- 350000 ; nt <- 25 ; nb <- 25000 ; nc <- 3 # ~~~ keep to 3 cores, do more iterations, 26 hrs
+# na <- 1000 ; ni <- 500 ; nt <- 25 ; nb <- 250 ; nc <- 3 # ~~~ for testing, 9mins
 
 # Call JAGS from R, check convergence and summarize posteriors
 out2A <- jags(bdata, inits, params, "DCM2A.txt",

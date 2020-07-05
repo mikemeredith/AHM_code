@@ -7,7 +7,7 @@
 # =========================================================================
 
 # Approximate execution time for this code: 6 mins
-# Took 40 mins with simreps = 50
+# Run time with the full number of iterations: 30 mins
 
 library(AHMbook)
 

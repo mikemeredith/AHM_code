@@ -163,15 +163,15 @@ print(out, dig = 2)
 op <- par(mfrow = c(2,2), mar = c(5,6,3,2), cex.lab = 1.3, cex.axis = 1.3)
 # Occupancy
 plot(1998:2010, out$summary[37:49,1], xlab = 'Year', ylab = 'Occupancy probability',
-    ylim = c(0.1, 0.4), type = 'l', lwd = 3, frame = F, las = 1)
+    ylim = c(0.1, 0.4), type = 'l', lwd = 3, frame = FALSE, las = 1)
 matlines(1998:2010, out$summary[37:49,c(3,7)], lwd = 1, lty = 1, col = 1)
 
 # Visit-specific detection probability
 matplot(1998:2010, out$mean$p.pred, xlab = 'Year', ylab = 'Detection probability',
-    ylim = c(0.5, 1), type = 'l', lwd = 2, frame = F, las = 1, lty = 1, col = 'black')
+    ylim = c(0.5, 1), type = 'l', lwd = 2, frame = FALSE, las = 1, lty = 1, col = 'black')
 
 # Arrival and departure time
-plot(1998:2010, out$summary[193:205,1], xlab = 'Year', ylab = 'Date', frame = F,
+plot(1998:2010, out$summary[193:205,1], xlab = 'Year', ylab = 'Date', frame = FALSE,
     las = 1, ylim = c(80, 130), pch = 16)
 segments(1998:2010, out$summary[193:205,1], 1998:2010, out$summary[206:218,1],
     lwd = 5, col = 'grey', lend = 'butt')
@@ -182,7 +182,7 @@ segments(1998:2010, out$summary[206:218,3], 1998:2010, out$summary[206:218,7], l
 
 # Length of flight period
 plot(1998:2010, out$summary[219:231,1], xlab = 'Year', ylab = 'Length (days)',
-    frame = F, las = 1, ylim = c(20, 40), pch = 16)
+    frame = FALSE, las = 1, ylim = c(20, 40), pch = 16)
 segments(1998:2010, out$summary[219:231,3], 1998:2010, out$summary[219:231,7], lwd = 1)
 par(op)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

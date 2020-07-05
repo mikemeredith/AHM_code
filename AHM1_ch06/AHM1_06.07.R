@@ -6,6 +6,8 @@
 #    in closed populations: binomial N-mixture models
 # =========================================================================
 
+# Run time with the full number of iterations: 1.8 hrs
+
 library(AHMbook)
 library(unmarked)
 

@@ -7,6 +7,7 @@
 # =========================================================================
 
 # Approximate execution time for this code: 50 mins
+# Run time with the full number of iterations: 7.7 hrs
 
 library(jagsUI)
 

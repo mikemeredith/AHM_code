@@ -6,6 +6,8 @@
 # =============================================================
 # Code from proofs dated 2020-06-03
 
+# Run time with the full number of iterations: 8 mins
+
 library(AHMbook)
 library(jagsUI)
 

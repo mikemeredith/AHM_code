@@ -6,6 +6,8 @@
 # Chapter 9. Advanced Hierarchical Distance Sampling
 # =========================================================================
 
+# Approximate execution time for this code: 5 mins
+
 library(AHMbook)
 library(jagsUI)
 

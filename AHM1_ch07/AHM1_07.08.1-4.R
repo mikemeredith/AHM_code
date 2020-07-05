@@ -6,6 +6,8 @@
 # Chapter 7. Modeling abundance using multinomial N-mixture models
 # =========================================================================
 
+# Approximate execution time for this code: 12 mins
+
 library(unmarked)
 library(AHMbook)
 

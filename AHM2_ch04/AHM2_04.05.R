@@ -8,6 +8,7 @@
 # Code from proofs dated 2020-06-17
 
 # Approximate run time for this script: 20 mins
+# Run time with the full number of iterations: 4.5 hrs
 
 library(AHMbook)
 library(unmarked)

@@ -6,6 +6,8 @@
 # Chapter 8. Modeling abundance using hierarchical distance sampling (HDS)
 # =========================================================================
 
+# Run time with the full number of iterations: 15 mins
+
 library(R2WinBUGS)
 bd <- "C:/WinBUGS14"    # May have to adapt
 library(AHMbook)

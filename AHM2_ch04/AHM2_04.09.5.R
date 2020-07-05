@@ -8,6 +8,7 @@
 # Code from MS dated 2019-06-17
 
 # Approximate run time for this script: 2 hrs
+# Run time with the full number of iterations: 19 hrs
 
 # library(AHMbook)
 library(unmarked)

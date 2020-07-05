@@ -6,6 +6,8 @@
 # =============================================================
 # Code from proofs dated 2020-06-03
 
+# Approximate time to execute this code: 4 mins
+
 # ~~~~~ Need to run 1.3 before this ~~~~~~~
 source("AHM2_01.03.R")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

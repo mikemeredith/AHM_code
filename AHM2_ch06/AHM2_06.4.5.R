@@ -7,6 +7,7 @@
 # Code from proofs dated 2020-06-24
 
 # Approximate code execution time for this script: 1 hr
+# With full number of iterations: 12 hrs
 
 library(jagsUI)
 library(HDInterval)

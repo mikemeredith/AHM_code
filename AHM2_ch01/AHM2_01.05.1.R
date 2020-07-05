@@ -6,6 +6,8 @@
 # =============================================================
 # Code from proofs dated 2020-06-03
 
+# Approximate execution time for this code: 6 mins
+
 library(jagsUI)
 
 # ~~~~~ Need to run 1.3 before this ~~~~~~~

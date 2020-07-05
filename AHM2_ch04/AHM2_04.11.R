@@ -7,6 +7,8 @@
 # ============================================================================
 # Code from proofs dated 2020-06-17
 
+# Run time with the full number of iterations: 10 hrs
+
 library(AHMbook)
 library(jagsUI)
 
@@ -160,7 +162,7 @@ params <- c("psi1", "alpha.lphi", "initial.phi", "alpha.lgamma",
     "mean.gamma.year", "sd.eps.lphi", "sd.eps.lgamma", "gamma.cliff",
     "phi.cliff", "n.occ", "n.ain", "n.jura", "n.doubs", "y")
 # MCMC settings
-# na <- 1000 ; ni <- 20000 ; nt <- 10 ; nb <- 10000 ; nc <- 3
+# na <- 1000 ; ni <- 20000 ; nt <- 10 ; nb <- 10000 ; nc <- 3  # 35 mins
 na <- 1000 ; ni <- 2000 ; nt <- 1 ; nb <- 1000 ; nc <- 3  # ~~~~~~~ testing, 6 mins
 # Call JAGS (ART 43 min), check convergence and summarize posteriors
 out1 <- jags(bdata, inits, params, "dynocc1.txt", n.adapt = na, n.chains = nc,
@@ -290,7 +292,7 @@ params <- c("psi1", "alpha.lphi", "initial.phi", "sd.lphi.site",
     "kappa.lphi", "kappa.lgamma", "n.occ", "n.ain", "n.jura", "n.doubs",
     "lphi.site", "lgamma.site", "y")
 # MCMC settings
-# na <- 1000 ; ni <- 300000 ; nt <- 150 ; nb <- 150000 ; nc <- 3
+# na <- 1000 ; ni <- 300000 ; nt <- 150 ; nb <- 150000 ; nc <- 3  # 8.3 hrs
 na <- 1000 ; ni <- 3000 ; nt <- 1 ; nb <- 1500 ; nc <- 3  # ~~~~ for testing, 8 mins
 # Call JAGS (ART 18 h), check convergence and summarize posteriors
 out2 <- jags(bdata, inits, params, "dynocc2.txt", n.adapt = na, n.chains = nc,
@@ -306,7 +308,6 @@ startYear <- c(1, rep(1, 10), 2:43)
 endYear <- c(1, 1:52)     # Fill in initial 1, but not used in BUGS code
 lengthPeriod <- endYear-startYear+1
 cbind(1964:2016, startYear, endYear, startYear+1963, endYear+1963, lengthPeriod)     # Look at year range and duration
-
            # startYear endYear           lengthPeriod
  # [1,] 1964         1       1 1964 1964            1  # not used in model
  # [2,] 1965         1       1 1964 1964            1
@@ -325,14 +326,15 @@ cbind(1964:2016, startYear, endYear, startYear+1963, endYear+1963, lengthPeriod)
 # [53,] 2016        43      52 2006 2015           10
 
 # Data bundle
-str(bdata <- list(z = z, height = ht, nsites = nsites, nyears = nyears,
-ain = ain, jura = jura, doubs = doubs, R = R, year = ((1964:2016)-1990)/26, startYear = startYear, endYear = endYear))
+str(bdata <- list(y = y, height = ht, nsites = nsites, nyears = nyears,
+    ain = ain, jura = jura, doubs = doubs, V = V, year = ((1964:2016)-1990)/26,
+    startYear = startYear, endYear = endYear))
 
 # Specify model in BUGS language
 cat(file = "dynocc3.txt", "
 model {
 
-  # Submodel 1: model for detection/nondetection data (z)
+  # Submodel 1: model for detection/nondetection data (y)
   # ----------------------------------------------------
   # Priors
   psi1 ~ dbeta(1, 1)      # Initial occupancy
@@ -368,18 +370,18 @@ model {
 
   # Ecological and observation submodels confounded (no p)
   for (i in 1:nsites){
-    z[i,1] ~ dbern(psi1)
+    y[i,1] ~ dbern(psi1)
     for (t in 2:nyears){
-      z[i,t] ~ dbern(z[i,t-1]*phi[i,t-1] + (1-z[i,t-1])*gamma[i,t-1])
+      y[i,t] ~ dbern(y[i,t-1]*phi[i,t-1] + (1-y[i,t-1])*gamma[i,t-1])
     }
   }
 
   # Derived parameters
   # Population occupancy and population size
   psi[1] <- psi1
-  n.occ[1]<-sum(z[1:nsites,1])
+  n.occ[1]<-sum(y[1:nsites,1])
   for (t in 2:nyears){
-    n.occ[t] <- sum(z[1:nsites,t])     # Number of occupied sites
+    n.occ[t] <- sum(y[1:nsites,t])     # Number of occupied sites
   }
   # Year-specific average values of phi and gamma
   for(t in 1:(nyears-1)){
@@ -396,19 +398,19 @@ model {
   # Compute the proportion of years (during the last 10) in which a site was occupied (has to be a proportion to take account of the first 10 years)
   for (i in 1:nsites){
     for(t in 1:nyears){ # Value for year 1 is nonsense and not used below
-      OccPast10[i,t] <- mean(z[i,startYear[t]:endYear[t]])
+      OccPast10[i,t] <- mean(y[i,startYear[t]:endYear[t]])
     }
   }
 
   # Population size in each departement
   for (t in 1:nyears){
-    n.ain[t] <- sum(z[ain, t])
-    n.jura[t] <- sum(z[jura, t])
-    n.doubs[t] <- sum(z[doubs, t])
+    n.ain[t] <- sum(y[ain, t])
+    n.jura[t] <- sum(y[jura, t])
+    n.doubs[t] <- sum(y[doubs, t])
   }
 
 
-  # Submodel 2: model for whether a site is visited or not (R)
+  # Submodel 2: model for whether a site is visited or not (V)
   # ---------------------------------------------------------
   # Priors and linear models
   # No effect of past occupation history in visitation at t=1
@@ -431,10 +433,10 @@ model {
   }
   kappa10 ~ dunif(-10, 10)     # coefficient for preferential sampling
 
-  # Logistic regression for visits (R)
+  # Logistic regression for visits (V)
   for (i in 1:nsites){
     for (t in 1:nyears){
-      R[i,t] ~ dbern(theta[i,t])
+      V[i,t] ~ dbern(theta[i,t])
     }
   }
 }
@@ -451,18 +453,18 @@ inits <- function(){list(psi1 = tmp$psi1, initial.phi = tmp$initial.phi,
 params <- c("psi1", "alpha.lphi", "initial.phi", "alpha.lgamma", "initial.gamma",
     "lphi.year", "lgamma.year", "mean.phi.year", "mean.gamma.year", "sd.eps.lphi",
     "sd.eps.lgamma", "gamma.cliff", "phi.cliff", "alpha.visit", "beta.visit",
-    "kappa10", "n.occ", "n.ain", "n.jura", "n.doubs", "z")
+    "kappa10", "n.occ", "n.ain", "n.jura", "n.doubs", "y")
 
 # MCMC settings
 # na <- 1000  ;  ni <- 20000  ;  nt <- 10  ;  nb <- 10000  ;  nc <- 3
-na <- 100  ;  ni <- 2500  ;  nt <- 10  ;  nb <- 1200  ;  nc <- 3
+na <- 100  ;  ni <- 2500  ;  nt <- 10  ;  nb <- 1200  ;  nc <- 3  # ~~~ for testing, 13 mins
 
 # Call JAGS from R, check convergence and summarize posteriors
 out3 <- jags(bdata, inits, params, "dynocc3.txt",
     n.adapt = na, n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 op <- par(mfrow = c(2,2))   ;   traceplot(out3)
 par(op)
-summary(out3)   ;   View(out3)
+summary(out3)   ;   jags.View(out3)
 
 # ~~~~~~~~~ code for figure 4.32 for models 1-3 ~~~~~~~~~~~~~
 # Compare population size estimates
@@ -481,12 +483,12 @@ par(op)
 
 # Population size comparisons in a table (not all printed out)
 # This code requires fits from all 4 models
-n.occ.ma <- colMeans(rbind(out2$sims.list$n.occ, out3$sims.list$n.occ,
-    out3$sims.list$n.occ)) # Model average population size estimates from 3 PS models
-print(cbind(n.visited, n.occ.obs, n.ratio, 'model1' = out1$mean$n.occ,
-    'model2' = out2$mean$n.occ, 'model3' = out3$mean$n.occ, 'model4' = out4$mean$n.occ,
-    'PS average' = n.occ.ma, 'missed' = n.occ.ma - n.occ.obs,
-    'Prop.detected' = n.occ.obs / n.occ.ma), 2)
+# n.occ.ma <- colMeans(rbind(out2$sims.list$n.occ, out3$sims.list$n.occ,
+    # out3$sims.list$n.occ)) # Model average population size estimates from 3 PS models
+# print(cbind(n.visited, n.occ.obs, n.ratio, 'model1' = out1$mean$n.occ,
+    # 'model2' = out2$mean$n.occ, 'model3' = out3$mean$n.occ, 'model4' = out4$mean$n.occ,
+    # 'PS average' = n.occ.ma, 'missed' = n.occ.ma - n.occ.obs,
+    # 'Prop.detected' = n.occ.obs / n.occ.ma), 2)
 # n.visited n.occ.obs n.ratio model1 model2 model3 model4 PS average missed Prop.detected
 # yr1964 100 34 97 95 98 52 75 67 33.3 0.51
 # yr1965 137 45 93 83 75 49 56 57 12.3 0.79
@@ -510,7 +512,7 @@ print(cbind(n.visited, n.occ.obs, n.ratio, 'model1' = out1$mean$n.occ,
 # tall 0.943 0.914 0.966 0.305 0.1788 0.549
 
 
-# ~~~~ code below adapted for models 1-3, model 4 missing ~~~~~~~~~~
+# ~~~~ code below adapted for models 1-3, as model 4 is missing ~~~~~~~~~~
 # Population size comparisons in a table (not all printed out)
 n.occ.ma <- colMeans(rbind(out2$sims.list$n.occ, out3$sims.list$n.occ,
     out3$sims.list$n.occ)) # Model average population size estimates from 3 PS models
@@ -545,6 +547,7 @@ phi.ma <- apply(rbind(out2$sims.list$mean.phi.year,
     out3$sims.list$mean.phi.year), 2, mean)     # Model average annual phi
 gamma.ma <- apply(rbind(out2$sims.list$mean.gamma.year,
     out3$sims.list$mean.gamma.year), 2, mean)     # Model average annual phi
+
 # ~~~~ code for figure 4.33 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Compare estimates of persistence and colonization rates
 op <- par(mar = c(5,5,4,3), cex.lab = 1.5, cex.axis = 1.5)
@@ -578,11 +581,11 @@ print(cliff.tab, 3)
 # tall 0.943 0.914 0.966 0.305 0.1788 0.549
 
 # ~~~~~~~~~~ code for figure 4.34 ~~~~~~~~~~~~~~~~
-# PS-model-average z estimates and plot them
+# PS-model-average y estimates and plot them
 library(abind)
-zsims <- abind(out2$sims.list$z, out3$sims.list$z, along = 1)
-zhat <- apply(zsims, 2:3, mean)
+ysims <- abind(out2$sims.list$y, out3$sims.list$y, along = 1)
+yhat <- apply(ysims, 2:3, mean)
 mapPalette <- colorRampPalette(c("white", "black"))
-image(x = 1964:2016, y = 1:nsites, z = t(zhat), col = mapPalette(10),
-    axes = T, xlab = "Site", ylab = "Year", main = '')
+image(x = 1964:2016, y = 1:nsites, z = t(yhat), col = mapPalette(10),
+    axes = TRUE, xlab = "Site", ylab = "Year", main = '')
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

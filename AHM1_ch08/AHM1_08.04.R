@@ -6,7 +6,7 @@
 # Chapter 8. Modeling abundance using hierarchical distance sampling (HDS)
 # =========================================================================
 
-# Approximate execution time for this code: 12 mins
+# Approximate execution time for this code: 12 - 15 mins
 
 library(AHMbook)
 library(unmarked)

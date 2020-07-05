@@ -8,6 +8,7 @@
 # Code from proofs dated 2020-06-17
 
 # Approximate run time for this script: 3.5 hrs
+# Run time with the full number of iterations: 38.3 hrs
 
 # ~~~ load crossbill data from 4.9.1 ~~~~~~~~~~
 source("AHM2_04.09.1_Crossbills.R")

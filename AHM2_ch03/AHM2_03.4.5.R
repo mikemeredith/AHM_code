@@ -7,6 +7,7 @@
 # Code from proofs dated 2020-06-03
 
 # Approximate run time for this script: > 1 hr
+# Run time with the full number of iterations: 5.2 days
 
 library(AHMbook)
 library(R2WinBUGS)
@@ -158,7 +159,7 @@ params <- c("mean.phi", "mean.p", "mu.lphi", "mu.lp",
 # ~~~~ in parallel is given below ~~~~~~~~~~~~~~~
 
 # MCMC settings
-# ni <- 200000 ; nt <- 100 ; nb <- 100000 ; nc <- 3 # c. 2 wk
+# ni <- 200000 ; nt <- 100 ; nb <- 100000 ; nc <- 3  # 5 days
 ni <- 2000 ; nt <- 1 ; nb <- 1000 ; nc <- 3 # ~~~~~~~~~~~~ for testing
 # You may have to launchWinBUGS a couple of times until you don’t get an “undefined real result”
 # crash (or alternatively, you could “stabilize” the logit, see Trick 15 in Appendix 1 in Kery and Schaub,
@@ -201,7 +202,7 @@ registerDoParallel(cl)
 
 # ni <- 10  ;  nt <- 1  ;  nb <- 5  ;  nc <- 1    # 1-3 undefined real result
 ni <- 1000  ;  nt <- 1  ;  nb <- 500  ;  nc <- 1  # took about 15 mins
-# ni <- 40000  ;  nt <- 10  ;  nb <- 20000  ;  nc <- 1  # took 14 hrs
+# ni <- 40000  ;  nt <- 10  ;  nb <- 20000  ;  nc <- 1  # took 9 hrs
 seeds <- 1:ncore
 
 # The call to foreach will open ncore WinBUGS windows. These will close on successful completion, but if one throws an error you will need to close it manually. The results from trouble-free instances will be retained.

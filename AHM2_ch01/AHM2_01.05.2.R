@@ -6,6 +6,8 @@
 # =============================================================
 # Code from proofs dated 2020-06-03
 
+# Run time with the full number of iterations: 1 hr
+
 library(jagsUI)
 
 # ~~~~~ Need to run 1.3 before this ~~~~~~~
@@ -105,8 +107,11 @@ summary(out3) ; jags.View(out3) ; print(out3$summary[1:800,-c(4:6)], 3)
 
 # ~~~~~ code for figure 1.5 ~~~~~~~~~~~~~~~~
 op <- par(mfrow = c(1, 2), mar = c(5,5,3,3))
-matplot(year, t(out3$mean$pred.lam1), type = 'l', lty = 1, lwd = 2, xlab = 'Year', ylab = 'Expected abundance', frame = F, ylim = c(0, 32), las = 1)
-matplot(year, t(out3$mean$pred.lam2), type = 'l', lty = 1, lwd = 2, xlab = 'Year', ylab = 'Site-specific trends (standardized)', frame = F, ylim = c(0, 2.6), las = 1)
+matplot(year, t(out3$mean$pred.lam1), type = 'l', lty = 1, lwd = 2, xlab = 'Year',
+    ylab = 'Expected abundance', frame = FALSE, ylim = c(0, 32), las = 1)
+matplot(year, t(out3$mean$pred.lam2), type = 'l', lty = 1, lwd = 2, xlab = 'Year',
+    ylab = 'Site-specific trends (standardized)', frame = FALSE,
+    ylim = c(0, 2.6), las = 1)
 par(op)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
