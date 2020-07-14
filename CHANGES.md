@@ -2,6 +2,10 @@
 
 # CHANGES
 
+## 2020-07-14
+
+* Added AHM2 chapters 7 and 8.
+
 ## 2020-06-27
 
 Many small changes to AHM1 scripts
@@ -15,7 +19,7 @@ Many small changes to AHM1 scripts
 ## 2020-06-25
 
 * Added TO_DO file.
-* Added chapters 5 and 6, including bonus code and figure code.
+* Added AHM2 chapters 5 and 6, including bonus code and figure code.
 
 ## 2020-06-21
 
