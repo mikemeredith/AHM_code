@@ -31,6 +31,13 @@ The following are still outstanding:
 ### AHM2 chapter 6
 (all good)
 
+### AHM2 chapter 7
+* 7.6.6 "We conducted a small simulation study to evaluate the influence of the coupled occupancy model on classification (see the book website for code)."
+* Figures 7.2, 7.3, 7.5.
+
+### AHM2 chapter 8
+(all good)
+
 ## Other things to fix
 
 * Calls to `par` should be followed by code to reset the old pars.

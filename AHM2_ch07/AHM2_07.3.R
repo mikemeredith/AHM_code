@@ -7,6 +7,8 @@
 # ====================================
 # Code from proofs dated 2020-07-08
 
+# Approximate execution time for this code: 10 mins
+
 library(unmarked)
 library(AHMbook)
 library(AICcmodavg)
