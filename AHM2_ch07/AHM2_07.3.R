@@ -7,8 +7,6 @@
 # ====================================
 # Code from proofs dated 2020-07-08
 
-# Approximate execution time for this code: 10 mins
-
 library(unmarked)
 library(AHMbook)
 library(AICcmodavg)
@@ -172,5 +170,5 @@ cand.mods <- list(
 # sYear -0.978 0.200 -4.885 1.04e-06
 
 
-# ~~~ figure 4.7 ~~~~~~~
+# ~~~ insert code for figure 7.3 ~~~~~~~
 

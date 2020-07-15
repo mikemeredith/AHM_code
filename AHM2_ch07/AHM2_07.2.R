@@ -143,4 +143,26 @@ preds <- rbind(p1, p2, p3)
 preds$Type <- rep(factor(c("Detection", "False Positive", "Occupancy")), each=3)
 preds$Year <- rep(c("2009", "2010", "2011"), times=3) # produce estimates for Fig. 7.2
 
-# ~~~~~ insert code for Fig 7.2 ~~~~~~~~~~~~
+# ~~~~~ extra code for Fig 7.2 ~~~~~~~~~~~~
+years <- 2009:2011
+op <- par(mfrow = c(1,3))
+plot(years, p1[,1], xlab = "Year", ylab = "p", type = "b", pch = 20,
+    cex = 3, ylim = c(0, 1), cex.lab = 2, frame = FALSE, xaxt="n")
+segments(x0 = years, y0 = p1[,1] - 1.96*p1[,2], x1 = years,
+    y1 = p1[,1] + 1.96*p1[,2])
+title("Detection probability", cex.main = 2)
+axis(1, at=years)
+plot(years, p2[,1], xlab = "Year", ylab = "fp", type = "b", pch = 20,
+    cex = 3, ylim = c(0,1), cex.lab = 2, frame = FALSE, xaxt="n")
+segments(x0 = years, y0 = p2[,1] - 1.96*p2[,2], x1 = years,
+    y1 = p2[,1] + 1.96*p2[,2])
+title("False positive probability", cex.main = 2)
+axis(1, at=years)
+plot(years, p3[,1], xlab = "Year", ylab = "psi", type = "b", pch = 20,
+    cex = 3, ylim = c(0,1), cex.lab = 2, frame = FALSE, xaxt="n")
+segments(x0 = years, y0 = p3[,1] - 1.96*p3[,2], x1 = years,
+    y1 = p3[,1] + 1.96*p3[,2])
+title("Occupancy probability", cex.main = 2)
+axis(1, at=years)
+par(op)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

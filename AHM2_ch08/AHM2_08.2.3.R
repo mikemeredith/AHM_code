@@ -552,6 +552,7 @@ par(op)
 # ~~~~~~ extra code to get detection probabilities ~~~~~~~~~~~~~
 # Look at predictions of detection model
 # Set up structures to hold results
+nsims <- out1$mcmc.info$n.samples
 Trail.sims <- array(NA, dim = c(3, 2, nsims))
 dimnames(Trail.sims) <- list(c('Bobcat', 'Coyote', 'Red Fox'),
   c('off trail', 'on trail'), NULL)
