@@ -38,6 +38,9 @@ The following are still outstanding:
 ### AHM2 chapter 8
 (all good)
 
+### AHM2 chapter 9
+* Figure 9.6 last panel.
+
 ## Other things to fix
 
 * Calls to `par` should be followed by code to reset the old pars.
