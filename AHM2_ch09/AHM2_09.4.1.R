@@ -142,6 +142,14 @@ with(dat, cbind(beta0, beta[1], beta[2], alpha0, alpha[1], alpha[2], Ntotal = su
 # [1,] 2 2 -2 0 -1 -1 7192 4371
 
 # ~~~ extra code for figure 9.6 ~~~~~
+# Compute average detection probability for each cell
+phat <- array(NA, dim = c(2500, 3))
+for(j in 1:3){
+  phat[,j] <- plogis(out2$mean$alpha0 + out2$mean$alpha[1] * dat$forestS +
+      out2$mean$alpha[2] * dat$wind[,j])
+}
+pmean <- apply(phat, 1, mean)
+
 op <- par(mfrow = c(3, 2), mar = c(3,3,3,4))
 r <- rasterFromXYZ(data.frame(x = bo$x, y = bo$y, z = dat$lam))
 plot(r, col = topo.colors(20), axes = FALSE, box = FALSE,
@@ -158,7 +166,9 @@ plot(r, col = topo.colors(20), axes = FALSE, box = FALSE,
 r <- rasterFromXYZ(data.frame(x = bo$x, y = bo$y, z = out2$sd$lam))
 plot(r, col = topo.colors(20), axes = FALSE, box = FALSE,
     main = "Estimation uncertainty (lambda)", zlim = c(0, 10))
-# ~~~ need to insert code to plot Average detection probability
+r <- rasterFromXYZ(data.frame(x = bo$x, y = bo$y, z = pmean))
+plot(r, col = topo.colors(20), axes = FALSE, box = FALSE,
+    main = "Average detection probability)", zlim = c(0, 1))
 par(op)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

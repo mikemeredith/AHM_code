@@ -39,7 +39,7 @@ The following are still outstanding:
 (all good)
 
 ### AHM2 chapter 9
-* Figure 9.6 last panel.
+(all good)
 
 ## Other things to fix
 
