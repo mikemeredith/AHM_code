@@ -8,6 +8,7 @@
 # Code from proofs dated 2020-07-15
 
 # Approximate execution time for this code: 20 mins
+# Run time with the full number of iterations: 3 hrs
 
 library(AHMbook)
 library(R2WinBUGS)
