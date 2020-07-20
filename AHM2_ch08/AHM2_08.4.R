@@ -8,6 +8,7 @@
 # Code from proofs dated 2020-07-13
 
 # Approximate execution time for this code: 75 mins
+# Run time with the full number of iterations: 4 days
 
 library(AHMbook)
 library(abind)
@@ -185,7 +186,7 @@ params <- c('mean.psi0', 'mu.beta0', 'sd.beta0', 'mu.beta', 'sd.beta',
     'beta', 'alpha0', 'alpha', 'LV', 'lv.coef') # could add 'z'
 
 # MCMC settings
-# na <- 10000 ; ni <- 250000 ; nt <- 100 ; nb <- 150000 ; nc <- 3
+# na <- 10000 ; ni <- 250000 ; nt <- 100 ; nb <- 150000 ; nc <- 3  # 3.5 days
 na <- 1000 ; ni <- 2500 ; nt <- 1 ; nb <- 1500 ; nc <- 3 # ~~~ for testing, 90 mins
 
 # Call JAGS (ART is long !), check convergence and summarize posteriors
@@ -196,7 +197,7 @@ op <- par(mfrow = c(3,3)) ; traceplot(out1) # All estimands
 par(mfrow = c(3,3)) ; traceplot(out1, 'lv.coef') # Only lv coefficients
 par(op)
 which(out1$summary[,8] > 1.1)
-# out1X <- update(out1, n.iter = 50000) # Can update additional 50k
+# out1X <- update(out1, n.iter = 50000) # Can update additional 50k, 15 hrs
 out1X <- update(out1, n.iter = 500) # Can update additional 50k  # ~~~ for testing, 15 mins
 
 # Compute the posterior mean of the correlation matrix
