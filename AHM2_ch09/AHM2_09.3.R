@@ -11,7 +11,7 @@
 
 library(AHMbook)
 library(R2WinBUGS)
-bugs.dir <- "C:/WinBUGS14"
+bugs.dir <- "C:/WinBUGS14" # the location of the WinBUGS14.exe file on your machine
 
 # ~~~ regenerate the data ~~~~~~
 RNGversion("3.5.3")
@@ -99,24 +99,24 @@ save(out1, file="AHM2_09.3_out1.RData")
 # Inference for Bugs model at "Nmix.txt", fit using WinBUGS,
 # 3 chains, each with 20000 iterations (first 10000 discarded), n.thin = 10
 # n.sims = 3000 iterations saved # ART 18 min
-# mean sd 2.5% 25% 50% 75% 97.5% Rhat n.eff
-# mean.lam 3.62 0.19 3.26 3.50 3.62 3.74 4.00 1 3000
-# beta0 1.29 0.05 1.18 1.25 1.29 1.32 1.39 1 3000
-# beta[1] 2.45 0.10 2.25 2.38 2.45 2.52 2.65 1 1200
-# beta[2] -1.80 0.09 -1.98 -1.86 -1.80 -1.74 -1.64 1 1100
-# mean.p 0.58 0.02 0.54 0.56 0.58 0.59 0.61 1 3000
-# alpha0 0.31 0.07 0.17 0.26 0.31 0.36 0.45 1 2800
-# alpha[1] -0.90 0.07 -1.04 -0.95 -0.90 -0.86 -0.78 1 1500
-# alpha[2] -1.14 0.06 -1.26 -1.18 -1.14 -1.10 -1.03 1 2300
-# Ntotal 5863.50 238.10 5423.97 5701.00 5857.50 6018.00 6350.02 1 3000
+#             mean     sd    2.5%     25%     50%     75%   97.5% Rhat n.eff
+# mean.lam    3.62   0.19    3.26    3.50    3.62    3.74    4.00    1  3000
+# beta0       1.29   0.05    1.18    1.25    1.29    1.32    1.39    1  3000
+# beta[1]     2.45   0.10    2.25    2.38    2.45    2.52    2.65    1  1200
+# beta[2]    -1.80   0.09   -1.98   -1.86   -1.80   -1.74   -1.64    1  1100
+# mean.p      0.58   0.02    0.54    0.56    0.58    0.59    0.61    1  3000
+# alpha0      0.31   0.07    0.17    0.26    0.31    0.36    0.45    1  2800
+# alpha[1]   -0.90   0.07   -1.04   -0.95   -0.90   -0.86   -0.78    1  1500
+# alpha[2]   -1.14   0.06   -1.26   -1.18   -1.14   -1.10   -1.03    1  2300
+# Ntotal   5863.50 238.10 5423.97 5701.00 5857.50 6018.00 6350.02    1  3000
 # [....]
 
 with(dat, cbind(beta0, beta, alpha0, alpha, Ntotal = sum(N),
     summaxC = sum(apply(y,1,max)))) # Remember the truth
 with(dat, c(beta0, beta, alpha0, alpha, Ntotal = sum(N),
     summaxC = sum(apply(y,1,max)))) # Remember the truth
-# beta0 beta1 beta2 alpha0 alpha1 alpha2 Ntotal summaxC
-# [1,] 2 2 -2 0 -1 -1 7192 4371
+#      beta0 beta1 beta2 alpha0 alpha1 alpha2 Ntotal summaxC
+# [1,]     2     2    -2      0     -1     -1   7192    4371
 
 # ~~~ extra code for figure 9.5 ~~~~~~~~~~~
 # Compare maps of true and estimated density (lambda)

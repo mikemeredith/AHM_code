@@ -120,11 +120,11 @@ str(bdata <- list(yN = sodata$yN, yI = sodata$yI,
     nsites = dim(sodata$yN)[1], nsurveys = dim(sodata$yN)[2],
     nyears = dim(sodata$yN)[3]))
 # List of 5
-# $ yN : int [1:100, 1:3, 1:3] 4 3 1 3 1 0 4 0 1 2 ...
-# $ yI : int [1:100, 1:3, 1:3] 2 3 2 5 1 3 2 3 0 1 ...
-# $ nsites : int 100
+# $ yN       : int [1:100, 1:3, 1:3] 4 3 1 3 1 0 4 0 1 2 ...
+# $ yI       : int [1:100, 1:3, 1:3] 2 3 2 5 1 3 2 3 0 1 ...
+# $ nsites   : int 100
 # $ nsurveys : int 3
-# $ nyears : int 3
+# $ nyears   : int 3
 
 # Initial values
 inits <- function() {list(alpha.lamN = runif(1, 2, 3), mean.pN = runif(1, 0.9, 1),
@@ -140,26 +140,29 @@ params <- c("alpha.lamN", "alpha.lamI", "mean.pN", "mean.pI",
 
 # MCMC settings
 na <- 1000 ; ni <- 60000 ; nb <- 10000 ; nt <- 5 ; nc <- 10
+
 # Call JAGS (ART 14 min), gauge convergence and summarize posteriors
 set.seed(127) # Cheating: use this seed to get good initial values.
 (out9 <- jags(bdata, inits, params, "frogs.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE))
-op <- par(mfrow = c(2,2)) ; traceplot(out9) ; par(op)
+op <- par(mfrow = c(2,2)) ; traceplot(out9)
+par(op)
 print(out9, dig = 2)
-# alpha.lamN 1.16 0.06 1.04 1.16 1.27 FALSE 1.00 1.00 39674
-# alpha.lamI 1.15 0.06 1.03 1.15 1.26 FALSE 1.00 1.00 100000
-# mean.pN 0.81 0.01 0.78 0.81 0.83 FALSE 1.00 1.00 20958
-# mean.pI 0.81 0.01 0.79 0.81 0.83 FALSE 1.00 1.00 34295
-# mean.omegaN 0.87 0.05 0.77 0.87 0.96 FALSE 1.00 1.00 5198
-# mean.omegaI 0.76 0.07 0.63 0.77 0.88 FALSE 1.00 1.01 578
-# mean.gammaN 0.64 0.13 0.38 0.65 0.88 FALSE 1.00 1.00 1681
-# mean.gammaI 0.16 0.18 -0.21 0.17 0.47 TRUE 0.82 1.00 1331
-# mean.psi_NI 0.07 0.04 0.01 0.06 0.14 FALSE 1.00 1.00 1665
-# mean.psi_IN 0.16 0.06 0.03 0.16 0.29 FALSE 1.00 1.01 829
-# fitN 140.91 4.62 132.62 140.65 150.69 FALSE 1.00 1.00 12765
-# fitN.new 146.90 10.90 126.58 146.58 169.22 FALSE 1.00 1.00 19525
-# fitI 131.04 4.22 123.59 130.76 140.08 FALSE 1.00 1.00 16866
-# fitI.new 138.13 10.47 118.57 137.80 159.49 FALSE 1.00 1.00 40418
+#               mean    sd   2.5%    50%  97.5% overlap0    f Rhat  n.eff
+# alpha.lamN    1.16  0.06   1.04   1.16   1.27    FALSE 1.00 1.00  39674
+# alpha.lamI    1.15  0.06   1.03   1.15   1.26    FALSE 1.00 1.00 100000
+# mean.pN       0.81  0.01   0.78   0.81   0.83    FALSE 1.00 1.00  20958
+# mean.pI       0.81  0.01   0.79   0.81   0.83    FALSE 1.00 1.00  34295
+# mean.omegaN   0.87  0.05   0.77   0.87   0.96    FALSE 1.00 1.00   5198
+# mean.omegaI   0.76  0.07   0.63   0.77   0.88    FALSE 1.00 1.01    578
+# mean.gammaN   0.64  0.13   0.38   0.65   0.88    FALSE 1.00 1.00   1681
+# mean.gammaI   0.16  0.18  -0.21   0.17   0.47     TRUE 0.82 1.00   1331
+# mean.psi_NI   0.07  0.04   0.01   0.06   0.14    FALSE 1.00 1.00   1665
+# mean.psi_IN   0.16  0.06   0.03   0.16   0.29    FALSE 1.00 1.01    829
+# fitN        140.91  4.62 132.62 140.65 150.69    FALSE 1.00 1.00  12765
+# fitN.new    146.90 10.90 126.58 146.58 169.22    FALSE 1.00 1.00  19525
+# fitI        131.04  4.22 123.59 130.76 140.08    FALSE 1.00 1.00  16866
+# fitI.new    138.13 10.47 118.57 137.80 159.49    FALSE 1.00 1.00  40418
 
 op <- par(mfrow=c(1,2)) # Not shown
 pp.check(out9, observed = 'fitN', simulated = 'fitN.new')
@@ -173,17 +176,18 @@ par(op)
 data(duskySalamanders) # require(AHMbook)
 str(duskySalamanders)
 n <- duskySalamanders
-nsites <- dim(n)[1] # Total number of locations
-nyears <- dim(n)[2] # Total number of survey years
+nsites <- dim(n)[1]   # Total number of locations
+nyears <- dim(n)[2]   # Total number of survey years
 nObsAges <- dim(n)[3] # Number of observable stages
 nsurveys <- dim(n)[4] # Number of replicate surveys
+
 # Bundle data
 str(bdata <- list(nsites = nsites, nyears = nyears, nsurveys = nsurveys, n = n))
 # List of 4
-# $ nsites : int 21
-# $ nyears : int 7
+# $ nsites   : int 21
+# $ nyears   : int 7
 # $ nsurveys : int 2
-# $ n : int [1:21, 1:7, 1:2, 1:2] 12 0 0 0 0 0 1 3 6 0 ...
+# $ n        : int [1:21, 1:7, 1:2, 1:2] 12 0 0 0 0 0 1 3 6 0 ...
 
 # Specify model in BUGS language
 cat(file = "Zipkin.txt", "
@@ -272,20 +276,20 @@ na <- 1000 ; ni <- 100000 ; nb <-50000 ; nt <- 2 ; nc <- 3
 # Call JAGS (ART 7 min), check convergence and summarize posteriors
 out10 <- jags(bdata, inits, params, "Zipkin.txt", n.adapt = na, n.thin = nt,
     n.chains = nc, n.burnin = nb, n.iter = ni, parallel = TRUE)
-op <- par(mfrow = c(3,3)) ; traceplot(out10) ; par(op)
+op <- par(mfrow = c(3,3)) ; traceplot(out10)
+par(op)
 print(out10, dig = 3)
-# mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
-# lambda[1] 1.961 1.545 0.098 1.629 5.908 FALSE 1 1.009 683
-# lambda[2] 4.804 1.593 2.360 4.571 8.596 FALSE 1 1.003 1343
-# lambda[3] 5.546 0.836 4.037 5.500 7.295 FALSE 1 1.004 874
-# phi[1] 0.480 0.100 0.294 0.476 0.685 FALSE 1 1.003 1305
-# phi[2] 0.701 0.067 0.559 0.706 0.822 FALSE 1 1.008 491
-# gamma[1] 0.786 0.335 0.355 0.713 1.634 FALSE 1 1.006 1070
-# gamma[2] 0.026 0.027 0.001 0.018 0.099 FALSE 1 1.000 17349
-# gamma[3] 0.054 0.053 0.001 0.038 0.195 FALSE 1 1.002 4467
-# p[1] 0.183 0.054 0.092 0.178 0.300 FALSE 1 1.003 1210
-# p[2] 0.369 0.039 0.299 0.367 0.452 FALSE 1 1.008 464
-# Ntotal[1,1] 40.160 31.792 2.000 33.000 121.000 FALSE 1 1.009 658
-# Ntotal[2,1] 99.831 31.896 52.000 95.000 177.000 FALSE 1 1.003 1329
+#               mean     sd   2.5%    50%   97.5% overlap0 f  Rhat n.eff
+# lambda[1]    1.961  1.545  0.098  1.629   5.908    FALSE 1 1.009   683
+# lambda[2]    4.804  1.593  2.360  4.571   8.596    FALSE 1 1.003  1343
+# lambda[3]    5.546  0.836  4.037  5.500   7.295    FALSE 1 1.004   874
+# phi[1]       0.480  0.100  0.294  0.476   0.685    FALSE 1 1.003  1305
+# phi[2]       0.701  0.067  0.559  0.706   0.822    FALSE 1 1.008   491
+# gamma[1]     0.786  0.335  0.355  0.713   1.634    FALSE 1 1.006  1070
+# gamma[2]     0.026  0.027  0.001  0.018   0.099    FALSE 1 1.000 17349
+# gamma[3]     0.054  0.053  0.001  0.038   0.195    FALSE 1 1.002  4467
+# p[1]         0.183  0.054  0.092  0.178   0.300    FALSE 1 1.003  1210
+# p[2]         0.369  0.039  0.299  0.367   0.452    FALSE 1 1.008   464
+# Ntotal[1,1] 40.160 31.792  2.000 33.000 121.000    FALSE 1 1.009   658
+# Ntotal[2,1] 99.831 31.896 52.000 95.000 177.000    FALSE 1 1.003  1329
 # ... output truncated ...
-

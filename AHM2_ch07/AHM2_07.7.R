@@ -9,28 +9,25 @@
 
 # Approximate execution time for this code: 6 mins
 
-# library(unmarked)
 library(jagsUI)
 library(AHMbook)
-# library(AICcmodavg)
-# library(ggplot2)
 
 # 7.7 False positives models in open populations
 # ==============================================
 
 # Simulation settings
 set.seed(129)
-nsites <- 200 # number of sites
-nsurv1 <- 3 # number of occasions with Type 1 data
-nsurv2 <- 4 # number of occasions with Type 2 data
+nsites <- 200            # number of sites
+nsurv1 <- 3              # number of occasions with Type 1 data
+nsurv2 <- 4              # number of occasions with Type 2 data
 Tsurv <- nsurv1 + nsurv2 # Total number of surveys
-nyears <- 5 # number of years
-psi <- 0.6 # initial expected proportion of sites occupied
-gamma <- 0.1 # colonization rate
-phi <- 0.88 # survival rate
-p <- c(0.7, 0.5) # detection prob of method 1 and method 2
-fp <- 0.05 # false-positive error probability (p_10)
-b <- 0.2 # probability y is recorded as certain
+nyears <- 5              # number of years
+psi <- 0.6               # initial expected proportion of sites occupied
+gamma <- 0.1             # colonization rate
+phi <- 0.88              # survival rate
+p <- c(0.7, 0.5)         # detection prob of method 1 and method 2
+fp <- 0.05               # false-positive error probability (p_10)
+b <- 0.2                 # probability y is recorded as certain
 
 # Simulate latent state matrix (now 2D) and the observations (now 3D)
 z <- matrix(NA, nrow = nsites, ncol = nyears)
@@ -40,8 +37,8 @@ for(t in 1:nyears){
   if(t > 1)
     z[,t] <- rbinom(nsites, 1, phi*z[,t-1] + gamma*(1-z[,t-1]) )
   for(i in 1:nsites){
-    p1 <- p[1]*z[i,t] # certain detection (method 1)
-    p2 <- p[2]*z[i,t] + fp*(1-z[i,t]) # uncertain detection (method 2)
+    p1 <- p[1]*z[i,t]                     # certain detection (method 1)
+    p2 <- p[2]*z[i,t] + fp*(1-z[i,t])     # uncertain detection (method 2)
     y[i, 1:3, t] <- rbinom(nsurv1, 1, p1) # simulate method 1 data
     y[i, 4:7, t] <- rbinom(nsurv2, 1, p2) # simulate method 2 data
     # now introduce certain observations: (type 3 data in unmarked)
@@ -57,11 +54,11 @@ y[ , (nsurv1 + 1):(Tsurv), 1:nyears] <- 1 + y[ ,(nsurv1 + 1):(Tsurv), 1:nyears]
 str( bdata <- list(y = y, nsites = nrow(y), nsurv1 = nsurv1, nsurv2 = nsurv2,
     nyears = nyears) )
 # List of 5
-# $ y : num [1:200, 1:7, 1:5] 0 1 1 0 1 0 1 0 0 1 ...
-# $ nsites : int 200
+# $ y        : num [1:200, 1:7, 1:5] 0 1 1 0 1 0 1 0 0 1 ...
+# $ nsites   : int 200
 # $ nsurveys1: num 3
 # $ nsurveys2: num 4
-# $ nyears : num 5
+# $ nyears   : num 5
 
 # Specify model in BUGS language
 cat(file = "occufp3.txt","
@@ -133,19 +130,19 @@ out5 <- jags(bdata, inits, params, "occufp3.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 par(mfrow = c(2, 3)) ; traceplot(out5)
 print(out5, dig = 3)
-# mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
-# psi 0.634 0.034 0.567 0.635 0.697 FALSE 1 1.001 1081
-# alpha0 0.860 0.054 0.756 0.860 0.969 FALSE 1 1.013 156
-# alpha1 -0.892 0.068 -1.027 -0.892 -0.762 FALSE 1 1.012 177
-# gamma 0.088 0.015 0.061 0.088 0.118 FALSE 1 1.002 1563
-# phi 0.839 0.019 0.802 0.839 0.874 FALSE 1 1.001 1627
-# fp 0.048 0.005 0.039 0.048 0.059 FALSE 1 1.000 3000
-# b 0.210 0.012 0.186 0.209 0.235 FALSE 1 1.000 3000
+#          mean    sd   2.5%    50%  97.5% overlap0 f  Rhat n.eff
+# psi     0.634 0.034  0.567  0.635  0.697    FALSE 1 1.001  1081
+# alpha0  0.860 0.054  0.756  0.860  0.969    FALSE 1 1.013   156
+# alpha1 -0.892 0.068 -1.027 -0.892 -0.762    FALSE 1 1.012   177
+# gamma   0.088 0.015  0.061  0.088  0.118    FALSE 1 1.002  1563
+# phi     0.839 0.019  0.802  0.839  0.874    FALSE 1 1.001  1627
+# fp      0.048 0.005  0.039  0.048  0.059    FALSE 1 1.000  3000
+# b       0.210 0.012  0.186  0.209  0.235    FALSE 1 1.000  3000
 
 
 # With water vole data
 # ''''''''''''''''''''
-data(waterVoles) # This is from AHMbook
+data(waterVoles)   # This is from AHMbook
 (wv <- waterVoles) # not shown
 usites <- levels(wv$Patch)
 nsites <- nlevels(wv$Patch)
@@ -247,24 +244,25 @@ na <- 1000 ; ni <- 5000; nt <- 1 ; nb <- 1000 ; nc <- 3
 # Call JAGS (ART < 1 min), assess convergence and summarize posteriors
 out6 <- jags(bdata, inits, params, "occufp4.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-par(mfrow = c(2,3)) ; traceplot(out6)
+op <- par(mfrow = c(2,3)) ; traceplot(out6)
+par(op)
 print(out6, 3)
-# mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
-# psi 0.346 0.058 0.240 0.343 0.464 FALSE 1 1.003 710
-# p[1] 0.703 0.060 0.581 0.705 0.817 FALSE 1 1.003 650
-# p[2] 0.898 0.038 0.813 0.901 0.963 FALSE 1 1.001 4481
-# p[3] 0.938 0.033 0.865 0.941 0.991 FALSE 1 1.001 1466
-# gamma[1] 0.234 0.063 0.118 0.231 0.365 FALSE 1 1.001 8185
-# gamma[2] 0.274 0.085 0.122 0.270 0.454 FALSE 1 1.001 12000
-# phi[1] 0.701 0.089 0.520 0.704 0.866 FALSE 1 1.001 1813
-# phi[2] 0.802 0.084 0.622 0.809 0.942 FALSE 1 1.000 12000
-# fp[1] 0.038 0.020 0.006 0.036 0.081 FALSE 1 1.003 702
-# fp[2] 0.139 0.032 0.081 0.138 0.206 FALSE 1 1.001 2970
-# fp[3] 0.347 0.053 0.241 0.348 0.452 FALSE 1 1.000 12000
-# b 0.501 0.289 0.025 0.502 0.979 FALSE 1 1.000 4071
-# Nocc[1] 39.154 4.278 32.000 39.000 48.000 FALSE 1 1.004 497
-# Nocc[2] 44.627 3.561 38.000 45.000 52.000 FALSE 1 1.002 2163
-# Nocc[3] 54.910 6.244 43.000 55.000 68.000 FALSE 1 1.001 12000
+#            mean    sd   2.5%    50%  97.5% overlap0 f  Rhat n.eff
+# psi       0.346 0.058  0.240  0.343  0.464    FALSE 1 1.003   710
+# p[1]      0.703 0.060  0.581  0.705  0.817    FALSE 1 1.003   650
+# p[2]      0.898 0.038  0.813  0.901  0.963    FALSE 1 1.001  4481
+# p[3]      0.938 0.033  0.865  0.941  0.991    FALSE 1 1.001  1466
+# gamma[1]  0.234 0.063  0.118  0.231  0.365    FALSE 1 1.001  8185
+# gamma[2]  0.274 0.085  0.122  0.270  0.454    FALSE 1 1.001 12000
+# phi[1]    0.701 0.089  0.520  0.704  0.866    FALSE 1 1.001  1813
+# phi[2]    0.802 0.084  0.622  0.809  0.942    FALSE 1 1.000 12000
+# fp[1]     0.038 0.020  0.006  0.036  0.081    FALSE 1 1.003   702
+# fp[2]     0.139 0.032  0.081  0.138  0.206    FALSE 1 1.001  2970
+# fp[3]     0.347 0.053  0.241  0.348  0.452    FALSE 1 1.000 12000
+# b         0.501 0.289  0.025  0.502  0.979    FALSE 1 1.000  4071
+# Nocc[1]  39.154 4.278 32.000 39.000 48.000    FALSE 1 1.004   497
+# Nocc[2]  44.627 3.561 38.000 45.000 52.000    FALSE 1 1.002  2163
+# Nocc[3]  54.910 6.244 43.000 55.000 68.000    FALSE 1 1.001 12000
 
 # ~~~~ code for figure 7.6 ~~~~~~~~~~
 op <- par(mfrow = c(1,2), mar = c(5,4,4,3))

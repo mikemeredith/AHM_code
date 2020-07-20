@@ -64,10 +64,10 @@ str(data <- simDM0(nsites = 50, nsurveys = 3, nyears = 5, lambda = 4,
 str(bdata <- list(C = data$y, nsites = dim(data$y)[1], nsurveys = dim(data$y)[3],
     nyears = dim(data$y)[2]))
 # List of 4
-# $ C: int [1:50, 1:5, 1:3] 3 4 4 1 2 5 3 5 7 5 ...
-# $ nsites: int 50
+# $ C       : int [1:50, 1:5, 1:3] 3 4 4 1 2 5 3 5 7 5 ...
+# $ nsites  : int 50
 # $ nsurveys: int 3
-# $ nyears: int 5
+# $ nyears  : int 5
 
 # Specify model in BUGS language
 cat(file = "DM1.txt","
@@ -108,20 +108,23 @@ inits <- function(){list( lambda = runif(1, 6, 16), phi = runif(1),
 
 # Parameters monitored
 params <- c("lambda", "phi", "gamma", "p")
+
 # MCMC settings
 na <- 1000 ; ni <- 25000 ; nt <- 4 ; nb <- 5000 ; nc <- 3
+
 # Call JAGS (ART 2 min), check convergence and summarize posteriors
 out1 <- jags(bdata, inits, params, "DM1.txt", n.adapt = na, n.chains = nc, n.thin = nt,
   n.iter = ni, n.burnin = nb, parallel = TRUE)
 
-op <- par(mfrow = c(2, 3)) ; traceplot(out1) ; par(op)
+op <- par(mfrow = c(2, 3)) ; traceplot(out1)
+par(op)
 print(out1, 3)
 # Per-capita recruitment parameterisation
-# mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
-# lambda 4.168 0.315 3.575 4.159 4.813 FALSE 1 1.000 15000
-# phi 0.863 0.034 0.789 0.865 0.923 FALSE 1 1.002 1982
-# gamma 0.232 0.036 0.168 0.230 0.311 FALSE 1 1.002 1682
-# p 0.696 0.018 0.659 0.696 0.729 FALSE 1 1.001 5292
+#         mean    sd  2.5%   50% 97.5% overlap0 f  Rhat n.eff
+# lambda 4.168 0.315 3.575 4.159 4.813    FALSE 1 1.000 15000
+# phi    0.863 0.034 0.789 0.865 0.923    FALSE 1 1.002  1982
+# gamma  0.232 0.036 0.168 0.230 0.311    FALSE 1 1.002  1682
+# p      0.696 0.018 0.659 0.696 0.729    FALSE 1 1.001  5292
 
 # To choose the absolute recruitment parameterization, we edit the BUGS code above to fit the
 # absolute (or “constant”) recruitment parameterization simply by commenting out the recruitment line
@@ -159,14 +162,15 @@ model {
 # Call JAGS (ART 1.3 min), check convergence and summarize posteriors
 out1b <- jags(bdata, inits, params, "DM1b.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2, 3)) ; traceplot(out1b) ; par(op)
+op <- par(mfrow = c(2, 3)) ; traceplot(out1b)
+par(op)
 print(out1b, 2)
 # Absolute parameterisation
-# mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
-# lambda 4.09 0.31 3.51 4.08 4.72 FALSE 1 1 8586
-# phi 0.86 0.03 0.79 0.86 0.92 FALSE 1 1 748
-# gamma 1.14 0.17 0.85 1.13 1.51 FALSE 1 1 1061
-# p 0.70 0.02 0.66 0.70 0.73 FALSE 1 1 5387
+#        mean   sd 2.5%  50% 97.5% overlap0 f Rhat n.eff
+# lambda 4.09 0.31 3.51 4.08  4.72    FALSE 1    1  8586
+# phi    0.86 0.03 0.79 0.86  0.92    FALSE 1    1   748
+# gamma  1.14 0.17 0.85 1.13  1.51    FALSE 1    1  1061
+# p      0.70 0.02 0.66 0.70  0.73    FALSE 1    1  5387
 
 # ~~~ save the work so far
 save.image("AHM2_02.05.2.RData")

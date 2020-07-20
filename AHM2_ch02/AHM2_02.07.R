@@ -40,6 +40,7 @@ simMultMix <- function(nsites = 100, nyears = 4, nsurveys = 3, lambda = 3,
   return(list(nsites = nsites, nyears = nyears, nsurveys = nsurveys,
       lambda = lambda, theta = theta, p = p, M = M, N = N, y = y, y2d = y2d))
 }
+
 # Execute function
 set.seed(24)
 str(data <- simMultMix(nsites = 100, nyears = 4, nsurveys = 3, lambda = 3,
@@ -53,10 +54,13 @@ backTransform(fm, type = "lambda") # Individuals per plot
 backTransform(fm, type = "phi") # Prob(available) (phi)
 (p <- backTransform(fm, type = "det")) # Prob. of detection
 p <- coef(p)
+
 # Multinomial cell probabilities under removal design
 c(p, (1-p) * p, (1-p)^2 * p)
+
 # Or more generally:
 head(getP(fm))
+
 # Empirical Bayes estimates of super-population size (see Fig. 2.11)
 re <- ranef(fm)
 plot(re, layout=c(5, 1), xlim = c(-1, 20), subset = site%in%1:5, lwd = 5)
@@ -74,19 +78,21 @@ alfl$captureHistory <- factor(alfl$captureHistory,
     levels = c("001", "010", "011", "100", "101", "110", "111"))
 alfl$id <- factor(alfl$id, levels = rownames(alfl.covs))
 head(alfl, 5)
-# id survey interval1 interval2 interval3 captureHistory
-# 1 crick1_05 1 1 1 1 111
-# 2 crick1_05 3 1 0 1 101
-# 3 his1_05 1 0 1 1 011
-# 4 his1_05 1 1 1 1 111
-# 5 his1_05 2 0 1 1 011
-# Note: we analyzed survey == 1 in ch. 7, here use all surveys
+#          id survey interval1 interval2 interval3 captureHistory
+# 1 crick1_05      1         1         1         1            111
+# 2 crick1_05      3         1         0         1            101
+# 3   his1_05      1         0         1         1             11
+# 4   his1_05      1         1         1         1            111
+# 5   his1_05      2         0         1         1             11
+
+# Note: we analyzed survey == 1 in AHM1 ch. 7, here use all surveys
 alfl.v1 <- alfl[alfl$survey == 1,]
 alfl.H1 <- table(alfl.v1$id, alfl.v1$captureHistory)
 alfl.v2 <- alfl[alfl$survey == 2,]
 alfl.H2 <- table(alfl.v2$id, alfl.v2$captureHistory)
 alfl.v3 <- alfl[alfl$survey == 3,]
 alfl.H3 <- table(alfl.v3$id, alfl.v3$captureHistory)
+
 # Arrange the data in 3-d array format and also the wide format
 Y <- array(NA, c(50, 3, 7))
 Y[1:50,1,1:7] <- alfl.H1
@@ -134,13 +140,13 @@ m3h <- gmultmix( ~1, ~time + date, ~time + date, data = alfl.umf, mixture = "P")
 m3i <- gmultmix( ~1, ~date, ~time + date, data = alfl.umf, mixture = "P")
 (fl <- modSel(fitList(m0, m1, m1b, m1c, m2, m2b, m2c, m3, m3b, m3c, m3d,
     m3e, m3f, m3g, m3h, m3i)) )
-# nPars AIC delta AICwt cumltvWt
-# m3g 6 565.79 0.00 6.6e-01 0.66
-# m3h 7 567.46 1.66 2.9e-01 0.95
-# m2b 5 572.27 6.47 2.6e-02 0.97
-# m3 5 573.93 8.14 1.1e-02 0.98
-# m3i 6 574.21 8.41 9.8e-03 0.99
-# m3b 6 575.28 9.48 5.8e-03 1.00
+#     nPars    AIC delta  AICwt cumltvWt
+# m3g     6 565.79  0.00 0.6600     0.66
+# m3h     7 567.46  1.66 0.2900     0.95
+# m2b     5 572.27  6.47 0.0260     0.97
+# m3      5 573.93  8.14 0.0110     0.98
+# m3i     6 574.21  8.41 0.0098     0.99
+# m3b     6 575.28  9.48 0.0058     1.00
 # [... output truncated ... ]
 
 m3g
@@ -162,12 +168,12 @@ m3g2 <- gmultmix(~struct, ~time + date, ~date, data = alfl.umf, mixture = "P")
 m3g3 <- gmultmix(~woody + struct, ~time + date, ~date, data = alfl.umf, mixture = "P")
 (fl <- modSel(fitList(m0, m1, m1b, m1c, m2, m2b, m2c, m3, m3b, m3c, m3d, m3e,
     m3f, m3g, m3h, m3i, m3g1, m3g2, m3g3)) )
-# nPars AIC delta AICwt cumltvWt
-# m3g3 8 554.80 0.00 5.1e-01 0.51
-# m3g1 7 554.97 0.17 4.7e-01 0.99
-# m3g2 7 562.60 7.81 1.0e-02 1.00
-# m3g 6 565.79 11.00 2.1e-03 1.00
-# m3h 7 567.46 12.66 9.2e-04 1.00
+#      nPars    AIC delta   AICwt cumltvWt
+# m3g3     8 554.80  0.00 0.51000     0.51
+# m3g1     7 554.97  0.17 0.47000     0.99
+# m3g2     7 562.60  7.81 0.01000     1.00
+# m3g      6 565.79 11.00 0.00210     1.00
+# m3h      7 567.46 12.66 0.00092     1.00
 # . . . [output truncated] . . .
 
 m3g3
@@ -217,10 +223,12 @@ m0 <- gmultmix( ~1, ~1, ~1, data = umf2, mixture = "P")
 m1 <- gmultmix( ~1, ~1, ~time, data = umf2, mixture = "P")
 m1b <- gmultmix( ~time, ~1, ~1, data = umf2, mixture = "P")
 m1c <- gmultmix( ~time, ~1, ~time, data = umf2, mixture = "P")
+
 # Models with date
 m2 <- gmultmix( ~1, ~1, ~date, data = umf2, mixture = "P")
 m2b <- gmultmix( ~date, ~1, ~1, data = umf2, mixture = "P")
 m2c <- gmultmix( ~date, ~1, ~date, data = umf2, mixture = "P")
+
 # Models with both time and date .... all run in no time
 m3 <- gmultmix( ~1, ~1, ~time + date, data = umf2, mixture = "P")
 # ~~~~ extra models not shown in book ~~~~~~~~~~~~~~~~~~~~~
@@ -234,14 +242,14 @@ m3h <- gmultmix( ~time + date, ~1, ~date, data=umf2, mixture = "P")
 m3i <- gmultmix( ~time + date, ~1, ~time + date, data=umf2, mixture = "P")
 ( fl <- modSel(fitList(m0, m1, m1b, m1c, m2, m2b, m2c, m3,
     m3b, m3c, m3d, m3e, m3f, m3g, m3h, m3i)) )
-# nPars AIC delta AICwt cumltvWt
-# m2c 4 597.88 0.00 4.1e-01 0.41
-# m3h 5 598.61 0.73 2.8e-01 0.69
-# m3g 5 599.70 1.83 1.6e-01 0.85
-# m3i 6 600.34 2.47 1.2e-01 0.97
-# m2b 3 606.31 8.43 6.0e-03 0.98
-# m3b 4 606.63 8.75 5.1e-03 0.98
-# m2 3 606.65 8.77 5.1e-03 0.99
+#     nPars    AIC delta  AICwt cumltvWt
+# m2c     4 597.88  0.00 0.4100     0.41
+# m3h     5 598.61  0.73 0.2800     0.69
+# m3g     5 599.70  1.83 0.1600     0.85
+# m3i     6 600.34  2.47 0.1200     0.97
+# m2b     3 606.31  8.43 0.0060     0.98
+# m3b     4 606.63  8.75 0.0051     0.98
+# m2      3 606.65  8.77 0.0051     0.99
 # ... truncated ...
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -263,13 +271,14 @@ m3g3 <- gmultmix( ~date + woody + struct, ~1, ~date, data = umf2, mixture = "P")
 # (fl <- modSel(fitList(m0, m1, m1b, m1c, m2, m2b, m2c, m3, m3b, m3c, m3d, m3e, m3f, m3g, m3h,
 # m3i, m3g1, m3g2, m3g3)) )
 (fl <- modSel(fitList(m0, m1, m1b, m1c, m2, m2b, m2c, m3, m3g1, m3g2, m3g3)) )
-# nPars AIC delta AICwt cumltvWt
-# m3g3 6 576.56 0.0000 5.0e-01 0.50
-# m3g1 5 576.56 0.0047 5.0e-01 1.00
-# m3g2 5 592.40 15.8383 1.8e-04 1.00
-# m2c 4 597.88 21.3200 1.2e-05 1.00
-# m3h 5 598.61 22.0527 8.1e-06 1.00
+#      nPars    AIC   delta   AICwt cumltvWt
+# m3g3     6 576.56  0.0000 5.0e-01      0.5
+# m3g1     5 576.56  0.0047 5.0e-01      1.0
+# m3g2     5 592.40 15.8383 1.8e-04      1.0
+# m2c      4 597.88 21.3200 1.2e-05      1.0
+# m3h      5 598.61 22.0527 8.1e-06      1.0
 # ... output truncated ...
+
 # Top model
 m3g3
 # Abundance:
@@ -307,23 +316,24 @@ y3d <- array(NA, dim = c(nrow(Y), 7, 3) ) # Create 3d array and fill it
 y3d[,,1] <- Ywide[,1:7]
 y3d[,,2] <- Ywide[,8:14]
 y3d[,,3] <- Ywide[,15:21]
-nseasons <- 3 # Number of primary occasions
-nsites <- nrow(Ywide) # Number of sites
+nseasons <- 3                   # Number of primary occasions
+nsites <- nrow(Ywide)           # Number of sites
 nobs <- apply(y3d, c(1,3), sum) # Total detections per site and occasion
+
 # Bundle data
 str(bdata <- list(y3d = y3d, nsites = nsites, nseasons = nseasons,
     nobs = nobs, woody = alfl.covs[,"woody"], struct = alfl.covs[,"struct"],
     date = date, time = time, pi = pi))
 # List of 9
-# $ y3d : int [1:50, 1:7, 1:3] 0 0 0 0 0 0 0 0 1 0 ...
-# $ nsites : int 50
-# $ nseasons : num 3
-# $ nobs : int [1:50, 1:3] 1 2 0 1 0 3 0 0 1 0 ...
-# $ woody : num [1:50] 0.3 0.05 0.35 0.3 0.1 0.4 0.2 0 0.2 0.15 ...
-# $ struct : num [1:50] 5.45 4.75 14.7 5.05 4.15 9.75 9.6 15.7 9.2 ...
-# $ date : num [1:50, 1:3] -21 -7 -7 -7 -19 -19 -19 -26 -26 -26 ...
-# $ time : num [1:50, 1:3] 1.12 1.87 0.69 0.21 2.01 ...
-# $ pi : num 3.14
+# $ y3d     : int [1:50, 1:7, 1:3] 0 0 0 0 0 0 0 0 1 0 ...
+# $ nsites  : int 50
+# $ nseasons: num 3
+# $ nobs    : int [1:50, 1:3] 1 2 0 1 0 3 0 0 1 0 ...
+# $ woody   : num [1:50] 0.3 0.05 0.35 0.3 0.1 0.4 0.2 0 0.2 0.15 ...
+# $ struct  : num [1:50] 5.45 4.75 14.7 5.05 4.15 9.75 9.6 15.7 9.2 ...
+# $ date    : num [1:50, 1:3] -21 -7 -7 -7 -19 -19 -19 -26 -26 -26 ...
+# $ time    : num [1:50, 1:3] 1.12 1.87 0.69 0.21 2.01 ...
+# $ pi      : num 3.14
 
 # Specify model in BUGS language
 cat(file="CR_TE.txt", "
@@ -385,6 +395,7 @@ model {
   Dtotal <- exp(beta0)/ area
 }
 ")
+
 # Initial values
 Navail.st <- apply(y3d, c(1, 3), sum)
 Mst <- apply(Navail.st, 1, max, na.rm = TRUE) + 2
@@ -393,24 +404,27 @@ inits <- function() list(M = Mst, sigma = 100)
 # Parameters monitored
 params <- c("beta0" , "beta1", "beta2", "alpha0", "alpha1", "gamma0",
     "gamma1", "gamma2", "Mtotal", "Davail", "Dtotal")
+
 # MCMC settings
 na <- 1000 ; ni <- 10000 ; nb <- 5000 ; nt <- 5 ; nc <- 3
+
 # Call JAGS (ART 0.2 min), gauge convergence, summarize posteriors
 out7 <- jags(bdata, inits, params, "CR_TE.txt", n.adapt = na, n.iter = ni,
     n.burnin = nb, n.thin = nt, n.chains = nc, parallel = TRUE)
-op <- par(mfrow = c(3, 3)) ; traceplot(out7) ; par(op)
+op <- par(mfrow = c(3, 3)) ; traceplot(out7)
+par(op)
 print(out7, 3)
-# mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
-# beta0 -0.797 0.429 -1.637 -0.797 0.047 TRUE 0.966 1.003 849
-# beta1 1.964 0.628 0.735 1.955 3.212 FALSE 0.998 1.001 1914
-# beta2 0.054 0.038 -0.026 0.055 0.126 TRUE 0.924 1.004 466
-# alpha0 0.716 0.161 0.397 0.715 1.033 FALSE 1.000 1.000 3000
-# alpha1 -0.038 0.012 -0.061 -0.038 -0.016 FALSE 1.000 1.000 3000
-# gamma0 -0.351 0.300 -0.985 -0.337 0.204 TRUE 0.877 1.014 164
-# gamma1 -0.059 0.015 -0.091 -0.059 -0.031 FALSE 1.000 1.005 397
-# gamma2 -0.415 0.149 -0.706 -0.412 -0.125 FALSE 0.997 1.001 1535
-# Mtotal 80.120 10.959 66.000 78.000 106.000 FALSE 1.000 1.035 99
-# Davail[1] 0.393 0.176 0.157 0.362 0.848 FALSE 1.000 1.004 753
-# Davail[2] 0.287 0.128 0.117 0.264 0.618 FALSE 1.000 1.004 879
-# Davail[3] 0.162 0.076 0.060 0.148 0.353 FALSE 1.000 1.002 1410
-# Dtotal 0.629 0.280 0.248 0.574 1.334 FALSE 1.000 1.003 1918
+#             mean     sd   2.5%    50%   97.5% overlap0     f  Rhat n.eff
+# beta0     -0.797  0.429 -1.637 -0.797   0.047     TRUE 0.966 1.003   849
+# beta1      1.964  0.628  0.735  1.955   3.212    FALSE 0.998 1.001  1914
+# beta2      0.054  0.038 -0.026  0.055   0.126     TRUE 0.924 1.004   466
+# alpha0     0.716  0.161  0.397  0.715   1.033    FALSE 1.000 1.000  3000
+# alpha1    -0.038  0.012 -0.061 -0.038  -0.016    FALSE 1.000 1.000  3000
+# gamma0    -0.351  0.300 -0.985 -0.337   0.204     TRUE 0.877 1.014   164
+# gamma1    -0.059  0.015 -0.091 -0.059  -0.031    FALSE 1.000 1.005   397
+# gamma2    -0.415  0.149 -0.706 -0.412  -0.125    FALSE 0.997 1.001  1535
+# Mtotal    80.120 10.959 66.000 78.000 106.000    FALSE 1.000 1.035    99
+# Davail[1]  0.393  0.176  0.157  0.362   0.848    FALSE 1.000 1.004   753
+# Davail[2]  0.287  0.128  0.117  0.264   0.618    FALSE 1.000 1.004   879
+# Davail[3]  0.162  0.076  0.060  0.148   0.353    FALSE 1.000 1.002  1410
+# Dtotal     0.629  0.280  0.248  0.574   1.334    FALSE 1.000 1.003  1918

@@ -22,6 +22,7 @@ str(cswa)
 covs <- cswa$covs
 covs$time1[is.na(covs$time1)] <- mean(covs$time1, na.rm=TRUE)
 covs$date1[is.na(covs$date1)] <- mean(covs$date1, na.rm=TRUE)
+
 # Define associated obsToY matrix
 o2y <- diag(9)
 o2y[upper.tri(o2y)] <- 1
@@ -36,6 +37,7 @@ umfcs <- unmarkedFrameGMM(y = matrix(cswa$counts, 43),
     date = covs[,c("date1", "date2", "date3")],
     obs = covs[,c("obs1", "obs2", "obs3")]),
     piFun = "instRemPiFun", obsToY = o2y, numPrimary = 3)
+
 # Standardize the first 2 yearlySiteCovs (time, date) and summarize
 #   the unmarked data frame
 ysc <- yearlySiteCovs(umfcs)
@@ -102,18 +104,19 @@ cswamods$Wh2Wc..D <- gmultmix(~offset(log(plotArea)) + woodHt +
     I(woodHt^2) + woodCov, ~1, ~date, umfcs)
 cswamods$Wh2Wc..Wh <- gmultmix(~offset(log(plotArea)) + woodHt +
     I(woodHt^2) + woodCov, ~1, ~woodHt, umfcs)
+
 # Create a fitList and compute a model selection table
 cswafits <- fitList(fits = cswamods)
 modSel(cswafits)
-# nPars AIC delta AICwt cumltvWt
-# Wh2Wc..Wh 7 325.71 0.00 2.9e-01 0.29
-# Wh2Wc.. 6 326.10 0.39 2.4e-01 0.53
-# Wh2Wc..T 7 326.87 1.15 1.6e-01 0.69
-# Wh2Wc.A. 7 327.50 1.79 1.2e-01 0.81
-# Wh2WcA.. 7 327.99 2.28 9.2e-02 0.90
-# Wh2Wc..D 7 328.10 2.39 8.7e-02 0.98
-# Wh2.. 5 331.92 6.21 1.3e-02 1.00
-# Wc.. 4 335.82 10.10 1.8e-03 1.00
+#           nPars    AIC delta  AICwt cumltvWt
+# Wh2Wc..Wh     7 325.71  0.00 0.2900     0.29
+# Wh2Wc..       6 326.10  0.39 0.2400     0.53
+# Wh2Wc..T      7 326.87  1.15 0.1600     0.69
+# Wh2Wc.A.      7 327.50  1.79 0.1200     0.81
+# Wh2WcA..      7 327.99  2.28 0.0920     0.90
+# Wh2Wc..D      7 328.10  2.39 0.0870     0.98
+# Wh2..         5 331.92  6.21 0.0130     1.00
+# Wc..          4 335.82 10.10 0.0018     1.00
 # .. truncated ..
 
 # The big Table of Everything
@@ -146,6 +149,7 @@ getD <- function(fit, covs) {
   theta <- matrix(predict(fit, type = "phi")$Predicted, length(lam))
   sum(lam) / sum(covs$plotArea / theta[,1])
 }
+
 # Density estimate
 getD(cswamods$Wh2Wc..Wh, covs=covs)
 # [1] 1.092638
@@ -179,6 +183,7 @@ summary(umf <- unmarkedFramePCount(y = apply(cswa$count, c(1,3), sum),
     obsCovs = list(time = covs[,c("time1", "time2", "time3")],
     date = covs[,c("date1", "date2", "date3")],
     obs = covs[,c("obs1", "obs2", "obs3")] ) ) )
+
 # Create a list to hold the models. Note default choice of K here
 cswapcmods <- list()
 (cswapcmods$Null <- pcount(~1 ~offset(log(plotArea)), umf))
@@ -192,6 +197,7 @@ cswapcmods <- list()
 # Estimate SE z P(>|z|)
 # -0.319 0.332 -0.961 0.337
 # AIC: 241.481
+
 # Back-transform density and availability probability
 (lam.cswapc <- backTransform(cswapcmods$Null, type = "state"))
 # Backtransformed linear combination(s) of Abundance estimate(s)
@@ -201,6 +207,7 @@ cswapcmods <- list()
 # Backtransformed linear combination(s) of Detection estimate(s)
 # Estimate SE LinComb (Intercept)
 # 0.421 0.0808 -0.319 1
+
 # Estimate of density from this model
 coef(lam.cswapc) * coef(theta.cswapc)
 # [1] 1.077969
@@ -233,17 +240,18 @@ cswapcmods$Wh2Wc.Wh <- pcount(~woodHt ~ offset(log(plotArea)) + woodHt +
 cswapcmods$Wh2Wc.A <- pcount(~patchArea ~ offset(log(plotArea)) + woodHt +
     I(woodHt^2) + woodCov, umf)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 # Organize the model fits into a fitList and produce AIC table
 cswapcfits <- fitList(fits = cswapcmods)
 (ms.cswapc <- modSel(cswapcfits))
-# nPars AIC delta AICwt cumltvWt
-# Wh2Wc. 5 224.15 0.00 3.0e-01 0.30
-# Wh2Wc.Wh 6 224.36 0.21 2.7e-01 0.58
-# Wh2Wc.A 6 225.54 1.39 1.5e-01 0.73
-# Wh2Wc.T 6 225.77 1.62 1.3e-01 0.86
-# Wh2WcA. 6 226.03 1.88 1.2e-01 0.98
-# Wh2. 4 229.96 5.82 1.7e-02 1.00
-# Wc. 3 233.86 9.71 2.4e-03 1.00
+#          nPars    AIC delta  AICwt cumltvWt
+# Wh2Wc.       5 224.15  0.00 0.3000     0.30
+# Wh2Wc.Wh     6 224.36  0.21 0.2700     0.58
+# Wh2Wc.A      6 225.54  1.39 0.1500     0.73
+# Wh2Wc.T      6 225.77  1.62 0.1300     0.86
+# Wh2WcA.      6 226.03  1.88 0.1200     0.98
+# Wh2.         4 229.96  5.82 0.0170     1.00
+# Wc.          3 233.86  9.71 0.0024     1.00
 # ... truncated ...
 
 # Create predictions of E(N) for the AIC-best model for each plot and
@@ -260,6 +268,7 @@ getDpc <- function(fit, covs) {
   lam <- predict(fit, type="state")$Predicted
   sum(lam) / sum(covs$plotArea)
 }
+
 # Adjusted density
 getDpc(cswapcmods$Wh2Wc., covs = covs)
 # [1] 3.750416
@@ -277,6 +286,7 @@ getDpc(cswapcmods$Wh2Wc., covs = covs)
   # [1,] 1.6 2.2 3.1 4.1 5.7 27 48
   # t0 = Original statistic compuated from data
   # t_B = Vector of bootstrap samples
+
 # Get (parametric) bootstrap SE and CI
 (SE <- sd(cswapc.Dhat@t.star))
 (CI <- quantile(cswapc.Dhat@t.star, c(0.025, 0.975)))
@@ -318,15 +328,15 @@ cswamods1$Wh2Wc.Wh <- multinomPois(~woodHt ~offset(log(plotArea)) + woodHt +
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cswafits1 <- fitList(fits = cswamods1)
 (ms.cswa1 <- modSel(cswafits1))
-# nPars AIC delta AICwt cumltvWt
-# Wh2Wc.Wh 6 134.61 0.00 0.48533 0.49
-# Wh2Wc. 5 136.84 2.23 0.15937 0.64
-# Wh2Wc.D 6 137.59 2.98 0.10938 0.75
-# Wh2Wc.T 6 138.01 3.39 0.08899 0.84
-# Wh2. 4 138.18 3.57 0.08150 0.92
-# Wh2WcA. 6 138.83 4.21 0.05904 0.98
-# Wc. 3 143.00 8.39 0.00731 0.99
-# Null 2 145.58 10.97 0.00202 0.99
+#          nPars    AIC delta   AICwt cumltvWt
+# Wh2Wc.Wh     6 134.61  0.00 0.48533     0.49
+# Wh2Wc.       5 136.84  2.23 0.15937     0.64
+# Wh2Wc.D      6 137.59  2.98 0.10938     0.75
+# Wh2Wc.T      6 138.01  3.39 0.08899     0.84
+# Wh2.         4 138.18  3.57 0.08150     0.92
+# Wh2WcA.      6 138.83  4.21 0.05904     0.98
+# Wc.          3 143.00  8.39 0.00731     0.99
+# Null         2 145.58 10.97 0.00202     0.99
 # ... truncated ...
 
 # Run a parametric bootstrap on density
@@ -337,6 +347,7 @@ getDr1 <- function(fit, spotMaps) {
   D <- sum( predict(fit, type = "state")$Predicted)/(sum(spotMaps$parea) -0.62)
   return(D)
 }
+
 # Compute the density for replicate 1
 getDr1(cswamods1$Wh2Wc.Wh, cswa$spotMaps)
 # [1] 0.4809083
@@ -344,6 +355,7 @@ getDr1(cswamods1$Wh2Wc.Wh, cswa$spotMaps)
 # Bootstrap the density estimate (ART 20 sec)
 Dhat.rem1 <- parboot(cswamods1$Wh2Wc.Wh, statistic = getDr1, nsim = 1000,
     spotMaps = cswa$spotMaps, ncores=3)
+
 # Summarize the bootstrap output
 Dhat.rem1
 # Parametric Bootstrap Statistics:

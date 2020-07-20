@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 2: Dynamic and Advanced models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 5 : MODELING METACOMMUNITY DYNAMICS USING DYNAMIC COMMUNITY MODELS
 # ==========================================================================
 # Code from proofs dated 2020-06-23
@@ -60,12 +61,12 @@ imat # Look at the impact matrix
 str(bdata <- list(y = y, nsite = dim(y)[1], nsurvey = dim(y)[2], nyear = dim(y)[3],
     nspec = dim(y)[4], imat = imat))
 # List of 6
-# $ y : int [1:100, 1:2, 1:26, 1:12] NA NA NA NA NA NA NA NA ...
-# $ nsite : int 100
+# $ y      : int [1:100, 1:2, 1:26, 1:12] NA NA NA NA NA NA NA NA ...
+# $ nsite  : int 100
 # $ nsurvey: int 2
-# $ nyear : int 26
-# $ nspec : int 12
-# $ imat : num [1:26, 1:12] 0 0 0 0 0 0 0 0 0 0 ...
+# $ nyear  : int 26
+# $ nspec  : int 12
+# $ imat   : num [1:26, 1:12] 0 0 0 0 0 0 0 0 0 0 ...
 
 # Specify model in BUGS language
 cat(file = "DCM3.txt", "
@@ -343,12 +344,12 @@ pred.logmass <- log(seq(0.1, 10, length.out = 100))
     str(bdata <- list(y = y, nsite = dim(y)[1], nsurvey = dim(y)[2], nyear = dim(y)[3],
     nspec = dim(y)[4], logmass = log(mass), pred.logmass = pred.logmass) )
 # List of 7
-# $ y : int [1:100, 1:3, 1:10, 1:12] 1 1 1 1 1 1 1 0 0 1 ...
-# $ nsite : int 100
-# $ nsurvey : int 3
-# $ nyear : int 10
-# $ nspec : int 12
-# $ logmass : num [1:12] -2.889 -1.429 0.57 0.817 0.871 ...
+# $ y           : int [1:100, 1:3, 1:10, 1:12] 1 1 1 1 1 1 1 0 0 1 ...
+# $ nsite       : int 100
+# $ nsurvey     : int 3
+# $ nyear       : int 10
+# $ nspec       : int 12
+# $ logmass     : num [1:12] -2.889 -1.429 0.57 0.817 0.871 ...
 # $ pred.logmass: num [1:100] -2.303 -1.609 -1.204 -0.916 -0.693 ...
 
 # Specify model in BUGS language

@@ -53,8 +53,10 @@ model {
 
 # Initial values
 inits <- function() list(site = rnorm(nrow(C)), year = c(NA, rnorm(ncol(C)-1)))
+
 # Parameters monitored
 params <- c("site", "year", "popindex")
+
 # MCMC settings
 na <- 1000 ; ni <- 15000; nt <- 10 ; nb <- 5000 ; nc <- 3
 
@@ -84,7 +86,7 @@ cor(fm$coef[268:284], out1$summary[269:285,1]) # >0.0999 # > 0.999 surely!
 # ~~~~~ code to plot figure 1.4 ~~~~~~~~~~~~~~
 # Plot population size index
 plot(year, out1$mean$popindex, xlab = 'Year', ylab = 'Population index',
-  ylim = c(500, 1000), pch = 16, frame = F, type= 'b', )
+    ylim = c(500, 1000), pch = 16, frame = FALSE, type= 'b', )
 segments(year, out1$q2.5$popindex, year, out1$q97.5$popindex)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -99,7 +101,7 @@ out1X <- jags(bdata, inits, params, "model1.txt", n.adapt = na, n.chains = nc,
 head(C[160:169, 1:13]) # Some of the data with many NAs ...
 # ... and the corresponding estimates
 head(round(out1X$mean$C[160:169, 1:13], 1))
-# [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13]
+#     [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13]
 # [1,] 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0 0 0
 # [2,] 1.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0 0 0
 # [3,] 5.0 5.1 4.6 5.5 6.1 6.3 6.6 6.1 6.3 6.6 1 0 10

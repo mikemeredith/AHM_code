@@ -38,15 +38,18 @@ date <- as.matrix(alfl.covs[,c("date.1", "date.2", "date.3")])
 date <- date - median(date)
 time <- as.matrix(alfl.covs[,c("time.1", "time.2", "time.3")])
 time <- time - median(time)
+
 # Prepare response array
 y3d <- array(NA, dim = c(nrow(Y), 7, 3)) # Create 3d array
 y3d[,,1] <- Ywide[,1:7]
 y3d[,,2] <- Ywide[,8:14]
 y3d[,,3] <- Ywide[,15:21]
+
 # Sample sizes
-nseasons <- 3 # Number of primary occasions
-nsites <- nrow(Ywide) # Number of sites
+nseasons <- 3                   # Number of primary occasions
+nsites <- nrow(Ywide)           # Number of sites
 nobs <- apply(y3d, c(1,3), sum) # Total detections/site, occasion
+
 # Bundle data (sames as before)
 str(bdata <- list(y3d = y3d, nsites = nsites, nseasons = nseasons,
     nobs = nobs, woody = alfl.covs[,"woody"], struct = alfl.covs[,"struct"],
@@ -111,6 +114,7 @@ model{
   }
 }
 ")
+
 # Set up some sensible starting values for S and R
 nseasons <- 3
 yin <- nobs+1
@@ -131,25 +135,27 @@ inits <- function(){list(N = yin, beta0 = runif(1), beta1 = runif(1),
 # Parameters monitored
 params <- c('beta0', 'beta1', 'beta2', 'beta3', 'alpha0', 'alpha1',
     'phi', 'gamma', 'Ntot', 'D')
+
 # MCMC settings
 na <- 5000 ; ni <- 100000 ; nb <- 50000 ; nt <- 50 ; nc <- 3
+
 # Run JAGS (ART 6 min), look at convergence and summarize posteriors
 out8 <- jags (bdata, inits, params, "mnDM.txt", n.adapt = na, n.iter=ni,
     n.burnin=nb, n.thin=nt, n.chains=nc, parallel=TRUE)
-op <- par(mfrow = c(3, 3)) ; traceplot(out8) ; par(op)
+op <- par(mfrow = c(3, 3)) ; traceplot(out8)
+par(op)
 print(out8, 3)
-# mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
-# beta0 -1.122 0.415 -1.929 -1.112 -0.314 FALSE 0.998 1.001 2834
-# beta1 2.083 0.692 0.744 2.074 3.473 FALSE 0.999 1.000 3000
-# beta2 0.046 0.037 -0.026 0.047 0.118 TRUE 0.892 1.000 3000
-# alpha0 -0.546 0.116 -0.778 -0.541 -0.333 FALSE 1.000 1.000 3000
-# alpha1 0.334 0.235 -0.132 0.335 0.778 TRUE 0.922 1.000 3000
-# phi 0.392 0.105 0.139 0.407 0.556 FALSE 1.000 1.006 430
-# gamma 0.199 0.106 0.059 0.176 0.481 FALSE 1.000 1.003 918
-# Ntot[1] 55.781 1.466 54.000 56.000 59.000 FALSE 1.000 1.000 3000
-# Ntot[2] 33.927 1.010 33.000 34.000 36.000 FALSE 1.000 1.000 3000
-# Ntot[3] 17.953 1.038 17.000 18.000 20.000 FALSE 1.000 1.000 3000
-# D[1] 1.421 0.037 1.376 1.427 1.503 FALSE 1.000 1.000 3000
-# D[2] 0.864 0.026 0.841 0.866 0.917 FALSE 1.000 1.000 3000
-# D[3] 0.457 0.026 0.433 0.459 0.510 FALSE 1.000 1.000 3000
-
+#           mean    sd   2.5%    50%  97.5% overlap0     f  Rhat n.eff
+# beta0   -1.122 0.415 -1.929 -1.112 -0.314    FALSE 0.998 1.001  2834
+# beta1    2.083 0.692  0.744  2.074  3.473    FALSE 0.999 1.000  3000
+# beta2    0.046 0.037 -0.026  0.047  0.118     TRUE 0.892 1.000  3000
+# alpha0  -0.546 0.116 -0.778 -0.541 -0.333    FALSE 1.000 1.000  3000
+# alpha1   0.334 0.235 -0.132  0.335  0.778     TRUE 0.922 1.000  3000
+# phi      0.392 0.105  0.139  0.407  0.556    FALSE 1.000 1.006   430
+# gamma    0.199 0.106  0.059  0.176  0.481    FALSE 1.000 1.003   918
+# Ntot[1] 55.781 1.466 54.000 56.000 59.000    FALSE 1.000 1.000  3000
+# Ntot[2] 33.927 1.010 33.000 34.000 36.000    FALSE 1.000 1.000  3000
+# Ntot[3] 17.953 1.038 17.000 18.000 20.000    FALSE 1.000 1.000  3000
+# D[1]     1.421 0.037  1.376  1.427  1.503    FALSE 1.000 1.000  3000
+# D[2]     0.864 0.026  0.841  0.866  0.917    FALSE 1.000 1.000  3000
+# D[3]     0.457 0.026  0.433  0.459  0.510    FALSE 1.000 1.000  3000

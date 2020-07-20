@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 2: Dynamic and Advanced models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 5 : MODELING METACOMMUNITY DYNAMICS USING DYNAMIC COMMUNITY MODELS
 # ==========================================================================
 # Code from proofs dated 2020-06-23
@@ -20,24 +21,28 @@ str(data <- simDCM(nspec = 50, nsites = 100, nsurveys = 3, nyears = 10,
     sig.lp = 1, mu.beta.lp = 0, sig.beta.lp = 0, range.beta1.survey = c(0, 0),
     range.beta2.survey = c(0, 0), trend.sd.site = c(0, 0),
     trend.sd.survey = c(0, 0), show.plot = TRUE) )
-str(data <- simDCM(nspec = 200)) # More species (looks great)
-str(data <- simDCM(nspec = 1)) # A single species (works !)
-str(data <- simDCM(nsites = 267)) # More sites
-str(data <- simDCM(nsites = 1)) # A single site
+
+str(data <- simDCM(nspec = 200))   # More species (looks great)
+str(data <- simDCM(nspec = 1))     # A single species (works !)
+str(data <- simDCM(nsites = 267))  # More sites
+str(data <- simDCM(nsites = 1))    # A single site
 str(data <- simDCM(nsurveys = 10)) # More visits
-str(data <- simDCM(nyears = 25)) # More years
-str(data <- simDCM(nyears = 2)) # Just two years
-# str(data <- simDCM(nyears = 1)) # A single year ... this crashes
-try(data <- simDCM(nyears = 1)) # A single year ... this crashes
+str(data <- simDCM(nyears = 25))   # More years
+str(data <- simDCM(nyears = 2))    # Just two years
+try(data <- simDCM(nyears = 1))    # A single year ... this crashes
 
 # No species heterogeneity in parameters of initial occupancy
 str(data <- simDCM(sig.lpsi1 = 0, sig.beta.lpsi1 = 0))
+
 # No species heterogeneity in parameters of persistence
 str(data <- simDCM(sig.lphi = 0, sig.beta.lphi = 0))
+
 # No species heterogeneity in parameters of colonization
 str(data <- simDCM(sig.lgamma = 0, sig.beta.lgamma = 0))
+
 # No species heterogeneity in parameters of detection
 str(data <- simDCM(sig.lp = 0, sig.beta.lp = 0))
+
 # No annual variation in rates phi, gamma and p
 str(data <- simDCM(range.mean.phi = c(0.8, 0.8), range.mean.gamma = c(0.3, 0.3),
     range.mean.p = c(0.6, 0.6)))

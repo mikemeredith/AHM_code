@@ -11,10 +11,8 @@
 # Run time with the full number of iterations: 9 hrs
 
 library(AHMbook)
-# library(unmarked)
 library(abind)
 library(jagsUI)
-# library(AICcmodavg)
 library(corrplot)
 
 # ~~~ Need to prepare data as in 8.3.1 ~~~~~~~~~~~~~
@@ -41,7 +39,7 @@ nreps <- dim(counts)[2]
 nyears <- dim(counts)[3]
 nspec <- dim(counts)[4]
 maxC <- apply(counts, c(1,3,4), max, na.rm = TRUE)
-maxC[maxC == '-Inf'] <- NA
+maxC[maxC == -Inf] <- NA
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # 8.5 Joint models for abundance
@@ -59,16 +57,16 @@ str(bdata <- list(C = counts[,,'2016',], nsites = nsites, nspec = nspec,
     nreps = nreps, elev = elev, north = north, DATES = DATES[,,'2016'],
     HOURS = HOURS[,,'2016'], R = Rmat, df = df) )
 # List of 10
-# $ C : num [1:373, 1:3, 1:6] 0 0 0 0 0 0 0 0 0 0 ...
+# $ C     : num [1:373, 1:3, 1:6] 0 0 0 0 0 0 0 0 0 0 ...
 # $ nsites: num 373
 # $ nspec : num 6
 # $ nreps : num 3
-# $ elev : num [1:373] -0.26 -0.08 0.46 0.72 0.88 0.78 0.74 0.74 ...
+# $ elev  : num [1:373] -0.26 -0.08 0.46 0.72 0.88 0.78 0.74 0.74 ...
 # $ north : num [1:373] 0.1107 0.3218 0.0907 0.0588 1.9757 ...
 # $ DATES : num [1:373, 1:3] -1.45 -1.45 -1.45 -1.45 -1.45 ...
 # $ HOURS : num [1:373, 1:3] -1.969 -1.778 -1.464 -1.218 -0.958 ...
-# $ R : num [1:6, 1:6] 1 0 0 0 0 0 0 1 0 0 ...
-# $ df : num 7
+# $ R     : num [1:6, 1:6] 1 0 0 0 0 0 0 1 0 0 ...
+# $ df    : num 7
 
 # Specify model in BUGS language
 cat(file = "Nmix1.txt", "
@@ -185,11 +183,11 @@ str(CB <- counts[, , '2016', 'BTNW'])
 str(bdata <- list(CR = CR, CB = CB, nsites = nsites, nreps = nreps, elev = elev,
     north = north, DATES = DATES[,,'2016'], HOURS = HOURS[,,'2016']) )
 # List of 8
-# $ CR : num [1:373, 1:3] 0 1 1 2 1 1 1 1 0 0 ...
-# $ CB : num [1:373, 1:3] 0 0 0 1 0 0 0 1 0 0 ...
+# $ CR    : num [1:373, 1:3] 0 1 1 2 1 1 1 1 0 0 ...
+# $ CB    : num [1:373, 1:3] 0 0 0 1 0 0 0 1 0 0 ...
 # $ nsites: num 373
 # $ nreps : num 3
-# $ elev : num [1:373] -0.26 -0.08 0.46 0.72 0.88 0.78 0.74 0.74 ...
+# $ elev  : num [1:373] -0.26 -0.08 0.46 0.72 0.88 0.78 0.74 0.74 ...
 # $ north : num [1:373] 0.1107 0.3218 0.0907 0.0588 1.9757 ...
 # $ DATES : num [1:373, 1:3] -1.45 -1.45 -1.45 -1.45 -1.45 ...
 # $ HOURS : num [1:373, 1:3] -1.969 -1.778 -1.464 -1.218 -0.958 ...
@@ -270,12 +268,12 @@ op <- par(mfrow = c(3,3)) ; traceplot(out2)
 par(op)
 which(out2$summary[,8] > 1.1)
 print(out2, 2)
-# mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
-# mean.lambdaR 2.45 0.62 1.53 2.36 3.94 FALSE 1.00 1.00 1314
+#               mean   sd  2.5%   50% 97.5% overlap0    f Rhat n.eff
+# mean.lambdaR  2.45 0.62  1.53  2.36  3.94    FALSE 1.00 1.00  1314
 # ... output truncated ...
-# gamma0 0.09 0.10 -0.12 0.10 0.27 TRUE 0.85 1.02 110
-# gamma1 -0.01 0.03 -0.07 -0.01 0.04 TRUE 0.70 1.00 528
-# gamma2 0.03 0.04 -0.05 0.03 0.12 TRUE 0.76 1.00 702
+# gamma0        0.09 0.10 -0.12  0.10  0.27     TRUE 0.85 1.02   110
+# gamma1       -0.01 0.03 -0.07 -0.01  0.04     TRUE 0.70 1.00   528
+# gamma2        0.03 0.04 -0.05  0.03  0.12     TRUE 0.76 1.00   702
 
 # 8.5.3 An open binomial N-mixture for two species with directional interactions
 # ------------------------------------------------------------------------------
@@ -289,12 +287,12 @@ table(CR) ; table(CB) # Descriptifs of these counts
 str(bdata <- list(CR = CR, CB = CB, nsites = nsites, nyears = nyears,
     nreps = nreps, elev = elev, north = north, DATES = DATES, HOURS = HOURS) )
 # List of 9
-# $ CR : num [1:373, 1:3, 1:10] 2 1 0 1 1 0 1 0 0 1 ...
-# $ CB : num [1:373, 1:3, 1:10] 1 0 1 0 0 0 0 1 1 0 ...
+# $ CR    : num [1:373, 1:3, 1:10] 2 1 0 1 1 0 1 0 0 1 ...
+# $ CB    : num [1:373, 1:3, 1:10] 1 0 1 0 0 0 0 1 1 0 ...
 # $ nsites: num 373
 # $ nyears: num 10
 # $ nreps : num 3
-# $ elev : num [1:373] -0.26 -0.08 0.46 0.72 0.88 0.78 0.74 0.74 ...
+# $ elev  : num [1:373] -0.26 -0.08 0.46 0.72 0.88 0.78 0.74 0.74 ...
 # $ north : num [1:373] 0.1107 0.3218 0.0907 0.0588 1.9757 ...
 # $ DATES : num [1:373, 1:3, 1:10] -1.36 -1.36 -1.36 -1.36 -1.36 ...
 # $ HOURS : num [1:373, 1:3, 1:20] -1.655 -1.45 -1.109 -0.753 -1.204 ...
@@ -388,8 +386,7 @@ op <- par(mfrow = c(3,3)) ; traceplot(out3)
 par(op)
 which(out3$summary[,8] > 1.1)
 print(out3$summary[,-(4:6)], 3)
-# mean sd 2.5% 97.5% Rhat n.eff overlap0 f
-# mean.lambdaR[1] 2.29138 0.4938 1.55938 3.4651 1.00 3000 0 1.000
+#                    mean     sd     2.5%  97.5% Rhat n.eff overlap0     f
+# mean.lambdaR[1] 2.29138 0.4938  1.55938 3.4651    1  3000        0 1.000
 # ... output heavily truncated ...
-# gamma 0.02872 0.0153 -0.00229 0.0588 1.00 2586 1 0.964
-
+# gamma           0.02872 0.0153 -0.00229 0.0588    1  2586        1 0.964

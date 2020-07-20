@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 2: Dynamic and Advanced models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 4 : MODELING SPECIES DISTRIBUTION AND RANGE DYNAMICS, AND POPULATION
 #             DYNAMICS USING DYNAMIC OCCUPANCY MODELS
 # ============================================================================
@@ -16,8 +17,7 @@ library(jagsUI)
 # ~~~~~~~ change to RNG default in R 3.6.0 ~~~~~~~~~~~~~~~
 # The values in the book were generated with R 3.5; to get the same
 #   values in later versions you need the old buggy RNG for sample:
-if(getRversion() >= "3.6.0")
-  RNGkind(sample.kind = "Rounding")
+RNGversion("3.5.0")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # 4.10 Analysis of citizen-science data using occupancy models
@@ -32,6 +32,7 @@ str(dat <- spottedWoodpecker) # Look at overview of data set
 
 # Add to data scaled date (such that 0 is 1 May and 1 unit is 1 month)
 dat$date <- (dat$jdate - 121) / 30
+
 # Check sample sizes in original data set
 nsites <- length(unique(dat$site)) # 1545 sites
 nyears <- length(unique(dat$year)) # 26 years
@@ -44,20 +45,22 @@ ncase <- nrow(dat) # 116204
 set.seed(1) # Ensures you get the same subset
 sel.cases <- sort(sample(1:ncase, ncase * prop.data))
 dat <- dat[sel.cases,] # Smaller data set
+
 # Look at subsampled data set
 str(dat)
 # 'data.frame' : 34861 obs. of 8 variables:
-# $ site : int 6 1155 1261 1262 608 741 821 907 1076 1262 ...
-# $ coordx : num 907942 1068942 1095942 1095942 1025942 ...
-# $ coordy : num 55276 169276 186276 187276 171276 ...
-# $ year : int 1990 1990 1990 1990 1992 1992 1992 1992 1992 1992 ...
-# $ jdate : int 51 51 51 51 51 51 51 51 51 51 ...
-# $ y : int 0 0 0 0 0 0 0 0 0 0 ...
+# $ site    : int 6 1155 1261 1262 608 741 821 907 1076 1262 ...
+# $ coordx  : num 907942 1068942 1095942 1095942 1025942 ...
+# $ coordy  : num 55276 169276 186276 187276 171276 ...
+# $ year    : int 1990 1990 1990 1990 1992 1992 1992 1992 1992 1992 ...
+# $ jdate   : int 51 51 51 51 51 51 51 51 51 51 ...
+# $ y       : int 0 0 0 0 0 0 0 0 0 0 ...
 # $ nsurveys: int 1 1 1 1 1 1 1 1 1 3 ...
-# $ date : num -2.33 -2.33 -2.33 -2.33 -2.33 ...
+# $ date    : num -2.33 -2.33 -2.33 -2.33 -2.33 ...
 
 # Have to renumber the sites (since lost some in subsampling)
 dat$site <- as.numeric(as.factor(dat[,"site"]))
+
 # Sample sizes in new (subsampled) data set
 nsites <- length(unique(dat$site)) # 1433 sites
 nyears <- length(unique(dat$year)) # 26 years
@@ -72,17 +75,20 @@ plot(1990:2015, tapply(dat$y, list(dat$year), sum, na.rm = TRUE),
   cex = 2, type = 'b', pch = 16, ylab = 'Number of middle spotted records',
   xlab = 'Year', frame = F)
 par(op)
+
 # Compute number of middle spotted records per site/year (det. frequency)
 table(df <- tapply(dat$y, list(dat$site, dat$year), sum, na.rm = TRUE))
-# 0 1 2 3 4 5 6 7 8 10
-# 8582 1063 178 40 21 6 9 8 2 3
+#    0    1    2   3   4   5   6   7   8  10
+# 8582 1063  178  40  21   6   9   8   2   3
 
 # Proportion of missing values per site x year combo ?
 (prop.NA <- sum(is.na(df)) / prod(dim(df)))
 # [1] 0.7339632
+
 # Proportion of missing value per site x year X day combo ?
 (prop.NA <- 1 - (nrow(dat) / (nsites * nyears * ndays)))
 # [1] 0.9942243 # This is HUGE !!!
+
 # Compute observed occupancy
 zobs <- tapply(dat$y, list(dat$site, dat$year), max, na.rm = TRUE)
 zobs[zobs>1] <- 1
@@ -93,14 +99,15 @@ str(bdata <- list(y = dat[,'y'], nsurveys = dat[,'nsurvey'],
     site = dat[,'site'], year = dat[,'year']-1989, date = dat$date,
     nsites = nsites, nyears = nyears, nobs = nrow(dat)) )
 # List of 8
-# $ y : int [1:34861] 0 0 0 0 0 0 0 0 0 0 ...
+# $ y       : int [1:34861] 0 0 0 0 0 0 0 0 0 0 ...
 # $ nsurveys: int [1:34861] 1 1 1 1 1 1 1 1 1 3 ...
-# $ site : num [1:34861] 6 1092 1192 1193 573 ...
-# $ year : num [1:34861] 1 1 1 1 3 3 3 3 3 3 ...
-# $ date : num [1:34861] -2.33 -2.33 -2.33 -2.33 -2.33 ...
-# $ nsites : int 1433
-# $ nyears : int 26
-# $ nobs : int 34861
+# $ site    : num [1:34861] 6 1092 1192 1193 573 ...
+# $ year    : num [1:34861] 1 1 1 1 3 3 3 3 3 3 ...
+# $ date    : num [1:34861] -2.33 -2.33 -2.33 -2.33 -2.33 ...
+# $ nsites  : int 1433
+# $ nyears  : int 26
+# $ nobs    : int 34861
+
 # Initial values
 zst <- zobs ; zst[is.na(zst)] <- 1
 inits <- function(){list(z = zst)}
@@ -154,7 +161,8 @@ na <- 1000  ;  ni <- 500  ;  nb <- 100  ;  nt <- 1  ;  nc <- 3 # ~~~ for testing
 # Call JAGS from R, check convergence and summarize posteriors
 out1 <- jags(bdata, inits, params, "occmodel1.txt", n.adapt = na,
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-par(mfrow = c(3,3))  ;  traceplot(out1) ; par(op)
+op <- par(mfrow = c(3,3))  ;  traceplot(out1)
+par(op)
 print(out1, dig = 2)
 
 # Model 2: Static model with years as blocks (treated as random effects)
@@ -211,7 +219,9 @@ model {
 ")
 
 # Parameters monitored
-params <- c("psi", "n.occ", "mean.psi", "mean.p", "mu.lpsi", "mu.lp", "mu.beta1.lp", "mu.beta2.lp", "sd.lpsi", "sd.lp", "sd.beta1.lp", "sd.beta2.lp", "alpha.lp", "beta.lp1", "beta.lp2")
+params <- c("psi", "n.occ", "mean.psi", "mean.p", "mu.lpsi", "mu.lp",
+    "mu.beta1.lp", "mu.beta2.lp", "sd.lpsi", "sd.lp", "sd.beta1.lp",
+    "sd.beta2.lp", "alpha.lp", "beta.lp1", "beta.lp2")
 
 # MCMC settings
 # na <- 1000  ;  ni <- 5000  ;  nb <- 1000  ;  nt <- 4  ;  nc <- 3 # 27 mins
@@ -220,7 +230,8 @@ na <- 1000  ;  ni <- 500  ;  nb <- 100  ;  nt <- 1  ;  nc <- 3 # ~~~ for testing
 # Call JAGS from R, check convergence and summarize posteriors
 out2 <- jags(bdata, inits, params, "occmodel2.txt", n.adapt = na,
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3))  ;  traceplot(out2) ; par(op)
+op <- par(mfrow = c(3,3))  ;  traceplot(out2)
+par(op)
 print(out2, dig = 2)
 
 # Model 3: Static model with a linear trend and random yearly deviations
@@ -302,7 +313,8 @@ print(out3, dig = 2)
 # Model 4: Static model with a quad. trend and random yearly deviations
 # ---------------------------------------------------------------------
 
-# This model has a quadratic time trend in occupancy, around which there are random yearly deviations.
+# This model has a quadratic time trend in occupancy, around which there
+#   are random yearly deviations.
 
 # Specify model in BUGS language for vertical data format
 cat(file = "occmodel4.txt","
@@ -362,7 +374,10 @@ model {
 ")
 
 # Parameters monitored
-params <- c("psi", "trendline", "n.occ", "mean.psi", "alpha.lpsi", "beta1.lpsi", "beta2.lpsi", "sd.lpsi",  "mean.p", "mu.lp", "mu.beta1.lp", "mu.beta2.lp", "sd.lp", "sd.beta1.lp", "sd.beta2.lp", "alpha.lp", "beta.lp1", "beta.lp2")
+params <- c("psi", "trendline", "n.occ", "mean.psi", "alpha.lpsi",
+    "beta1.lpsi", "beta2.lpsi", "sd.lpsi",  "mean.p", "mu.lp", "mu.beta1.lp",
+    "mu.beta2.lp", "sd.lp", "sd.beta1.lp", "sd.beta2.lp", "alpha.lp",
+    "beta.lp1", "beta.lp2")
 
 # MCMC settings
 # na <- 1000  ;  ni <- 5000  ;  nb <- 1000  ;  nt <- 4  ;  nc <- 3  # 27 mins
@@ -371,7 +386,8 @@ na <- 1000  ;  ni <- 500  ;  nb <- 100  ;  nt <- 1  ;  nc <- 3  # ~~~ for testin
 # Call JAGS from R, check convergence and summarize posteriors
 out4 <- jags(bdata, inits, params, "occmodel4.txt", n.adapt = na,
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3))  ;  traceplot(out4) ; par(op)
+op <- par(mfrow = c(3,3))  ;  traceplot(out4)
+par(op)
 print(out4, dig = 2)
 
 # Model 5: Dynamic model with fixed effects of year in phi, gamma, and p
@@ -429,7 +445,8 @@ na <- 1000  ;  ni <- 2500   ;   nb <- 500   ;    nt <- 2   ;   nc <- 3  # ~~~ fo
 # Call JAGS from R, check convergence and summarize posteriors
 out5 <- jags(bdata, inits, params, "occmodel5.txt", n.adapt = na,
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3))  ;  traceplot(out5) ; par(op)
+op <- par(mfrow = c(3,3))  ;  traceplot(out5)
+par(op)
 print(out5, dig = 3)
 
 # Model 6: Dynamic model with random effects of year in phi, gamma, and p
@@ -497,7 +514,10 @@ model {
 ")
 
 # Parameters monitored
-params <- c("psi", "phi", "gamma", "n.occ", "mean.phi", "mu.lphi", "sd.lphi", "mean.gamma", "mu.lgamma", "sd.lgamma", "mean.p", "mu.alpha.lp", "mu.beta.lp1", "mu.beta.lp2", "sd.lp", "sd.beta.lp1", "sd.beta.lp2", "alpha.lp", "beta.lp.1", "beta.lp.2")
+params <- c("psi", "phi", "gamma", "n.occ", "mean.phi", "mu.lphi",
+    "sd.lphi", "mean.gamma", "mu.lgamma", "sd.lgamma", "mean.p", "mu.alpha.lp",
+    "mu.beta.lp1", "mu.beta.lp2", "sd.lp", "sd.beta.lp1", "sd.beta.lp2",
+    "alpha.lp", "beta.lp.1", "beta.lp.2")
 
 # MCMC settings
 # na <- 5000  ;  ni <- 50000  ;  nb <- 25000  ;   nt <- 25  ;  nc <- 3
@@ -555,7 +575,7 @@ model {
   # Annually varying site random effects in detection
   for(t in 1:nyears){
     for(i in 1:nsites){
-    eps.site[i,t] ~ dnorm(0, tau.p.site[year[i]])
+      eps.site[i,t] ~ dnorm(0, tau.p.site[year[i]])
     }
   tau.p.site[t] <- pow(sd.p.site[t],-2)
   sd.p.site[t] ~ dunif(0.001, 10) # SD's estimated as fixed effects
@@ -563,14 +583,14 @@ model {
   # Ecological submodel: Define state conditional on parameters
   for (i in 1:nsites){
     z[i,1] ~ dbern(psi1)
-      for (t in 2:nyears){
+    for (t in 2:nyears){
       z[i,t] ~ dbern(z[i,t-1]*phi[t-1] + (1-z[i,t-1])*gamma[t-1])
     }
   }
   # Observation model
   for (i in 1:nobs){
     logit(p[i]) <- alpha.lp[year[i]] + beta.lp.1[year[i]] * date[i] +
-    beta.lp.2[year[i]] * pow(date[i],2) + eps.site[site[i], year[i]]
+        beta.lp.2[year[i]] * pow(date[i],2) + eps.site[site[i], year[i]]
     y[i] ~ dbin(z[site[i],year[i]]*p[i], nsurveys[i])
   }
   # Derived parameters
@@ -588,9 +608,11 @@ params <- c("psi", "phi", "gamma", "n.occ", "mean.phi", "mu.lphi",
     "sd.lphi", "mean.gamma", "mu.lgamma", "sd.lgamma", "mean.p",
     "mu.alpha.lp", "mu.beta.lp1", "mu.beta.lp2", "sd.lp", "sd.beta.lp1",
     "sd.beta.lp2", "alpha.lp", "beta.lp.1", "beta.lp.2", "sd.p.site")
+
 # MCMC settings
 # na <- 5000 ; ni <- 50000 ; nb <- 25000 ; nt <- 25 ; nc <- 3
 na <- 5000 ; ni <- 500 ; nb <- 250 ; nt <- 1 ; nc <- 3  # ~~~~~~~~~~~ testing, 50 mins
+
 # Call JAGS (ART 832 min), check convergence and summarize posteriors
 out7 <- jags(bdata, inits, params, "occmodel7.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = T)

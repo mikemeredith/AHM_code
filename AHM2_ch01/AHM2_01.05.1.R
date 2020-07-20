@@ -26,6 +26,7 @@ T <- ncol(C)
 
 # Bundle and summarize data (same as before)
 str(bdata <- list(C = C, M = M, T = T))
+
 # Specify model in BUGS language
 cat(file = "model2.txt","
 model {
@@ -61,22 +62,26 @@ model {
 # Initial values
 inits <- function() list(mu = rnorm(1), site = rnorm(M), year = rnorm(T),
   eps = array(1, dim=c(M, T)))
+
 # Parameters monitored
 params <- c("mu", "sd.site", "sd.year", "sd", "site", "year", "popindex")
+
 # MCMC settings
 na <- 1000 ; ni <- 15000 ; nt <- 10 ; nb <- 5000 ; nc <- 3
+
 # Call JAGS (ART 4 min), check convergence and summarize posteriors
 out2 <- jags(bdata, inits, params, "model2.txt", n.adapt = na, n.chains = nc,
   n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 
-par(mfrow = c(3, 2)) ; traceplot(out2) ; par(mfrow = c(1, 1))
+op <- par(mfrow = c(3, 2)) ; traceplot(out2)
+par(op)
 summary(out2) ; jags.View(out2) ; print(out2, 3)
-# mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
-# mu -0.434 0.157 -0.749 -0.431 -0.130 FALSE 0.997 1.023 92
-# sd.site 2.378 0.141 2.115 2.371 2.659 FALSE 1.000 1.084 29
-# sd.year 0.116 0.025 0.075 0.112 0.177 FALSE 1.000 1.001 2168
-# sd 0.282 0.015 0.252 0.282 0.310 FALSE 1.000 1.007 444
-# site[1] -0.603 0.416 -1.466 -0.594 0.149 TRUE 0.929 1.001 3000
+#           mean    sd   2.5%    50%  97.5% overlap0     f  Rhat n.eff
+# mu      -0.434 0.157 -0.749 -0.431 -0.130    FALSE 0.997 1.023    92
+# sd.site  2.378 0.141  2.115  2.371  2.659    FALSE 1.000 1.084    29
+# sd.year  0.116 0.025  0.075  0.112  0.177    FALSE 1.000 1.001  2168
+# sd       0.282 0.015  0.252  0.282  0.310    FALSE 1.000 1.007   444
+# site[1] -0.603 0.416 -1.466 -0.594  0.149     TRUE 0.929 1.001  3000
 # [ ...... ]
 
 # Save output for use in subsequent sections
@@ -84,8 +89,11 @@ save(out2, file="AHM2_01.05.1_out2.RData")
 
 # ~~~~~~~~~ plot to compare results of out1 and out2 (figures not shown) ~~~~~~~~~~~~~~~~~
 load("AHM2_01.04_out1.RData")
+
 # Plot population index under models 1 and 2
-plot(year-0.1, out1$mean$popindex, cex = 2, pch = 16, xlab = 'Year', ylab = 'Population index', col = 'red', type = 'b', frame = F, ylim = c(500, 1000), main = 'red: fixed-effects, blue: random-effects')
+plot(year-0.1, out1$mean$popindex, cex = 2, pch = 16, xlab = 'Year',
+    ylab = 'Population index', col = 'red', type = 'b', frame = FALSE,
+    ylim = c(500, 1000), main = 'red: fixed-effects, blue: random-effects')
 segments(year-0.1, out1$q2.5$popindex, year-0.1, out1$q97.5$popindex, col = 'red')
 points(year+0.1, out2$mean$popindex, cex = 2, pch = 16, col = 'blue', type = 'b')
 segments(year+0.1, out2$q2.5$popindex, year+0.1, out2$q97.5$popindex, col = 'blue')
@@ -93,10 +101,11 @@ segments(year+0.1, out2$q2.5$popindex, year+0.1, out2$q97.5$popindex, col = 'blu
 # Graphical partitioning of the variance
 library(denstrip)
 op <- par(mar = c(4, 8, 4, 2))
-plot(out2$sims.list$sd, xlim = c(0, 3), ylim = c(0.5, 3.5), xlab="", ylab="", type="n", axes = F, main = "Variance partitioning in space, time and space-time")
+plot(out2$sims.list$sd, xlim = c(0, 3), ylim = c(0.5, 3.5), xlab="", ylab="",
+    type="n", axes = FALSE,
+    main = "Variance partitioning in space, time and space-time")
 axis(1)
 axis(2, at = 1:3, labels = c('Space-Time (sd)', 'Time (sd.year)', 'Space (sd.site)'), las = 1)
-#abline(v = c(-4,-2,2,4), col = "grey")  ;  abline(v = 0)
 for(k in 1:3){
    denstrip(unlist(out2$sims.list[k+1]), at = k, ticks = out2$summary[k+1, c(3,5,7)])
 }

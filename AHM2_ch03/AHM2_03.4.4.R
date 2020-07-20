@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 2: Dynamic and Advanced models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 3 : HIERARCHICAL MODELS OF SURVIVAL
 # ===========================================
 # Code from proofs dated 2020-06-03
@@ -11,7 +12,7 @@
 
 library(AHMbook)
 library(R2WinBUGS)
-bugs.dir <- "C:/WinBUGS14"
+bugs.dir <- "C:/WinBUGS14" # the location of the WinBUGS14.exe file on your machine
 
 # ~~~~~ data wrangling code from 3.4.1 ~~~~~~~~~~~~~~
 data(willowWarbler)
@@ -43,9 +44,9 @@ blockcoordgrid <- cbind(as.matrix(willowWarbler$blocks))
 neigh <- dnearneigh(blockcoordgrid, d1 = 0, d2 = sqrt(2 * 25^2)+ 0.1)
 str(winnb <- nb2WB(neigh)) # Function to get CAR ingredients for BUGS
 # List of 3
-# $ adj : int [1:3458] 2 3 4 1 3 5 6 1 2 4 ... # ID of neighbors
+# $ adj    : int [1:3458] 2 3 4 1 3 5 6 1 2 4 ... # ID of neighbors
 # $ weights: num [1:3458] 1 1 1 1 1 1 1 1 1 1 ... # Weights: here, equal
-# $ num : int [1:495] 3 4 6 5 3 6 6 6 5 5 ... # Number of neighbors
+# $ num    : int [1:495] 3 4 6 5 3 6 6 6 5 5 ... # Number of neighbors
 
 # Frequency distribution of the number of neighbors
 table(winnb$num) # Every block is connected to at least two neighbors
@@ -53,19 +54,20 @@ table(winnb$num) # Every block is connected to at least two neighbors
 # Reformat the m-array for WinBUGS
 dim(MARR) # The nyear = 11 dimension (now #2) must come last for WinBUGS
 dim(MARRWB <- aperm (MARR, c(3, 1, 2))) # MARR for WinBUGS
+
 # Bundle and summarize data set for WinBUGS
 str(bdata <- list(MARRWB = MARRWB, R = R, n.site = nsite, n.occ = nyear, n.block = nblock,
     BlockID = willowWarbler$CES$BlockID, adj = winnb$adj, weights = winnb$weights, num = winnb$num))
 # List of 9
 # $ MARRWB : num [1:193, 1:10, 1:11] 1 3 0 2 0 0 0 0 0 0 ...
-# $ R : num [1:10, 1:193] 13 5 0 0 0 0 0 0 0 0 ...
+# $ R      : num [1:10, 1:193] 13 5 0 0 0 0 0 0 0 0 ...
 # $ n.site : int 193
-# $ n.occ : int 11
+# $ n.occ  : int 11
 # $ n.block: int 495
 # $ BlockID: int [1:193] 25 77 204 110 222 283 119 234 295 152 ...
-# $ adj : int [1:3458] 2 3 4 1 3 5 6 1 2 4 ...
+# $ adj    : int [1:3458] 2 3 4 1 3 5 6 1 2 4 ...
 # $ weights: num [1:3458] 1 1 1 1 1 1 1 1 1 1 ...
-# $ num : int [1:495] 3 4 6 5 3 6 6 6 5 5 ...
+# $ num    : int [1:495] 3 4 6 5 3 6 6 6 5 5 ...
 
 # Specify model in BUGS language
 cat(file = "cjs8.txt","
@@ -143,6 +145,7 @@ model {
 
 # Initial values
 inits <- function(){list(mean.phi = runif(1), mean.p = runif(1), eta = rep(0, nblock))}
+
 # Parameters monitored
 params <- c("mean.phi", "mean.p", "mu.lphi", "mu.lp",
     "sd.lp.site", "sd.lphi.time", "sd.lp.time", "mean.p.site", "mean.phi.time", "mean.p.time",
@@ -154,21 +157,22 @@ params <- c("mean.phi", "mean.p", "mu.lphi", "mu.lp",
 # MCMC settings
 # ni <- 100000 ; nt <- 50 ; nb <- 50000 ; nc <- 3 # 52 hours
 ni <- 1000 ; nt <- 5 ; nb <- 500 ; nc <- 3 # ~~~~~~~ for testing
+
 # Call WinBUGS from R (ART 52 h!) and summarize posteriors
 # bugs.dir must be set to WinBUGS location, e.g., "c:/WinBUGS14/"
 out8 <- bugs(bdata, inits, params, "cjs8.txt", n.chains = nc, n.thin = nt, n.iter = ni,
     n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
 print(out8$summary[c(1:7, 221,222),c(1:3,5,7:9)], 3)
-# mean sd 2.5% 50% 97.5% Rhat n.eff
-# mean.phi 0.287 0.0187 0.251397 0.2874 0.324 1.00 730
-# mean.p 0.381 0.0356 0.310497 0.3797 0.450 1.01 380
-# mu.lphi -0.910 0.0918 -1.091025 -0.9079 -0.736 1.00 730
-# mu.lp -0.490 0.1519 -0.797902 -0.4907 -0.201 1.01 390
-# sd.lp.site 1.129 0.1302 0.887167 1.1220 1.407 1.00 3000
-# sd.lphi.time 0.220 0.0834 0.101800 0.2063 0.423 1.00 3000
-# sd.lp.time 0.148 0.1117 0.006906 0.1266 0.424 1.00 3000
-# veta 0.060 0.0765 0.000452 0.0327 0.262 1.08 38
-# sdeta 0.204 0.1361 0.021259 0.1809 0.512 1.08 38
+#                mean     sd      2.5%     50%  97.5% Rhat n.eff
+# mean.phi      0.287 0.0187  0.251397  0.2874  0.324 1.00   730
+# mean.p        0.381 0.0356  0.310497  0.3797  0.450 1.01   380
+# mu.lphi      -0.910 0.0918 -1.091025 -0.9079 -0.736 1.00   730
+# mu.lp        -0.490 0.1519 -0.797902 -0.4907 -0.201 1.01   390
+# sd.lp.site    1.129 0.1302  0.887167  1.1220  1.407 1.00  3000
+# sd.lphi.time  0.220 0.0834  0.101800  0.2063  0.423 1.00  3000
+# sd.lp.time    0.148 0.1117  0.006906  0.1266  0.424 1.00  3000
+# veta          0.060 0.0765  0.000452  0.0327  0.262 1.08    38
+# sdeta         0.204 0.1361  0.021259  0.1809  0.512 1.08    38
 
 # ~~~~ run multiple WinBUGS instances in parallel with 'foreach' ~~~~~~~~
 library(foreach)

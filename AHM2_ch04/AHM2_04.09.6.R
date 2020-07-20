@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 2: Dynamic and Advanced models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 4 : MODELING SPECIES DISTRIBUTION AND RANGE DYNAMICS, AND POPULATION
 #             DYNAMICS USING DYNAMIC OCCUPANCY MODELS
 # ============================================================================
@@ -34,7 +35,7 @@ str(ch <- Switzerland) #
 
 # ~~~~ extra code for Figure 4.18 ~~~~~~~~~~~~~~~~
 # Map elevation and forest cover
-par(mfrow = c(1, 2), mar = c(1,2,1,7), cex = 1.5)
+op <- par(mfrow = c(1, 2), mar = c(1,2,1,7), cex = 1.5)
 # par(mfrow = c(2, 1), mar = c(2,2,2,5))
 r1 <- rasterFromXYZ(data.frame(x = ch$x, y = ch$y, z = ch$elevation))
 mapPalette1 <- colorRampPalette(c("grey", "yellow", "orange", "red"))
@@ -43,12 +44,15 @@ par(cex = 1.5)
 r2 <- rasterFromXYZ(data.frame(x = ch$x, y = ch$y, z = ch$forest))
 mapPalette2 <- colorRampPalette(c("grey", "lightgreen", "darkgreen"))
 plot(r2, col = mapPalette2(100), axes = FALSE, box = FALSE, main = "", zlim = c(0, 100))
+par(op)
 # ~~~~~~~~~~~~ end of extra code ~~~~~~~~~~~~~~~~
 
 nyears <- 12
+
 # Standardize using same values as for original data set in model fitting
 EP <- (ch$elevation - mean.ele) / sd.ele
 FP <- (ch$forest - mean.forest) / sd.forest
+
 # Extract parameter estimates for each parameter type
 tmp <- summary(fm50)
 psipar <- tmp$psi[,1] # Params in model for initial occupancy
@@ -59,11 +63,14 @@ extpar <- tmp$ext[,1] # Params in model for extinction
 names(extpar) <- rownames(tmp$ext)
 detpar <- tmp$det[,1] # Params in model for detection
 names(detpar) <- rownames(tmp$det)
+
 # Create arrays to contain predictions for each km2 in Switzerland
 # First-year occupancy
 pred.occ1 <- numeric(nrow(ch))
+
 # Colonization and extinction prob. (note one fewer year)
 pred.col <- pred.ext <- matrix(NA, nrow = nrow(ch), ncol = (nyears-1))
+
 # Occupancy (all years) and detection prob.
 pred.occ <- pred.det <- matrix(NA, nrow = nrow(ch), ncol = nyears)
 
@@ -77,38 +84,38 @@ pred.occ[,1] <- pred.occ1
 # Compute predicted colonization and extinction probability and occupancy
 # for later years (j>1)
 for(j in 1:(nyears-1)){
-# Colonization
-pred.col[,j] <- plogis(colpar[j] + colpar["elev"]*EP +
-colpar["I(elev^2)"]*EP^2 + colpar["forest"]*FP +
-colpar["I(forest^2)"]*FP^2 + colpar["elev:forest"]*EP*FP +
-colpar["elev:I(forest^2)"]*EP*FP^2 +
-colpar["I(elev^2):forest"]*EP^2*FP +
-colpar["I(elev^2):I(forest^2)"]*EP^2*FP^2)
-# Extinction
-pred.ext[,j] <- plogis(extpar[j] + extpar["elev"]*EP +
-extpar["I(elev^2)"]*EP^2 + extpar["forest"]*FP +
-extpar["elev:forest"]*EP*FP + extpar["I(elev^2):forest"]*EP^2*FP)
-# Compute occupancy for later years recursively
-pred.occ[,(j+1)] <- pred.occ[,j] * (1-pred.ext[,j]) +
-(1-pred.occ[,j]) * pred.col[,j]
+  # Colonization
+  pred.col[,j] <- plogis(colpar[j] + colpar["elev"]*EP +
+      colpar["I(elev^2)"]*EP^2 + colpar["forest"]*FP +
+      colpar["I(forest^2)"]*FP^2 + colpar["elev:forest"]*EP*FP +
+      colpar["elev:I(forest^2)"]*EP*FP^2 +
+      colpar["I(elev^2):forest"]*EP^2*FP +
+      colpar["I(elev^2):I(forest^2)"]*EP^2*FP^2)
+  # Extinction
+  pred.ext[,j] <- plogis(extpar[j] + extpar["elev"]*EP +
+      extpar["I(elev^2)"]*EP^2 + extpar["forest"]*FP +
+      extpar["elev:forest"]*EP*FP + extpar["I(elev^2):forest"]*EP^2*FP)
+  # Compute occupancy for later years recursively
+  pred.occ[,(j+1)] <- pred.occ[,j] * (1-pred.ext[,j]) +
+      (1-pred.occ[,j]) * pred.col[,j]
 }
 
 # Compute predicted detection probability (for average date)
 for(j in 1:nyears){
-pred.det[,j] <- plogis(detpar[j] + detpar["elev"]*EP +
-detpar["forest"]*FP + detpar["I(forest^2)"]*FP^2 + detpar["date"] * 0 +
-detpar["I(date^2)"] * 0 + detpar["elev:forest"]*EP*FP)
+  pred.det[,j] <- plogis(detpar[j] + detpar["elev"]*EP +
+      detpar["forest"]*FP + detpar["I(forest^2)"]*FP^2 + detpar["date"] * 0 +
+      detpar["I(date^2)"] * 0 + detpar["elev:forest"]*EP*FP)
 }
 
 # Obtain prediction uncertainty for Swiss colonization 2001-2002
 library(AICcmodavg)
 se.pred.col <- matrix(NA, nrow = nrow(ch), ncol = 1)
 newData <- data.frame(year = factor('2001',
-levels = c('2001','2002','2003','2004','2005','2006','2007','2008','2009','2010','2011')),
-elev = EP, forest = FP) # NOTE: Only 11 yearly intervals
+    levels = c('2001','2002','2003','2004','2005','2006','2007','2008','2009','2010','2011')),
+    elev = EP, forest = FP) # NOTE: Only 11 yearly intervals
 system.time(
 pred <- modavgPred(cand.set = list(fm50), newdata = newData,
-parm.type = 'gamma', c.hat = c.hat)) # Takes a while
+    parm.type = 'gamma', c.hat = c.hat)) # Takes a while
 se.pred <- pred$matrix.output[,2] # Grab inflated SE
 
 

@@ -21,18 +21,18 @@ str(out <- simPH(npop = 18, nyear = 17, nrep = 10, date.range = 1:150,
 # Produces Fig. 1.15
 
 # Execute function
-str(out <- simPH()) # Implicit defaults
-str(out <- simPH(show.plot = F)) # Skip plot browsing
-str(out <- simPH(npop = 1)) # Only one population
-str(out <- simPH(npop = 100)) # Many populations (only first 16 plotted)
-str(out <- simPH(nyear = 2)) # Two years only
-str(out <- simPH(nyear = 50)) # Fifty years
-str(out <- simPH(date.range = 50:70)) # (Too) narrow survey season
-str(out <- simPH(date.range = -100:200)) # Very long survey season
-str(out <- simPH(initial.lambda = 10)) # Very small populations (and many extinctions)
-str(out <- simPH(gamma.parms = c(0, 0))) # Stable population, no annual variation in gamma
-str(out <- simPH(mu.range = c(50, 50))) # No variation in mu
-str(out <- simPH(mu.range = c(0, 100))) # Lots of variation in mu
+str(out <- simPH())                        # Implicit defaults
+str(out <- simPH(show.plot = F))           # Skip plot browsing
+str(out <- simPH(npop = 1))                # Only one population
+str(out <- simPH(npop = 100))              # Many populations (only first 16 plotted)
+str(out <- simPH(nyear = 2))               # Two years only
+str(out <- simPH(nyear = 50))              # Fifty years
+str(out <- simPH(date.range = 50:70))      # (Too) narrow survey season
+str(out <- simPH(date.range = -100:200))   # Very long survey season
+str(out <- simPH(initial.lambda = 10))     # Very small populations (and many extinctions)
+str(out <- simPH(gamma.parms = c(0, 0)))   # Stable population, no annual variation in gamma
+str(out <- simPH(mu.range = c(50, 50)))    # No variation in mu
+str(out <- simPH(mu.range = c(0, 100)))    # Lots of variation in mu
 str(out <- simPH(sigma.range = c(10, 80))) # Lots of variation in sigma
 
 # Create a data set
@@ -44,12 +44,12 @@ str(data <- simPH(npop = 18, nyear = 17, nrep = 10, date.range = 1:150,
 str(bugs.data <- list(C = data$C, date = data$date, npop = data$npop,
     nyear = data$nyear, nsurvey = data$nrep, pi = pi) )
 # List of 6
-# $ C : int [1:18, 1:17, 1:10] 0 4 3 1 0 1 0 2 0 1 ...
-# $ date : num [1:18, 1:17, 1:10] 6 14 16 27 8 33 9 9 9 2 ...
-# $ npop : num 18
-# $ nyear : num 17
+# $ C      : int [1:18, 1:17, 1:10] 0 4 3 1 0 1 0 2 0 1 ...
+# $ date   : num [1:18, 1:17, 1:10] 6 14 16 27 8 33 9 9 9 2 ...
+# $ npop   : num 18
+# $ nyear  : num 17
 # $ nsurvey: num 10
-# $ pi : num 3.14
+# $ pi     : num 3.14
 
 # Specify model in BUGS language
 cat(file = "modelPH.txt","
@@ -91,14 +91,18 @@ model {
   }
 }
 ")
+
 # Initial values
 nst <- 50 * apply(data$C, c(1,2), max, na.rm = TRUE)
 gammast <- runif(data$nyear-1, 0.8, 1.1)
 inits <- function() list(n = nst, gamma = gammast)
+
 # Parameters monitored
 params <- c("expn1", "n", "n1", "mu", "gamma", "sigma")
+
 # MCMC settings
 na <- 1000 ; ni <- 10000 ; nt <- 5 ; nb <- 5000 ; nc <- 3
+
 # Call JAGS (ART 3 min), assess convergence and summarize posteriors
 out12 <- jags(bugs.data, inits, params, "modelPH.txt", n.adapt = na, n.chains = nc,
   n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
@@ -111,7 +115,7 @@ out <- out12
 op <- par(mfrow = c(3,2), mar = c(5,5,4,3))
 lims <- range(c(data$n[,1], out$mean$n[,1], out$q2.5$n[,1] , out$q97.5$n[,1]))
 plot(data$n[,1], out$mean$n[,1], xlab = "Truth",
-    ylab = "Estimate", pch = 16, 
+    ylab = "Estimate", pch = 16,
     main = "Initial relative abundance n1",
     xlim = lims, ylim = lims, frame = FALSE)
 segments(data$n[,1], out$q2.5$n[,1], data$n[,1], out$q97.5$n[,1])
@@ -137,8 +141,8 @@ abline(lm(out$mean$gamma ~ data$gamma), col = 'blue')
 
 lims <- range(c(data$mu, out$mean$mu, out$q2.5$mu, out$q97.5$mu))
 plot(data$mu, out$mean$mu, xlab = "Truth",
-    ylab = "Estimate", pch = 16, 
-    main = "Mean peak flight date mu (all pops, all years)", 
+    ylab = "Estimate", pch = 16,
+    main = "Mean peak flight date mu (all pops, all years)",
     xlim = lims, ylim = lims, frame = FALSE)
 segments(data$mu, out$q2.5$mu, data$mu, out$q97.5$mu)
 abline(0,1)
@@ -146,7 +150,7 @@ abline(lm(c(out$mean$mu) ~ c(data$mu)), col = 'blue')
 
 lims <- range(c(data$sigma, out$mean$sigma, out$q2.5$sigma, out$q97.5$sigma))
 plot(data$sigma, out$mean$sigma, xlab = " Truth",
-    ylab = "Estimate", pch = 16, 
+    ylab = "Estimate", pch = 16,
     main = "Length of flight period sigma (all years)",
     xlim = lims, ylim = lims, frame = FALSE)
 segments(data$sigma, out$q2.5$sigma, data$sigma, out$q97.5$sigma)

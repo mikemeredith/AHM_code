@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 2: Dynamic and Advanced models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 4 : MODELING SPECIES DISTRIBUTION AND RANGE DYNAMICS, AND POPULATION
 #             DYNAMICS USING DYNAMIC OCCUPANCY MODELS
 # ============================================================================
@@ -36,7 +37,8 @@ if(packageVersion("unmarked") <= '1.0.0' || packageVersion("AICcmodavg") <= '2.2
 # Function colext fits dynamic site-occupancy model of MacKenzie et al. (2003)
 # See ?colext and vignette("colext")
 
-### Investigate temporal variation first by fitting a Null model, the fully time-dependent model and the intermediate models
+### Investigate temporal variation first by fitting a Null model, the
+#     fully time-dependent model and the intermediate models
 # A Null model with constant params throughout
 system.time(
    (fm0 <- colext(psiformula = ~ 1, gammaformula = ~ 1,
@@ -48,35 +50,35 @@ cbind(Npar = length(fm0@opt$par), NLL = fm0@negLogLike, AIC = fm0@AIC)
 
 # Only colonisation varies
 system.time(
-   (fm1<- colext(psiformula = ~ 1, gammaformula = ~ year-1,
-epsilonformula = ~ 1, pformula = ~ 1, umf,
-control=list(trace=TRUE, REPORT=5)))
+   (fm1 <- colext(psiformula = ~ 1, gammaformula = ~ year-1,
+      epsilonformula = ~ 1, pformula = ~ 1, umf,
+      control=list(trace=TRUE, REPORT=5)))
    )  # 14 secs
 summary(fm1)
 cbind(Npar = length(fm1@opt$par), NLL = fm1@negLogLike, AIC = fm1@AIC)
 
 # Only extinction varies
 system.time(
-   (fm2<- colext(psiformula = ~ 1, gammaformula = ~ 1,
-epsilonformula = ~ year-1, pformula = ~ 1, umf,
-control=list(trace=TRUE, REPORT=5)))
+   (fm2 <- colext(psiformula = ~ 1, gammaformula = ~ 1,
+        epsilonformula = ~ year-1, pformula = ~ 1, umf,
+        control=list(trace=TRUE, REPORT=5)))
    )  # 12 secs
 summary(fm2)
 cbind(Npar = length(fm2@opt$par), NLL = fm2@negLogLike, AIC = fm2@AIC)
 
 # Only detection varies
 system.time(
-   (fm3<- colext(psiformula = ~ 1, gammaformula = ~ 1,
-epsilonformula = ~ 1, pformula = ~ year-1, umf,
-control=list(trace=TRUE, REPORT=5)))
+   (fm3 <- colext(psiformula = ~ 1, gammaformula = ~ 1,
+        epsilonformula = ~ 1, pformula = ~ year-1, umf,
+        control=list(trace=TRUE, REPORT=5)))
    )  # 15 secs
 summary(fm3)
 cbind(Npar = length(fm3@opt$par), NLL = fm3@negLogLike, AIC = fm3@AIC)
 
 # Fully time-dependent model
 system.time(
-   (fm4<- colext(~ 1, ~ year-1, ~year-1, ~year-1, umf,
-control=list(trace=TRUE, REPORT=5)))
+   (fm4 <- colext(~ 1, ~ year-1, ~year-1, ~year-1, umf,
+        control=list(trace=TRUE, REPORT=5)))
    )  # 70 secs
 summary(fm4)
 cbind(Npar = length(fm4@opt$par), NLL = fm4@negLogLike, AIC = fm4@AIC)

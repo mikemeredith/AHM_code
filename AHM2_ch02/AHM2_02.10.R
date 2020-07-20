@@ -14,14 +14,15 @@ library(jagsUI)
 # =========================================
 
 # Set parameter values and sample sizes
-nsites <- 25 # number of sites (must be integer^2)
-nyears <- 20 # number of years
-nsurveys <- 3 # number of surveys per year
-lambda0 <- 5 # initial abundance
-phi <- 0.8 # survival rate
-gamma <- 0.2 # reproduction rate
-kappa <- 0.3 # emigration rate
-p <- 0.75 # detection probability
+nsites <- 25   # number of sites (must be integer^2)
+nyears <- 20   # number of years
+nsurveys <- 3  # number of surveys per year
+lambda0 <- 5   # initial abundance
+phi <- 0.8     # survival rate
+gamma <- 0.2   # reproduction rate
+kappa <- 0.3   # emigration rate
+p <- 0.75      # detection probability
+
 # Define a grid of sites and adjacency structure
 lat <- rep(1:sqrt(nsites), times = sqrt(nsites))
 lon <- rep(1:sqrt(nsites), each = sqrt(nsites))
@@ -35,6 +36,7 @@ for (i in 1:nsites) {
 adj <- ifelse(dist <= 1.05, 1, 0) # Binary matrix that identifies neighbours
 diag(adj) <- 0
 nadj <- colSums(adj) # Number of neighbours
+
 # Simulate a data set
 N <- matrix(NA, nsites, nyears)
 R <- S <- E <- I <- Ilambda <- matrix(NA, nsites, nyears - 1)
@@ -58,12 +60,13 @@ for (j in 1:nsurveys) {
 str( bdata <- list(nsites = nsites, nyears = nyears, nsurveys = nsurveys,
     y = y, adj = adj, nadj = nadj))
 # List of 6
-# $ nsites : num 25
-# $ nyears : num 20
+# $ nsites   : num 25
+# $ nyears   : num 20
 # $ nsurveys : num 3
-# $ y : int [1:25, 1:20, 1:3] 3 3 3 4 5 4 2 1 4 2 ...
-# $ adj : num [1:25, 1:25] 0 1 0 0 0 1 0 0 0 0 ...
-# $ nadj : num [1:25] 2 3 3 3 2 3 4 4 4 3 ...
+# $ y        : int [1:25, 1:20, 1:3] 3 3 3 4 5 4 2 1 4 2 ...
+# $ adj      : num [1:25, 1:25] 0 1 0 0 0 1 0 0 0 0 ...
+# $ nadj     : num [1:25] 2 3 3 3 2 3 4 4 4 3 ...
+
 # Specify model in BUGS language
 cat(file="spatialDMmodel.txt", "
 model {
@@ -113,11 +116,12 @@ na <- 2000 ; ni <- 20000 ; nt <- 10 ; nb <- 10000 ; nc <- 3
 out11 <- jags(bdata, inits, params, model = "spatialDMmodel.txt",
     n.adapt = na, n.chains = nc, n.burnin = nb, n.iter = ni, n.thin = nt,
     parallel = TRUE)
-op <- par(mfrow = c(2,2)) ; traceplot(out11) ; par(op)
+op <- par(mfrow = c(2,2)) ; traceplot(out11)
+par(op)
 print(out11)
-# mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
-# lambda0 4.738 0.463 3.878 4.716 5.671 FALSE 1 1.000 3000
-# phi 0.825 0.035 0.752 0.826 0.888 FALSE 1 1.010 236
-# gamma 0.170 0.035 0.109 0.169 0.240 FALSE 1 1.009 234
-# kappa 0.272 0.034 0.211 0.272 0.341 FALSE 1 1.006 533
-# p 0.748 0.011 0.726 0.748 0.768 FALSE 1 1.000 3000
+#          mean    sd  2.5%   50% 97.5% overlap0 f  Rhat n.eff
+# lambda0 4.738 0.463 3.878 4.716 5.671    FALSE 1 1.000  3000
+# phi     0.825 0.035 0.752 0.826 0.888    FALSE 1 1.010   236
+# gamma   0.170 0.035 0.109 0.169 0.240    FALSE 1 1.009   234
+# kappa   0.272 0.034 0.211 0.272 0.341    FALSE 1 1.006   533
+# p       0.748 0.011 0.726 0.748 0.768    FALSE 1 1.000  3000

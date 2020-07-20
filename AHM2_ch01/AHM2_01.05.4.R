@@ -66,9 +66,11 @@ model {
 # Initial values
 inits <- function() list(site = rnorm(M), year = c(NA, rnorm(T-1)), rho = runif(1),
   eps = array(0.1, dim=c(M, T)))
+
 # Parameters monitored
 # params <- c("popindex", "site", "year", "lam.sel", "rho", "sd")
 params <- c("rho", "sd" , "popindex", "site", "year") # lam.sel not in this model
+
 # MCMC settings
 # na <- 10000 ; ni <- 250000 ; nt <- 200 ; nb <- 50000 ; nc <- 3
 na <- 10000 ; ni <- 25000 ; nt <- 20 ; nb <- 5000 ; nc <- 3  # ~~~ for testing, 30 mins
@@ -78,10 +80,10 @@ out5 <- jags(bdata, inits, params, "model5.txt", n.adapt = na, n.chains = nc,
   n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 par(mfrow = c(3,2)) ; traceplot(out5) ; par(mfrow = c(1,1))
 summary(out5) ; jags.View(out5) ; print(out5, 3)
-# mean sd 2.5% 50% 97.5% overlap0 f Rh at n.eff
-# rho 0.945 0.026 0.892 0.947 0.987 FALSE 1.000 1.032 71
-# sd 0.211 0.012 0.188 0.210 0.235 FALSE 1.000 1.007 277
+#      mean    sd  2.5%   50% 97.5% overlap0 f  Rhat n.eff
+# rho 0.945 0.026 0.892 0.947 0.987    FALSE 1 1.032    71
+# sd  0.211 0.012 0.188 0.210 0.235    FALSE 1 1.007   277
 # [ ... ]
 
-# Save output for use in subsequent sections
+# ~~~~ Save output for use in subsequent sections ~~~~~
 save(out5, file="AHM2_01.05.4_out5.RData")

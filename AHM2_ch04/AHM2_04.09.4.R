@@ -2,12 +2,12 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 2: Dynamic and Advanced models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 4 : MODELING SPECIES DISTRIBUTION AND RANGE DYNAMICS, AND POPULATION
 #             DYNAMICS USING DYNAMIC OCCUPANCY MODELS
 # ============================================================================
 # Code from MS dated 2019-06-17
 
-# library(AHMbook)
 library(unmarked)
 library(AICcmodavg)
 
@@ -82,16 +82,27 @@ print(tmp, 3)
 # ~~~~~~~~~~~ bonus code ~~~~~~~~~~~~~~~~~~~~
 # Estimates accounting for a c-hat = 2.10 (with 95% CIs)
 tt <- list()
-tt[[1]] <- modavg(list(fm50), parm = '(Intercept)', c.hat = c.hat, parm.type = 'psi', warn=FALSE)
-tt[[2]] <- modavg(list(fm50), parm = 'elev', c.hat = c.hat, parm.type = 'psi', warn=FALSE)
-tt[[3]] <- modavg(list(fm50), parm = 'I(elev^2)', c.hat = c.hat, parm.type = 'psi', warn=FALSE)
-tt[[4]] <- modavg(list(fm50), parm = 'forest', c.hat = c.hat, parm.type = 'psi', warn=FALSE)
-tt[[5]] <- modavg(list(fm50), parm = 'I(forest^2)', c.hat = c.hat, parm.type = 'psi', warn=FALSE)
-tt[[6]] <- modavg(list(fm50), parm = 'elev:forest', c.hat = c.hat, parm.type = 'psi', warn=FALSE)
-tt[[7]] <- modavg(list(fm50), parm = 'elev:I(forest^2)', c.hat = c.hat, parm.type = 'psi', warn=FALSE)
-tt[[8]] <- modavg(list(fm50), parm = 'I(elev^2):forest', c.hat = c.hat, parm.type = 'psi', warn=FALSE)
-inflated.uncertainty <- array(NA, dim = c(8, 3), dimnames = list(NULL, c('SE(infl)', '95%LCL(infl)', '95%UCL(infl)')))
-for(i in 1:8){   inflated.uncertainty[i, ]<- unlist(tt[[i]][c(4,6,7)]) }
+tt[[1]] <- modavg(list(fm50), parm = '(Intercept)', c.hat = c.hat,
+    parm.type = 'psi', warn=FALSE)
+tt[[2]] <- modavg(list(fm50), parm = 'elev', c.hat = c.hat,
+    parm.type = 'psi', warn=FALSE)
+tt[[3]] <- modavg(list(fm50), parm = 'I(elev^2)', c.hat = c.hat,
+    parm.type = 'psi', warn=FALSE)
+tt[[4]] <- modavg(list(fm50), parm = 'forest', c.hat = c.hat,
+    parm.type = 'psi', warn=FALSE)
+tt[[5]] <- modavg(list(fm50), parm = 'I(forest^2)', c.hat = c.hat,
+    parm.type = 'psi', warn=FALSE)
+tt[[6]] <- modavg(list(fm50), parm = 'elev:forest', c.hat = c.hat,
+    parm.type = 'psi', warn=FALSE)
+tt[[7]] <- modavg(list(fm50), parm = 'elev:I(forest^2)', c.hat = c.hat,
+    parm.type = 'psi', warn=FALSE)
+tt[[8]] <- modavg(list(fm50), parm = 'I(elev^2):forest', c.hat = c.hat,
+    parm.type = 'psi', warn=FALSE)
+inflated.uncertainty <- array(NA, dim = c(8, 3),
+    dimnames = list(NULL, c('SE(infl)', '95%LCL(infl)', '95%UCL(infl)')))
+for(i in 1:8){
+   inflated.uncertainty[i, ] <- unlist(tt[[i]][c(4,6,7)])
+}
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Compare estimates side by side

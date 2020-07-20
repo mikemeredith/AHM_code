@@ -56,12 +56,12 @@ distSq <- d^2 # Need distance squared in half-normal kernel
 str(bdata <- list(y = y, nsites = nsites, nsurveys = nsurveys, nyears = nyears,
     forest = forest, distSq = distSq))
 # List of 6
-# $ y : int [1:160, 1:3, 1:23] NA NA NA NA NA NA NA NA NA NA ...
-# $ nsites : int 160
+# $ y       : int [1:160, 1:3, 1:23] NA NA NA NA NA NA NA NA NA NA ...
+# $ nsites  : int 160
 # $ nsurveys: num 3
-# $ nyears : int 23
-# $ forest : num [1:160] -0.746 -0.646 -0.556 0.416 -1.025 ...
-# $ distSq : num [1:160, 1:160] 0 0.01 0.01 0.02 0.05 ...
+# $ nyears  : int 23
+# $ forest  : num [1:160] -0.746 -0.646 -0.556 0.416 -1.025 ...
+# $ distSq  : num [1:160, 1:160] 0 0.01 0.01 0.02 0.05 ...
 
 # Specify model in BUGS language
 cat(file = "chandler.txt","
@@ -128,22 +128,23 @@ na <- 100 ; ni <- 400 ; nt <- 1 ; nb <- 200 ; nc <- 3  # ~~~ for testing
 # Call JAGS (ART 485 min), check convergence and summarize posteriors
 out3 <- jags(bdata, inits, params, "chandler.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-par(mfrow = c(3,3)) ; traceplot(out3)
+op <- par(mfrow = c(3,3)) ; traceplot(out3)
+par(op)
 print(out3$summary[1:13, c(1:3,7)], 3)
-# mean sd 2.5% 97.5%
-# psi1.int 0.1189 0.0367 0.0543 0.199
-# alpha.lpsi1 -2.0529 0.3706 -2.8576 -1.394
-# beta.lpsi1.forest 1.0608 0.3533 0.4211 1.833
-# phi.int 0.5118 0.0728 0.3634 0.646
-# alpha.lphi 0.0479 0.2972 -0.5606 0.602
-# beta.lphi.forest -0.0978 0.2589 -0.6195 0.379
-# gamma.int 0.1423 0.0374 0.0842 0.230
-# alpha.lgamma -1.8286 0.3015 -2.3868 -1.210
-# beta.lgamma.forest 0.6396 0.0950 0.4636 0.828
-# sigma 0.0988 0.0092 0.0819 0.118
-# p.int 0.3202 0.0163 0.2894 0.352
-# alpha.lp -0.7541 0.0750 -0.8982 -0.609
-# beta.lp.forest 0.6360 0.0649 0.5051 0.761
+#                       mean     sd    2.5%  97.5%
+# psi1.int            0.1189 0.0367  0.0543  0.199
+# alpha.lpsi1        -2.0529 0.3706 -2.8576 -1.394
+# beta.lpsi1.forest   1.0608 0.3533  0.4211  1.833
+# phi.int             0.5118 0.0728  0.3634  0.646
+# alpha.lphi          0.0479 0.2972 -0.5606  0.602
+# beta.lphi.forest   -0.0978 0.2589 -0.6195  0.379
+# gamma.int           0.1423 0.0374  0.0842  0.230
+# alpha.lgamma       -1.8286 0.3015 -2.3868 -1.210
+# beta.lgamma.forest  0.6396 0.0950  0.4636  0.828
+# sigma               0.0988 0.0092  0.0819  0.118
+# p.int               0.3202 0.0163  0.2894  0.352
+# alpha.lp           -0.7541 0.0750 -0.8982 -0.609
+# beta.lp.forest      0.6360 0.0649  0.5051  0.761
 
 
 # ~~~ extra code for figure 9.19 ~~~~~~~~

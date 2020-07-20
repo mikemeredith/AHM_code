@@ -29,8 +29,8 @@ speclist <- dimnames(HubbardBrook$counts)[[4]]
 # Restrict all data to last 10 years: 2009-2018
 year <- 2009:2018
 str(counts <- HubbardBrook$counts[,,11:20,]) # Counts
-str(dates <- HubbardBrook$dates[,,11:20]) # Survey dates
-str(hours <- HubbardBrook$times[,,11:20]) # Survey hour (in hours)
+str(dates <- HubbardBrook$dates[,,11:20])    # Survey dates
+str(hours <- HubbardBrook$times[,,11:20])    # Survey hour (in hours)
 
 # Date of full canopy leaf expansion as a phenological measure
 budburst <- c(138.4, 133.8, 143.6, 133.9, 137.3, 146.6, 142.0, 148.3, 143.3, 141.0)
@@ -103,8 +103,8 @@ str(yB <- y[, , '2016', 'BTNW'])
 str(bdata <- list(yR = yR, yB = yB, nsites = nsites, nreps = nreps,
     elev = elev, north = north, DATES = DATES[,,'2016'], HOURS = HOURS[,,'2016']))
 # List of 8
-# $ yR : num [1:373, 1:3] 0 1 1 1 1 1 1 1 0 0 ...
-# $ yB : num [1:373, 1:3] 0 0 0 1 0 0 0 1 0 0 ...
+# $ yR   : num [1:373, 1:3] 0 1 1 1 1 1 1 1 0 0 ...
+# $ yB   : num [1:373, 1:3] 0 0 0 1 0 0 0 1 0 0 ...
 # $ nsite: num 373
 # $ nrep : num 3
 # $ elev : num [1:373] -0.26 -0.08 0.46 0.72 0.88 0.78 0.74 0.74 0.85 ...
@@ -208,22 +208,22 @@ op <- par(mfrow = c(3,3)) ; traceplot(out1)
 par(op)
 which(out1$summary[,8] > 1.1)
 print(out1, 2)
-# mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
-# mean.psiR 0.95 0.04 0.86 0.96 1.00 FALSE 1.00 1.00 1769
-# beta1R -1.64 0.35 -2.44 -1.61 -1.04 FALSE 1.00 1.00 3000
-# beta2R 0.20 0.21 -0.26 0.20 0.60 TRUE 0.83 1.00 3000
-# ... output truncated ...
-# diffbeta0B 5.74 3.53 -2.15 5.76 12.77 TRUE 0.94 1.01 684
-# diffbeta1B -2.33 1.52 -5.82 -2.20 0.40 TRUE 0.96 1.01 313
-# diffbeta2B 1.74 2.44 -2.94 1.53 7.12 TRUE 0.78 1.03 86
-# diffalpha0B -0.15 0.34 -0.79 -0.15 0.55 TRUE 0.68 1.00 3000
-# diffalpha1B 0.67 0.24 0.22 0.66 1.15 FALSE 1.00 1.00 3000
-# diffalpha2B 0.15 0.29 -0.44 0.16 0.69 TRUE 0.71 1.00 977
-# diffalpha3B 0.33 0.20 -0.05 0.33 0.71 TRUE 0.96 1.00 533
-# nRB 247.96 15.25 215.00 250.00 275.00 FALSE 1.00 1.05 52
-# nRb 17.02 14.34 0.00 14.00 52.00 TRUE 1.00 1.05 51
-# nrB 90.19 8.71 75.00 90.00 109.00 FALSE 1.00 1.00 603
-# nrb 17.82 8.93 0.00 19.00 34.00 TRUE 1.00 1.00 1993
+#               mean    sd   2.5%    50%  97.5% overlap0    f Rhat n.eff
+# mean.psiR     0.95  0.04   0.86   0.96   1.00    FALSE 1.00 1.00  1769
+# beta1R       -1.64  0.35  -2.44  -1.61  -1.04    FALSE 1.00 1.00  3000
+# beta2R        0.20  0.21  -0.26   0.20   0.60     TRUE 0.83 1.00  3000
+# .....
+# diffbeta0B    5.74  3.53  -2.15   5.76  12.77     TRUE 0.94 1.01   684
+# diffbeta1B   -2.33  1.52  -5.82  -2.20   0.40     TRUE 0.96 1.01   313
+# diffbeta2B    1.74  2.44  -2.94   1.53   7.12     TRUE 0.78 1.03    86
+# diffalpha0B  -0.15  0.34  -0.79  -0.15   0.55     TRUE 0.68 1.00  3000
+# diffalpha1B   0.67  0.24   0.22   0.66   1.15    FALSE 1.00 1.00  3000
+# diffalpha2B   0.15  0.29  -0.44   0.16   0.69     TRUE 0.71 1.00   977
+# diffalpha3B   0.33  0.20  -0.05   0.33   0.71     TRUE 0.96 1.00   533
+# nRB         247.96 15.25 215.00 250.00 275.00    FALSE 1.00 1.05    52
+# nRb          17.02 14.34   0.00  14.00  52.00     TRUE 1.00 1.05    51
+# nrB          90.19  8.71  75.00  90.00 109.00    FALSE 1.00 1.00   603
+# nrb          17.82  8.93   0.00  19.00  34.00     TRUE 1.00 1.00  1993
 
 # ~~~ extra code for figure 8.12 ~~~
 tmp <- out1$mean # Grab the point estimates (posterior means)
@@ -265,12 +265,12 @@ str(bdata <- list(yR = yR, yB = yB, nsites = nsites, nyears = nyears,
     nreps = nreps, elev = elev, north = north, DATES = DATES, HOURS = HOURS,
     bbcov = bbcov) )
 # List of 10
-# $ yR : num [1:373, 1:3, 1:10] 1 1 0 1 1 0 1 0 0 1 ...
-# $ yB : num [1:373, 1:3, 1:10] 1 0 1 0 0 0 0 1 1 0 ...
+# $ yR    : num [1:373, 1:3, 1:10] 1 1 0 1 1 0 1 0 0 1 ...
+# $ yB    : num [1:373, 1:3, 1:10] 1 0 1 0 0 0 0 1 1 0 ...
 # $ nsites: int 373
 # $ nyears: int 10
 # $ nreps : int 3
-# $ elev : num [1:373] -0.26 -0.08 0.46 0.72 0.88 0.78 0.74 0.74 ...
+# $ elev  : num [1:373] -0.26 -0.08 0.46 0.72 0.88 0.78 0.74 0.74 ...
 # $ north : num [1:373] 0.1107 0.3218 0.0907 0.0588 1.9757 ...
 # $ DATES : num [1:373, 1:3, 1:10] -1.36 -1.36 -1.36 -1.36 -1.36 ...
 # $ HOURS : num [1:373, 1:3, 1:10] -1.58 -1.378 -1.039 -0.798 -0.572 ...
@@ -441,19 +441,19 @@ op <- par(mfrow = c(3,3)) ; traceplot(out2) ; par(mfrow = c(1,1))
 par(op)
 which(out2$summary[,8] > 1.1)
 print(out2$summary[, -c(4:6, 10:11)], 2)
-# mean sd 2.5% 97.5% Rhat n.eff
-# mean.psiR 0.58788 0.03053 0.527482 0.64761 1.00 3000
-# mean.phiR 0.97604 0.00893 0.954922 0.98890 1.03 84
-# mean.gammaR 0.62962 0.05668 0.517656 0.73867 1.00 831
-# ... output truncated ...
-# diffalpha0.lphiB 0.01327 0.67091 -1.454793 1.20533 1.03 72
-# diffalpha0.lgammaB -0.84677 1.37805 -3.826917 1.41830 1.05 56
-# diffbeta.lphiB1 -0.03145 0.22120 -0.480559 0.39371 1.00 514
-# diffbeta.lphiB2 0.56479 0.24648 0.121004 1.08160 1.02 131
-# diffbeta.lphiB3 -0.14117 0.30585 -0.706631 0.48144 1.00 3000
-# diffbeta.lgammaB1 0.49208 0.39742 -0.236849 1.32898 1.03 79
-# diffbeta.lgammaB2 -0.43980 0.37352 -1.189054 0.29883 1.01 240
-# diffbeta.lgammaB3 -1.19232 0.50848 -2.292762 -0.30256 1.00 684
+#                        mean      sd      2.5%    97.5% Rhat n.eff
+# mean.psiR           0.58788 0.03053  0.527482  0.64761 1.00  3000
+# mean.phiR           0.97604 0.00893  0.954922  0.98890 1.03    84
+# mean.gammaR         0.62962 0.05668  0.517656  0.73867 1.00   831
+# ....
+# diffalpha0.lphiB    0.01327 0.67091 -1.454793  1.20533 1.03    72
+# diffalpha0.lgammaB -0.84677 1.37805 -3.826917  1.41830 1.05    56
+# diffbeta.lphiB1    -0.03145 0.22120 -0.480559  0.39371 1.00   514
+# diffbeta.lphiB2     0.56479 0.24648  0.121004  1.08160 1.02   131
+# diffbeta.lphiB3    -0.14117 0.30585 -0.706631  0.48144 1.00  3000
+# diffbeta.lgammaB1   0.49208 0.39742 -0.236849  1.32898 1.03    79
+# diffbeta.lgammaB2  -0.43980 0.37352 -1.189054  0.29883 1.01   240
+# diffbeta.lgammaB3  -1.19232 0.50848 -2.292762 -0.30256 1.00   684
 # ... output truncated ...
 
 # ~~~~~~ extra code for figure 8.13 ~~~~~~~~~~~

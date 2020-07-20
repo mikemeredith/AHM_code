@@ -37,10 +37,10 @@ system.time(summary(fm3x <- pcountOpen(lam = ~1, gam = ~1, omega = ~1,
     p = ~1, data = umf, dynamics = "autoreg", K = 150,
     control = list(trace = TRUE, REPORT = 1)))) # not shown # 2 mins
 # Backtransform parameter estimates and compare with truth
-(lam <- exp(coef(fm3, type = "lambda"))) # Initial abundance
-(gam <- exp(coef(fm3, type = "gamma"))) # Recruitment
+(lam <- exp(coef(fm3, type = "lambda")))  # Initial abundance
+(gam <- exp(coef(fm3, type = "gamma")))   # Recruitment
 (om <- plogis(coef(fm3, type = "omega"))) # Apparent survival
-(p <- plogis(coef(fm3, type = "det"))) # Detection
+(p <- plogis(coef(fm3, type = "det")))    # Detection
 str(data[4:7]) # Compare with The Truth
 # lam(Int)
 # 4.088409
@@ -94,6 +94,7 @@ system.time(summary(fm4.4 <- pcountOpen(lam = ~ cov.lam,
     se = FALSE, control = list(trace = TRUE, REPORT = 1), starts = inits) )) # 7.2 hrs
 # ~~~ save the work so far ~~~~~
 save.image("AHM2_02.05.5a.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Add in final covariate, the site covariate on phi/omega. ART ~ 2.6 hrs
 tmp <- coef(fm4.4)
@@ -104,6 +105,7 @@ system.time(summary(fm4.5 <- pcountOpen(lam = ~ cov.lam, gam = ~cov.gamma,
     starts = inits) ))   # 9.6 hrs / 14 hrs
 # ~~~ save the work so far ~~~~~
 save.image("AHM2_02.05.5b.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Put the fitted models in a "fitList"
 fms <- fitList(
@@ -112,14 +114,16 @@ fms <- fitList(
 "lam(cov)gamma(.)phi(0)p(cov)" = fm4.3,
 "lam(cov)gamma(cov)phi(0)p(cov)" = fm4.4,
 "lam(cov)gamma(cov)phi(cov)p(cov)" = fm4.5)
+
 # Rank them by AIC (singular Hessian message is due to SE=F option)
 (ms <- modSel(fms))
-# nPars AIC delta AICwt cumltvWt
-# lam(cov)gamma(cov)phi(cov)p(cov) 8 2666.10 0.00 1.0e+00 1.00
-# lam(cov)gamma(cov)phi(0)p(cov) 7 2688.62 22.52 1.3e-05 1.00
-# lam(cov)gamma(.)phi(0)p(cov) 6 2813.65 147.55 9.1e-33 1.00
-# lam(cov)gamma(.)phi(0)p(.) 5 3207.85 541.75 2.3e-118 1.00
-# lam(.)gamma(.)phi(0)p(.) 4 3231.83 565.73 1.4e-123 1.00
+#                                  nPars     AIC  delta    AICwt cumltvWt
+# lam(cov)gamma(cov)phi(cov)p(cov)     8 2666.10   0.00  1.0e+00        1
+# lam(cov)gamma(cov)phi(0)p(cov)       7 2688.62  22.52  1.3e-05        1
+# lam(cov)gamma(.)phi(0)p(cov)         6 2813.65 147.55  9.1e-33        1
+# lam(cov)gamma(.)phi(0)p(.)           5 3207.85 541.75 2.3e-118        1
+# lam(.)gamma(.)phi(0)p(.)             4 3231.83 565.73 1.4e-123        1
+
 # Coefficients for each model and Table With Everything (not printed)
 print(coef(ms), digits=3)
 toExport <- as(ms, "data.frame")
@@ -150,8 +154,9 @@ if(FALSE) {
   system.time(summary(fm4.4.se <- pcountOpen(lam = ~ cov.lam,
       gam = ~ cov.gamma, omega = ~1, p= ~ cov.p, data = umf, dynamics = "autoreg",
       control = list(trace = TRUE, REPORT = 1), starts = inits) ))  # 6.6 hrs
-  # ~~~ save the work so far
+  # ~~~ save the work so far ~~~~
   save.image("AHM2_02.05.5c.RData")
+  # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 }
 
 # Add in final covariate, the site covariate on phi/omega
@@ -161,8 +166,9 @@ inits <- c(tmp[1:5], 0, tmp[6:7])
 system.time(summary(fm4.5.se <- pcountOpen(lam = ~ cov.lam,
     gam = ~ cov.gamma, omega = ~ cov.phi, p= ~ cov.p, data = umf,
     dynamics = "autoreg", control = list(trace = TRUE, REPORT = 1), starts = inits) )) # 7.7 / 10.5 / 18 hrs
-# ~~~ save the work so far
+# ~~~ save the work so far ~~~~
 save.image("AHM2_02.05.5d.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # To get a sense of the time comparison with and without SE computation, we ran model fm4.5 both
 # ways (here note the use of estimates from model fm4.5 as starting values in both cases):
@@ -177,6 +183,7 @@ system.time(summary(fm4.5 <- pcountOpen(lam = ~ cov.lam,
     control = list(trace = TRUE, REPORT = 1), starts = inits) ))
 # user system elapsed
 # 177435.19 1.32 177449.20 # 2.1 days
+
 # Model 4.5 with SEs
 system.time(summary(fm4.5.se <- pcountOpen(lam = ~ cov.lam, gam = ~ cov.gamma, omega = ~
 cov.phi, p = ~ cov.p, data = umf, dynamics = "autoreg", K = max(data$yy) + 100, control =
@@ -210,6 +217,7 @@ fm4.5.se
 str(bdata <- list(C = data$y, nsites = dim(data$y)[1],
     nsurveys = dim(data$y)[3], nyears = dim(data$y)[2], cov.lam = data$cov.lam,
     cov.gamma = data$cov.gamma, cov.phi = data$cov.phi, cov.p = data$cov.p))
+
 # Specify model in BUGS language
 cat(file = "DM2.txt","
 model {
@@ -261,30 +269,35 @@ Nst <- apply(data$y, c(1,2), max)+2
 Nst[,2:ncol(Nst)] <- NA
 inits <- function(){ list(N = Nst, R = R1, beta.lam = 0, beta.phi = 0,
     beta.gamma = 0, beta.p = 0) }
+
 # Parameters monitored
 # could also monitor the latent variables: "N", "R", "S"
 params <- c("mean.lambda", "mean.phi", "mean.gamma", "mean.p",
     "beta.lam", "beta.phi", "beta.gamma", "beta.p", "alpha.lam", "alpha.phi",
     "alpha.gamma", "alpha.p")
+
 # MCMC settings
 # na <- 1000 ; ni <- 500000 ; nt <- 250 ; nb <- 250000 ; nc <- 3  # 35 mins
 na <- 1000 ; ni <- 50000 ; nt <- 25 ; nb <- 25000 ; nc <- 3 # ~~~ for testing, 4 mins
+
 # Call JAGS (ART 66 min), check convergence and summarize posteriors
 out4 <- jags(bdata, inits, params, "DM2.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2, 3)) ; traceplot(out4) ; par(op)
+op <- par(mfrow = c(2, 3)) ; traceplot(out4)
+par(op)
 print(out4, 2) # not printed
 # Compare estimates with truth
 cbind('truth' = unlist(data[4:11]), round(out4$summary[1:8, c(1,3,7)],3))
-# truth mean 2.5% 97.5%
-# mean.lambda 4.0 4.247 3.645 4.857
-# mean.gamma.rel 0.5 0.706 0.513 0.837
-# mean.phi 0.8 0.590 0.451 0.793
-# mean.p 0.7 0.695 0.659 0.727
-# beta.lam 1.0 0.632 0.364 0.891
-# beta.gamma 1.0 -0.813 -1.357 -0.337
-# beta.phi -1.0 0.873 0.648 1.085
-# beta.p -1.0 -1.005 -1.140 -0.870
+#                truth   mean   2.5%  97.5%
+# mean.lambda      4.0  4.247  3.645  4.857
+# mean.gamma.rel   0.5  0.706  0.513  0.837
+# mean.phi         0.8  0.590  0.451  0.793
+# mean.p           0.7  0.695  0.659  0.727
+# beta.lam         1.0  0.632  0.364  0.891
+# beta.gamma       1.0 -0.813 -1.357 -0.337
+# beta.phi        -1.0  0.873  0.648  1.085
+# beta.p          -1.0 -1.005 -1.140 -0.870
 
-# ~~~ save the work so far
+# ~~~ save the work so far ~~~~~
 save.image("AHM2_02.05.5.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

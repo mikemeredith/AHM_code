@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 2: Dynamic and Advanced models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 6 : MULTISTATE OCCUPANCY MODELS
 # =======================================
 # Code from proofs dated 2020-06-24
@@ -15,14 +16,14 @@ library(unmarked)
 # Pick values for 11 parameters
 # Parameters for initial conditions (Omega)
 psi <- 0.8 # Expected proportion of occupied sites
-r <- 0.5 # Exp. proportion of sites (among occupied) with a pair
+r <- 0.5   # Exp. proportion of sites (among occupied) with a pair
 
 # Parameters for state transition matrix (Phi)
-phi <- c(0.2, 0.8, 0.9) # Prob. to become occupied
-rho <- c(0.5, 0.25, 0.89)# Prob. to get a pair if become occupied
+phi <- c(0.2, 0.8, 0.9)   # Prob. to become occupied
+rho <- c(0.5, 0.25, 0.89) # Prob. to get a pair if become occupied
 
 # Parameters for observation matrix (Theta)
-p2 <- 0.5 # Detection probability of site with single bird
+p2 <- 0.5  # Detection probability of site with single bird
 p32 <- 0.2 # Classification probability of site with pair as single bird
 p33 <- 0.6 # Classification probability of site with pair as pair
 
@@ -44,38 +45,42 @@ Theta <- matrix(
 
 # Inspect the three arrays
 Omega # Initial state vector
-Phi # State transition matrix
+Phi   # State transition matrix
 Theta # Observation matrix
 # > Omega # Initial state vector
 # [1] 0.2 0.4 0.4
 # > Phi # State transition matrix
-# [,1] [,2] [,3]
-# [1,] 0.8 0.100 0.100
-# [2,] 0.2 0.600 0.200
-# [3,] 0.1 0.099 0.801
+#      [,1]  [,2]  [,3]
+# [1,]  0.8 0.100 0.100
+# [2,]  0.2 0.600 0.200
+# [3,]  0.1 0.099 0.801
 # > Theta # Observation matrix
-# [,1] [,2] [,3]
-# [1,] 1.0 0.0 0.0
-# [2,] 0.5 0.5 0.0
-# [3,] 0.2 0.2 0.6
+#      [,1] [,2] [,3]
+# [1,]  1.0  0.0  0.0
+# [2,]  0.5  0.5  0.0
+# [3,]  0.2  0.2  0.6
 
 # Pick sample sizes (note use of names instead of letters)
 nsites <- 100 # denoted "M" above
 nsurveys <- 3 # ... "J" ...
-nyears <- 5 # ... "T" ...
+nyears <- 5   # ... "T" ...
+
 # Generate structures for latent states (z) and for observations (y)
 z <- array(NA, dim = c(nsites, nyears))
 y <- array(NA, dim = c(nsites, nsurveys, nyears))
+
 # Draw initial states in year 1 using initial state vector Omega
 get1 <- function(x) which(x==1) # Get positition of the sole one (1)
 set.seed(1)
 z[,1] <- apply(rmultinom(nsites, 1, Omega), 2, get1)
+
 # Draw states in following years (2-10) using state transition matrix Phi
 for(i in 1:nsites){
   for(t in 2:nyears){
     z[i,t] <- get1(rmultinom(1, 1, Phi[z[i,t-1],]))
   }
 }
+
 # Draw observations (all years) using observation matrix Theta
 for(i in 1:nsites){
   for(t in 1:nyears){
@@ -85,20 +90,20 @@ for(i in 1:nsites){
 
 # Latent states for first 6 sites
 head(z)
-# [,1] [,2] [,3] [,4] [,5]
-# [1,] 3 3 3 2 2
-# [2,] 2 2 1 1 1
-# [3,] 2 3 3 3 3
-# [4,] 1 1 1 1 1
-# [5,] 2 2 1 1 1
-# [6,] 3 1 3 2 1
+#      [,1] [,2] [,3] [,4] [,5]
+# [1,]    3    3    3    2    2
+# [2,]    2    2    1    1    1
+# [3,]    2    3    3    3    3
+# [4,]    1    1    1    1    1
+# [5,]    2    2    1    1    1
+# [6,]    3    1    3    2    1
 
 # Observed data for site 1 (dimension is survey x year)
 y[1, ,]
-# [,1] [,2] [,3] [,4] [,5]
-# [1,] 3 1 3 2 2
-# [2,] 3 2 3 1 1
-# [3,] 1 3 3 1 2
+#      [,1] [,2] [,3] [,4] [,5]
+# [1,]    3    1    3    2    2
+# [2,]    3    2    3    1    1
+# [3,]    1    3    3    1    2
 
 
 # 6.3.1 A static single-season model
@@ -117,20 +122,20 @@ for(i in 1:nsites){
 
 # Compare true state and summary of observed states
 data.frame('True state' = z[,1], ttab)
-# True.state no.bird.detected single.detected pair.detected
-# 1 3 1 0 2
-# 2 2 1 2 0
-# 3 2 1 2 0
+#     True.state no.bird.detected single.detected pair.detected
+# 1            3                1               0             2
+# 2            2                1               2             0
+# 3            2                1               2             0
 # ....
-# 98 2 0 3 0
-# 99 3 0 0 3
-# 100 1 3 0 0
+# 98           2                0               3             0
+# 99           3                0               0             3
+# 100          1                3               0             0
 
 # Bundle data
 str(bdata <- list(y = y1, nsites = nrow(y1), nsurveys = ncol(y1)))
 # List of 3
-# $ y : int [1:100, 1:3] 3 2 2 1 2 3 2 2 2 1 ...
-# $ nsites : int 100
+# $ y       : int [1:100, 1:3] 3 2 2 1 2 3 2 2 2 1 ...
+# $ nsites  : int 100
 # $ nsurveys: int 3
 
 # Specify model in BUGS language
@@ -205,24 +210,24 @@ out1 <- jags(bdata, inits, params, "static1.txt", n.adapt = na,
 op <- par(mfrow = c(3, 3)) ; traceplot(out1)
 par(op)
 print(out1, 3)
-# mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
-# psi 0.866 0.053 0.762 0.866 0.966 FALSE 1 1.001 1500
-# r 0.429 0.060 0.310 0.430 0.549 FALSE 1 1.001 1500
-# p2 0.489 0.056 0.381 0.490 0.592 FALSE 1 1.005 445
-# p31 0.212 0.043 0.135 0.212 0.300 FALSE 1 1.000 1500
-# p32 0.171 0.040 0.098 0.169 0.253 FALSE 1 1.002 1222
-# p33 0.616 0.054 0.508 0.618 0.716 FALSE 1 1.000 1500
-# Omega[1] 0.134 0.053 0.034 0.134 0.238 FALSE 1 1.001 1500
-# Omega[2] 0.495 0.067 0.371 0.491 0.634 FALSE 1 1.000 1500
-# Omega[3] 0.370 0.052 0.273 0.372 0.475 FALSE 1 1.001 1500
-# Theta[1,1] 1.000 0.000 1.000 1.000 1.000 FALSE 1 NA 1
+#             mean    sd  2.5%   50% 97.5% overlap0 f  Rhat n.eff
+# psi        0.866 0.053 0.762 0.866 0.966    FALSE 1 1.001  1500
+# r          0.429 0.060 0.310 0.430 0.549    FALSE 1 1.001  1500
+# p2         0.489 0.056 0.381 0.490 0.592    FALSE 1 1.005   445
+# p31        0.212 0.043 0.135 0.212 0.300    FALSE 1 1.000  1500
+# p32        0.171 0.040 0.098 0.169 0.253    FALSE 1 1.002  1222
+# p33        0.616 0.054 0.508 0.618 0.716    FALSE 1 1.000  1500
+# Omega[1]   0.134 0.053 0.034 0.134 0.238    FALSE 1 1.001  1500
+# Omega[2]   0.495 0.067 0.371 0.491 0.634    FALSE 1 1.000  1500
+# Omega[3]   0.370 0.052 0.273 0.372 0.475    FALSE 1 1.001  1500
+# Theta[1,1] 1.000 0.000 1.000 1.000 1.000    FALSE 1    NA     1
 # .....
 
 cbind('truth' = table(z[,1]), 'estimates' = out1$summary[19:21,c(1,3,7)])
-# truth mean 2.5% 97.5%
-# 1 17 12.56067 3 18
-# 2 43 50.18467 43 60
-# 3 40 37.25467 35 42
+#   truth     mean 2.5% 97.5%
+# 1    17 12.56067    3    18
+# 2    43 50.18467   43    60
+# 3    40 37.25467   35    42
 
 # 6.3.2 A static multiseason model
 # --------------------------------
@@ -231,10 +236,11 @@ cbind('truth' = table(z[,1]), 'estimates' = out1$summary[19:21,c(1,3,7)])
 str(bdata <- list(y = y, nsites = dim(y)[1], nsurveys = dim(y)[2],
     nyears = dim(y)[3]))
 # List of 4
-# $ y : int [1:100, 1:3, 1:5] 3 2 2 1 2 3 2 2 2 1 ...
-# $ nsites : int 100
+# $ y       : int [1:100, 1:3, 1:5] 3 2 2 1 2 3 2 2 2 1 ...
+# $ nsites  : int 100
 # $ nsurveys: int 3
-# $ nyears : int 5
+# $ nyears  : int 5
+
 # Specify model in BUGS language
 cat(file = "static2.txt", "
 model {
@@ -314,12 +320,13 @@ na <- 1000 ; ni <- 2000 ; nt <- 2 ; nb <- 1000 ; nc <- 3
 
 # Call JAGS, check convergence and summarize posteriors
 out2 <- jags(bdata, inits, params, "static2.txt", n.adapt = na, n.chains = nc,
-n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-par(mfrow = c(3, 3)) ; traceplot(out2)
+    n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+op <- par(mfrow = c(3, 3)) ; traceplot(out2)
+par(op)
 print(out2, 3) # not shown
 
 true.sumZ <- array(NA, dim = c(3, 5), dimnames = list(c('unocc',
-'single', 'pair'), paste('year', 1:5, sep = '')))
+    'single', 'pair'), paste('year', 1:5, sep = '')))
 for(t in 1:5){ # Compute true sum of sites in each state
   true.sumZ[,t] <- table(z[,t])
 }
@@ -332,6 +339,7 @@ t(out2$mean$n.occ) # Estimated (posterior means)
 
 str(bdata <- list(y = y, nsites = dim(y)[1], nsurveys = dim(y)[2],
     nyears = dim(y)[3]))
+
 # Specify model in BUGS language
 cat(file = "dynamic1.txt", "
 model {
@@ -408,6 +416,7 @@ model {
   }
 }
 ")
+
 # Initial values
 inits <- function(){list(z = array(3, dim = c(bdata$nsites,
     bdata$nyears)))}
@@ -421,8 +430,9 @@ na <- 1000 ; ni <- 2000 ; nt <- 2 ; nb <- 1000 ; nc <- 3
 
 # Call JAGS, check convergence and summarize posteriors
 out3 <- jags(bdata, inits, params, "dynamic1.txt", n.adapt = na,
-n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-par(mfrow = c(3, 3)) ; traceplot(out3)
+    n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+op <- par(mfrow = c(3, 3)) ; traceplot(out3)
+par(op)
 print(out3, 3) # not shown
 
 # ~~~~~ extra code for figures 6.1 and 6.2 ~~~~~~~~~~~~~~~~~~~~~~
@@ -515,12 +525,12 @@ unmarked_est[5] <- unmarked_est_raw[4] * unmarked_est_raw[5]
 
 # Good match!
 round(cbind(JAGS=jags_est[-4], unmarked=unmarked_est), 3)
-# JAGS unmarked
-# psi 0.866 0.870
-# r 0.429 0.425
-# p2 0.489 0.489
-# p32 0.171 0.168
-# p33 0.616 0.621
+#      JAGS unmarked
+# psi 0.866    0.870
+# r   0.429    0.425
+# p2  0.489    0.489
+# p32 0.171    0.168
+# p33 0.616    0.621
 
 # add some dummy covariates into our static model
 # '''''''''''''''''''''''''''''''''''''''''''''''
@@ -638,15 +648,15 @@ summary(fm3)
 # delta (Intercept) 1.3424 0.127 10.538 5.76e-26
 
 round( cbind(JAGS = unlist(out3$mean[1:4]), unmarked = plogis(coef(fm3))[1:8]), 3)
-# JAGS unmarked
-# psi 0.833 0.840
-# r 0.443 0.440
-# phi1 0.158 0.151
-# phi2 0.731 0.733
-# phi3 0.918 0.924
-# rho1 0.428 0.420
-# rho2 0.287 0.281
-# rho3 0.846 0.850
+#       JAGS unmarked
+# psi  0.833    0.840
+# r    0.443    0.440
+# phi1 0.158    0.151
+# phi2 0.731    0.733
+# phi3 0.918    0.924
+# rho1 0.428    0.420
+# rho2 0.287    0.281
+# rho3 0.846    0.850
 
 # dynamic multi-state occupancy model with some dummy covariates
 # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -709,7 +719,7 @@ phiformulas <- c("~snow", rep("~1", 5))
 
 # Fit model
 fm4 <- occuMS(detformulas, psiformulas, phiformulas, data = umf4,
-parameterization = "condbinom")
+    parameterization = "condbinom")
 summary(fm4)
 # Call:
 # occuMS(detformulas = detformulas, psiformulas = psiformulas,
@@ -734,5 +744,3 @@ summary(fm4)
 # p[2] (Intercept) 1.2416 0.112 11.104 1.20e-28
 # delta (Intercept) 1.3652 0.130 10.538 5.79e-26
 # delta date -0.2006 0.124 -1.622 1.05e-01
-
-

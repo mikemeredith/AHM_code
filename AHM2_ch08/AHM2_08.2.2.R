@@ -97,9 +97,9 @@ umf@fDesign
 
 # View order of params, helpful for setting up formulas
 colnames(umf@fDesign)
-# [1] "f1[bobcat]" "f2[coyote]"
-# [3] "f3[redfox]" "f4[bobcat:coyote]"
-# [5] "f5[bobcat:redfox]" "f6[coyote:redfox]"
+# [1] "f1[bobcat]"                "f2[coyote]"
+# [3] "f3[redfox]"                "f4[bobcat:coyote]"
+# [5] "f5[bobcat:redfox]"         "f6[coyote:redfox]"
 # [7] "f7[bobcat:coyote:redfox]"
 
 # Specify models for occupancy in terms of natural parameters f
@@ -207,13 +207,13 @@ det_formulae3 <- rep('~1', 3)
 # AIC: 6626.111
 
 confint(fm3, type = 'state') # CIs for occupancy parameters
-# 0.025 0.975
-# psi([bobcat] (Intercept)) -2.1100157 -1.4072536
-# psi([coyote] (Intercept)) -1.5717770 -1.0362043
-# psi([redfox] (Intercept)) -2.4983062 -1.9012367
-# psi([bobcat:coyote] (Intercept)) 1.2042902 2.2311451
+#                                       0.025      0.975
+# psi([bobcat] (Intercept))        -2.1100157 -1.4072536
+# psi([coyote] (Intercept))        -1.5717770 -1.0362043
+# psi([redfox] (Intercept))        -2.4983062 -1.9012367
+# psi([bobcat:coyote] (Intercept))  1.2042902  2.2311451
 # psi([bobcat:redfox] (Intercept)) -2.1154563 -0.6387872
-# psi([coyote:redfox] (Intercept)) 0.9254514 1.8992954
+# psi([coyote:redfox] (Intercept))  0.9254514  1.8992954
 
 # Specify models for occupancy in terms of natural parameters f
 occ_formulae4 <- c(
@@ -301,12 +301,12 @@ det_formulae5 <- rep('~as.factor(Trail)', 3)
 # AIC: 6123.852
 
 modSel(fl <- fitList(fm1, fm2, fm3, fm4, fm5))
-# nPars AIC delta AICwt cumltvWt
-# fm5 18 6123.85 0.00 1.0e+00 1.00
-# fm4 15 6213.46 89.61 3.5e-20 1.00
-# fm2 15 6257.57 133.72 9.2e-30 1.00
-# fm3 9 6626.11 502.26 8.6e-110 1.00
-# fm1 6 6710.66 586.81 3.8e-128 1.00
+#     nPars     AIC  delta    AICwt cumltvWt
+# fm5    18 6123.85   0.00  1.0e+00        1
+# fm4    15 6213.46  89.61  3.5e-20        1
+# fm2    15 6257.57 133.72  9.2e-30        1
+# fm3     9 6626.11 502.26 8.6e-110        1
+# fm1     6 6710.66 586.81 3.8e-128        1
 
 # Create prediction covariate for Dist and form predictions
 r <- range(data$sitecovs$Dist)
@@ -351,11 +351,11 @@ bob_both <- predict(fm5,type = 'state',species = 'bobcat',
 
 round(occtab <- rbind('Neither' = bob_none, 'Coyote' = bob_coyote,
   'Red fox' = bob_redfox, 'Both' = bob_both), 3)
-# Predicted SE lower upper
-# Neither 0.240 0.047 0.159 0.345
-# Coyote 0.473 0.109 0.268 0.688
-# Red fox 0.063 0.033 0.025 0.152
-# Both 0.161 0.089 0.054 0.397
+#         Predicted    SE lower upper
+# Neither     0.240 0.047 0.159 0.345
+# Coyote      0.473 0.109 0.268 0.688
+# Red fox     0.063 0.033 0.025 0.152
+# Both        0.161 0.089 0.054 0.397
 
 # ~~~ extra code to plot these (not shown) ~~~~~~~~
 plot_dat <- rbind(bob_none, bob_coyote, bob_redfox, bob_both)

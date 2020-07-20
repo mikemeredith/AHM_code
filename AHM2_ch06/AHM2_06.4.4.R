@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 2: Dynamic and Advanced models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 6 : MULTISTATE OCCUPANCY MODELS
 # =======================================
 # Code from proofs dated 2020-06-24
@@ -40,15 +41,15 @@ str(bdata <- list(y = yms, nsites = dim(yms)[1], nsurveys = nsurveys,
     nyears = dim(yms)[3], region = region, elev = elev.scaled,
     forest = forest.scaled, date = date.scaled, V = V))
 # List of 9
-# $ y : num [1:274, 1:20, 1:10] NA NA 1 NA NA NA NA 2 2 2 ...
-# $ nsites : int 274
+# $ y       : num [1:274, 1:20, 1:10] NA NA 1 NA NA NA NA 2 2 2 ...
+# $ nsites  : int 274
 # $ nsurveys: num [1:274, 1:10] 1 1 3 1 1 1 1 20 12 20 ...
-# $ nyears : int 10
-# $ region : num [1:274] 2 5 6 1 1 2 3 5 3 2 ...
-# $ elev : num [1:274] -0.84 0.115 -0.554 -0.267 1.07 ...
-# $ forest : num [1:274] -0.647 0.862 -0.459 -0.459 -1.213 ...
-# $ date : num [1:274, 1:20, 1:10] 0 0 -1.9 0 0 ...
-# $ V : num [1:274, 1:20, 1:10] 0 0 1 0 0 0 0 1 1 1 ...
+# $ nyears  : int 10
+# $ region  : num [1:274] 2 5 6 1 1 2 3 5 3 2 ...
+# $ elev    : num [1:274] -0.84 0.115 -0.554 -0.267 1.07 ...
+# $ forest  : num [1:274] -0.647 0.862 -0.459 -0.459 -1.213 ...
+# $ date    : num [1:274, 1:20, 1:10] 0 0 -1.9 0 0 ...
+# $ V       : num [1:274, 1:20, 1:10] 0 0 1 0 0 0 0 1 1 1 ...
 
 # Specify model in BUGS language
 cat(file = "dynMS3.txt", "
@@ -364,7 +365,7 @@ params <- c("kappa", "alpha.lpsi", "mean.psi", "beta.lpsi", "alpha.lr", "mean.r"
 
 # MCMC settings
 # na <- 1000 ; ni <- 60000 ; nt <- 20 ; nb <- 40000 ; nc <- 3
-na <- 1000 ; ni <- 6000 ; nt <- 2 ; nb <- 4000 ; nc <- 3  # ~~~~~~~~ for testing, 2 hrs
+na <- 1000 ; ni <- 6000 ; nt <- 2 ; nb <- 4000 ; nc <- 3  # ~~~ for testing, 2 hrs
 
 # Call JAGS (ART 24 h), check convergence and summarize posteriors
 odms3 <- jags(bdata, inits, params, "dynMS3.txt", n.adapt = na, n.chains = nc,
@@ -374,7 +375,7 @@ par(op)
 summary(odms3) ; jags.View(odms3) # not shown
 
 round(odms3$mean$PhiMat.avg, 2) # Transition probabilities
-# [,1] [,2] [,3]
+#      [,1] [,2] [,3]
 # [1,] 0.67 0.18 0.15
 # [2,] 0.20 0.70 0.09
 # [3,] 0.10 0.06 0.84
@@ -391,18 +392,22 @@ plot(year, odms2$mean$n.occ[,2], xlab = 'Year', ylab = 'Number of sites',
     type = "b", lwd = 3, frame = FALSE, pch = 's', col = 'black', cex = 1.5,
     lty = 1, ylim = c(0, 274), main = 'No correction for PS (dynMS2)')
 segments(year, odms2$q2.5$n.occ[,2], year, odms2$q97.5$n.occ[,2])
-points(year, odms2$mean$n.occ[,3], type = "b", lwd = 3, pch = 'p', col = 'black', cex = 1.5, lty = 1)
+points(year, odms2$mean$n.occ[,3], type = "b", lwd = 3, pch = 'p',
+    col = 'black', cex = 1.5, lty = 1)
 segments(year, odms2$q2.5$n.occ[,3], year, odms2$q97.5$n.occ[,3])
-points(year, odms2$mean$n.occ.total, type = "b", lwd = 3, pch = 't', col = 'black', cex = 1.5, lty = 1)
+points(year, odms2$mean$n.occ.total, type = "b", lwd = 3, pch = 't',
+    col = 'black', cex = 1.5, lty = 1)
 segments(year, odms2$q2.5$n.occ.total, year, odms2$q97.5$n.occ.total)
 
 plot(year, odms3$mean$n.occ[,2], xlab = 'Year', ylab = '',
     type = "b", lwd = 3, frame = FALSE, pch = 's', col = 'black', cex = 1.5,
     lty = 1, ylim = c(0, 274), main = 'With correction for PS (dynMS3)')
 segments(year, odms3$q2.5$n.occ[,2], year, odms3$q97.5$n.occ[,2])
-points(year, odms3$mean$n.occ[,3], type = "b", lwd = 3, pch = 'p', col = 'black', cex = 1.5, lty = 1)
+points(year, odms3$mean$n.occ[,3], type = "b", lwd = 3, pch = 'p',
+    col = 'black', cex = 1.5, lty = 1)
 segments(year, odms3$q2.5$n.occ[,3], year, odms3$q97.5$n.occ[,3])
-points(year, odms3$mean$n.occ.total, type = "b", lwd = 3, pch = 't', col = 'black', cex = 1.5, lty = 1)
+points(year, odms3$mean$n.occ.total, type = "b", lwd = 3, pch = 't',
+    col = 'black', cex = 1.5, lty = 1)
 segments(year, odms3$q2.5$n.occ.total, year, odms3$q97.5$n.occ.total)
 points(year, obsnocc, type = "b", lwd = 3, pch = 'o', col = 'black', cex = 1.3, lty = 1)
 par(op)
@@ -418,7 +423,8 @@ par(op)
 
 # Figure 6.7
 # ''''''''''
-# Compute regional number of sites occupied by single birds and by pairs for every year (code courtesy of Mike)
+# Compute regional number of sites occupied by single birds and by pairs
+#    for every year (code courtesy of Mike)
 library(HDInterval)
 str(odms3$sims.list$z)
 pm.nsingles <- array(NA, dim = c(6, nyears))
@@ -509,9 +515,12 @@ dateP <- (dateO - 90) / 30.5
 
 # Predict at the means of the other covariate (i.e., 0)
 for(r in 1:6){
-  pred.p2[,r] <- plogis(tmp$alpha.lp2 + tmp$beta.region.lp2[r] + tmp$beta.lp2[1] * dateP + tmp$beta.lp2[2] * dateP^2)
-  mlogit.p32[,r] <- plogis(tmp$alpha.lp32 + tmp$beta.region.lp32[r] + tmp$beta.lp32[1] * dateP + tmp$beta.lp32[2] * dateP^2)
-  mlogit.p33[,r] <- plogis(tmp$alpha.lp33 + tmp$beta.region.lp33[r] + tmp$beta.lp33[1] * dateP + tmp$beta.lp33[2] * dateP^2)
+  pred.p2[,r] <- plogis(tmp$alpha.lp2 + tmp$beta.region.lp2[r] +
+      tmp$beta.lp2[1] * dateP + tmp$beta.lp2[2] * dateP^2)
+  mlogit.p32[,r] <- plogis(tmp$alpha.lp32 + tmp$beta.region.lp32[r] +
+      tmp$beta.lp32[1] * dateP + tmp$beta.lp32[2] * dateP^2)
+  mlogit.p33[,r] <- plogis(tmp$alpha.lp33 + tmp$beta.region.lp33[r] +
+      tmp$beta.lp33[1] * dateP + tmp$beta.lp33[2] * dateP^2)
   pred.p32[,r] <- exp(mlogit.p32[,r]) / (1 + exp(mlogit.p32[,r]) + exp(mlogit.p33[,r]))
   pred.p33[,r] <- exp(mlogit.p33[,r]) / (1 + exp(mlogit.p32[,r]) + exp(mlogit.p33[,r]))
   pred.p31[,r] <- 1 - pred.p32[,r] - pred.p33[,r]
@@ -519,7 +528,8 @@ for(r in 1:6){
 
 # Prediction of the visitation model
 pred.pv <- array(NA, dim = c(10, 2))
-pred.pv[1,] <- plogis(tmp$alpha.pv + tmp$beta.pv * (1-5.5) + tmp$n.occ.total[1]/274 * tmp$kappa)
+pred.pv[1,] <- plogis(tmp$alpha.pv + tmp$beta.pv * (1-5.5) +
+    tmp$n.occ.total[1]/274 * tmp$kappa)
 for(t in 2:10){
   pred.pv[t, 1] <- plogis(tmp$alpha.pv + tmp$beta.pv * (t-5.5))
   pred.pv[t, 2] <- plogis(tmp$alpha.pv + tmp$beta.pv * (1 - 5.5) + tmp$kappa)
@@ -540,3 +550,4 @@ matplot(2007:2016, pred.pv, type = 'l', lty = c(2,1), lwd = 3, ylim = c(0, 1.1),
     xlab = "Year", ylab = "Visitation prob.", main = 'D', frame = FALSE)
     # main = "Visitation model"
 par(op)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

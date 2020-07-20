@@ -59,7 +59,7 @@ summary(umf1 <- unmarkedFrameOccuFP(y = y, obsCovs = list(Method = Method),
 
 # Coefficients on the link (= "beta") scale
 coef(m1)
-# psi(Int) p(Int) p(Method2) fp(Int)
+#  psi(Int)    p(Int) p(Method2)    fp(Int)
 # 0.5442685 0.9008509 -0.9670559 -2.9046690
 
 # Coefficients on the probability (="real") scale
@@ -68,12 +68,11 @@ round(rbind(
     "det" = predict(m1, type = 'det', newdata = pred.df),
     "fp" = predict(m1, type = 'fp', newdata = pred.df[1,,drop=F]),
     "state" = predict(m1, type = 'state', newdata = pred.df[1,,drop=F])),3)
-# Predicted SE lower upper
-# det.1 0.711 0.024 0.661 0.756
-# det.2 0.483 0.022 0.440 0.527
-# fp 0.052 0.014 0.031 0.087
-# state 0.633 0.035 0.563 0.698
-
+#       Predicted    SE lower upper
+# det.1     0.711 0.024 0.661 0.756
+# det.2     0.483 0.022 0.440 0.527
+# fp        0.052 0.014 0.031 0.087
+# state     0.633 0.035 0.563 0.698
 
 # 7.3.2 Case Study: Eurasian lynx in the Alps
 # -------------------------------------------
@@ -81,16 +80,16 @@ round(rbind(
 data(EurasianLynx)
 str(lynx <- EurasianLynx)
 # 'data.frame': 43332 obs. of 10 variables:
-# $ type : Factor w/ 2 levels "certain","uncertain": 1 1 1 1 1 1 1 ...
+# $ type    : Factor w/ 2 levels "certain","uncertain": 1 1 1 1 1 1 1 ...
 # $ site.nr : int 1 2 3 4 5 6 7 8 9 10 ...
-# $ y.1 : int NA NA NA NA NA NA NA NA NA NA ...
-# $ y.2 : int 0 0 0 0 0 0 0 0 0 0 ...
-# $ y.3 : int 0 0 0 0 0 0 0 0 0 0 ...
-# $ Year : int 1994 1994 1994 1994 1994 1994 1994 1994 1994 1994 ...
-# $ Cntry : Factor w/ 2 levels "Italy","Switzerland": 1 1 1 1 1 1 1 1 1 1
-# $ forest : num 78.3 34.1 40.8 68.2 73.5 ...
-# $ xcoord : num 4110 4120 4130 4110 4120 4130 4140 4150 4160 4170 ...
-# $ ycoord : num 2300 2300 2300 2310 2310 2310 2310 2310 2310 2310 ...
+# $ y.1     : int NA NA NA NA NA NA NA NA NA NA ...
+# $ y.2     : int 0 0 0 0 0 0 0 0 0 0 ...
+# $ y.3     : int 0 0 0 0 0 0 0 0 0 0 ...
+# $ Year    : int 1994 1994 1994 1994 1994 1994 1994 1994 1994 1994 ...
+# $ Cntry   : Factor w/ 2 levels "Italy","Switzerland": 1 1 1 1 1 1 1 1 1 1
+# $ forest  : num 78.3 34.1 40.8 68.2 73.5 ...
+# $ xcoord  : num 4110 4120 4130 4110 4120 4130 4140 4150 4160 4170 ...
+# $ ycoord  : num 2300 2300 2300 2310 2310 2310 2310 2310 2310 2310 ...
 
 # Add the columns we need for analysis in unmarked
 lynx$occ.1 <- 1
@@ -144,10 +143,10 @@ cand.mods <- list(
         data = lynx.umf))
 
 (modTab <- modSelFP(cand.mods))
-# nPars AIC dAIC AICwt cuWt
-# p(c+t)fp(c+t)psi(c*t) 10 24386.76 0.00 0.87 0.87
-# p(c*t)fp(c*t)psi(c*t) 12 24390.48 3.72 0.13 1.00
-# p(c)fp(c*t)psi(c*t) 10 24411.85 25.09 0.00 1.00
+#                       nPars      AIC  dAIC AICwt cuWt
+# p(c+t)fp(c+t)psi(c*t)    10 24386.76  0.00  0.87 0.87
+# p(c*t)fp(c*t)psi(c*t)    12 24390.48  3.72  0.13 1.00
+# p(c)fp(c*t)psi(c*t)      10 24411.85 25.09  0.00 1.00
 # [... output truncated ...]
 
 # Select and summarize the AIC-top model

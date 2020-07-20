@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 2: Dynamic and Advanced models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 6 : MULTISTATE OCCUPANCY MODELS
 # =======================================
 # Code from proofs dated 2020-06-24
@@ -43,14 +44,14 @@ str(bdata <- list(y = yms, nsites = dim(yms)[1], nsurveys = nsurveys,
     nyears = dim(yms)[3], region = region, elev = elev.scaled,
     forest = forest.scaled, date = date.scaled))
 # List of 8
-# $ y : num [1:274, 1:20, 1:10] NA NA 1 NA NA NA NA 2 2 2 ...
-# $ nsites : int 274
+# $ y       : num [1:274, 1:20, 1:10] NA NA 1 NA NA NA NA 2 2 2 ...
+# $ nsites  : int 274
 # $ nsurveys: num [1:274, 1:10] 1 1 3 1 1 1 1 20 12 20 ...
-# $ nyears : int 10
-# $ region : num [1:274] 2 5 6 1 1 2 3 5 3 2 ...
-# $ elev : num [1:274] -0.84 0.115 -0.554 -0.267 1.07 ...
-# $ forest : num [1:274] -0.647 0.862 -0.459 -0.459 -1.213 ...
-# $ date : num [1:274, 1:20, 1:10] 0 0 -1.9 0 0 ...
+# $ nyears  : int 10
+# $ region  : num [1:274] 2 5 6 1 1 2 3 5 3 2 ...
+# $ elev    : num [1:274] -0.84 0.115 -0.554 -0.267 1.07 ...
+# $ forest  : num [1:274] -0.647 0.862 -0.459 -0.459 -1.213 ...
+# $ date    : num [1:274, 1:20, 1:10] 0 0 -1.9 0 0 ...
 
 # Specify model in BUGS language
 cat(file = "dynMS2.txt", "
@@ -337,5 +338,6 @@ op <- par(mfrow = c(3, 3)) ; traceplot(odms2)
 par(op)
 summary(odms2) ; jags.View(odms2) # not shown
 
-# ~~~ save output to use in next subsection
+# ~~~ save output to use in next subsection ~~~
 save(odms2, file="AHM2_06.4.3_odms2.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

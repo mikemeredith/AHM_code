@@ -30,9 +30,9 @@ tmp11 <- out11$sims.list$popindex / out11$sims.list$popindex[,9] # Model 11
 pm <- cbind(apply(tmp1, 2, mean), apply(tmp4, 2, mean),
     # apply(tmp8, 2, mean),
     apply(tmp11, 2, mean))
-fn1<- function(x) quantile(x, 0.025)
+fn1 <- function(x) quantile(x, 0.025)
 fn2 <- function(x) quantile(x, 0.975)
-LCL<- cbind(apply(tmp1, 2, fn1), apply(tmp4, 2, fn1),
+LCL <- cbind(apply(tmp1, 2, fn1), apply(tmp4, 2, fn1),
     # apply(tmp8, 2,fn1),
     apply(tmp11, 2, fn1))
 UCL <- cbind(apply(tmp1, 2, fn2), apply(tmp4, 2, fn2),
@@ -42,20 +42,20 @@ UCL <- cbind(apply(tmp1, 2, fn2), apply(tmp4, 2, fn2),
 # Plot
 year <- 1999:2016
 
-par(mar = c(5,5,2,2), cex.lab = 1.5, cex.axis = 1.5)
+op <- par(mar = c(5,5,2,2), cex.lab = 1.5, cex.axis = 1.5)
 ylim = c(0.5, 1.3)
 off <- 0.05
-plot(year-3*off,pm[,1], type = 'b', pch = 16, lty = 1, xlab = 'Year', col = 1, ylim = ylim, ylab = 'Standardized population level', las = 1, cex = 2, frame = FALSE)
+plot(year-3*off,pm[,1], type = 'b', pch = 16, lty = 1, xlab = 'Year', col = 1,
+    ylim = ylim, ylab = 'Standardized population level', las = 1, cex = 2,
+    frame = FALSE)
 points(year-1*off, pm[,2], type = 'b', pch = 16, lty = 1, col = 2, cex = 2)
 points(year+1*off, pm[,3], type = 'b', pch = 16, lty = 1, col = 3, cex = 2)
-# points(year+3*off, pm[,4], type = 'b', pch = 16, lty = 1, col = 4, cex = 2)
 abline(h = 1, col = 'grey')
 abline(v = 2007, col = 'grey')
 segments(year-3*off, LCL[,1], year-3*off, UCL[,1], col = 1)
 segments(year-1*off, LCL[,2], year-1*off, UCL[,2], col = 2)
 segments(year+1*off, LCL[,3], year+1*off, UCL[,3], col = 3)
-# segments(year+3*off, LCL[,4], year+3*off, UCL[,4], col = 4)
 legend('bottomright', c('GLM (Model 1)', 'GLMM (Model 4)',
-    # 'Gaussian SSM (Model 8)',
     'Demo. SSM (Model 11)'), col=1:3, pch=16, cex = 1.3, bty = 'n')
-
+par(op)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

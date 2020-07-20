@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 2: Dynamic and Advanced models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 5 : MODELING METACOMMUNITY DYNAMICS USING DYNAMIC COMMUNITY MODELS
 # ==========================================================================
 # Code from proofs dated 2020-06-23
@@ -43,16 +44,16 @@ y <- dat$y # copy 4D array
 str(bdata <- list(y = y, nsite = dim(y)[1], nsurvey = dim(y)[2],
     nyear = dim(y)[3], nspec = dim(y)[4]))
 # List of 5
-# $ y : int [1:100, 1:3, 1:10, 1:50] 1 0 1 0 0 0 1 0 0 0 ...
+# $ y    : int [1:100, 1:3, 1:10, 1:50] 1 0 1 0 0 0 1 0 0 0 ...
 # ..- attr(*, "dimnames")=List of 4
 # .. ..$ : chr [1:100] "Site1" "Site2" "Site3" "Site4" ...
 # .. ..$ : chr [1:3] "Survey1" "Survey2" "Survey3"
 # .. ..$ : chr [1:10] "Year1" "Year2" "Year3" "Year4" ...
 # .. ..$ : chr [1:50] "Spec1" "Spec2" "Spec3" "Spec4" ...
-# $ nsite : int 100
+# $ nsite  : int 100
 # $ nsurvey: int 3
-# $ nyear : int 10
-# $ nspec : int 50
+# $ nyear  : int 10
+# $ nspec  : int 50
 
 # Specify model in BUGS language
 cat(file = "DCM1.txt", "
@@ -203,38 +204,38 @@ summary(out2) ; jags.View(out2) ; print(out2, 3) # not shown
 op <- par(mfrow = c(4,2), mar = c(5,5,3,2), cex.lab = 1.2)
 hist(plogis(out2$sims.list$mu.lpsi1), breaks=30, col = 'grey',
     main = 'Community mean of lpsi1', xlab = 'mu.lpsi1',
-    freq = F, xlim = c(0, 0.4))
+    freq = FALSE, xlim = c(0, 0.4))
 abline(v = dat$mean.psi1, col = 'red', lwd = 2)
 hist(out2$sims.list$sd.lpsi1, breaks=30, col = 'grey',
     main = 'Community SD of lpsi1', xlab = 'sd.lpsi1',
-    freq = F, xlim = c(0, 5))
+    freq = FALSE, xlim = c(0, 5))
 abline(v = dat$sig.lpsi1, col = 'red', lwd = 2)
 
 hist(plogis(out2$sims.list$mu.lphi), breaks=30, col = 'grey',
     main = 'Community mean of lphi', xlab = 'mu.lphi',
-    freq = F, xlim = c(0, 1))
+    freq = FALSE, xlim = c(0, 1))
 abline(v = dat$range.mean.phi[1], col = 'red', lwd = 2)
 hist(out2$sims.list$sd.lphi, breaks=30, col = 'grey',
     main = 'Community SD of lphi', xlab = 'sd.lphi',
-    freq = F, xlim = c(0, 3))
+    freq = FALSE, xlim = c(0, 3))
 abline(v = dat$sig.lphi, col = 'red', lwd = 2)
 
 hist(plogis(out2$sims.list$mu.lgamma), breaks=30, col = 'grey',
     main = 'Community mean of lgamma', xlab = 'mu.lgamma',
-    freq = F, xlim = c(0, 0.3))
+    freq = FALSE, xlim = c(0, 0.3))
 abline(v = dat$range.mean.gamma[1], col = 'red', lwd = 2)
 hist(out2$sims.list$sd.lgamma, breaks=30, col = 'grey',
     main = 'Community SD of lgamma', xlab = 'sd.lgamma',
-    freq = F, xlim = c(0, 2))
+    freq = FALSE, xlim = c(0, 2))
 abline(v = dat$sig.lgamma, col = 'red', lwd = 2)
 
 hist(plogis(out2$sims.list$mu.lp), breaks=30, col = 'grey',
     main = 'Community mean of lp', xlab = 'mu.lp',
-    freq = F, xlim = c(0, 1))
+    freq = FALSE, xlim = c(0, 1))
 abline(v = dat$range.mean.p[1], col = 'red', lwd = 2)
 hist(out2$sims.list$sd.lp, breaks=30, col = 'grey',
     main = 'Community SD of lp', xlab = 'sd.lp',
-    freq = F, xlim = c(0, 4))
+    freq = FALSE, xlim = c(0, 4))
 abline(v = dat$sig.lp, col = 'red', lwd = 2)
 par(op)
 
@@ -249,46 +250,54 @@ nocc.true <- dat$n.occ
 par(mfrow = c(4, 2), mar = c(5,5,4,3), cex.lab = 1.2)
 lim <- c(0,1)
 # Initial occupancy (psi1)
-plot(psi1.true, out1$mean$psi1, main = 'psi1 (fixed effects)', xlim = lim, ylim = lim, pch = 16, frame = F, xlab = 'True value', ylab = 'Estimate')
+plot(psi1.true, out1$mean$psi1, main = 'psi1 (fixed effects)', xlim = lim,
+    ylim = lim, pch = 16, frame = FALSE, xlab = 'True value', ylab = 'Estimate')
 segments(psi1.true, out1$q2.5$psi1, psi1.true, out1$q97.5$psi1)
 abline(0,1, lwd = 2, col = 'red')
 abline(lm(out1$mean$psi1 ~ psi1.true), col = 'blue', lwd = 2, lty = 2)
 
-plot(psi1.true, out2$mean$psi1, main = 'psi1 (random effects)', xlim = lim, ylim = lim, pch = 16, frame = F, xlab = 'True value', ylab = 'Estimate')
+plot(psi1.true, out2$mean$psi1, main = 'psi1 (random effects)', xlim = lim,
+    ylim = lim, pch = 16, frame = FALSE, xlab = 'True value', ylab = 'Estimate')
 segments(psi1.true, out2$q2.5$psi1, psi1.true, out2$q97.5$psi1)
 abline(0,1, lwd = 2, col = 'red')
 abline(lm(out2$mean$psi1 ~ psi1.true), col = 'blue', lwd = 2, lty = 2)
 
 # Persistence
-plot(phi.true, out1$mean$phi, main = 'phi (fixed effects)', xlim = lim, ylim = lim, pch = 16, frame = F, xlab = 'True value', ylab = 'Estimate')
+plot(phi.true, out1$mean$phi, main = 'phi (fixed effects)', xlim = lim,
+    ylim = lim, pch = 16, frame = FALSE, xlab = 'True value', ylab = 'Estimate')
 segments(phi.true, out1$q2.5$phi, phi.true, out1$q97.5$phi)
 abline(0,1, lwd = 2, col = 'red')
 abline(lm(out1$mean$phi ~ phi.true), col = 'blue', lwd = 2, lty = 2)
 
-plot(phi.true, out2$mean$phi, main = 'phi (random effects)', xlim = lim, ylim = lim, pch = 16, frame = F, xlab = 'True value', ylab = 'Estimate')
+plot(phi.true, out2$mean$phi, main = 'phi (random effects)', xlim = lim,
+    ylim = lim, pch = 16, frame = FALSE, xlab = 'True value', ylab = 'Estimate')
 segments(phi.true, out2$q2.5$phi, phi.true, out2$q97.5$phi)
 abline(0,1, lwd = 2, col = 'red')
 abline(lm(out2$mean$phi ~ phi.true), col = 'blue', lwd = 2, lty = 2)
 
 # Colonization
-plot(gamma.true, out1$mean$gamma, main = 'gamma (fixed effects)', xlim = lim, ylim = lim, pch = 16, frame = F, xlab = 'True value', ylab = 'Estimate')
+plot(gamma.true, out1$mean$gamma, main = 'gamma (fixed effects)', xlim = lim,
+    ylim = lim, pch = 16, frame = FALSE, xlab = 'True value', ylab = 'Estimate')
 segments(gamma.true, out1$q2.5$gamma, gamma.true, out1$q97.5$gamma)
 abline(0,1, lwd = 2, col = 'red')
 abline(lm(out1$mean$gamma ~ gamma.true), col = 'blue', lwd = 2, lty = 2)
 
-plot(gamma.true, out2$mean$gamma, main = 'gamma (random effects)', xlim = lim, ylim = lim, pch = 16, frame = F, xlab = 'True value', ylab = 'Estimate')
+plot(gamma.true, out2$mean$gamma, main = 'gamma (random effects)', xlim = lim,
+    ylim = lim, pch = 16, frame = FALSE, xlab = 'True value', ylab = 'Estimate')
 segments(gamma.true, out2$q2.5$gamma, gamma.true, out2$q97.5$gamma)
 abline(0,1, lwd = 2, col = 'red')
 abline(lm(out2$mean$gamma ~ gamma.true), col = 'blue', lwd = 2, lty = 2)
 
 # Number of occupied sites (n.occ)
 lim <- c(0, 100)
-plot(nocc.true, out1$mean$n.occ, main = 'n.occ (fixed effects)', xlim = lim, ylim = lim, pch = 16, frame = F, xlab = 'True value', ylab = 'Estimate')
+plot(nocc.true, out1$mean$n.occ, main = 'n.occ (fixed effects)', xlim = lim,
+    ylim = lim, pch = 16, frame = FALSE, xlab = 'True value', ylab = 'Estimate')
 segments(nocc.true, out1$q2.5$n.occ, nocc.true, out1$q97.5$n.occ)
 abline(0,1, lwd = 2, col = 'red')
 abline(lm(c(out1$mean$n.occ) ~ c(nocc.true)), col = 'blue', lwd = 2, lty = 2)
 
-plot(nocc.true, out2$mean$n.occ, main = 'n.occ (random effects)', xlim = lim, ylim = lim, pch = 16, frame = F, xlab = 'True value', ylab = 'Estimate')
+plot(nocc.true, out2$mean$n.occ, main = 'n.occ (random effects)', xlim = lim,
+    ylim = lim, pch = 16, frame = FALSE, xlab = 'True value', ylab = 'Estimate')
 segments(nocc.true, out2$q2.5$n.occ, nocc.true, out2$q97.5$n.occ)
 abline(0,1, lwd = 2, col = 'red')
 abline(lm(c(out2$mean$n.occ) ~ c(nocc.true)), col = 'blue', lwd = 2, lty = 2)
@@ -310,10 +319,8 @@ print(RMSE, 2)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Table of RMSE for both models and RMSE ratio
-# Fixed-eff. (DCM1) Random-eff. (DCM2) Ratio DCM2/DCM1
-# psi1 0.0504 0.027 0.529
-# phi 0.0079 0.020 2.488
-# gamma 0.0324 0.002 0.062
-# n.occ 2.6752 1.067 0.399
-
-
+#       Fixed-eff. (DCM1) Random-eff. (DCM2) Ratio DCM2/DCM1
+# psi1             0.0504              0.027           0.529
+# phi              0.0079              0.020           2.488
+# gamma            0.0324              0.002           0.062
+# n.occ            2.6752              1.067           0.399

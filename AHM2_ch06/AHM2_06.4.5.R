@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 2: Dynamic and Advanced models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 6 : MULTISTATE OCCUPANCY MODELS
 # =======================================
 # Code from proofs dated 2020-06-24
@@ -44,16 +45,16 @@ str(bdata <- list(y = yms, nsites = dim(yms)[1], nsurveys = nsurveys,
     nyears = dim(yms)[3], REGION = REGION, year = year, elev = elev.scaled,
     forest = forest.scaled, date = date.scaled, V = V))
 # List of 10
-# $ y : num [1:274, 1:20, 1:10] NA NA 1 NA NA NA NA 2 2 2 ...
-# $ nsites : int 274
+# $ y       : num [1:274, 1:20, 1:10] NA NA 1 NA NA NA NA 2 2 2 ...
+# $ nsites  : int 274
 # $ nsurveys: num [1:274, 1:10] 1 1 3 1 1 1 1 20 12 20 ...
-# $ nyears : int 10
-# $ REGION : num [1:274] 2 1 1 2 2 2 2 1 2 2 ...
-# $ year : num [1:10] -4.5 -3.5 -2.5 -1.5 -0.5 0.5 1.5 2.5 3.5 4.5
-# $ elev : num [1:274] -0.84 0.115 -0.554 -0.267 1.07 ...
-# $ forest : num [1:274] -0.647 0.862 -0.459 -0.459 -1.213 ...
-# $ date : num [1:274, 1:20, 1:10] 0 0 -1.9 0 0 ...
-# $ V : num [1:274, 1:20, 1:10] 0 0 1 0 0 0 0 1 1 1 ...
+# $ nyears  : int 10
+# $ REGION  : num [1:274] 2 1 1 2 2 2 2 1 2 2 ...
+# $ year    : num [1:10] -4.5 -3.5 -2.5 -1.5 -0.5 0.5 1.5 2.5 3.5 4.5
+# $ elev    : num [1:274] -0.84 0.115 -0.554 -0.267 1.07 ...
+# $ forest  : num [1:274] -0.647 0.862 -0.459 -0.459 -1.213 ...
+# $ date    : num [1:274, 1:20, 1:10] 0 0 -1.9 0 0 ...
+# $ V       : num [1:274, 1:20, 1:10] 0 0 1 0 0 0 0 1 1 1 ...
 
 # Specify model in BUGS language
 # ~~~ missing code inserted from MS dated 2019-03-26 ~~~~~~~~~~~~~~~
@@ -424,21 +425,30 @@ summary(out5)  ;   jags.View(out5)
 # '''''''''''
 # Compare population size estimates with and without PS
 year <- 2007:2016
-par(mfrow = c(1, 2), mar = c(5,5,3,3), cex.lab = 1.5, cex.axis = 1.5)
-plot(year, out4$mean$n.occ[,2], xlab = 'Year', ylab = 'Number of sites', type = "b", lwd = 3, frame = FALSE, pch = 's', col = 'black', cex = 1.5, lty = 1, ylim = c(0, 274), main = 'No correction for PS (staticMS1)')
+op <- par(mfrow = c(1, 2), mar = c(5,5,3,3), cex.lab = 1.5, cex.axis = 1.5)
+plot(year, out4$mean$n.occ[,2], xlab = 'Year', ylab = 'Number of sites',
+    type = "b", lwd = 3, frame = FALSE, pch = 's', col = 'black', cex = 1.5,
+    lty = 1, ylim = c(0, 274), main = 'No correction for PS (staticMS1)')
 segments(year, out4$q2.5$n.occ[,2], year, out4$q97.5$n.occ[,2])
-points(year, out4$mean$n.occ[,3], type = "b", lwd = 3, pch = 'p', col = 'black', cex = 1.5, lty = 1)
+points(year, out4$mean$n.occ[,3], type = "b", lwd = 3, pch = 'p',
+    col = 'black', cex = 1.5, lty = 1)
 segments(year, out4$q2.5$n.occ[,3], year, out4$q97.5$n.occ[,3])
-points(year, out4$mean$n.occ.total, type = "b", lwd = 3, pch = 't', col = 'black', cex = 1.5, lty = 1)
+points(year, out4$mean$n.occ.total, type = "b", lwd = 3, pch = 't',
+    col = 'black', cex = 1.5, lty = 1)
 segments(year, out4$q2.5$n.occ.total, year, out4$q97.5$n.occ.total)
 
-plot(year, out5$mean$n.occ[,2], xlab = 'Year', ylab = 'Number of sites', type = "b", lwd = 3, frame = FALSE, pch = 's', col = 'black', cex = 1.5, lty = 1, ylim = c(0, 274), main = 'With correction for PS (staticMS2)')
+plot(year, out5$mean$n.occ[,2], xlab = 'Year', ylab = 'Number of sites',
+    type = "b", lwd = 3, frame = FALSE, pch = 's', col = 'black', cex = 1.5,
+    lty = 1, ylim = c(0, 274), main = 'With correction for PS (staticMS2)')
 segments(year, out5$q2.5$n.occ[,2], year, out5$q97.5$n.occ[,2])
-points(year, out5$mean$n.occ[,3], type = "b", lwd = 3, pch = 'p', col = 'black', cex = 1.5, lty = 1)
+points(year, out5$mean$n.occ[,3], type = "b", lwd = 3, pch = 'p',
+    col = 'black', cex = 1.5, lty = 1)
 segments(year, out5$q2.5$n.occ[,3], year, out5$q97.5$n.occ[,3])
-points(year, out5$mean$n.occ.total, type = "b", lwd = 3, pch = 't', col = 'black', cex = 1.5, lty = 1)
+points(year, out5$mean$n.occ.total, type = "b", lwd = 3, pch = 't',
+    col = 'black', cex = 1.5, lty = 1)
 segments(year, out5$q2.5$n.occ.total, year, out5$q97.5$n.occ.total)
 points(year, obsnocc, type = "b", lwd = 3, pch = 'o', col = 'black', cex = 1.5, lty = 1)
+par(op)
 
 # Figure 6.11
 # '''''''''''
@@ -459,23 +469,34 @@ for(r in 1:2){
   pred.rPS[,r] <- plogis(tmpPS$alpha.lr[r] + tmpPS$trend.lr[r] * year)
 }
 
-par(mfrow = c(2, 2), mar = c(5,5,5,4), cex.lab = 1.5, cex.axis = 1.5)
-matplot(seq(2007, 2016,,npred), pred.psi, type = 'l', lty = c(2,1), lwd = 3, ylim = c(0, 1), xlab = "Year", ylab = "psi", main = "Trend in psi (without PS)", frame = FALSE)
-legend('bottomleft', c("Inside of the Alps", "Outside of the Alps"), lty = c(1,2), lwd = 3, col = c('red', 'black'), bty = 'n', cex = 1.2)
-matplot(seq(2007, 2016,,npred), pred.r, type = 'l', lty = c(2,1), lwd = 3, ylim = c(0, 1), xlab = "Year", ylab = "r", main = "Trend in r (without PS)", frame = FALSE)
-matplot(seq(2007, 2016,,npred), pred.psiPS, type = 'l', lty = c(2,1), lwd = 3, ylim = c(0, 1), xlab = "Year", ylab = "psi", main = "Trend in psi (with PS)", frame = FALSE)
-matplot(seq(2007, 2016,,npred), pred.rPS, type = 'l', lty = c(2,1), lwd = 3, ylim = c(0, 1), xlab = "Year", ylab = "r", main = "Trend in r (with PS)", frame = FALSE)
+op <- par(mfrow = c(2, 2), mar = c(5,5,5,4), cex.lab = 1.5, cex.axis = 1.5)
+matplot(seq(2007, 2016,,npred), pred.psi, type = 'l', lty = c(2,1),
+    lwd = 3, ylim = c(0, 1), xlab = "Year", ylab = "psi",
+    main = "Trend in psi (without PS)", frame = FALSE)
+legend('bottomleft', c("Inside of the Alps", "Outside of the Alps"),
+    lty = c(1,2), lwd = 3, col = c('red', 'black'), bty = 'n', cex = 1.2)
+matplot(seq(2007, 2016,,npred), pred.r, type = 'l', lty = c(2,1), lwd = 3,
+    ylim = c(0, 1), xlab = "Year", ylab = "r",
+    main = "Trend in r (without PS)", frame = FALSE)
+matplot(seq(2007, 2016,,npred), pred.psiPS, type = 'l', lty = c(2,1),
+    lwd = 3, ylim = c(0, 1), xlab = "Year", ylab = "psi",
+    main = "Trend in psi (with PS)", frame = FALSE)
+matplot(seq(2007, 2016,,npred), pred.rPS, type = 'l', lty = c(2,1),
+    lwd = 3, ylim = c(0, 1), xlab = "Year", ylab = "r",
+    main = "Trend in r (with PS)", frame = FALSE)
+par(op)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Inference on trends in psi outside/inside of the Alps
 out5$summary[c('trend.lpsi[1]', 'trend.lpsi[2]'), c(1:3,7)]
-# mean sd 2.5% 97.5%
+#                    mean         sd      2.5%     97.5%
 # trend.lpsi[1] 0.3344544 0.03176273 0.2731411 0.3977807 # outside
 # trend.lpsi[2] 0.2809060 0.02378117 0.2359825 0.3283898 # inside
+
 # Inference on trends in r outside/;inside of the Alps
 out5$summary[c('trend.lr[1]', 'trend.lr[2]'), c(1:3,7)]
-# mean sd 2.5% 97.5%
-# trend.lr[1] -0.02274265 0.05743434 -0.1315113 0.09133061
+#                    mean         sd       2.5%       97.5%
+# trend.lr[1] -0.02274265 0.05743434 -0.1315113  0.09133061
 # trend.lr[2] -0.20243689 0.04395900 -0.2921581 -0.11656813
 
 # ~~~~~~~~~~ extra code for figure 6.12 ~~~~~~~~~~~~~~~~
@@ -519,3 +540,4 @@ segments(year, CRI.npairs[4,,1], year, CRI.npairs[4,,2], col = 4)
 segments(year, CRI.npairs[5,,1], year, CRI.npairs[5,,2], col = 5)
 segments(year, CRI.npairs[6,,1], year, CRI.npairs[6,,2], col = 6)
 par(op)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

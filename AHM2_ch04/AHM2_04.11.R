@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 2: Dynamic and Advanced models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 4 : MODELING SPECIES DISTRIBUTION AND RANGE DYNAMICS, AND POPULATION
 #             DYNAMICS USING DYNAMIC OCCUPANCY MODELS
 # ============================================================================
@@ -18,6 +19,7 @@ library(jagsUI)
 # Load the data set from AHMbook
 data(FrenchPeregrines)
 str(dat <- FrenchPeregrines)
+
 # Extract data for modeling
 ain <- which(dat$department == 'Ain') # Sites in Dep. Ain
 jura <- which(dat$department == 'Jura') # Sites in Dep. Jura
@@ -27,6 +29,7 @@ y <- as.matrix(dat[,4:56]) # Detection/Nondetection data
 nsites <- nrow(y)
 nyears <- ncol(y)
 year <- 1964:2016
+
 # Produce some summaries, including ratio estimator
 n.occ.obs <- apply(y, 2, sum, na.rm = TRUE) # Observed N pairs
 n.visited <- apply(y, 2, function(x) sum(!is.na(x))) # Number of visited sites
@@ -34,28 +37,35 @@ n.ratio <- n.occ.obs / (n.visited / 284)
 
 # ~~~~~~~~ code for figure 4.30 ~~~~~~~~~~
 par(mar = c(5,5,4,3), cex.lab = 1.5, cex.axis = 1.5)
-plot(year, n.visited, xlab = 'Year', ylab = 'Number', cex = 1.5, type = 'b', pch = 0, ylim = c(0, 284), frame = FALSE)
+plot(year, n.visited, xlab = 'Year', ylab = 'Number', cex = 1.5, type = 'b',
+    pch = 0, ylim = c(0, 284), frame = FALSE)
 abline(h = nsites, lty = 2)
 points(year, n.occ.obs, cex = 2, pch = 16, type = 'b')
 points(year, n.ratio, cex = 2, pch = 1, type = 'b', col = 'blue')
-legend('bottomright', c('Total number of available sites', 'Number of sites visited', 'Ratio estimator of population size', 'Number of pairs observed'), lty = c(2, 1,1,1), pch = c(NA, 0, 1, 16), col = c('black', 'black', 'blue', 'black'), bty = 'n', cex = 1.5)
+legend('bottomright', c('Total number of available sites', 'Number of sites visited',
+    'Ratio estimator of population size', 'Number of pairs observed'),
+    lty = c(2, 1,1,1), pch = c(NA, 0, 1, 16), col = c('black', 'black', 'blue', 'black'),
+    bty = 'n', cex = 1.5)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Compute visitation data V
 V <- y ; V[V == 0] <- 1 ; V[is.na(V)] <- 0
-y[1:5, 1:5] ; V[1:5, 1:5] # Look at parts of y and V
-# yr1964 yr1965 yr1966 yr1967 yr1968
-# [1,] 1 1 1 1 1
-# [2,] NA NA NA NA NA
-# [3,] NA NA NA NA NA
-# [4,] NA NA 0 0 0
-# [5,] NA NA NA NA NA
-# yr1964 yr1965 yr1966 yr1967 yr1968
-# [1,] 1 1 1 1 1
-# [2,] 0 0 0 0 0
-# [3,] 0 0 0 0 0
-# [4,] 0 0 1 1 1
-# [5,] 0 0 0 0 0
+y[1:5, 1:5] # Look at parts of y and V
+#      yr1964 yr1965 yr1966 yr1967 yr1968
+# [1,]      1      1      1      1      1
+# [2,]     NA     NA     NA     NA     NA
+# [3,]     NA     NA     NA     NA     NA
+# [4,]     NA     NA      0      0      0
+# [5,]     NA     NA     NA     NA     NA
+
+V[1:5, 1:5]
+#      yr1964 yr1965 yr1966 yr1967 yr1968
+# [1,]      1      1      1      1      1
+# [2,]      0      0      0      0      0
+# [3,]      0      0      0      0      0
+# [4,]      0      0      1      1      1
+# [5,]      0      0      0      0      0
+
 # Compute prop. years with pairs (given surveyed) and of years with
 # surveys and plot, both starting from first ever visit of a site
 first.visit <- apply(!is.na(y), 1, function(x) which(x)[1])
@@ -64,24 +74,26 @@ for(i in 1:nsites){
   prop.visit[i] <- mean(V[i, first.visit[i]:nyears],na.rm = TRUE)
   prop.pair[i] <- mean(y[i, first.visit[i]:nyears],na.rm = TRUE)
 }
+
 # Fig. 4.31
-par(mar = c(5,5,4,2), cex.lab = 1.5, cex.axis = 1.5)
+op <- par(mar = c(5,5,4,2), cex.lab = 1.5, cex.axis = 1.5)
 plot(prop.pair, prop.visit, xlab = 'Proportion of years occupied',
     ylab = 'Proportion of years visited', pch = 16, cex = 2, ylim = c(0,1),
     frame = FALSE, col = rgb(0,0,0,0.4))
+par(op)
 
 # Data bundle
 str(bdata <- list(y = y, height = ht, nsites = nsites, nyears = nyears,
     ain = ain, jura = jura, doubs = doubs, year = ((1964:2016)-1990) / 26))
 # List of 8
-# $ y : int [1:284, 1:53] 1 NA NA NA NA NA NA NA 1 1 ...
+# $ y     : int [1:284, 1:53] 1 NA NA NA NA NA NA NA 1 1 ...
 # $ height: num [1:284] 2 2 1 3 1 3 2 3 3 3 ...
 # $ nsites: int 284
 # $ nyears: int 53
-# $ ain : int [1:93] 1 2 3 4 5 6 7 8 9 10 ...
-# $ jura : int [1:89] 94 95 96 97 98 99 100 101 102 103 ...
+# $ ain   : int [1:93] 1 2 3 4 5 6 7 8 9 10 ...
+# $ jura  : int [1:89] 94 95 96 97 98 99 100 101 102 103 ...
 # $ doubs : int [1:102] 183 184 185 186 187 188 189 190 191 192 ...
-# $ year : num [1:53] -1 -0.962 -0.923 -0.885 -0.846 ...
+# $ year  : num [1:53] -1 -0.962 -0.923 -0.885 -0.846 ...
 
 # Model 1: no preferential sampling (PS)
 # Specify model in BUGS language
@@ -154,16 +166,20 @@ model {
   }
 }
 ")
+
 # Initial values
 inits <- function(){ list(psi1 = runif(1))}
+
 # Parameters monitored
 params <- c("psi1", "alpha.lphi", "initial.phi", "alpha.lgamma",
     "initial.gamma", "lphi.year", "lgamma.year", "mean.phi.year",
     "mean.gamma.year", "sd.eps.lphi", "sd.eps.lgamma", "gamma.cliff",
     "phi.cliff", "n.occ", "n.ain", "n.jura", "n.doubs", "y")
+
 # MCMC settings
 # na <- 1000 ; ni <- 20000 ; nt <- 10 ; nb <- 10000 ; nc <- 3  # 35 mins
 na <- 1000 ; ni <- 2000 ; nt <- 1 ; nb <- 1000 ; nc <- 3  # ~~~~~~~ testing, 6 mins
+
 # Call JAGS (ART 43 min), check convergence and summarize posteriors
 out1 <- jags(bdata, inits, params, "dynocc1.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
@@ -284,6 +300,7 @@ tmp <- out1$mean
 inits <- function(){list(psi1 = tmp$psi1, initial.phi = tmp$initial.phi,
     initial.gamma = tmp$initial.gamma, sd.eps.lphi = tmp$sd.eps.lphi,
     sd.eps.lgamma = tmp$sd.eps.lgamma, kappa.lphi = 3, kappa.lgamma = 3)}
+
 # Parameters monitored
 params <- c("psi1", "alpha.lphi", "initial.phi", "sd.lphi.site",
     "alpha.lgamma", "initial.gamma", "sd.lgamma.site", "lphi.year",
@@ -291,9 +308,11 @@ params <- c("psi1", "alpha.lphi", "initial.phi", "sd.lphi.site",
     "sd.eps.lgamma", "gamma.cliff", "phi.cliff", "alpha.visit", "beta.visit",
     "kappa.lphi", "kappa.lgamma", "n.occ", "n.ain", "n.jura", "n.doubs",
     "lphi.site", "lgamma.site", "y")
+
 # MCMC settings
 # na <- 1000 ; ni <- 300000 ; nt <- 150 ; nb <- 150000 ; nc <- 3  # 8.3 hrs
 na <- 1000 ; ni <- 3000 ; nt <- 1 ; nb <- 1500 ; nc <- 3  # ~~~~ for testing, 8 mins
+
 # Call JAGS (ART 18 h), check convergence and summarize posteriors
 out2 <- jags(bdata, inits, params, "dynocc2.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
@@ -308,16 +327,16 @@ startYear <- c(1, rep(1, 10), 2:43)
 endYear <- c(1, 1:52)     # Fill in initial 1, but not used in BUGS code
 lengthPeriod <- endYear-startYear+1
 cbind(1964:2016, startYear, endYear, startYear+1963, endYear+1963, lengthPeriod)     # Look at year range and duration
-           # startYear endYear           lengthPeriod
- # [1,] 1964         1       1 1964 1964            1  # not used in model
- # [2,] 1965         1       1 1964 1964            1
- # [3,] 1966         1       2 1964 1965            2
- # [4,] 1967         1       3 1964 1966            3
- # [5,] 1968         1       4 1964 1967            4
- # [6,] 1969         1       5 1964 1968            5
- # [7,] 1970         1       6 1964 1969            6
- # [8,] 1971         1       7 1964 1970            7
- # [9,] 1972         1       8 1964 1971            8
+#            startYear endYear           lengthPeriod
+#  [1,] 1964         1       1 1964 1964            1  # not used in model
+#  [2,] 1965         1       1 1964 1964            1
+#  [3,] 1966         1       2 1964 1965            2
+#  [4,] 1967         1       3 1964 1966            3
+#  [5,] 1968         1       4 1964 1967            4
+#  [6,] 1969         1       5 1964 1968            5
+#  [7,] 1970         1       6 1964 1969            6
+#  [8,] 1971         1       7 1964 1970            7
+#  [9,] 1972         1       8 1964 1971            8
 # [10,] 1973         1       9 1964 1972            9
 # [11,] 1974         1      10 1964 1973           10
 # [12,] 1975         2      11 1965 1974           10
@@ -475,7 +494,6 @@ points(year, n.ratio, cex = 2, pch = 1, type = 'b', col = 'blue')
 points(year, out1$mean$n.occ, cex = 1.5, pch = '1', type = 'b')
 points(year, out2$mean$n.occ, cex = 1.5, pch = '2', type = 'b')
 points(year, out3$mean$n.occ, cex = 1.5, pch = '3', type = 'b')
-#legend('bottomright', c('Ratio estimator', 'Observed number of pairs', 'Model 1 (no PS)', 'Model 2 (PS variant 1)', 'Model 2 (PS variant 2)'), lty = 1, pch = c(1, 16, '1', '2', '3'), col = c('blue', rep('black', 4)), bty = 'n', cex = 1.5)
 legend('bottomright', c('Ratio estimator', 'Observed number of pairs'), lty = 1,
     pch = c(1, 16), col = c('blue', 'black'), bty = 'n', cex = 1.5)
 par(op)
@@ -520,22 +538,21 @@ print(cbind(n.visited, n.occ.obs, n.ratio, 'model1' = out1$mean$n.occ,
     'model2' = out2$mean$n.occ, 'model3' = out3$mean$n.occ,
     'PS average' = n.occ.ma, 'missed' = n.occ.ma -
     n.occ.obs, 'Prop.detected' = n.occ.obs / n.occ.ma), 2)
-# n.visited n.occ.obs n.ratio model1 model2 model3 model4 PS average missed Prop.detected
-# yr1964 100 34 97 95 98 52 75 67 33.3 0.51
-# yr1965 137 45 93 83 75 49 56 57 12.3 0.79
-# yr1966 149 39 74 68 59 41 44 47 7.7 0.83
-# yr1967 160 36 64 57 50 37 39 41 5.0 0.88
-# yr1968 168 20 34 35 30 22 22 25 4.5 0.82
-# yr1969 172 18 30 28 25 18 18 20 2.3 0.89
-# yr1970 171 21 35 30 28 22 21 24 2.8 0.88
-# .......
-# yr2010 249 186 212 203 202 190 192 194 7.8 0.96
-# yr2011 246 184 212 203 201 190 191 193 9.4 0.95
-# yr2012 248 191 219 211 208 196 199 200 9.4 0.95
-# yr2013 235 173 209 198 196 181 186 186 12.8 0.93
-# yr2014 244 183 213 205 202 186 194 192 8.5 0.96
-# yr2015 245 158 183 179 175 163 171 167 9.0 0.95
-# yr2016 234 169 205 194 191 184 189 186 17.2 0.91
+#        n.visited n.occ.obs n.ratio model1 model2 model3 model4 PS average missed Prop.detected
+# yr1964       100        34      97     95     98     52     75         67   33.3          0.51
+# yr1965       137        45      93     83     75     49     56         57   12.3          0.79
+# yr1966       149        39      74     68     59     41     44         47    7.7          0.83
+# yr1967       160        36      64     57     50     37     39         41    5.0          0.88
+# yr1968       168        20      34     35     30     22     22         25    4.5          0.82
+# yr1969       172        18      30     28     25     18     18         20    2.3          0.89
+# yr1970       171        21      35     30     28     22     21         24    2.8          0.88
+# yr2010       249       186     212    203    202    190    192        194    7.8          0.96
+# yr2011       246       184     212    203    201    190    191        193    9.4          0.95
+# yr2012       248       191     219    211    208    196    199        200    9.4          0.95
+# yr2013       235       173     209    198    196    181    186        186   12.8          0.93
+# yr2014       244       183     213    205    202    186    194        192    8.5          0.96
+# yr2015       245       158     183    179    175    163    171        167    9.0          0.95
+# yr2016       234       169     205    194    191    184    189        186   17.2          0.91
 
 # ~~~~ code for a plot not shown ~~~~~~~~~~~~~~~
 # Population size comparisons in a table (not printed out)
@@ -574,11 +591,10 @@ cliff.tab <- cbind('post.mean phi' = apply(p.cl, 2, mean),
 rownames(cliff.tab) <- c('low', 'medium', 'tall')
 print(cliff.tab, 3)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# post.mean phi 2.5% 97.5% post.mean gamma 2.5% 97.5%
-# low 0.897 0.842 0.937 0.162 0.0878 0.312
-# medium 0.886 0.797 0.938 0.143 0.0597 0.342
-# tall 0.943 0.914 0.966 0.305 0.1788 0.549
+#        post.mean phi  2.5% 97.5% post.mean gamma   2.5% 97.5%
+# low            0.897 0.842 0.937           0.162 0.0878 0.312
+# medium         0.886 0.797 0.938           0.143 0.0597 0.342
+# tall           0.943 0.914 0.966           0.305 0.1788 0.549
 
 # ~~~~~~~~~~ code for figure 4.34 ~~~~~~~~~~~~~~~~
 # PS-model-average y estimates and plot them

@@ -24,8 +24,9 @@ str(data <- simDM0(nsites = 50, nsurveys = 3, nyears = 5, lambda = 4,
 
 # Prepare data
 summary(umf <- unmarkedFramePCO(y = data$yy, numPrimary = data$nyears))
+
 # Fit model, backtransform and compare with truth
-# Dynamics [ constant (as in data simulation)
+# Dynamics = constant (as in data simulation)
 (fm1 <- pcountOpen(~1, ~1, ~1, ~1, umf, K = max(data$yy) + 100,
     dynamics = "constant", control = list(trace=TRUE, REPORT=1)) )
 # Abundance:
@@ -41,6 +42,7 @@ summary(umf <- unmarkedFramePCO(y = data$yy, numPrimary = data$nyears))
 # Estimate SE z P(>|z|)
 # 0.87 0.0825 10.5 5.93e-26
 # AIC: 2466.449
+
 # Back-transformation of parameters (full output not printed)
 (lam <- coef(backTransform(fm1, "lambda"))) # or
 (om <- plogis(coef(fm1, type="omega"))) # Apparent survival !
@@ -73,6 +75,7 @@ summary(umf <- unmarkedFramePCO(y = data$yy, numPrimary = data$nyears))
 # Estimate SE z P(>|z|)
 # 0.844 0.0842 10 1.19e-23
 # AIC: 2490.501
+
 # Backtransformation of parameters (output omitted)
 (lam <- exp(coef(fm2, type = "lambda")))
 (om <- plogis(coef(fm2, type = "omega")))

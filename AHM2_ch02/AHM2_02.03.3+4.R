@@ -22,22 +22,25 @@ source("AHM2_02.02.R")
 # 2.3.3 Fitting the year-stratified model in unmarked (“stacking” the data)
 # -------------------------------------------------------------------------
 # Stack the data
-nyears <- 14 # Number of years
+nyears <- 14               # Number of years
 Cstacked <- NULL
 DATEstacked <- NULL
 INTstacked <- NULL
-for(t in 1:nyears){ # Loop over years
+for(t in 1:nyears){         # Loop over years
   Cstacked <- rbind(Cstacked,C[,,t])
   DATEstacked <- rbind(DATEstacked, DATE[,,t])
   INTstacked <- rbind(INTstacked, INT[,,t])
 }
 fill.in <- is.na(INTstacked) & !is.na(DATEstacked)
 INTstacked[fill.in] <- 0 # almost innocuous mean imputation
+
 # Stretch out, i.e., replicate, the site covariates
-elevstretched <- rep(elev, nyears) # Scaled 'elev’ from before
+elevstretched <- rep(elev, nyears)     # Scaled 'elev’ from before
 foreststretched <- rep(forest, nyears) # ditto
+
 # Create a year and a trend variable
 trend <- rep(1:nyears, each=dim(C)[1]) - 7.5
+
 # Create and summarize an unmarked data frame
 library(unmarked)
 summary(umf <- unmarkedFramePCount(y = Cstacked,
@@ -76,13 +79,13 @@ fl <- fitList(fm0 = fm0, fm1 = fm1, fm2 = fm2, fm3 = fm3, fm4 = fm4, fm5 = fm5, 
     fm7 = fm7, fm8 = fm8, fm9 = fm9, fm5nb = fm5nb, fm6nb = fm6nb, fm7nb = fm7nb,
     fm8nb = fm8nb, fm9nb = fm9nb)
 modSel(fl)
-# nPars AIC delta AICwt cumltvWt
-# fm9nb 10 16006.57 0.00 1.0e+00 1.00
-# fm8nb 9 16041.75 35.18 2.3e-08 1.00
-# fm7nb 8 16042.66 36.08 1.5e-08 1.00
-# fm6nb 7 16118.14 111.56 5.9e-25 1.00
-# fm5nb 6 16155.55 148.97 4.5e-33 1.00
-# fm9 9 17731.46 1724.89 0.0e+00 1.00
+#       nPars      AIC   delta   AICwt cumltvWt
+# fm9nb    10 16006.57    0.00 1.0e+00        1
+# fm8nb     9 16041.75   35.18 2.3e-08        1
+# fm7nb     8 16042.66   36.08 1.5e-08        1
+# fm6nb     7 16118.14  111.56 5.9e-25        1
+# fm5nb     6 16155.55  148.97 4.5e-33        1
+# fm9       9 17731.46 1724.89 0.0e+00        1
 # [... output truncated ...]
 
 # K = 200, ART 250 secs
@@ -96,22 +99,22 @@ fm9nb.K400 <- pcount(~date + I(date^2) + int ~ elev + I(elev^2) + forest +
     REPORT = 1, maxit = 500), se = FALSE)
 
 cbind('K = 100' = coef(fm9nb), 'K = 200' = coef(fm9nb.K200),
-  'K = 400' =coef(fm9nb.K400))
-# K = 100 K = 200 K = 400
-# lam(Int) 1.14020215 1.14967788 1.14967788
-# lam(elev) -0.62345703 -0.62357562 -0.62357562
+    'K = 400' =coef(fm9nb.K400))
+#                    K = 100     K = 200     K = 400
+# lam(Int)        1.14020215  1.14967788  1.14967788
+# lam(elev)      -0.62345703 -0.62357562 -0.62357562
 # lam(I(elev^2)) -0.25303162 -0.25303890 -0.25303890
-# lam(forest) 0.18713541 0.18724224 0.18724224
-# lam(trend) 0.04353930 0.04348226 0.04348226
-# p(Int) -1.83171876 -1.84261596 -1.84261597
-# p(date) -0.16271954 -0.16265435 -0.16265435
-# p(I(date^2)) 0.03958014 0.03936762 0.03936762
-# p(int) 0.25505006 0.25531341 0.25531341
-# alpha(alpha) -0.77469815 -0.77644326 -0.77644326
+# lam(forest)     0.18713541  0.18724224  0.18724224
+# lam(trend)      0.04353930  0.04348226  0.04348226
+# p(Int)         -1.83171876 -1.84261596 -1.84261597
+# p(date)        -0.16271954 -0.16265435 -0.16265435
+# p(I(date^2))    0.03958014  0.03936762  0.03936762
+# p(int)          0.25505006  0.25531341  0.25531341
+# alpha(alpha)   -0.77469815 -0.77644326 -0.77644326
 
 rbind('AIC(K = 118)' = fm9nb@AIC, 'AIC(K = 200)' = fm9nb.K200@AIC,
     'AIC(K = 400)' = fm9nb.K400@AIC) # Compare AICs
-# [,1]
+#                  [,1]
 # AIC(K = 118) 16006.57
 # AIC(K = 200) 16006.49
 # AIC(K = 400) 16006.49
@@ -124,6 +127,7 @@ system.time(fm9nb <- pcount(~date + I(date^2) + int ~ elev + I(elev^2) +
 # ART 2 hours
 # system.time(pb1 <- parboot(fm9nb, fitstats, nsim = 100, report = 1))  # 20 mins
 system.time(pb1 <- parboot(fm9nb, fitstats, nsim = 100, report = 1, ncores = 3))  # 20 mins
+
 # Call: parboot(object = fm9nb, statistic = fitstats, nsim = 100, report = 1)
 # Parametric Bootstrap Statistics:
 # t0 mean(t0 - t_B) StdDev(t0 - t_B) Pr(t_B > t0)
@@ -288,39 +292,43 @@ for(b in 1:simrep){
 se.bs <- apply(npbs.esti, 1, sd)
 ci.bs <- t(apply(npbs.esti, 1, function(x)quantile(x, c(0.025, 0.975))))
 cil.bs <- abs(ci.bs[,2] - ci.bs[,1]) # CI length
+
 # Extract SE and CI and compute CI length
 tmp <- summary(fm9nb)
 se <- c(tmp$state$SE, tmp$det$SE, tmp$alpha$SE)
 ci <- rbind(confint(fm9nb, type = 'state'), confint(fm9nb, type = 'det'),
 confint(fm9nb, type = 'alpha'))
 cil <- abs(ci[,2] - ci[,1])
+
 # Compare nominal and bootstrapped SE/CI/CI length
 print(cbind('Nominal SE' = se, ci), digits = 2)
 print(cbind('Boot SE' = se.bs, ci.bs, 'se/se.bs ratio (%)' =
-round(100*(se/se.bs),0), 'cil/cil.bs ratio (%)' = round(100*(cil/cil.bs),0)),
-digits = 2)
-# Nominal SE 0.025 0.975
-# lam(Int) 0.1363 0.88259 1.417
-# lam(elev) 0.0407 -0.70325 -0.544
-# lam(I(elev^2)) 0.0466 -0.34442 -0.162
-# lam(forest) 0.0378 0.11311 0.261
-# lam(trend) 0.0079 0.02803 0.059
-# p(Int) 0.1478 -2.13224 -1.553
-# p(date) 0.0231 -0.20797 -0.117
-# p(I(date^2)) 0.0200 0.00025 0.078
-# p(int) 0.0444 0.16834 0.342
-# alpha(alpha) 0.0503 -0.87502 -0.678
-# Boot SE 2.5% 97.5% se/se.bs ratio (%) cil/cil.bs ratio (%)
-# lam(Int) 0.2263 0.742 1.589 60 63
-# lam(elev) 0.1037 -0.787 -0.397 39 41
-# lam(I(elev^2)) 0.1297 -0.506 -0.069 36 42
-# lam(forest) 0.0817 0.026 0.326 46 50
-# lam(trend) 0.0087 0.027 0.063 90 87
-# p(Int) 0.1920 -2.243 -1.540 77 82
-# p(date) 0.0362 -0.235 -0.099 64 66
-# p(I(date^2)) 0.0264 -0.011 0.091 76 76
-# p(int) 0.0788 0.101 0.401 56 58
-# alpha(alpha) 0.0845 -0.940 -0.614 60 60
+    round(100*(se/se.bs),0), 'cil/cil.bs ratio (%)' = round(100*(cil/cil.bs),0)),
+    digits = 2)
+#                Nominal SE    0.025  0.975
+# lam(Int)           0.1363  0.88259  1.417
+# lam(elev)          0.0407 -0.70325 -0.544
+# lam(I(elev^2))     0.0466 -0.34442 -0.162
+# lam(forest)        0.0378  0.11311  0.261
+# lam(trend)         0.0079  0.02803  0.059
+# p(Int)             0.1478 -2.13224 -1.553
+# p(date)            0.0231 -0.20797 -0.117
+# p(I(date^2))       0.0200  0.00025  0.078
+# p(int)             0.0444  0.16834  0.342
+# alpha(alpha)       0.0503 -0.87502 -0.678
+
+
+#                Boot SE   2.5%  97.5% se/se.bs ratio (%) cil/cil.bs ratio (%)
+# lam(Int)        0.2263  0.742  1.589                 60                   63
+# lam(elev)       0.1037 -0.787 -0.397                 39                   41
+# lam(I(elev^2))  0.1297 -0.506 -0.069                 36                   42
+# lam(forest)     0.0817  0.026  0.326                 46                   50
+# lam(trend)      0.0087  0.027  0.063                 90                   87
+# p(Int)          0.1920 -2.243 -1.540                 77                   82
+# p(date)         0.0362 -0.235 -0.099                 64                   66
+# p(I(date^2))    0.0264 -0.011  0.091                 76                   76
+# p(int)          0.0788  0.101  0.401                 56                   58
+# alpha(alpha)    0.0845 -0.940 -0.614                 60                   60
 
 # Compute average magnitude of nominal SE/CI length in % of bootstrapped
 mean(100*(se/se.bs))

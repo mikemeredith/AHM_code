@@ -75,10 +75,10 @@ m1@AIC ; m2@AIC
 # [1] 1550.633
 # [1] 1550.633
 cbind("m1" = plogis( coef(m1) ), "m2" = plogis( coef(m2)))
-# m1 m2
+#                  m1         m2
 # psi(Int) 0.57997672 0.42001094
-# p(Int) 0.68185780 0.06352388
-# fp(Int) 0.06352318 0.68186426
+# p(Int)   0.68185780 0.06352388
+# fp(Int)  0.06352318 0.68186426
 
 
 # 7.2.2  Case study: transience induced false positives in water voles
@@ -88,10 +88,10 @@ cbind("m1" = plogis( coef(m1) ), "m2" = plogis( coef(m2)))
 data(waterVoles)
 wv <- waterVoles
 head(wv, 3)
-# Patch y1 y2 y3 Year
-# 1 cla01 1 1 0 2009
-# 2 cla02 1 1 0 2009
-# 3 cla03 1 1 0 2009
+#   Patch y1 y2 y3 Year
+# 1 cla01  1  1  0 2009
+# 2 cla02  1  1  0 2009
+# 3 cla03  1  1  0 2009
 
 # Make the false-positive umf (note not all sites surveyed in each year)
 summary(wv.umf <- unmarkedFrameOccuFP(y = wv[,c("y1","y2","y3")],
@@ -113,19 +113,19 @@ cand.mods <- list(
         stateformula = ~Year-1, data = wv.umf, starts = stvals$both.t))
 
 (modTab <- modSelFP(cand.mods))
-# nPars AIC dAIC AICwt cuWt
-# both.t 9 1054.35 0.00 0.99 0.99
-# p10.t 7 1063.29 8.94 0.01 1.00
-# p11.t 7 1073.17 18.82 0.00 1.00
-# null 5 1073.30 18.95 0.00 1.00
+#        nPars     AIC  dAIC AICwt cuWt
+# both.t     9 1054.35  0.00  0.99 0.99
+# p10.t      7 1063.29  8.94  0.01 1.00
+# p11.t      7 1073.17 18.82  0.00 1.00
+# null       5 1073.30 18.95  0.00 1.00
 
 library(AICcmodavg)
 aictab(cand.mods)
-# K AICc Delta_AICc AICcWt Cum.Wt LL
-# both.t 9 1054.93 0.00 0.99 0.99 -518.18
-# p10.t 7 1063.65 8.72 0.01 1.00 -524.65
-# null 5 1073.49 18.56 0.00 1.00 -531.65
-# p11.t 7 1073.53 18.60 0.00 1.00 -529.58
+#        K    AICc Delta_AICc AICcWt Cum.Wt      LL
+# both.t 9 1054.93       0.00   0.99   0.99 -518.18
+# p10.t  7 1063.65       8.72   0.01   1.00 -524.65
+# null   5 1073.49      18.56   0.00   1.00 -531.65
+# p11.t  7 1073.53      18.60   0.00   1.00 -529.58
 
 # Select the AIC-top model
 topmod <- cand.mods$both.t

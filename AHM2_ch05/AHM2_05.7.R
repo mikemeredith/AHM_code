@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 2: Dynamic and Advanced models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 5 : MODELING METACOMMUNITY DYNAMICS USING DYNAMIC COMMUNITY MODELS
 # ==========================================================================
 # Code from proofs dated 2020-06-23
@@ -22,9 +23,9 @@ str(dat <- Finnmark) # Be sure to inspect these data
 # List of 4
 # $ counts : int [1:37, 1:5, 1:4, 1:17] 1 0 4 3 3 0 2 1 1 0 ...
 # ..- attr(*, "dimnames")=List of 4
-# .. ..$ sites : chr [1:37] "AE1K" "AE2K" "AE3K" "AE4K" ...
+# .. ..$ sites  : chr [1:37] "AE1K" "AE2K" "AE3K" "AE4K" ...
 # .. ..$ visits : chr [1:5] "1" "2" "3" "4" ...
-# .. ..$ years : chr [1:4] "2005" "2006" "2007" "2008"
+# .. ..$ years  : chr [1:4] "2005" "2006" "2007" "2008"
 # .. ..$ species: chr [1:17] "Common Redpoll" "Bluethroat" "Long-tailed Skua"...
 # $ timeOfDay: int [1:37, 1:5, 1:4] 1280 1340 1265 1245 1220 165 1230 1260 1280 1305 ...
 # ..- attr(*, "dimnames")=List of 3
@@ -32,17 +33,17 @@ str(dat <- Finnmark) # Be sure to inspect these data
 # .. ..$ rep : chr [1:5] "1" "2" "3" "4" ...
 # .. ..$ year: chr [1:4] "2005" "2006" "2007" "2008"
 # $ sites :'data.frame': 37 obs. of 8 variables:
-# ..$ region : Factor w/ 3 levels "Ifjord","Komag",..: 1 1 1 1 1 1 2 2 2 2 ...
+# ..$ region   : Factor w/ 3 levels "Ifjord","Komag",..: 1 1 1 1 1 1 2 2 2 2 ...
 # ..$ catchment: Factor w/ 11 levels "IF1","IF2","IF3",..: 1 2 3 4 5 4 6 6 6 6 ...
-# ..$ plot : Factor w/ 37 levels "AE1K","AE2K",..: 1 2 3 4 5 6 7 8 9 10 ...
-# ..$ plotnr : int [1:37] 1 2 3 4 5 6 7 8 9 10 ...
-# ..$ area : num [1:37] 17.9 52.2 27.4 58.9 52.5 ...
-# ..$ edge : num [1:37] 1090 498 571 402 809 ...
-# ..$ height : num [1:37] 77.5 162.5 142.5 220 160 ...
-# ..$ density : num [1:37] 2.5 3.25 3 3 3.25 2.75 5.5 5.5 2.5 0.75 ...
+# ..$ plot     : Factor w/ 37 levels "AE1K","AE2K",..: 1 2 3 4 5 6 7 8 9 10 ...
+# ..$ plotnr   : int [1:37] 1 2 3 4 5 6 7 8 9 10 ...
+# ..$ area     : num [1:37] 17.9 52.2 27.4 58.9 52.5 ...
+# ..$ edge     : num [1:37] 1090 498 571 402 809 ...
+# ..$ height   : num [1:37] 77.5 162.5 142.5 220 160 ...
+# ..$ density  : num [1:37] 2.5 3.25 3 3 3.25 2.75 5.5 5.5 2.5 0.75 ...
 # $ species :'data.frame': 17 obs. of 3 variables:
-# ..$ species : Factor w/ 17 levels "Bluethroat","Brambling",..: 3 1 7 13 5 4 8 ...
-# ..$ latin : Factor w/ 17 levels "Anthus cervinus",..: 6 10 15 3 17 14 2 4 11 9 ...
+# ..$ species   : Factor w/ 17 levels "Bluethroat","Brambling",..: 3 1 7 13 5 4 8 ...
+# ..$ latin     : Factor w/ 17 levels "Anthus cervinus",..: 6 10 15 3 17 14 2 4 11 9 ...
 # ..$ assemblage: Factor w/ 3 levels "OT","WCB","WGB": 2 3 1 1 2 1 1 1 1 3 ...
 
 # Turn counts into detection/nondetection data
@@ -53,25 +54,25 @@ y[y > 1] <- 1 # Quantize
 tmp <- apply(y, c(1,3,4), max, na.rm = TRUE)
 tmp[tmp == '-Inf'] <- NA
 t(apply(tmp, c(2,3), sum, na.rm = TRUE))
-# years
-# species 2005 2006 2007 2008
-# Common Redpoll 34 36 34 28
-# Bluethroat 11 15 16 21
-# Long-tailed Skua 2 4 9 1
-# Rough-legged Buzzard 1 2 2 1
-# Fieldfare 13 12 18 15
-# Eurasian Golden Plover 7 6 11 10
-# Meadow Pipit 34 35 34 33
-# Lapland Bunting 22 11 18 14
-# White Wagtail 7 13 13 11
-# Willow Ptarmigan 5 2 7 4
-# Willow Warbler 18 21 24 26
-# Redwing 26 23 24 28
-# Reed Bunting 3 3 2 2
-# Northern Wheatear 7 5 3 5
-# Temminck's Stint 4 4 5 6
-# Brambling 1 2 6 1
-# Red-throated Pipit 3 3 0 5
+#                         years
+#                 species 2005 2006 2007 2008
+#          Common Redpoll   34   36   34   28
+#              Bluethroat   11   15   16   21
+#        Long-tailed Skua    2    4    9    1
+#    Rough-legged Buzzard    1    2    2    1
+#               Fieldfare   13   12   18   15
+#  Eurasian Golden Plover    7    6   11   10
+#            Meadow Pipit   34   35   34   33
+#          Lapland Buntin   22   11   18   14
+#           White Wagtail    7   13   13   11
+#        Willow Ptarmigan    5    2    7    4
+#          Willow Warbler   18   21   24   26
+#                 Redwing   26   23   24   28
+#            Reed Bunting    3    3    2    2
+#       Northern Wheatear    7    5    3    5
+#        Temminck's Stint    4    4    5    6
+#               Brambling    1    2    6    1
+#      Red-throated Pipit    3    3    0    5
 
 # Get sample sizes
 nsites <- dim(y)[1]
@@ -113,18 +114,18 @@ head(covs <- cbind(area = area, area2 = area^2, ragged = ragged,
 str(bdata <- list(yaug = yaug, nsites = nsites, nsurveys = nsurveys,
     nyears = nyears, M = M, covs = covs, tod = tod, pi = pi, Tday = 1440) )
 # List of 9
-# $ yaug : num [1:37, 1:5, 1:4, 1:22] 1 0 1 1 1 0 1 1 1 0 ...
-# $ nsites : int 37
+# $ yaug    : num [1:37, 1:5, 1:4, 1:22] 1 0 1 1 1 0 1 1 1 0 ...
+# $ nsites  : int 37
 # $ nsurveys: int 5
-# $ nyears : int 4
-# $ M : num 22
-# $ covs : num [1:37, 1:4] -0.5912 1.6329 0.0228 2.0663 1.6547 ...
+# $ nyears  : int 4
+# $ M       : num 22
+# $ covs    : num [1:37, 1:4] -0.5912 1.6329 0.0228 2.0663 1.6547 ...
 # ..- attr(*, "dimnames")=List of 2
 # .. ..$ : NULL
 # .. ..$ : chr [1:4] "area" "area2" "ragged" "ragged2"
-# $ tod : num [1:37, 1:5, 1:4] 1280 1340 1265 1245 1220 ...
-# $ pi : num 3.14
-# $ Tday : num 1440
+# $ tod     : num [1:37, 1:5, 1:4] 1280 1340 1265 1245 1220 ...
+# $ pi      : num 3.14
+# $ Tday    : num 1440
 
 # Specify model in BUGS language
 cat(file = "DCM6.txt", "
@@ -363,5 +364,3 @@ matplot(ragged.predo, spec.pred[,2,], xlab = ' Willow thicket raggedness',
     lwd = 3, col = rgb(0,0,0,0.4))
 lines(ragged.predo, comm.pred[,2], lwd = 5)
 par(op)
-
-

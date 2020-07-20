@@ -12,7 +12,7 @@
 
 library(AHMbook)
 library(R2WinBUGS)
-bugs.dir <- "C:/WinBUGS14"
+bugs.dir <- "C:/WinBUGS14" # the location of the WinBUGS14.exe file on your machine
 library(fields)
 library(raster)
 
@@ -38,9 +38,9 @@ neigh <- dnearneigh(coordgrid, d1 = 0, d2 = sqrt(2) * 1000 + 1)
 winnb <- nb2WB(neigh) # Function to get CAR ingredients for BUGS
 str(winnb)
 # List of 3
-# $ adj : int [1:19404] 2 51 52 1 3 51 ... # Index of neighbours
+# $ adj    : int [1:19404] 2 51 52 1 3 51 ... # Index of neighbours
 # $ weights: num [1:19404] 1 1 1 1 1 1 1 11 ... # Weights
-# $ num : int [1:2500] 3 5 5 5 5 5 5 5 ... # Size of neighbourhood
+# $ num    : int [1:2500] 3 5 5 5 5 5 5 5 ... # Size of neighbourhood
 
 # Bundle data
 # str(bdata <- list(y = yobs, nsites = dim(y)[1], nrep = dim(y)[2],
@@ -50,15 +50,15 @@ str(bdata <- with(dat, list(y = yobs, nsites = dim(y)[1], nrep = dim(y)[2],
     adj = winnb$adj, weights = winnb$weights, num = winnb$num,
     elev = elevationS, forest = forestS, wind = wind)))
 # List of 9
-# $ y : int [1:2500, 1:3] NA NA 0 NA NA NA NA 3 NA NA ...
+# $ y      : int [1:2500, 1:3] NA NA 0 NA NA NA NA 3 NA NA ...
 # $ nsites : int 2500
-# $ nrep : int 3
-# $ adj : int [1:19404] 2 51 52 1 3 51 52 53 2 4 ...
+# $ nrep   : int 3
+# $ adj    : int [1:19404] 2 51 52 1 3 51 52 53 2 4 ...
 # $ weights: num [1:19404] 1 1 1 1 1 1 1 1 1 1 ...
-# $ num : int [1:2500] 3 5 5 5 5 5 5 5 5 5 ...
-# $ elev : num [1:2500] 1.06 1.836 1.763 1.305 0.268 ...
+# $ num    : int [1:2500] 3 5 5 5 5 5 5 5 5 5 ...
+# $ elev   : num [1:2500] 1.06 1.836 1.763 1.305 0.268 ...
 # $ forest : num [1:2500] 1.146 -0.363 -0.363 0.208 0.493 ...
-# $ wind : num [1:2500, 1:3] 0.534 1.369 -0.426 0.747 -0.414 ...
+# $ wind   : num [1:2500, 1:3] 0.534 1.369 -0.426 0.747 -0.414 ...
 
 # Specify model in BUGS language
 cat(file = "CAR.Nmix.txt", "
@@ -121,25 +121,26 @@ library(R2WinBUGS)
 out2 <- bugs(bdata, inits, params, "CAR.Nmix.txt", n.chains = nc, n.thin = nt,
     n.iter = ni, n.burnin = nb, bugs.directory = bugs.dir)  # ~~~~ for testing
 print(out2$summary[1:10,], 2)
-# mean sd 2.5% 25% 50% 75% 97.5% Rhat n.eff
-# mean.lam 3.5569 0.386 2.86 3.289 3.5310 3.799 4.34 1 3000
-# beta0 1.2630 0.109 1.05 1.191 1.2620 1.335 1.47 1 3000
-# beta[1] 1.9796 0.164 1.67 1.865 1.9770 2.091 2.31 1 2100
-# beta[2] -1.9704 0.136 -2.24 -2.061 -1.9690 -1.878 -1.71 1 2100
-# mean.p 0.5010 0.026 0.45 0.484 0.5013 0.518 0.55 1 2300
-# alpha0 0.0041 0.102 -0.20 -0.065 0.0051 0.071 0.20 1 2300
-# alpha[1] -0.9065 0.088 -1.08 -0.965 -0.9063 -0.848 -0.73 1 2300
-# alpha[2] -0.9531 0.066 -1.08 -0.996 -0.9522 -0.909 -0.82 1 3000
-# v.eta 2.3962 0.404 1.69 2.119 2.3670 2.652 3.26 1 2000
-# Ntotal 7235.9227 649.527 6113.90 6771.000 7187.5000 7650.250 8659.17 1 3000
+#               mean      sd    2.5%      25%       50%      75%   97.5% Rhat n.eff
+# mean.lam    3.5569   0.386    2.86    3.289    3.5310    3.799    4.34    1  3000
+# beta0       1.2630   0.109    1.05    1.191    1.2620    1.335    1.47    1  3000
+# beta[1]     1.9796   0.164    1.67    1.865    1.9770    2.091    2.31    1  2100
+# beta[2]    -1.9704   0.136   -2.24   -2.061   -1.9690   -1.878   -1.71    1  2100
+# mean.p      0.5010   0.026    0.45    0.484    0.5013    0.518    0.55    1  2300
+# alpha0      0.0041   0.102   -0.20   -0.065    0.0051    0.071    0.20    1  2300
+# alpha[1]   -0.9065   0.088   -1.08   -0.965   -0.9063   -0.848   -0.73    1  2300
+# alpha[2]   -0.9531   0.066   -1.08   -0.996   -0.9522   -0.909   -0.82    1  3000
+# v.eta       2.3962   0.404    1.69    2.119    2.3670    2.652    3.26    1  2000
+# Ntotal   7235.9227 649.527 6113.90 6771.000 7187.5000 7650.250 8659.17    1  3000
 
 # ~~~~ save for comparison with other models ~~~~~~~
 save(out2, file="AHM2_09.4.1_out2.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 with(dat, cbind(beta0, beta[1], beta[2], alpha0, alpha[1], alpha[2], Ntotal = sum(N),
     summaxC = sum(apply(y,1,max))))
-# beta0 beta1 beta2 alpha0 alpha1 alpha2 Ntotal summaxC
-# [1,] 2 2 -2 0 -1 -1 7192 4371
+#      beta0 beta1 beta2 alpha0 alpha1 alpha2 Ntotal summaxC
+# [1,]     2     2    -2      0     -1     -1   7192    4371
 
 # ~~~ extra code for figure 9.6 ~~~~~
 # Compute average detection probability for each cell
@@ -183,12 +184,11 @@ Bayes.est.CAR <- rbind(out2$summary[c('alpha0', 'alpha[1]', 'alpha[2]',
     'beta0', 'beta[1]', 'beta[2]', 'Ntotal'), 1:2])
 print(cbind(truth, Bayes.est.Nmix0, Bayes.est.CAR), 2)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# truth mean sd mean sd
-# alpha0 0 0.31 0.073 0.0041 0.102
-# alpha1 -1 -0.90 0.067 -0.9065 0.088
-# alpha2 -1 -1.14 0.060 -0.9531 0.066
-# beta0 2 1.29 0.052 1.2630 0.109
-# beta1 2 2.45 0.102 1.9796 0.164
-# beta2 -2 -1.80 0.086 -1.9704 0.136
-# Ntotal 7192 5863.50 238.104 7235.9227 649.527
-
+#        truth    mean      sd      mean      sd
+# alpha0     0    0.31   0.073    0.0041   0.102
+# alpha1    -1   -0.90   0.067   -0.9065   0.088
+# alpha2    -1   -1.14   0.060   -0.9531   0.066
+# beta0      2    1.29   0.052    1.2630   0.109
+# beta1      2    2.45   0.102    1.9796   0.164
+# beta2     -2   -1.80   0.086   -1.9704   0.136
+# Ntotal  7192 5863.50 238.104 7235.9227 649.527

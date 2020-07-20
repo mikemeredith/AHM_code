@@ -12,7 +12,7 @@
 
 library(AHMbook)
 library(R2WinBUGS)
-bugs.dir <- "C:/WinBUGS14"
+bugs.dir <- "C:/WinBUGS14" # the location of the WinBUGS14.exe file on your machine
 
 
 # 9.4 Descriptive models of spatial autocorrelation
@@ -41,15 +41,15 @@ str(bdata <- list(y = dat$yobs, nsites = dim(dat$y)[1], nrep = dim(dat$y)[2],
     adj = winnb$adj, weights = winnb$weights, num = winnb$num, elev = dat$elevationS,
     forest = dat$forestS, wind = dat$wind))
 # List of 9
-# $ y : int [1:2500, 1:3] NA NA 0 NA NA NA NA 0 NA NA ...
+# $ y      : int [1:2500, 1:3] NA NA 0 NA NA NA NA 0 NA NA ...
 # $ nsites : int 2500
-# $ nrep : int 3
-# $ adj : int [1:19404] 2 51 52 1 3 51 52 53 2 4 ...
+# $ nrep   : int 3
+# $ adj    : int [1:19404] 2 51 52 1 3 51 52 53 2 4 ...
 # $ weights: num [1:19404] 1 1 1 1 1 1 1 1 1 1 ...
-# $ num : int [1:2500] 3 5 5 5 5 5 5 5 5 5 ...
-# $ elev : num [1:2500] 1.06 1.836 1.763 1.305 0.268 ...
+# $ num    : int [1:2500] 3 5 5 5 5 5 5 5 5 5 ...
+# $ elev   : num [1:2500] 1.06 1.836 1.763 1.305 0.268 ...
 # $ forest : num [1:2500] 1.146 -0.363 -0.363 0.208 0.493 ...
-# $ wind : num [1:2500, 1:3] 1.2703 -0.8881 -0.0708 -0.5315 -1.4702 ...
+# $ wind   : num [1:2500, 1:3] 1.2703 -0.8881 -0.0708 -0.5315 -1.4702 ...
 
 
 # Specify model in BUGS language
@@ -137,13 +137,13 @@ estimates <- rbind(out4$summary[c('mean.psi', 'beta0', 'beta[1]', 'beta[2]',
     'mean.p', 'alpha0', 'alpha[1]', 'alpha[2]', 'nocc'), c(1:3,7)])
 print(cbind(truth, estimates), 3)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# truth mean sd 2.5% 97.5%
-# mean.psi 0.900 0.790 0.0753 0.646 0.941
-# beta0 2.197 1.405 0.5581 0.601 2.768
-# beta1 2.000 1.931 0.5753 1.191 3.364
-# beta2 -2.000 -2.011 0.6301 -3.731 -1.217
-# mean.p 0.400 0.399 0.0287 0.346 0.455
-# alpha0 -0.405 -0.413 0.1199 -0.635 -0.180
-# alpha1 -1.000 -0.894 0.1241 -1.142 -0.654
-# alpha2 -1.000 -1.063 0.1214 -1.303 -0.832
-# Nocc 1166.000 1107.278 66.2683 983.000 1235.025
+#             truth     mean      sd    2.5%    97.5%
+# mean.psi    0.900    0.790  0.0753   0.646    0.941
+# beta0       2.197    1.405  0.5581   0.601    2.768
+# beta1       2.000    1.931  0.5753   1.191    3.364
+# beta2      -2.000   -2.011  0.6301  -3.731   -1.217
+# mean.p      0.400    0.399  0.0287   0.346    0.455
+# alpha0     -0.405   -0.413  0.1199  -0.635   -0.180
+# alpha1     -1.000   -0.894  0.1241  -1.142   -0.654
+# alpha2     -1.000   -1.063  0.1214  -1.303   -0.832
+# Nocc     1166.000 1107.278 66.2683 983.000 1235.025

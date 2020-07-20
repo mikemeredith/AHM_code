@@ -11,9 +11,8 @@
 # Run time with the full number of iterations: 1.5 hrs
 
 library(AHMbook)
-# library(unmarked)
 library(R2WinBUGS)
-bugs.dir <- "C:/WinBUGS14"
+bugs.dir <- "C:/WinBUGS14" # the location of the WinBUGS14.exe file on your machine
 
 
 # 9.5 Fitting a simple SVC model: spatial modeling of population trend
@@ -110,7 +109,7 @@ str(winnb)
 # List of 3
  # $ adj    : int [1:13930] 2 4 5 1 3 4 5 6 2 5 ...
  # $ weights: num [1:13930] 1 1 1 1 1 1 1 1 1 1 ...
-# $ num    : int [1:1842] 3 5 3 5 8 5 5 8 6 4 ...
+# $ num     : int [1:1842] 3 5 3 5 8 5 5 8 6 4 ...
 
 # Frequency distribution of the number of neighbours
 table(winnb$num)
@@ -123,8 +122,6 @@ MHBblockID <- ch$blockNr[!is.na(ch$MHBquad)]
 # Quadrats are in the same order in 'ch' and 'wp' data frames.
 sum(duplicated(MHBblockID))  # 1 blockID occurs twice, ie,
 #  one block contains 2 MHB quadrats.
-
-SwissBlockID <- ch$blockNr
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Bundle and summarize data set
@@ -133,19 +130,19 @@ str(bdata <- list(C = C, elev = elev, forest = forest, DATE = DATE, DUR = DUR,
     MHBblockID = MHBblockID, adj = winnb$adj, weights = winnb$weights,
     num = winnb$num))
 # List of 13
-# $ C : int [1:267, 1:3, 1:14] 0 3 0 0 0 0 0 0 0 0 ...
-# $ elev : num [1:267] -1.1539 -1.1539 -0.2175 -0.3735 -0.0614 ...
-# $ forest : num [1:267] -1.1661 -0.4426 -0.1379 -0.9376 -0.0618 ...
-# $ DATE : num [1:267, 1:3, 1:14] -1.09 -1.32 -1.23 -1.27 -1.36 ...
-# $ DUR : num [1:267, 1:3, 1:14] 0.128 -0.978 -0.297 -0.893 ...
-# $ nsite : num 267
-# $ nsurvey : num 3
-# $ nyear : num 14
-# $ n.block : int 1842
+# $ C         : int [1:267, 1:3, 1:14] 0 3 0 0 0 0 0 0 0 0 ...
+# $ elev      : num [1:267] -1.1539 -1.1539 -0.2175 -0.3735 -0.0614 ...
+# $ forest    : num [1:267] -1.1661 -0.4426 -0.1379 -0.9376 -0.0618 ...
+# $ DATE      : num [1:267, 1:3, 1:14] -1.09 -1.32 -1.23 -1.27 -1.36 ...
+# $ DUR       : num [1:267, 1:3, 1:14] 0.128 -0.978 -0.297 -0.893 ...
+# $ nsite     : num 267
+# $ nsurvey   : num 3
+# $ nyear     : num 14
+# $ n.block   : int 1842
 # $ MHBblockID: num [1:267] 15 29 34 43 46 61 64 87 98 101 ...
-# $ adj : int [1:13930] 2 4 5 1 3 4 5 6 2 5 ...
-# $ weights : num [1:13930] 1 1 1 1 1 1 1 1 1 1 ...
-# $ num : int [1:1842] 3 5 3 5 8 5 5 8 6 4 ...
+# $ adj       : int [1:13930] 2 4 5 1 3 4 5 6 2 5 ...
+# $ weights   : num [1:13930] 1 1 1 1 1 1 1 1 1 1 ...
+# $ num       : int [1:1842] 3 5 3 5 8 5 5 8 6 4 ...
 
 # Specify model in BUGS language
 cat(file = "SVC.txt","
@@ -221,7 +218,7 @@ library(R2WinBUGS)
     # DIC = FALSE, working.directory = getwd()) # Must close program by hand
 out <- bugs(bdata, inits, params, "SVC.txt", n.chains = nc, n.thin = nt,
     n.iter = ni, n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir,
-    DIC = FALSE) # Must close program by hand
+    DIC = FALSE)
 print(out$summary[1:20,], 3)
 
 # ~~~~~ extra code for figure 9.13 ~~~~~~~~~~~~~

@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 2: Dynamic and Advanced models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 4 : MODELING SPECIES DISTRIBUTION AND RANGE DYNAMICS, AND POPULATION
 #             DYNAMICS USING DYNAMIC OCCUPANCY MODELS
 # ============================================================================
@@ -29,18 +30,22 @@ ystack <- array(NA, dim = c(data$nsites * data$nyears, data$nsurveys))
 for(t in 1:data$nyears){
   ystack[((t-1)*data$nsites+1):(data$nsites*t),] <- data$y[,,t]
 }
+
 # Create year covariate and factor (both site covariates in unmarked)
 year <- 1:data$nyears
 yr <- rep(1:data$nyears, each = data$nsites) # year as cont. cov.
 yrfac <- as.factor(yr) # year as a factor
+
 # Format and summarize data
 library(unmarked)
 summary(umf <- unmarkedFrameOccu(y = ystack, siteCovs = data.frame(yr = yr,
     yrfac = yrfac)) ) # require(unmarked)
+
 # (1) Analysis of stacked data: treating year as a factor
 summary(fm1 <- occu(~1 ~yrfac-1, data = umf))
 nd <- data.frame(yrfac = as.factor(1:10))
 pred.yrfac <- predict(fm1, type = "state", newdata = nd)
+
 # (2) Analysis of stacked data: fitting a trend of year
 summary(fm2 <- occu(~1 ~yr, data = umf))
 nd <- data.frame(yr = 1:10)
@@ -49,6 +54,7 @@ pred.yr <- predict(fm2, type = "state", newdata = nd)
 # Create array to hold predictions
 simrep <- 1000
 bs.pred <- array(NA, dim = c(nrow(pred.yr), simrep))
+
 # Nonparametric bootstrap for prediction of trend line (ART 2 min)
 for(b in 1:simrep){
   cat(paste("\n** Bootstrap rep", b, "**"))
@@ -66,6 +72,7 @@ for(b in 1:simrep){
   # Save param estimates
   bs.pred[,b] <- tmp[,1]
 }
+
 # Get bootstrap SE and CI for all annual predictions
 se.bs <- apply(bs.pred, 1, sd)
 ci.bs <- t(apply(bs.pred, 1, function(x)quantile(x, c(0.025, 0.975))))
@@ -73,21 +80,22 @@ ci.bs <- t(apply(bs.pred, 1, function(x)quantile(x, c(0.025, 0.975))))
 round(cbind('ASE' = pred.yr[,2], 'Asymp_LCL' = pred.yr[,3],
     'Asymp_UCL' = pred.yr[,4], 'Bootstrapped SE' = se.bs,
     'Bootstrapped CI' = ci.bs), 3)
-# ASE Asymp_LCL Asymp_UCL Bootstrapped SE 2.5% 97.5%
-# [1,] 0.023 0.632 0.722 0.030 0.620 0.735
-# [2,] 0.021 0.591 0.673 0.028 0.579 0.686
-# [3,] 0.019 0.548 0.622 0.026 0.535 0.635
-# [4,] 0.017 0.503 0.568 0.024 0.490 0.583
-# [5,] 0.015 0.456 0.515 0.023 0.443 0.531
-# [6,] 0.014 0.408 0.464 0.022 0.393 0.477
-# [7,] 0.015 0.358 0.417 0.023 0.342 0.432
-# [8,] 0.016 0.310 0.373 0.024 0.292 0.386
-# [9,] 0.017 0.264 0.332 0.025 0.247 0.347
-# [10,] 0.018 0.222 0.295 0.026 0.206 0.308
+#         ASE Asymp_LCL Asymp_UCL Bootstrapped SE  2.5% 97.5%
+# [1,]  0.023     0.632     0.722           0.030 0.620 0.735
+# [2,]  0.021     0.591     0.673           0.028 0.579 0.686
+# [3,]  0.019     0.548     0.622           0.026 0.535 0.635
+# [4,]  0.017     0.503     0.568           0.024 0.490 0.583
+# [5,]  0.015     0.456     0.515           0.023 0.443 0.531
+# [6,]  0.014     0.408     0.464           0.022 0.393 0.477
+# [7,]  0.015     0.358     0.417           0.023 0.342 0.432
+# [8,]  0.016     0.310     0.373           0.024 0.292 0.386
+# [9,]  0.017     0.264     0.332           0.025 0.247 0.347
+# [10,] 0.018     0.222     0.295           0.026 0.206 0.308
 
 # Bundle and summarize data
 str(bdata <- list(y = data$y, nsites = dim(data$y)[1],
     nsurveys = dim(data$y)[2], nyears = dim(data$y)[3]))
+
 # Specify model in BUGS language
 cat(file = "occ.txt","
 model {
@@ -119,17 +127,20 @@ model {
   }
 }
 ")
+
 # Initial values
 inits <- function(){ list(z = apply(data$y, c(1, 3), max))}
+
 # Parameters monitored
 params <- c("psi", "psi.trend", "mean.psi", "alpha", "beta.trend",
     "sd.lpsi", "p", "n.occ")
+
 # MCMC settings
 na <- 1000 ; ni <- 6000 ; nt <- 1 ; nb <- 2000 ; nc <- 3
 
 # Call JAGS (ART 2 min), check convergence and summarize posteriors
 out <- jags(bdata, inits, params, "occ.txt", n.adapt = na, n.chains = nc,
-n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+    n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 op <- par(mfrow = c(3,3)) ; traceplot(out)
 par(op)
 print(out, dig = 2) # not shown

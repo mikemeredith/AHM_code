@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 2: Dynamic and Advanced models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 6 : MULTISTATE OCCUPANCY MODELS
 # =======================================
 # Code from proofs dated 2020-06-24
@@ -31,7 +32,7 @@ year <- 2007:2016
 
 # Look at frequency of four states in original detection data
 table(dat$obs$y)
-# 0 1 2 3
+#    0    1   2   3
 # 2414 1977 635 948
 
 # Convert to three states: yms = 'y multi-state'
@@ -39,7 +40,7 @@ dat$obs$yms <- dat$obs$y # Copy
 dat$obs$yms[dat$obs$yms == 3] <- 2 # Lump pairs: 0,1,2
 dat$obs$yms <- dat$obs$yms + 1 # Renumber observed states: 1,2,3
 table(dat$obs$yms) # Look at new response data
-# 1 2 3
+#    1    2    3
 # 2414 1977 1583
 
 # Put detection data and survey dates into a 3D array
@@ -63,7 +64,7 @@ for(i in 1:nsites){
     }
   }
 }
-sum(yms, na.rm = TRUE) ; sum(dat$obs$yms)# Sum checks ... all OK
+sum(yms, na.rm = TRUE) ; sum(dat$obs$yms) # Sum checks ... all OK
 sum(date, na.rm = TRUE) ; sum(dat$obs$jdate)
 sum(y, na.rm = TRUE) ; sum(dat$obs$dnd)
 
@@ -102,10 +103,10 @@ par(op)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 table(nvisit.site.year <- apply(y, c(1,3), function(x) sum(!is.na(x))))
-# 0 1 2 3 4 5 6 7 8 9 10
+#    0   1   2   3   4  5  6  7  8  9 10
 # 1457 414 189 146 107 82 57 46 41 25 26
 # 11 12 13 14 15 16 17 18 19 20
-# 19 15 13 10 10 10 7 6 6 54
+# 19 15 13 10 10 10  7  6  6 54
 
 tapply(dat$obs$yms, list(dat$obs$site_name, dat$obs$year), max)
 
@@ -134,10 +135,10 @@ for(i in 1:nsites){
   }
 }
 head(nsurveys) # Look at matrix (site x year)
-# [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
-# [1,] 1 5 2 6 3 7 4 10 17 8
-# [2,] 1 1 1 6 1 2 5 3 4 7
-# [3,] 3 3 18 1 4 19 20 15 14 4
-# [4,] 1 1 1 1 1 1 1 5 1 3
-# [5,] 1 1 1 1 1 1 1 1 1 1
-# [6,] 1 10 8 8 6 4 4 1 2 2
+#      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
+# [1,]    1    5    2    6    3    7    4   10   17     8
+# [2,]    1    1    1    6    1    2    5    3    4     7
+# [3,]    3    3   18    1    4   19   20   15   14     4
+# [4,]    1    1    1    1    1    1    1    5    1     3
+# [5,]    1    1    1    1    1    1    1    1    1     1
+# [6,]    1   10    8    8    6    4    4    1    2     2

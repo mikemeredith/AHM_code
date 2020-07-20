@@ -9,9 +9,6 @@
 
 library(unmarked)
 library(jagsUI)
-# library(AHMbook)
-# library(AICcmodavg)
-# library(ggplot2)
 
 # 7.5 Bayesian analysis of models with false positives in JAGS
 # =============================================================
@@ -20,13 +17,13 @@ library(jagsUI)
 set.seed(129, kind = "Mersenne")
 nsites <- 200 # number of sites (i = 1, ..., M)
 nsurveys <- 7 # number of visits (k = 1, ..., J)
-psi <- 0.6 # expected psi
-p <- 0.7 # detection probability (p_11)
-fp <- 0.05 # false positive error probability (p_10)
+psi <- 0.6    # expected psi
+p <- 0.7      # detection probability (p_11)
+fp <- 0.05    # false positive error probability (p_10)
 
 # Simulate the latent states and the data
-z <- matrix(NA, nrow = nsites, ncol = 1) # empty matrix for occ states
-z[1:nsites] <- rbinom(nsites, 1, psi) # occupancy states
+z <- matrix(NA, nrow = nsites, ncol = 1)        # empty matrix for occ states
+z[1:nsites] <- rbinom(nsites, 1, psi)           # occupancy states
 y <- matrix(NA, nrow = nsites, ncol = nsurveys) # empty matrix for det.
 for(i in 1:nsites){
   pr_yequals1 <- p*z[i] + fp*(1-z[i]) # p11 + p10
@@ -66,36 +63,37 @@ na <- 1000 ; ni <- 5000 ; nt <- 1 ; nb <- 1000 ; nc <- 3
 # Call JAGS (ART <1 min), assess convergence and summarize posteriors
 out1 <- jags(bdata, inits, params, "occufp.txt", n.adapt = na,
     n.chains = nc,n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-par(mfrow = c(2, 2)) ; traceplot(out1)
+op <- par(mfrow = c(2, 2)) ; traceplot(out1)
+par(op)
 print(out1, 3)
-# mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
-# psi 0.614 0.036 0.543 0.614 0.684 FALSE 1 1 12000
-# p 0.718 0.017 0.684 0.718 0.750 FALSE 1 1 5606
-# fp 0.057 0.012 0.035 0.057 0.082 FALSE 1 1 9407
+#      mean    sd  2.5%   50% 97.5% overlap0 f Rhat n.eff
+# psi 0.614 0.036 0.543 0.614 0.684    FALSE 1    1 12000
+# p   0.718 0.017 0.684 0.718 0.750    FALSE 1    1  5606
+# fp  0.057 0.012 0.035 0.057 0.082    FALSE 1    1  9407
 
 # With both Type 1 and Type 3 data, i.e., what they call
 #   the "multiple detection states design"
 # ''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 # Random seed and simulation settings
-set.seed(129) # RNG seed
-nsites <- 200 # number of sites
-nsurv1 <- 3 # number of occasions with Type 1 data
-nsurv2 <- 4 # number of occasions with Type 3 data
-psi <- 0.6 # expected proportion of are occupied
+set.seed(129)    # RNG seed
+nsites <- 200    # number of sites
+nsurv1 <- 3      # number of occasions with Type 1 data
+nsurv2 <- 4      # number of occasions with Type 3 data
+psi <- 0.6       # expected proportion of are occupied
 p <- c(0.7, 0.5) # detection prob of method 1 and method 2
-fp <- 0.05 # false-positive error probability (p_10)
-b <- 0.2 # probability y is recorded as certain
+fp <- 0.05       # false-positive error probability (p_10)
+b <- 0.2         # probability y is recorded as certain
 
 # Simulate the latent states and the data
 z <- rbinom(nsites, 1, psi)
 y <- matrix(NA, nrow = nsites, ncol = nsurv1 + nsurv2)
 for(i in 1:nsites){
-  p1 <- p[1]*z[i] # certainly detection (method 1)
-  p2 <- p[2]*z[i] + fp*(1-z[i]) # uncertainly detection (method 2)
+  p1 <- p[1]*z[i]                   # certainly detection (method 1)
+  p2 <- p[2]*z[i] + fp*(1-z[i])     # uncertainly detection (method 2)
   y[i,1:3] <- rbinom(nsurv1, 1, p1) # simulate method 1 data
   y[i,4:7] <- rbinom(nsurv2, 1, p2) # simulate method 2 data
-  #now introduce certain observations:
+  # now introduce certain observations:
   pr.certain <- z[i] * y[i,4:7] * b
   y[i, 4:7] <- y[i, 4:7] + rbinom(4, 1, pr.certain)
 }
@@ -161,11 +159,12 @@ na <- 1000 ; ni <- 5000 ; nt <- 1 ; nb <- 1000 ; nc <- 3
 # Call JAGS (ART 1 min), assess convergence and summarize posteriors
 out2 <- jags(bdata, inits, params, "occufp2.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-par(mfrow = c(2, 3)) ; traceplot(out2)
+op <- par(mfrow = c(2, 3)) ; traceplot(out2)
+par(op)
 print(out2, 3)
-# mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
-# psi 0.633 0.034 0.566 0.634 0.699 FALSE 1 1.000 5589
-# alpha0 1.121 0.125 0.879 1.120 1.371 FALSE 1 1.001 3616
-# alpha1 -1.095 0.154 -1.397 -1.094 -0.794 FALSE 1 1.000 5442
-# fp 0.040 0.012 0.019 0.039 0.065 FALSE 1 1.000 8842
-# b 0.189 0.025 0.143 0.189 0.238 FALSE 1 1.001 4655
+#          mean    sd   2.5%    50%  97.5% overlap0 f  Rhat n.eff
+# psi     0.633 0.034  0.566  0.634  0.699    FALSE 1 1.000  5589
+# alpha0  1.121 0.125  0.879  1.120  1.371    FALSE 1 1.001  3616
+# alpha1 -1.095 0.154 -1.397 -1.094 -0.794    FALSE 1 1.000  5442
+# fp      0.040 0.012  0.019  0.039  0.065    FALSE 1 1.000  8842
+# b       0.189 0.025  0.143  0.189  0.238    FALSE 1 1.001  4655

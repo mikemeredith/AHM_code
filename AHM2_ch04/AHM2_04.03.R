@@ -2,29 +2,29 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 2: Dynamic and Advanced models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 4 : MODELING SPECIES DISTRIBUTION AND RANGE DYNAMICS, AND POPULATION
 #             DYNAMICS USING DYNAMIC OCCUPANCY MODELS
 # ============================================================================
 # Code from proofs dated 2020-06-17
 
-# library(AHMbook)
-# library(jagsUI)
 library(unmarked)
 
 # 4.3 Simulation and analysis of the simplest dynamic occupancy model
 # ===================================================================
 
 # Choose sample sizes and prepare arrays for z and y
-nsites <- 100 # Number of sites
-nyears <- 12 # Number of years
-nsurveys <- 2 # Number of presence/absence measurements
-z <- array(NA, dim = c(nsites, nyears)) # latent presence/absence
+nsites <- 100      # Number of sites
+nyears <- 12       # Number of years
+nsurveys <- 2      # Number of presence/absence measurements
+z <- array(NA, dim = c(nsites, nyears))           # latent presence/absence
 y <- array(NA, dim = c(nsites, nsurveys, nyears)) # observed data
+
 # Set parameter values as per above
-psi1 <- 0.7 # Prob. of initial occupancy or presence
-phi <- 0.9 # Persistence probability
+psi1 <- 0.7   # Prob. of initial occupancy or presence
+phi <- 0.9    # Persistence probability
 gamma <- 0.05 # Colonization probability
-p <- 0.25 # Probability of detection
+p <- 0.25     # Probability of detection
 (psi.eq <- gamma / (gamma+(1-phi))) # Equilibrium occupancy
 
 # Generate initial presence/absence (i.e., the truth in year 1)
@@ -32,6 +32,7 @@ set.seed(1) # So we all get same data set
 z[,1] <- rbinom(n = nsites, size = 1, prob = psi1)
 sum(z[,1]) / nsites # True occupancy proportion in year 1
 # [1] 0.68
+
 # Generate presence/absence (i.e., the truth) in subsequent years
 for(t in 2:nyears){
   exp.z <- z[,t-1] * phi + (1 - z[,t-1]) * gamma
@@ -62,12 +63,14 @@ for(i in 1:nsites){ # Loop over every datum in 3D array
 y2 ; str(y2) # Look at the data now
 
 table(nvisits <- apply(y2, c(1,3), function(x) sum(!is.na(x))))
+
 # Compute true expected and realized occupancy (psi and psi.fs)
 psi <- numeric(nyears) ; psi[1] <- psi1
 for(t in 2:nyears){ # Compute true values of psi
   psi[t] <- psi[t-1] * phi + (1 - psi[t-1]) * gamma
 }
 psi.fs <- colSums(z) / 100 # True realized occupancy
+
 # Compute observed occupancy proportion
 zobs <- apply(y2, c(1,3), function(x) max(x, na.rm = TRUE))
 zobs[zobs == '-Inf'] <- NA # 13 site/years without visits
@@ -108,9 +111,9 @@ summary(umf <- unmarkedMultFrame(y = yy, numPrimary = nyears))
 
 # Fit dynamic occupancy model and look at estimates
 summary(fm <- colext(psiformula = ~1, # First-year occupancy
-    gammaformula = ~ 1, # Colonization
-    epsilonformula = ~ 1, # Extinction
-    pformula = ~ 1, # Detection
+    gammaformula = ~ 1,               # Colonization
+    epsilonformula = ~ 1,             # Extinction
+    pformula = ~ 1,                   # Detection
     data = umf))
 # Call:
 # colext(psiformula = ~1, gammaformula = ~1, epsilonformula = ~1,
@@ -138,14 +141,14 @@ backTransform(fm, type = "psi") # First-year occupancy
 backTransform(fm, type = "col") # Colonization probability
 backTransform(fm, type = "ext") # Extinction probability
 backTransform(fm, type = "det") # Detection probability
-# Estimate SE LinComb (Intercept)
-# 0.745 0.0825 1.07 1
-# Estimate SE LinComb (Intercept)
-# 0.0228 0.0207 -3.76 1
-# Estimate SE LinComb (Intercept)
-# 0.0835 0.0233 -2.4 1
-# Estimate SE LinComb (Intercept)
-# 0.239 0.0231 -1.16 1
+# Estimate     SE LinComb (Intercept)
+#    0.745 0.0825    1.07           1
+# Estimate     SE LinComb (Intercept)
+#   0.0228 0.0207   -3.76           1
+# Estimate     SE LinComb (Intercept)
+#   0.0835 0.0233    -2.4           1
+# Estimate     SE LinComb (Intercept)
+#    0.239 0.0231   -1.16           1
 
 # ~~~~~~~~~~~~~~~~~
 # MLEs <- c(
@@ -157,17 +160,17 @@ backTransform(fm, type = "det") # Detection probability
 
 # For Null model point estimates can simply do this
 (MLEs <- plogis(coef(fm)))
+
 # Get 95% CIs on probability scale and print them along with MLEs
 ( MLEandCI <- cbind(MLEs, rbind(plogis(confint(fm, type = "psi")),
     plogis(confint(fm, type = "col")),
     plogis(confint(fm, type = "ext")),
     plogis(confint(fm, type = "det"))) ))
-# MLEs 0.025 0.975
+#                MLEs       0.025     0.975
 # psi(Int) 0.74517648 0.555131656 0.8726586
 # col(Int) 0.02277496 0.003751754 0.1260508
 # ext(Int) 0.08351979 0.047826505 0.1418819
-# p(Int) 0.23907422 0.196680790 0.2873369
-
+# p(Int)   0.23907422 0.196680790 0.2873369
 
 # fit the same model in BUGS
 # ''''''''''''''''''''''''''
@@ -175,10 +178,11 @@ backTransform(fm, type = "det") # Detection probability
 str(bdata <- list(y = y2, nsites = dim(y2)[1], nsurveys = dim(y2)[2],
     nyears = dim(y2)[3]))
 # List of 4
-# $ y : int [1:100, 1:2, 1:12] 0 NA NA 0 0 NA NA 0 1 0 ...
-# $ nsites : int 100
+# $ y        : int [1:100, 1:2, 1:12] 0 NA NA 0 0 NA NA 0 1 0 ...
+# $ nsites   : int 100
 # $ nsurveys : int 2
-# $ nyears : int 12
+# $ nyears   : int 12
+
 # Specify model in BUGS language
 cat(file = "dynocc.txt","
 model {
@@ -217,8 +221,10 @@ model {
 # Initial values
 zst <- zobs # Take observed presence/absence as inits
 inits <- function(){ list(z = zst)}
+
 # Parameters monitored
 params <- c("psi1", "phi", "eps", "gamma", "p", "psi") # Could add 'z'
+
 # MCMC settings
 na <- 1000 ; ni <- 25000 ; nt <- 10 ; nb <- 5000 ; nc <- 3
 
@@ -235,11 +241,11 @@ truth <- c("psi1" = psi1, "col" = gamma, "ext" = 1-phi, "det" = p) # Note that w
 Bayes <- out1$summary[c(1, 15, 14, 16), c(1,3,7)]
 round(cbind(truth, MLEandCI, Bayes), 3)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# truth MLEs 0.025 0.975 mean 2.5% 97.5%
-# psi1 0.70 0.745 0.555 0.873 0.742 0.581 0.885
-# col 0.05 0.023 0.004 0.126 0.086 0.050 0.139
-# ext 0.10 0.084 0.048 0.142 0.032 0.002 0.079
-# det 0.25 0.239 0.197 0.287 0.234 0.198 0.277
+#      truth  MLEs 0.025 0.975  mean  2.5% 97.5%
+# psi1  0.70 0.745 0.555 0.873 0.742 0.581 0.885
+# col   0.05 0.023 0.004 0.126 0.086 0.050 0.139
+# ext   0.10 0.084 0.048 0.142 0.032 0.002 0.079
+# det   0.25 0.239 0.197 0.287 0.234 0.198 0.277
 
 
 # ~~~~~~ code for figure 4.3 ~~~~~~~~~~~~~~~~~~~

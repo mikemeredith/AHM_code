@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 2: Dynamic and Advanced models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 4 : MODELING SPECIES DISTRIBUTION AND RANGE DYNAMICS, AND POPULATION
 #             DYNAMICS USING DYNAMIC OCCUPANCY MODELS
 # ============================================================================
@@ -16,6 +17,7 @@ library(jagsUI)
 simDemoDynocc(nsites = 100, nyears = 10, nvisit = 5, psi1 = 0.6,
     range.phi = c(0.2, 0.9), range.r = c(0, 0.4), range.p = c(0.1, 0.9),
     show.plot = TRUE)
+
 # Some functionality of function simDemoDynocc
 str(data <- simDemoDynocc(psi1 = 1)) # All sites initially occupied
 str(data <- simDemoDynocc(nsites = 1000)) # Plenty more sites
@@ -31,11 +33,12 @@ str(data <- simDemoDynocc(range.p = c(1,1))) # Perfect detection
 set.seed(24)
 str(data <- simDemoDynocc(psi1 = 0.6, nsites = 100, nyears = 20, nvisit = 5,
     range.phi = c(0.1, 0.9), range.r = c(0, 0.5), range.p = c(0.1, 0.9)))
+
 # Bundle and summarize data
 str(bdata <- list(y = data$y, nsites = data$nsites, nyears = data$nyears,
     nvisit = data$nvisit, first = data$f) )
 # List of 5
-# $ y : int [1:100, 1:5, 1:20] 1 1 1 0 1 1 1 0 1 1 ...
+# $ y     : int [1:100, 1:5, 1:20] 1 1 1 0 1 1 1 0 1 1 ...
 # $ nsites: num 100
 # $ nyears: num 20
 # $ nvisit: num 5
@@ -69,13 +72,17 @@ model {
   }
 }
 ")
+
 # Initial values
 zst <- zinit(apply(bdata$y, c(1,3), max))
 inits <- function() list(z = zst)
+
 # Parameters monitored
 params <- c("phi", "r", "p")
+
 # MCMC settings
 na <- 1000 ; ni <- 6000 ; nt <- 4 ; nb <- 2000 ; nc <- 3
+
 # Call JAGS (ART 2 min), check convergence and summarize posteriors
 out1 <- jags(bdata, inits, params, "DemoDynocc1.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = T)
@@ -88,19 +95,20 @@ print(out1, dig = 2)
 op <- par(mfrow = c(1, 3), mar = c(5, 5, 4, 2), cex.lab = 1.5)
 lim <- c(0,1)
 plot(data$phi, out1$mean$phi, xlab = "True phi", ylab = "Estimated phi",
-    main = "Survival probability", pch = 16, xlim = lim, ylim = lim, frame = F)
+    main = "Survival probability", pch = 16, xlim = lim, ylim = lim, frame = FALSE)
 segments(data$phi, out1$q2.5$phi, data$phi, out1$q97.5$phi, lwd = 2)
 abline(0, 1, col = 'red', lwd = 2)
 abline(lm(out1$mean$phi ~ data$phi), col =  'blue', lwd = 2)
 
 plot(data$r, out1$mean$r, xlab = "True r", ylab = "Estimated r",
-    main = "Recruitment probability", pch = 16, xlim = c(0, 0.5), ylim = c(0, 0.65), frame = F)
+    main = "Recruitment probability", pch = 16, xlim = c(0, 0.5),
+    ylim = c(0, 0.65), frame = FALSE)
 segments(data$r, out1$q2.5$r, data$r, out1$q97.5$r, lwd = 2)
 abline(0, 1, col = 'red', lwd = 2)
 abline(lm(out1$mean$r ~ data$r), col =  'blue', lwd = 2)
 
 plot(data$p[-1], out1$mean$p, xlab = "True p", ylab = "Estimated p",
-    main = "Detection probability", pch = 16, xlim = lim, ylim = lim, frame = F)
+    main = "Detection probability", pch = 16, xlim = lim, ylim = lim, frame = FALSE)
 segments(data$p[-1], out1$q2.5$p, data$p[-1], out1$q97.5$p, lwd = 2)
 abline(0, 1, col = 'red', lwd = 2)
 abline(lm(out1$mean$p ~ data$p[-1]), col = 'blue', lwd = 2)
@@ -113,10 +121,11 @@ fp <- FrenchPeregrines
 y <- as.matrix(fp[,4:56])
 f <- apply(y, 1, function(x) min(which(x!=0)))
 f[f == 'Inf'] <- ncol(y)
+
 # Bundle and summarize data
 str(bdata <- list(y = y, nsites = nrow(y), nyears = ncol(y), first = f) )
 # List of 4
-# $ y : int [1:284, 1:53] 1 NA NA NA NA NA NA NA 1 1 ...
+# $ y     : int [1:284, 1:53] 1 NA NA NA NA NA NA NA 1 1 ...
 # $ nsites: int 284
 # $ nyears: int 53
 # $ first : int [1:284] 1 39 35 12 32 24 22 23 1 1 ...
@@ -153,10 +162,13 @@ model {
   }
 }
 ")
+
 # Initial values
 inits <- function(){ list(sd.lphi = runif(1), sd.lr = runif(1))}
+
 # Parameters monitored
 params <- c("phi", "r", "sd.lphi", "sd.lr")
+
 # MCMC settings
 na <- 1000 ; ni <- 12000 ; nt <- 6 ; nb <- 6000 ; nc <- 3
 

@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 2: Dynamic and Advanced models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 4 : MODELING SPECIES DISTRIBUTION AND RANGE DYNAMICS, AND POPULATION
 #             DYNAMICS USING DYNAMIC OCCUPANCY MODELS
 # ============================================================================
@@ -13,8 +14,8 @@ library(AHMbook)
 library(jagsUI)
 
 # 4.13 Accounting for temporary emigration and modeling
-# phenologies using occupancy: estimation of arrival and
-# departure in insects or migratory animals
+#   phenologies using occupancy: estimation of arrival and
+#   departure in insects or migratory animals
 # ==========================================
 
 # Read in Marbled White data and do some data management (not all shown -- see website)
@@ -41,14 +42,14 @@ str(bdata <- list(y = y, DATE = DATE, year = year-1997, yr = year-2004,
     site = dat$site, nobs = nobs, nsites = nsites, nyears = nyears,
     nsurveys = nsurveys))
 # List of 9
-# $ y : int [1:1337, 1:11] 0 0 0 0 0 0 0 0 0 0 ...
-# $ DATE : num [1:1337, 1:11] 23 23 23 23 23 23 23 23 23 25 ...
-# $ year : num [1:1337] 1 1 1 1 1 1 1 1 1 1 ...
-# $ yr : num [1:1337] -6 -6 -6 -6 -6 -6 -6 -6 -6 -6 ...
-# $ site : int [1:1337] 1 2 3 4 5 6 7 8 9 10 ...
-# $ nobs : int 1337
-# $ nsites : int 519
-# $ nyears : int 13
+# $ y       : int [1:1337, 1:11] 0 0 0 0 0 0 0 0 0 0 ...
+# $ DATE    : num [1:1337, 1:11] 23 23 23 23 23 23 23 23 23 25 ...
+# $ year    : num [1:1337] 1 1 1 1 1 1 1 1 1 1 ...
+# $ yr      : num [1:1337] -6 -6 -6 -6 -6 -6 -6 -6 -6 -6 ...
+# $ site    : int [1:1337] 1 2 3 4 5 6 7 8 9 10 ...
+# $ nobs    : int 1337
+# $ nsites  : int 519
+# $ nyears  : int 13
 # $ nsurveys: int 11
 
 cat(file = "PhenoOcc.txt", "
@@ -141,6 +142,7 @@ model {
   }
 }
 ")
+
 # Initial values
 zst <- apply(y, 1, max, na.rm = T)
 inits <- function() {list(z = zst)}
@@ -149,8 +151,10 @@ inits <- function() {list(z = zst)}
 params <- c('mean.psi', 'beta.lpsi', 'sigma.lpsi', 'beta.lp', 'mu.lp1',
     'mu.lp2', 'sigma.lp1', 'sigma.lp2', 'beta.arr', 'sigma.arr', 'beta.dep',
     'sigma.dep', 'psi.pred', 'p.pred', 'arr.pred', 'dep.pred', 'fp.pred')
+
 # MCMC settings
 na <- 5000 ; ni <- 100000 ; nt <- 80 ; nb <- 20000 ; nc <- 3
+
 # Call JAGS (ART 400 min), check convergence and summarize posteriors
 out <- jags(bdata, inits, params, "PhenoOcc.txt", n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)

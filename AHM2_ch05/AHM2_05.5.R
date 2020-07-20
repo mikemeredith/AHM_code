@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 2: Dynamic and Advanced models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 5 : MODELING METACOMMUNITY DYNAMICS USING DYNAMIC COMMUNITY MODELS
 # ==========================================================================
 # Code from proofs dated 2020-06-23
@@ -28,9 +29,9 @@ dat <- simDCM(nspec = 100, nsites = 50, nsurveys = 2, nyears = 6,
 
 (missed <- which(dat$nyears.det == 0)) # species detected in 0 years
 # Spec2 Spec9 Spec13 Spec20 Spec24 Spec35 Spec38 Spec40 Spec43 Spec48
-# 2 9 13 20 24 35 38 40 43 48
+#     2     9     13     20     24     35     38     40     43     48
 # Spec50 Spec51 Spec72 Spec74 Spec81 Spec83 Spec88 Spec89 Spec94
-# 50 51 72 74 81 83 88 89 94
+#     50     51     72     74     81     83     88     89     94
 
 # Toss out species never detected
 y <- dat$y # copy 4D array
@@ -53,11 +54,11 @@ sum(y) ; sum(yaug) # Quick sum check: should give same sum
 str(bdata <- list(yaug = yaug, nsite = dim(yaug)[1], nsurvey = dim(yaug)[2],
     nyear = dim(yaug)[3], M = dim(yaug)[4]))
 # List of 5
-# $ yaug : num [1:50, 1:2, 1:6, 1:181] 0 0 0 0 0 0 0 0 0 0 ...
-# $ nsite : int 50
+# $ yaug   : num [1:50, 1:2, 1:6, 1:181] 0 0 0 0 0 0 0 0 0 0 ...
+# $ nsite  : int 50
 # $ nsurvey: int 2
-# $ nyear : int 6
-# $ M : int 181
+# $ nyear  : int 6
+# $ M      : int 181
 
 # ~~~~~~~~~~~ model code inserted from MS dated 2019-01-01 ~~~~~~~~~~
 
@@ -275,17 +276,17 @@ jags.View(out2B)
 # Comparison of the two DA parameterisations
 print(cbind(out2A$summary[1:10,c(1:2,8:9)],
     out2B$summary[1:10,c(1:2,8:9)]), 3)
-# mean sd Rhat n.eff mean sd Rhat n.eff
-# omega 0.537 0.0519 1.04 56 0.545 0.0658 1.00 733
-# Ntotal 97.079 6.7752 1.10 25 98.894 10.1222 1.01 676
-# mu.lpsi1 -2.918 0.6525 1.00 679 -2.936 0.6752 1.03 85
-# sd.lpsi1 4.648 0.9177 1.00 577 4.760 0.9474 1.00 651
-# mu.lphi 0.243 0.1827 1.00 3000 0.247 0.1866 1.02 103
-# sd.lphi 1.103 0.1670 1.00 817 1.107 0.1597 1.00 1357
-# mu.lgamma -1.914 0.1765 1.00 1432 -1.930 0.1802 1.02 115
-# sd.lgamma 1.185 0.1587 1.00 3000 1.192 0.1584 1.01 497
-# mu.lp -2.022 0.4869 1.04 50 -2.097 0.5988 1.00 2334
-# sd.lp 3.065 0.3859 1.05 46 3.099 0.4561 1.00 1452
+#             mean     sd Rhat n.eff   mean      sd Rhat n.eff
+# omega      0.537 0.0519 1.04    56  0.545  0.0658 1.00   733
+# Ntotal    97.079 6.7752 1.10    25 98.894 10.1222 1.01   676
+# mu.lpsi1  -2.918 0.6525 1.00   679 -2.936  0.6752 1.03    85
+# sd.lpsi1   4.648 0.9177 1.00   577  4.760  0.9474 1.00   651
+# mu.lphi    0.243 0.1827 1.00  3000  0.247  0.1866 1.02   103
+# sd.lphi    1.103 0.1670 1.00   817  1.107  0.1597 1.00  1357
+# mu.lgamma -1.914 0.1765 1.00  1432 -1.930  0.1802 1.02   115
+# sd.lgamma  1.185 0.1587 1.00  3000  1.192  0.1584 1.01   497
+# mu.lp     -2.022 0.4869 1.04    50 -2.097  0.5988 1.00  2334
+# sd.lp      3.065 0.3859 1.05    46  3.099  0.4561 1.00  1452
 
 # Tally up true Nspec in the simulated data set by aggregating z
 Nspec <- apply(dat$z, 1:2, sum)
@@ -293,8 +294,8 @@ Nspec <- apply(dat$z, 1:2, sum)
 # Summarize average proportion of species detected per site and year
 Nspec.obs <- apply(apply(dat$y, c(1,3,4), max), 1:2, sum)
 summary(P <- c(Nspec.obs) / c(out2B$mean$Nspec))
-# Min. 1st Qu. Median Mean 3rd Qu. Max.
-# 0.1974 0.3097 0.3576 0.3569 0.4041 0.5527
+#   Min. 1st Qu. Median   Mean 3rd Qu.   Max.
+# 0.1974  0.3097 0.3576 0.3569  0.4041 0.5527
 
 
 # ~~~~~~~ extra code for figure 5.3 ~~~~~~~~~~~~

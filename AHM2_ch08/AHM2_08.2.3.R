@@ -11,7 +11,6 @@
 # Run time with the full number of iterations: 5 hrs
 
 library(AHMbook)
-# library(unmarked)
 library(abind)
 library(jagsUI)
 
@@ -32,10 +31,10 @@ str(ylist <- list(bobcat = data$bobcat, coyote = data$coyote, redfox = data$redf
 y <- abind(ylist, along = 3)
 
 # Get sample sizes
-nsites <- dim(y)[1] # 1437 sites
+nsites <- dim(y)[1]   # 1437 sites
 nsurveys <- dim(y)[2] # 3 surveys
-nspec <- dim(y)[3] # 3 species
-ncat <- 2^nspec # 8 possible community states
+nspec <- dim(y)[3]    # 3 species
+ncat <- 2^nspec       # 8 possible community states
 
 # Prepare site covariates for occupancy and look at them
 Dist <- scale(data$sitecovs[,'Dist_5km'])
@@ -62,17 +61,17 @@ ycat <- apply(ycat, 2, as.numeric)
 
 # Model matrix for first order occupancy (psi): main effects
 psi_cov <- matrix(NA, ncol = 2, nrow = nsites)
-psi_cov[,1] <- 1 # Intercept
+psi_cov[,1] <- 1    # Intercept
 psi_cov[,2] <- Dist # Slope of Dist
 
 # Model matrix for second order occupancy (psi): 2-way interactions
 psi_inxs_cov <- matrix(NA, ncol = 2, nrow = nsites)
-psi_inxs_cov[,1] <- 1 # Intercept
+psi_inxs_cov[,1] <- 1     # Intercept
 psi_inxs_cov[,2] <- HDens # Slope of HDens
 
 # Model matrix for first order detection (rho): main effects
 rho_cov <- array(NA, dim = c(nsites, nsurveys, 2))
-rho_cov[,,1] <- 1 # Intercept
+rho_cov[,,1] <- 1     # Intercept
 rho_cov[,,2] <- Trail # Site off/on trail
 
 # Model matrix for second order detection (rho): 2-way interactions
@@ -85,18 +84,18 @@ str(bdata <- list(y = ycat, psi_cov = psi_cov, psi_inxs_cov = psi_inxs_cov,
     nsecond_order_psi = ncol(psi_inxs_cov), nfirst_order_rho = dim(rho_cov)[3],
     nsecond_order_rho = 1, ncat = ncat) )
 # List of 12
-# $ y : num [1:1437, 1:3] 1 1 1 1 1 4 1 1 1 1 ...
-# $ psi_cov : num [1:1437, 1:2] 1 1 1 1 1 1 1 1 1 1 ...
-# $ psi_inxs_cov : num [1:1437, 1:2] 1 1 1 1 1 1 1 1 1 1 ...
-# $ rho_cov : num [1:1437, 1:3, 1:2] 1 1 1 1 1 1 1 1 1 1 ...
-# $ rho_inxs_cov : num [1:1437] 1 1 1 1 1 1 1 1 1 1 ...
-# $ nsites : int 1437
-# $ nsurveys : int 3
+# $ y                : num [1:1437, 1:3] 1 1 1 1 1 4 1 1 1 1 ...
+# $ psi_cov          : num [1:1437, 1:2] 1 1 1 1 1 1 1 1 1 1 ...
+# $ psi_inxs_cov     : num [1:1437, 1:2] 1 1 1 1 1 1 1 1 1 1 ...
+# $ rho_cov          : num [1:1437, 1:3, 1:2] 1 1 1 1 1 1 1 1 1 1 ...
+# $ rho_inxs_cov     : num [1:1437] 1 1 1 1 1 1 1 1 1 1 ...
+# $ nsites           : int 1437
+# $ nsurveys         : int 3
 # $ nfirst_order_psi : int 2
 # $ nsecond_order_psi: int 2
 # $ nfirst_order_rho : int 2
 # $ nsecond_order_rho: num 1
-# $ ncat : num 8
+# $ ncat             : num 8
 
 # Specify model in BUGS language
 cat(file = 'static_categorical.txt', "
@@ -311,31 +310,31 @@ op <- par(mfrow = c(3,3)) ; traceplot(out1)
 par(op)
 which(out1$summary[,8] > 1.1)
 print(out1$summary[1:24, -c(4:6)], 3)
-# mean sd 2.5% 97.5% Rhat n.eff overlap0 f
-# betaB[1] -1.1412 0.2712 -1.69251 -0.6280 1.01 339 0 1.000
-# betaB[2] -0.6594 0.1482 -0.96154 -0.3856 1.01 406 0 1.000
-# betaC[1] -0.5343 0.2144 -0.98863 -0.1479 1.03 74 0 0.998
-# betaC[2] 0.2107 0.1129 0.00607 0.4518 1.01 315 0 0.979
-# betaF[1] -1.8587 0.2668 -2.39865 -1.3824 1.00 1296 0 1.000
-# betaF[2] -0.3743 0.1399 -0.66442 -0.1159 1.00 1084 0 0.999
-# betaBC[1] 0.8798 0.4150 0.05126 1.6751 1.06 40 0 0.984
-# betaBC[2] -2.8701 0.9379 -4.96531 -1.3914 1.03 81 0 1.000
-# betaBF[1] -1.5007 0.4597 -2.42223 -0.6409 1.01 171 0 1.000
-# betaBF[2] 1.7285 0.9461 0.46911 4.0528 1.03 68 0 0.997
-# betaCF[1] 1.5942 0.4749 0.80321 2.6352 1.01 395 0 1.000
-# betaCF[2] 1.9149 0.9643 0.82842 4.3680 1.04 70 0 1.000
-# alphaB[1] -2.5295 0.1645 -2.85495 -2.2177 1.00 2034 0 1.000
-# alphaB[2] 1.8092 0.1685 1.48266 2.1413 1.00 1414 0 1.000
-# alphaC[1] -2.0232 0.1043 -2.22755 -1.8163 1.01 349 0 1.000
-# alphaC[2] 2.1582 0.1195 1.92025 2.3862 1.00 3000 0 1.000
-# alphaF[1] -1.6145 0.1739 -1.94695 -1.2800 1.01 275 0 1.000
-# alphaF[2] 1.8453 0.2080 1.42525 2.2442 1.00 1203 0 1.000
-# mean.psiB 0.2455 0.0495 0.15545 0.3480 1.01 373 0 1.000
-# mean.psiC 0.3709 0.0490 0.27118 0.4631 1.03 75 0 1.000
-# mean.psiF 0.1378 0.0306 0.08328 0.2006 1.00 1235 0 1.000
-# mean.pB 0.0746 0.0113 0.05443 0.0982 1.00 2056 0 1.000
-# mean.pC 0.1172 0.0108 0.09730 0.1399 1.01 356 0 1.000
-# mean.pF 0.1674 0.0242 0.12489 0.2176 1.01 281 0 1.000
+#              mean     sd     2.5%   97.5% Rhat n.eff overlap0     f
+# betaB[1]  -1.1412 0.2712 -1.69251 -0.6280 1.01   339        0 1.000
+# betaB[2]  -0.6594 0.1482 -0.96154 -0.3856 1.01   406        0 1.000
+# betaC[1]  -0.5343 0.2144 -0.98863 -0.1479 1.03    74        0 0.998
+# betaC[2]   0.2107 0.1129  0.00607  0.4518 1.01   315        0 0.979
+# betaF[1]  -1.8587 0.2668 -2.39865 -1.3824 1.00  1296        0 1.000
+# betaF[2]  -0.3743 0.1399 -0.66442 -0.1159 1.00  1084        0 0.999
+# betaBC[1]  0.8798 0.4150  0.05126  1.6751 1.06    40        0 0.984
+# betaBC[2] -2.8701 0.9379 -4.96531 -1.3914 1.03    81        0 1.000
+# betaBF[1] -1.5007 0.4597 -2.42223 -0.6409 1.01   171        0 1.000
+# betaBF[2]  1.7285 0.9461  0.46911  4.0528 1.03    68        0 0.997
+# betaCF[1]  1.5942 0.4749  0.80321  2.6352 1.01   395        0 1.000
+# betaCF[2]  1.9149 0.9643  0.82842  4.3680 1.04    70        0 1.000
+# alphaB[1] -2.5295 0.1645 -2.85495 -2.2177 1.00  2034        0 1.000
+# alphaB[2]  1.8092 0.1685  1.48266  2.1413 1.00  1414        0 1.000
+# alphaC[1] -2.0232 0.1043 -2.22755 -1.8163 1.01   349        0 1.000
+# alphaC[2]  2.1582 0.1195  1.92025  2.3862 1.00  3000        0 1.000
+# alphaF[1] -1.6145 0.1739 -1.94695 -1.2800 1.01   275        0 1.000
+# alphaF[2]  1.8453 0.2080  1.42525  2.2442 1.00  1203        0 1.000
+# mean.psiB  0.2455 0.0495  0.15545  0.3480 1.01   373        0 1.000
+# mean.psiC  0.3709 0.0490  0.27118  0.4631 1.03    75        0 1.000
+# mean.psiF  0.1378 0.0306  0.08328  0.2006 1.00  1235        0 1.000
+# mean.pB    0.0746 0.0113  0.05443  0.0982 1.00  2056        0 1.000
+# mean.pC    0.1172 0.0108  0.09730  0.1399 1.01   356        0 1.000
+# mean.pF    0.1674 0.0242  0.12489  0.2176 1.01   281        0 1.000
 
 # Grab posterior means of parameters
 (tmp <- out1$mean[1:6])
@@ -577,20 +576,20 @@ round(CRI <- apply(Trail.sims, c(1,2),
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Posterior means of p
-# off trail on trail
-# Bobcat 0.07 0.86
-# Coyote 0.12 0.90
-# Red Fox 0.17 0.86
+#         off trail on trail
+# Bobcat       0.07     0.86
+# Coyote       0.12     0.90
+# Red Fox      0.17     0.86
 
 # 95% CRIs
 # , , off trail
-# Bobcat Coyote Red Fox
-# 2.5% 0.05 0.10 0.12
-# 97.5% 0.10 0.14 0.22
+#       Bobcat Coyote Red Fox
+# 2.5%    0.05   0.10    0.12
+# 97.5%   0.10   0.14    0.22
 # , , on trail
-# Bobcat Coyote Red Fox
-# 2.5% 0.81 0.87 0.81
-# 97.5% 0.89 0.92 0.90
+#       Bobcat Coyote Red Fox
+# 2.5%    0.81   0.87    0.81
+# 97.5%   0.89   0.92    0.90
 
 # Compute and plot most likely states for a sample of the sites (figure 8.8)
 nsims <- out1$mcmc.info$n.samples

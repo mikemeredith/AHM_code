@@ -18,7 +18,7 @@ year <- 1999:2016
 
 # ~~~~ code to plot figure 1.3 ~~~~~~~~~~
 matplot(year, t(C), main = "", type = "l", lty = 1, xlab = "Year",
-  ylab = "Territory count", lwd = 3, cex.lab = 1.5, frame = F)
+    ylab = "Territory count", lwd = 3, cex.lab = 1.5, frame = FALSE)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Grab data for survey dates (for 2-3 surveys per year) and for duration

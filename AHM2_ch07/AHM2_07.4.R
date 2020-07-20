@@ -8,9 +8,6 @@
 # Code from proofs dated 2020-07-08
 
 library(unmarked)
-# library(AHMbook)
-# library(AICcmodavg)
-# library(ggplot2)
 
 # 7.4 Modeling classified false positive detections:
 #   'multi-state design' of Miller et al. (2011)
@@ -19,21 +16,21 @@ library(unmarked)
 # 7.4.1 Modeling Classified False Positives in unmarked
 # ------------------------------------------------------
 
-set.seed(129) # RNG seed
-nsites <- 200 # number of sites
-nsurveys1 <- 3 # number of occasions with Type 1 data
-nsurveys2 <- 4 # number of occasions with Type 2 data
-psi <- 0.6 # expected proportion of are occupied
+set.seed(129)   # RNG seed
+nsites <- 200   # number of sites
+nsurveys1 <- 3  # number of occasions with Type 1 data
+nsurveys2 <- 4  # number of occasions with Type 2 data
+psi <- 0.6      # expected proportion of are occupied
 p <- c(0.7,0.5) # detection prob of method 1 and method 2
-fp <- 0.05 # false-positive error probability (p_10)
-b <- 0.2 # probability y is recorded as certain
+fp <- 0.05      # false-positive error probability (p_10)
+b <- 0.2        # probability y is recorded as certain
 
 # Simulate the occupancy states and data
 z <- rbinom(nsites, 1, psi)
 y <- matrix(NA, nrow = nsites, ncol = nsurveys1 + nsurveys2)
 for(i in 1:nsites){
-  p1 <- p[1]*z[i] # certainly detection (method 1)
-  p2 <- p[2]*z[i] + fp*(1-z[i]) # uncertainly detection (method 2)
+  p1 <- p[1]*z[i]                      # certainly detection (method 1)
+  p2 <- p[2]*z[i] + fp*(1-z[i])        # uncertainly detection (method 2)
   y[i,1:3] <- rbinom(nsurveys1, 1, p1) # simulate method 1 data
   y[i,4:7] <- rbinom(nsurveys2, 1, p2) # simulate method 2 data
   # Now introduce certain observations:
@@ -68,42 +65,42 @@ summary(umf2 <- unmarkedFrameOccuFP(y = y, obsCovs = list(Method = Method),
 
 # Coefficients on the link (= "beta") scale
 coef(m2)
-# psi(Int) p(Int) p(Method2) fp(Int) b(Int)
+#  psi(Int)    p(Int) p(Method2)    fp(Int)     b(Int)
 # 0.5529142 1.1177836 -1.0912711 -3.2700680 -1.4721436
 
 # Coefficients on the probability (="real") scale
 pred.df <- data.frame(Method = c("1", "2"))
 round(rbind(
     "det" = predict(m2, type = 'det', newdata = pred.df),
-    "fp" = predict(m2, type = 'fp', newdata = pred.df[1,,drop=F]),
-    "b" = predict(m2, type = 'b', newdata = pred.df[1,,drop=F]),
-    "state" = predict(m2, type = 'state', newdata = pred.df[1,,drop=F])),3)
-# Predicted SE lower upper
-# det.1 0.754 0.023 0.706 0.795
-# det.2 0.507 0.022 0.463 0.550
-# fp 0.037 0.012 0.019 0.068
-# b 0.187 0.024 0.144 0.239
-# state 0.635 0.034 0.565 0.699
+    "fp" = predict(m2, type = 'fp', newdata = pred.df[1,,drop=FALSE]),
+    "b" = predict(m2, type = 'b', newdata = pred.df[1,,drop=FALSE]),
+    "state" = predict(m2, type = 'state', newdata = pred.df[1,,drop=FALSE])),3)
+#       Predicted    SE lower upper
+# det.1     0.754 0.023 0.706 0.795
+# det.2     0.507 0.022 0.463 0.550
+# fp        0.037 0.012 0.019 0.068
+# b         0.187 0.024 0.144 0.239
+# state     0.635 0.034 0.565 0.699
 
 
 # 7.4.2. A general multi-type model with covariates
 # -------------------------------------------------
 
 # Simulation settings
-set.seed(2019) # RNG seed
-nsites <- 200 # number of sites
-nsurveys <- 7 # number of occasions
+set.seed(2019)           # RNG seed
+nsites <- 200            # number of sites
+nsurveys <- 7            # number of occasions
 habitat <- rnorm(nsites) # Some (continuous) habitat descriptor
 
 # Simulate the occupancy states and data
-alpha0 <- 0 # Intercept...
-alpha1 <- 1 # ... and slope of psi-habitat regression
+alpha0 <- 0   # Intercept...
+alpha1 <- 1   # ... and slope of psi-habitat regression
 psi <- plogis(alpha0 + alpha1*habitat) # Occupancy
-z <- rbinom(nsites, 1, psi) # Latent p/a states
+z <- rbinom(nsites, 1, psi)            # Latent p/a states
 y <- matrix(0,nsites, nsurveys)
-p <- c(0.7, 0.5) # method 2 will have a lower p
-b <- 0.5 # probability that a observed positive is determined to be certain
-fp <- 0.05 # False-positive prob.
+p <- c(0.7, 0.5)   # method 2 will have a lower p
+b <- 0.5           # probability that a observed positive is determined to be certain
+fp <- 0.05         # False-positive prob.
 
 # Simulate data of all 3 types. Note p differs between occ 1-2 and 3-7.
 # False positives occur in occasions 3-7 but in occasion 7 there are some

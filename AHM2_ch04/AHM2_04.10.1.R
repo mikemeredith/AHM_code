@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 2: Dynamic and Advanced models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 4 : MODELING SPECIES DISTRIBUTION AND RANGE DYNAMICS, AND POPULATION
 #             DYNAMICS USING DYNAMIC OCCUPANCY MODELS
 # ============================================================================
@@ -12,7 +13,6 @@
 
 library(AHMbook)
 library(jagsUI)
-# library(unmarked)
 
 # 4.10 Analysis of citizen-science data using occupancy models
 # ============================================================
@@ -23,15 +23,16 @@ library(jagsUI)
 # Generate data set with increase in site-level heterogeneity
 set.seed(1)
 str(data <- simDynocc(nsites = 250, nyears = 20, nsurveys = 3, mean.psi1 = 0.6,
-range.p = c(0.5, 0.5), range.phi = c(0.8, 0.8), range.gamma = c(0.3, 0.3),
-trend.sd.site = c(0, 2))) # library(AHMbook)
+    range.p = c(0.5, 0.5), range.phi = c(0.8, 0.8), range.gamma = c(0.3, 0.3),
+    trend.sd.site = c(0, 2))) # library(AHMbook)
 
 # ~~~~~~~ extra code from MS dated 2019-01-04 ~~~~~~~~~~~~~~
 
 # Traditional, non-heterogeneity occupancy model
 # ''''''''''''''''''''''''''''''''''''''''''''''
 # Bundle data
-str(bdata <- list(y = data$y, nsite = dim(data$y)[1], nsurvey = dim(data$y)[2], nyear = dim(data$y)[3]))
+str(bdata <- list(y = data$y, nsite = dim(data$y)[1], nsurvey = dim(data$y)[2],
+    nyear = dim(data$y)[3]))
 
 # Specify model in BUGS language
 cat(file = "dynocc.txt", "
@@ -84,8 +85,9 @@ na <- 1000  ;  ni <- 6000  ;  nb <- 4000  ;  nt <- 2  ;  nc <- 3 # 5 mins
 
 # Call JAGS from R (ART 25 min)
 out0 <- jags(bdata, inits, params, "dynocc.txt",
-  n.adapt = na, n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(4,4))   ;   traceplot(out0) ; par(op)
+    n.adapt = na, n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+op <- par(mfrow = c(4,4))   ;   traceplot(out0)
+par(op)
 print(out0, 2)
 # ~~~~~~~~~~~~~~~~~~~~~~ end of extra code ~~~~~~~~~~~~~~~~~~~
 
@@ -95,10 +97,11 @@ print(out0, 2)
 str(bdata <- list(y = data$y, nsites = dim(data$y)[1],
     nsurveys = dim(data$y)[2], nyears = dim(data$y)[3]))
 # List of 4
-# $ y : int [1:250, 1:3, 1:20] 0 0 1 1 0 0 1 0 0 0 ...
-# $ nsites : int 250
+# $ y       : int [1:250, 1:3, 1:20] 0 0 1 1 0 0 1 0 0 0 ...
+# $ nsites  : int 250
 # $ nsurveys: int 3
-# $ nyears : int 20
+# $ nyears  : int 20
+
 # Specify model in BUGS language
 cat(file = "dynoccH.txt", "
 model {
@@ -140,18 +143,22 @@ model {
   psi[1] <- psi1 # Population occupancy
   psi.fs[1] <- sum(z[1:nsites,1]) / 250 # Sample occupancy
   for (t in 2:nyears){
-  psi[t] <- psi[t-1]*phi[t-1] + (1-psi[t-1])*gamma[t-1]
-  psi.fs[t] <- sum(z[1:nsites,t]) / 250
+    psi[t] <- psi[t-1]*phi[t-1] + (1-psi[t-1])*gamma[t-1]
+    psi.fs[t] <- sum(z[1:nsites,t]) / 250
   }
 }
 ")
+
 # Initial values
 inits <- function(){ list(z = apply(data$y, c(1, 3), max))}
+
 # Parameters monitored
 params <- c("psi", "psi.fs", "phi", "gamma", "mean.p", "sd.eps")
+
 # MCMC settings
 # na <- 5000 ; ni <- 100000 ; nb <- 20000 ; nt <- 80 ; nc <- 3
 na <- 5000 ; ni <- 10000 ; nb <- 2000 ; nt <- 8 ; nc <- 3  # ~~~~~~~ testing, 15 mins
+
 # Call JAGS (ART 163 min), check convergence and summarize posteriors
 out <- jags(bdata, inits, params, "dynoccH.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = T)
@@ -170,7 +177,8 @@ plot(year, data$psi.fs, type = "l", xlab = "Year", ylab = "Occupancy probability
     ylim = c(0.35,0.8), lwd = 2, lty = 1, frame.plot = FALSE, las = 1,
     main = 'True and observed occupancy probability')
 lines(year, data$psi.app, type = "l", col = "black", lwd = 2)
-legend('bottomleft', c('True occupancy (with linear reg. line)', 'Apparent occupancy (with linear reg. line)'),
+legend('bottomleft', c('True occupancy (with linear reg. line)',
+    'Apparent occupancy (with linear reg. line)'),
     col = c('red', 'black'), lwd = 3, bty = 'n', cex = 1.3)
 abline(lm(data$psi.fs ~ year), col = "red", lwd = 1)
 abline(lm(data$psi.app ~ year), col = "black", lwd = 1)

@@ -112,10 +112,12 @@ model {
   }
 }
 ")
+
 # Initial values
 Nst <- C[sel,]
 Nst[is.na(Nst)] <- 0
 inits <- function(){list(N = Nst + 1)}
+
 # Parameters monitored
 params <- c("mean.lambda", "mean.gamma", "mean.p", "mu.alpha.lam", "mu.alpha.gam",
   "mu.alpha.p", "sd.alpha.lam", "sd.alpha.gam", "sd.alpha.p", "sd.rho", "rho",
@@ -124,6 +126,7 @@ params <- c("mean.lambda", "mean.gamma", "mean.p", "mu.alpha.lam", "mu.alpha.gam
 # MCMC settings
 # na <- 5000 ; ni <- 1e6 ; nt <- 500 ; nb <- 5e5 ; nc <- 3
 na <- 5000 ; ni <- 1e5 ; nt <- 50 ; nb <- 5e4 ; nc <- 3  # ~~~~~ for testing, 40 mins
+
 # Call JAGS (ART 491 min), check convergence and summarize posteriors
 out10d <- jags(bdata, inits, params, "model10d.txt", n.adapt = na, n.chains = nc,
   n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
@@ -134,7 +137,7 @@ summary(out10d) ; jags.View(out10d) ; print(out10d$summary[1:100,-c(4:6)], 2)
 save(out10d, file="AHM2_01.07.2_out10d.RData")
 
 
-# 1.7.2.2 Demographic SSM with generalized markovian dynamics and with covariates
+# 1.7.2.2 Demographic SSM with generalized Markovian dynamics and with covariates
 # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 # We assume you still have these covariates in your workspace, otherwise, you have to get them first.
 # Bundle and summarize data
@@ -143,13 +146,13 @@ str(bdata <- list(C = C[sel,], M = nrow(C[sel,]), T = ncol(C[sel,]),
     elev = elev.sc[sel], forest = forest.sc[sel], date = date.sc[sel,],
     dur = dur.sc[sel,]))
 # List of 7
-# $ C : int [1:97, 1:18] 3 5 9 13 12 2 3 3 6 10 ...
-# $ M : int 97
-# $ T : int 18
-# $ elev : num [1:97] -0.0614 -0.8418 -0.0614 -0.6857 0.0947 ...
+# $ C     : int [1:97, 1:18] 3 5 9 13 12 2 3 3 6 10 ...
+# $ M     : int 97
+# $ T     : int 18
+# $ elev  : num [1:97] -0.0614 -0.8418 -0.0614 -0.6857 0.0947 ...
 # $ forest: num [1:97] 0.0092 0.9126 0.5512 0.8042 1.1294 ...
-# $ date : num [1:97, 1:18] -0.6342 -0.5746 -0.6143 -1.0118 0.0614 ...
-# $ dur : num [1:97, 1:18] -0.5418 -0.5418 0 0.9873 -0.0359 ...
+# $ date  : num [1:97, 1:18] -0.6342 -0.5746 -0.6143 -1.0118 0.0614 ...
+# $ dur   : num [1:97, 1:18] -0.5418 -0.5418 0 0.9873 -0.0359 ...
 
 # Specify model in BUGS language
 cat(file = "model11.txt","
@@ -216,8 +219,10 @@ model {
 # Parameters monitored
 params <- c("mean.lambda", "mean.gamma", "mean.p", "sd.rho", "beta.lam", "beta.gam",
   "beta.p", "rho", "popindex", "gammaX", "alpha.lam", "alpha.gam", "alpha.p", "N")
+
 # MCMC settings
 na <- 5000 ; ni <- 100000 ; nt <- 50 ; nb <- 50000 ; nc <- 3
+
 # Call JAGS (ART 47 min), check convergence and summarize posteriors
 out11 <- jags(bdata, inits, params, "model11.txt", n.adapt = na, n.chains = nc,
   n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
@@ -234,14 +239,18 @@ save(out11, file="AHM2_01.07.2_out11.RData")
 # ...but with histograms instead of density plots.
 # Produce plots of overdispersion and random immigration random effects
 op <- par(mfrow = c(2, 2), mar = c(5,5,4,2), cex.lab = 1.5, cex.axis = 1.5)
-hist(out10d$sims.list$sd.alpha.lam, breaks = 30, freq = F, col = 'grey', main = 'Abundance overdispersion (SD)', xlim = c(0,1))
-hist(out10d$sims.list$sd.alpha.gam, breaks = 30, freq = F, col = 'grey', main = 'Growth rate overdispersion (SD)', xlim = c(0,1))
-hist(out10d$sims.list$sd.alpha.p, breaks = 30, freq = F, col = 'grey', main = 'Detection overdispersion (SD)', xlim = c(0,1))
-hist(out10d$sims.list$sd.rho, breaks = 30, freq = F, col = 'grey', main = 'Random immigration (SD)')
+hist(out10d$sims.list$sd.alpha.lam, breaks = 30, freq = F, col = 'grey',
+    main = 'Abundance overdispersion (SD)', xlim = c(0,1))
+hist(out10d$sims.list$sd.alpha.gam, breaks = 30, freq = F, col = 'grey',
+    main = 'Growth rate overdispersion (SD)', xlim = c(0,1))
+hist(out10d$sims.list$sd.alpha.p, breaks = 30, freq = F, col = 'grey',
+    main = 'Detection overdispersion (SD)', xlim = c(0,1))
+hist(out10d$sims.list$sd.rho, breaks = 30, freq = F, col = 'grey',
+    main = 'Random immigration (SD)')
 par(op)
 
 # ~~~~~~~~ figure 1.12 ~~~~~~~~~~
-# New covariates for predictionon the original scale
+# New covariates for prediction on the original scale
 elevo <- seq(250, 2750,, 100)
 foresto <- seq(0, 100,, 100)
 dateo <- seq(115, 205,, 100)
@@ -256,25 +265,39 @@ durp <- standardize2match(duro, dur)
 
 # Form predictions on the inverse-link = natural scale
 #Expected initial abundance lambda
-predlam.elev <- exp(out11$mean$alpha.lam + out11$mean$beta.lam[1] *elevp + out11$mean$beta.lam[2] *elevp^2)
+predlam.elev <- exp(out11$mean$alpha.lam + out11$mean$beta.lam[1] *elevp +
+    out11$mean$beta.lam[2] *elevp^2)
 predlam.forest <- exp(out11$mean$alpha.lam + out11$mean$beta.lam[3] *forestp)
 
 # Expected population growth rate gamma
-predgam.elev <- exp(out11$mean$alpha.gam + out11$mean$beta.gam[1] *elevp + out11$mean$beta.gam[2] *elevp^2)
+predgam.elev <- exp(out11$mean$alpha.gam + out11$mean$beta.gam[1] *elevp +
+    out11$mean$beta.gam[2] *elevp^2)
 predgam.forest <- exp(out11$mean$alpha.gam + out11$mean$beta.gam[3] *forestp)
 
 # Expected detection probability p
-predp.date <- plogis(out11$mean$alpha.p + out11$mean$beta.p[1] *datep + out11$mean$beta.p[2] *datep^2)
+predp.date <- plogis(out11$mean$alpha.p + out11$mean$beta.p[1] *datep +
+    out11$mean$beta.p[2] *datep^2)
 predp.dur <- plogis(out11$mean$alpha.p + out11$mean$beta.p[3] *durp)
 
 # Plot predictions
 op <- par(mfrow = c(3, 2))
-plot(elevo, predlam.elev, xlab = "Elevation (m)", ylab = "Expected lambda", main = "Initial abundance ~ Elevation", type = 'l', lwd = 3, col = 'blue', frame = F, ylim = c(5, 15))
-plot(foresto, predlam.forest, xlab = "Forest cover (%)", ylab = "Expected lambda", main = "Initial abundance ~ Forest cover", type = 'l', lwd = 3, col = 'blue', frame = F, ylim = c(0, 32))
-plot(elevo, predgam.elev, xlab = "Elevation (m)", ylab = "Expected gamma", main = "Growth rate ~ Elevation", type = 'l', lwd = 3, col = 'blue', frame = F, ylim = c(0.7, 1.1))
-plot(foresto, predgam.forest, xlab = "Forest cover (%)", ylab = "Expected gamma", main = "Growth rate ~ Forest cover", type = 'l', lwd = 3, col = 'blue', frame = F, ylim = c(0.7, 1.1))
-plot(dateo, predp.date, xlab = "Julian date (1 = Jan 1)", ylab = "Expected p", main = "Detection ~ Date", type = 'l', lwd = 3, col = 'blue', frame = F, ylim = c(0.2, 0.8))
-plot(duro, predp.dur, xlab = "Duration (min)", ylab = "Expected p", main = "Detection ~ Duration", type = 'l', lwd = 3, col = 'blue', frame = F, ylim = c(0.2, 0.8))
+plot(elevo, predlam.elev, xlab = "Elevation (m)", ylab = "Expected lambda",
+    main = "Initial abundance ~ Elevation", type = 'l', lwd = 3, col = 'blue',
+    frame = FALSE, ylim = c(5, 15))
+plot(foresto, predlam.forest, xlab = "Forest cover (%)", ylab = "Expected lambda",
+    main = "Initial abundance ~ Forest cover", type = 'l', lwd = 3, col = 'blue',
+    frame = FALSE, ylim = c(0, 32))
+plot(elevo, predgam.elev, xlab = "Elevation (m)", ylab = "Expected gamma",
+    main = "Growth rate ~ Elevation", type = 'l', lwd = 3, col = 'blue',
+    frame = FALSE, ylim = c(0.7, 1.1))
+plot(foresto, predgam.forest, xlab = "Forest cover (%)", ylab = "Expected gamma",
+    main = "Growth rate ~ Forest cover", type = 'l', lwd = 3, col = 'blue',
+    frame = FALSE, ylim = c(0.7, 1.1))
+plot(dateo, predp.date, xlab = "Julian date (1 = Jan 1)", ylab = "Expected p",
+    main = "Detection ~ Date", type = 'l', lwd = 3, col = 'blue',
+    frame = FALSE, ylim = c(0.2, 0.8))
+plot(duro, predp.dur, xlab = "Duration (min)", ylab = "Expected p",
+    main = "Detection ~ Duration", type = 'l', lwd = 3, col = 'blue',
+    frame = FALSE, ylim = c(0.2, 0.8))
 par(op)
-
-
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

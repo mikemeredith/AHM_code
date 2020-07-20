@@ -13,9 +13,9 @@
 library(AHMbook)
 data("greenWoodpecker")
 str(peckers <- greenWoodpecker)
-counts <- as.matrix(peckers[,7:48]) # Counts 2004:2017
-dateso <- as.matrix(peckers[,49:90]) # Survey Julian dates 2004:2017
-timeso <- as.matrix(peckers[,91:132]) # Survey durations 2004:2017
+counts <- as.matrix(peckers[,7:48])     # Counts 2004:2017
+dateso <- as.matrix(peckers[,49:90])    # Survey Julian dates 2004:2017
+timeso <- as.matrix(peckers[,91:132])   # Survey durations 2004:2017
 into <- timeso/peckers[,'route.length'] # Survey intensity (min / km)
 
 # Quick visualizations of counts, survey date, duration and intensity
@@ -32,14 +32,16 @@ hist(into, main = 'Survey intensity (min / km route length)',
 dates <- standardize(dateso)
 int <- standardize(into)
 times <- standardize(timeso)
-# Put data into 3D arrays and summarize. This works because surveys are grouped within years otherwise be careful!
+
+# Put data into 3D arrays and summarize. This works because surveys
+#   are grouped within years otherwise be careful!
 C <- array(counts, dim=c(267, 3, 14))
 DATE <- array(dates, dim=c(267, 3, 14))
 DUR <- array(times, dim=c(267, 3, 14))
 INT <- array(int, dim=c(267, 3, 14))
-mean.C <- apply(C, c(1,3), mean, na.rm = TRUE) # Mean count per site,year
+mean.C <- apply(C, c(1,3), mean, na.rm = TRUE)      # Mean count per site,year
 annual.mean <- apply(mean.C, 2, mean, na.rm = TRUE)
-annual.mean2 <- apply(C, 3, mean, na.rm = TRUE) # Direct 3D average
+annual.mean2 <- apply(C, 3, mean, na.rm = TRUE)     # Direct 3D average
 site.mean <- apply(mean.C, 1, mean, na.rm = TRUE)
 nsites.with.data <- apply(!is.na(mean.C), 2, sum, na.rm = TRUE)
 cat("N sites with data per year:\n", nsites.with.data, "\n")
@@ -62,10 +64,11 @@ cat("Observed mean count (site):\n") ; summary(site.mean)
 # 0.00000 0.02381 0.23077 0.44850 0.54304 3.90476
 
 # Scale elevation and forest cover
-elevo <- peckers$elev # Elevation (original)
+elevo <- peckers$elev      # Elevation (original)
 elev <- standardize(elevo)
-foresto <- peckers$forest # Forest cover (original)
+foresto <- peckers$forest  # Forest cover (original)
 forest <- standardize(foresto)
+
 # Mean-impute DATE and INT
-DATE[is.na(DATE)] <- 0 # Innocuous mean imputation
-INT[is.na(INT)] <- 0 # Almost innocuous mean imputation
+DATE[is.na(DATE)] <- 0     # Innocuous mean imputation
+INT[is.na(INT)] <- 0       # Almost innocuous mean imputation

@@ -2,6 +2,7 @@
 #   Modeling distribution, abundance and species richness using R and BUGS
 #   Volume 2: Dynamic and Advanced models
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 6 : MULTISTATE OCCUPANCY MODELS
 # =======================================
 # Code from proofs dated 2020-06-24
@@ -24,10 +25,10 @@ source("AHM2_06.4.1.R")
 str(bdata <- list(y = yms, nsites = dim(yms)[1], nsurveys = nsurveys,
     nyears = dim(yms)[3]))
 # List of 4
-# $ y : num [1:274, 1:20, 1:10] NA NA 1 NA NA NA NA 2 2 2 ...
-# $ nsites : int 274
+# $ y       : num [1:274, 1:20, 1:10] NA NA 1 NA NA NA NA 2 2 2 ...
+# $ nsites  : int 274
 # $ nsurveys: num [1:274, 1:10] 1 1 3 1 1 1 1 20 12 20 ...
-# $ nyears : int 10
+# $ nyears  : int 10
 
 # Specify model in BUGS language
 cat(file = "dynMS1.txt", "
@@ -128,38 +129,36 @@ na <- 1000 ; ni <- 1000 ; nt <- 1 ; nb <- 500 ; nc <- 3  # ~~~~ for testing, 2 m
 # Call JAGS (ART 21 min), check convergence and summarize posteriors
 # odms stands for 'output dynamic multi-state'
 odms1 <- jags(bdata, inits, params, "dynMS1.txt", n.adapt = na,
-n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+    n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 op <- par(mfrow = c(3, 3)) ; traceplot(odms1)
 par(op)
 print(odms1, 3)
-# mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
-# psi 0.699 0.061 0.577 0.698 0.818 FALSE 1 1.001 3000
-# r 0.925 0.063 0.775 0.942 0.997 FALSE 1 1.001 1592
-# phi[1] 0.420 0.060 0.310 0.418 0.543 FALSE 1 1.002 2475
-# phi[2] 0.762 0.058 0.638 0.768 0.865 FALSE 1 1.001 1546
-# phi[3] 0.992 0.006 0.977 0.993 1.000 FALSE 1 1.004 619
-# rho[1] 0.087 0.061 0.005 0.077 0.231 FALSE 1 1.006 890
-# rho[2] 0.189 0.049 0.105 0.185 0.297 FALSE 1 1.003 1810
-# rho[3] 0.886 0.017 0.851 0.887 0.918 FALSE 1 1.002 778
-# p2 0.290 0.022 0.246 0.291 0.333 FALSE 1 1.001 2098
-# p3[1] 0.196 0.007 0.183 0.196 0.209 FALSE 1 1.001 1663
-# p3[2] 0.411 0.008 0.394 0.411 0.426 FALSE 1 1.000 3000
-# p3[3] 0.393 0.008 0.378 0.393 0.410 FALSE 1 1.001 1494
-# Omega[1] 0.301 0.061 0.182 0.302 0.423 FALSE 1 1.001 3000
-# Omega[2] 0.054 0.048 0.002 0.040 0.173 FALSE 1 1.001 1684
-# Omega[3] 0.645 0.057 0.528 0.647 0.749 FALSE 1 1.000 3000
+#           mean    sd  2.5%   50% 97.5% overlap0 f  Rhat n.eff
+# psi      0.699 0.061 0.577 0.698 0.818    FALSE 1 1.001  3000
+# r        0.925 0.063 0.775 0.942 0.997    FALSE 1 1.001  1592
+# phi[1]   0.420 0.060 0.310 0.418 0.543    FALSE 1 1.002  2475
+# phi[2]   0.762 0.058 0.638 0.768 0.865    FALSE 1 1.001  1546
+# phi[3]   0.992 0.006 0.977 0.993 1.000    FALSE 1 1.004   619
+# rho[1]   0.087 0.061 0.005 0.077 0.231    FALSE 1 1.006   890
+# rho[2]   0.189 0.049 0.105 0.185 0.297    FALSE 1 1.003  1810
+# rho[3]   0.886 0.017 0.851 0.887 0.918    FALSE 1 1.002   778
+# p2       0.290 0.022 0.246 0.291 0.333    FALSE 1 1.001  2098
+# p3[1]    0.196 0.007 0.183 0.196 0.209    FALSE 1 1.001  1663
+# p3[2]    0.411 0.008 0.394 0.411 0.426    FALSE 1 1.000  3000
+# p3[3]    0.393 0.008 0.378 0.393 0.410    FALSE 1 1.001  1494
+# Omega[1] 0.301 0.061 0.182 0.302 0.423    FALSE 1 1.001  3000
+# Omega[2] 0.054 0.048 0.002 0.040 0.173    FALSE 1 1.001  1684
+# Omega[3] 0.645 0.057 0.528 0.647 0.749    FALSE 1 1.000  3000
 # [ ... output truncated ... ]
 
 round(odms1$mean$PhiMat, 2) # Transition probabilities
-# [,1] [,2] [,3]
+#      [,1] [,2] [,3]
 # [1,] 0.58 0.38 0.04
 # [2,] 0.24 0.62 0.14
 # [3,] 0.01 0.11 0.88
 
 round(odms1$mean$Theta, 2) # Observation probabilities
-# [,1] [,2] [,3]
+#      [,1] [,2] [,3]
 # [1,] 1.00 0.00 0.00
 # [2,] 0.71 0.29 0.00
 # [3,] 0.20 0.41 0.39
-
-

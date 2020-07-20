@@ -11,7 +11,7 @@
 
 library(AHMbook)
 library(R2WinBUGS)
-bugs.dir <- "C:/WinBUGS14"
+bugs.dir <- "C:/WinBUGS14" # the location of the WinBUGS14.exe file on your machine
 library(spdep)
 
 # ~~~~~ data wrangling code from 3.4.1 ~~~~~~~~~~~~~~
@@ -57,18 +57,18 @@ str(bdata <- list(MARRWB = MARRWB, R = R, n.site = nsite, n.occ = nyear, n.block
     BlockID = willowWarbler$CES$BlockID, adj = winnb$adj, weights = winnb$weights, num = winnb$num,
     gdd1.site = gdd1.site, gdd2.site = gdd2.site, lat.site = lat.site))
 # List of 12
-# $ MARRWB : num [1:193, 1:10, 1:11] 1 3 0 2 0 0 0 0 0 0 ...
-# $ R : num [1:10, 1:193] 13 5 0 0 0 0 0 0 0 0 ...
-# $ n.site : int 193
-# $ n.occ : int 11
-# $ n.block : int 495
-# $ BlockID : int [1:193] 25 77 204 110 222 283 119 234 295 152 ...
-# $ adj : int [1:3458] 2 3 4 1 3 5 6 1 2 4 ...
-# $ weights : num [1:3458] 1 1 1 1 1 1 1 1 1 1 ...
-# $ num : int [1:495] 3 4 6 5 3 6 6 6 5 5 ...
+# $ MARRWB    : num [1:193, 1:10, 1:11] 1 3 0 2 0 0 0 0 0 0 ...
+# $ R         : num [1:10, 1:193] 13 5 0 0 0 0 0 0 0 0 ...
+# $ n.site    : int 193
+# $ n.occ     : int 11
+# $ n.block   : int 495
+# $ BlockID   : int [1:193] 25 77 204 110 222 283 119 234 295 152 ...
+# $ adj       : int [1:3458] 2 3 4 1 3 5 6 1 2 4 ...
+# $ weights   : num [1:3458] 1 1 1 1 1 1 1 1 1 1 ...
+# $ num       : int [1:495] 3 4 6 5 3 6 6 6 5 5 ...
 # $ gdd1.site : num [1:193] 1.13 0.726 0.46 0.538 0.686 ...
 # $ gdd2.site : num [1:193] 1.228 0.703 0.38 0.473 0.653 ...
-# $ lat.site : num [1:193] -1.397 -1.11 -0.403 -0.881 -0.308 ...
+# $ lat.site  : num [1:193] -1.397 -1.11 -0.403 -0.881 -0.308 ...
 
 # Specify model in BUGS language
 cat(file = "cjs9.txt","
@@ -150,6 +150,7 @@ model {
 # Initial values
 inits <- function(){list(mean.phi = runif(1), mean.p = runif(1), eta = rep(0, nblock),
     beta1 = rnorm(1)/3, beta2 = rnorm(1)/3, beta3 = rnorm(1) /3, tau = runif(1))}
+
 # Parameters monitored
 params <- c("mean.phi", "mean.p", "mu.lphi", "mu.lp",
     "sd.lp.site", "sd.lphi.time", "sd.lp.time", "mean.p.site", "mean.phi.time", "mean.p.time",
@@ -161,6 +162,7 @@ params <- c("mean.phi", "mean.p", "mu.lphi", "mu.lp",
 # MCMC settings
 # ni <- 200000 ; nt <- 100 ; nb <- 100000 ; nc <- 3  # 5 days
 ni <- 2000 ; nt <- 1 ; nb <- 1000 ; nc <- 3 # ~~~~~~~~~~~~ for testing
+
 # You may have to launchWinBUGS a couple of times until you don’t get an “undefined real result”
 # crash (or alternatively, you could “stabilize” the logit, see Trick 15 in Appendix 1 in Kery and Schaub,
 # 2012).
@@ -168,23 +170,23 @@ ni <- 2000 ; nt <- 1 ; nb <- 1000 ; nc <- 3 # ~~~~~~~~~~~~ for testing
 out9 <- bugs(bdata, inits, params, "cjs9.txt", n.chains = nc, n.thin = nt, n.iter = ni,
     n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
 print(out9$summary[c(1:7, 221:225),c(1:3,5,7:9)], 3)
-# mean sd 2.5% 50% 97.5% Rhat n.eff
-# mean.phi 0.2675 0.0206 0.229485 0.26670 0.310 1.00 3000
-# mean.p 0.3824 0.0338 0.316297 0.38200 0.450 1.00 1100
-# mu.lphi -1.0099 0.1051 -1.211075 -1.01100 -0.799 1.00 3000
-# mu.lp -0.4820 0.1440 -0.770615 -0.48100 -0.202 1.00 1000
-# sd.lp.site 1.1052 0.1283 0.864600 1.09900 1.379 1.00 3000
-# sd.lphi.time 0.2186 0.0845 0.097788 0.20405 0.417 1.00 3000
-# sd.lp.time 0.1554 0.1140 0.009250 0.13480 0.430 1.00 1500
-# veta 0.0137 0.0380 0.000201 0.00212 0.118 1.06 48
-# sdeta 0.0788 0.0867 0.014189 0.04600 0.344 1.06 48
-# beta1 1.0107 0.5355 0.045398 1.01600 2.008 1.00 3000
-# beta2 -0.6984 0.4467 -1.527000 -0.70535 0.195 1.00 3000
-# beta3 0.2984 0.0976 0.115275 0.29945 0.490 1.01 320
+#                 mean     sd      2.5%      50%  97.5% Rhat n.eff
+# mean.phi      0.2675 0.0206  0.229485  0.26670  0.310 1.00  3000
+# mean.p        0.3824 0.0338  0.316297  0.38200  0.450 1.00  1100
+# mu.lphi      -1.0099 0.1051 -1.211075 -1.01100 -0.799 1.00  3000
+# mu.lp        -0.4820 0.1440 -0.770615 -0.48100 -0.202 1.00  1000
+# sd.lp.site    1.1052 0.1283  0.864600  1.09900  1.379 1.00  3000
+# sd.lphi.time  0.2186 0.0845  0.097788  0.20405  0.417 1.00  3000
+# sd.lp.time    0.1554 0.1140  0.009250  0.13480  0.430 1.00  1500
+# veta          0.0137 0.0380  0.000201  0.00212  0.118 1.06    48
+# sdeta         0.0788 0.0867  0.014189  0.04600  0.344 1.06    48
+# beta1         1.0107 0.5355  0.045398  1.01600  2.008 1.00  3000
+# beta2        -0.6984 0.4467 -1.527000 -0.70535  0.195 1.00  3000
+# beta3         0.2984 0.0976  0.115275  0.29945  0.490 1.01   320
 
-mean(out9$sims.list$beta1>0)
-mean(out9$sims.list$beta2<0)
-mean(out9$sims.list$beta3>0)
+mean(out9$sims.list$beta1 > 0)
+mean(out9$sims.list$beta2 < 0)
+mean(out9$sims.list$beta3 > 0)
 # [1] 0.9696667 # Prob gdd1 has positive effect
 # [1] 0.9423333 # Prob gdd2 has negative effect
 # [1] 0.9993333 # Prob lat has positive effect

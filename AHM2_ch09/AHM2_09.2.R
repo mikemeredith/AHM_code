@@ -9,7 +9,6 @@
 
 
 library(AHMbook)
-# library(unmarked)
 
 # 9.2 Data simulation for spatial N-mixture and occupancy models
 # ==============================================================
@@ -47,20 +46,20 @@ s <- simExpCorrRF(theta = 10, size = 50)
 
 # Choose sample sizes: 2500 sites and 3 surveys
 nsites <- 2500 # Number of sites (corresponding to our 50 by 50 grid)
-nreps <- 3 # Number of replicate observations
+nreps <- 3     # Number of replicate observations
 
 # Scale the real Bernese Oberland covariates
 elev <- standardize(bo$elevation)
 forest <- standardize(bo$forest)
 
 # Ecological process
-beta0 <- 2 # Abundance model: intercept
-beta1 <- 2 # Linear effect of elevation: positive
-beta2 <- -2 # Quadratic effect of elevation: negative
+beta0 <- 2           # Abundance model: intercept
+beta1 <- 2           # Linear effect of elevation: positive
+beta2 <- -2          # Quadratic effect of elevation: negative
 loglam0 <- beta0 + beta1 * elev + beta2 * elev^2
 loglam <- beta0 + beta1 * elev + beta2 * elev^2 + c(s$field)
 lam0 <- exp(loglam0) # without spatial autocorrelation
-lam <- exp(loglam) # with spatial autocorrelation
+lam <- exp(loglam)   # with spatial autocorrelation
 
 # ~~~~ extra code for figure 9.3 ~~~~
 # Plot expected counts (lambda) as a function of covariates only,
@@ -77,17 +76,17 @@ par(op)
 
 # Determine actual abundances as Poisson random variables with parameter lam
 N <- rpois(n = nsites, lambda = lam)
-table(N) # Distribution of abundances across sites
+table(N)            # Distribution of abundances across sites
 sum(N > 0) / nsites # Finite-sample occupancy
-(totalN <- sum(N)) # Total population size in all 2500 sites
+(totalN <- sum(N))  # Total population size in all 2500 sites
 
 # Create wind speed observational covariate
 wind <- matrix(rnorm(nsites*nreps), nrow = nsites, ncol = nreps)
 
 # Observation process
-alpha0 <- 0 # logit-linear intercept
-alpha1 <- -1 # slope on forest
-alpha2 <- -1 # slope on wind speed
+alpha0 <- 0   # logit-linear intercept
+alpha1 <- -1  # slope on forest
+alpha2 <- -1  # slope on wind speed
 p <- array(NA, dim = c(nsites, nreps))
 for(j in 1:nreps){
   p[,j] <- plogis(alpha0 + alpha1 * forest + alpha2 * wind[,j])
@@ -102,10 +101,10 @@ str(y)
 # int [1:2500, 1:3] 1 0 0 0 0 0 0 3 0 0 ...
 summary(N)
 summary(c(y))
-# Min. 1st Qu. Median Mean 3rd Qu. Max.
-# 0.000 0.000 1.000 2.877 3.000 66.000
-# Min. 1st Qu. Median Mean 3rd Qu. Max.
-# 0.000 0.000 0.000 1.174 1.000 49.000
+#  Min. 1st Qu. Median  Mean 3rd Qu.   Max.
+# 0.000   0.000  1.000 2.877   3.000 66.000
+#  Min. 1st Qu. Median  Mean 3rd Qu.   Max.
+# 0.000   0.000  0.000 1.174   1.000 49.000
 
 # Compare true and observed total abundance
 (true <- totalN) # True

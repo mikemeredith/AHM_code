@@ -10,10 +10,8 @@
 # Approximate execution time for this code: 75 mins
 
 library(AHMbook)
-# library(unmarked)
 library(abind)
 library(jagsUI)
-# library(AICcmodavg)
 
 # 8.4 Joint occupancy models for “many” species:
 #       joint species distribution models (JSDMS)
@@ -35,17 +33,16 @@ y[y > 1] <- 1 # Array of detection/nondetection data
 str(y)
 
 # Subset sites to a random sample of 1200 (about half)
-# set.seed(1)
 set.seed(1, sample.kind="Rounding")
 sel.sites <- sort(sample(1:2318, 1200, replace = FALSE))
 str(cc <- counts[sel.sites,,])
 str(yy <- y[sel.sites,,])
 
 tmp <- apply(cc, c(1,3), max, na.rm = TRUE)
-summax <- apply(tmp, 2, sum) # p-ignorant estimate of Ntotal
+summax <- apply(tmp, 2, sum)  # p-ignorant estimate of Ntotal
 tmp <- apply(yy, c(1,3), max, na.rm = TRUE)
-nobs <- apply(tmp, 2, sum) # p-ignorant estimate of sum(z)
-sort(nobs) # Look at species ordered by nobs
+nobs <- apply(tmp, 2, sum)    # p-ignorant estimate of sum(z)
+sort(nobs)                    # Look at species ordered by nobs
 
 # Restrict data set according to number of observed occurrences
 sel.species <- which(nobs > 39) # yields about 30 species left
@@ -61,11 +58,11 @@ table(nreps <- dat$sitecovs[sel.sites,'nsurveys']) # 2 or 3 surveys per site
 # Grab, restrict, scale and mean-impute covariates
 library(abind)
 str(xocc <- as.matrix(dat$sitecovs[sel.sites,3:6])) # Occ. covariates
-str(xocc <- cbind(xocc, xocc^2)) # Add squares of covariates
-xocc <- scale(xocc) # Scale column-wise
+str(xocc <- cbind(xocc, xocc^2))   # Add squares of covariates
+xocc <- scale(xocc)                # Scale column-wise
 str(xdet <- dat$dates[sel.sites,]) # Detection covariates
-xdettmp <- standardize(xdet) # Scale matrix-wide
-xdettmp[is.na(xdettmp)] <- 0 # Mean-impute dates of 3rd survey
+xdettmp <- standardize(xdet)       # Scale matrix-wide
+xdettmp[is.na(xdettmp)] <- 0       # Mean-impute dates of 3rd survey
 str(xdet <- abind(xdettmp, xdettmp^2, along = 3) )
 
 # Provide for different numbers of LVs: could try 2, 5, 10, 15
@@ -76,15 +73,15 @@ str(bdata <- list(y = aperm(yy, c(1,3,2)), Xocc = xocc, Xdet = xdet,
     ncov.occ = ncol(xocc), ncov.det = 2, nlv = NLV[1], nsites = nsites,
     nspec = nspec, nreps = nreps))
 # List of 9
-# $ y : num [1:1200, 1:30, 1:3] 0 0 0 1 0 0 0 0 0 0 ...
-# $ Xocc : num [1:1200, 1:8] -1.033 -0.724 -0.413 -1.055 -0.726 ...
-# $ Xdet : num [1:1200, 1:3, 1:2] -1.34 -1.38 -1.42 -1.68 -1.34 ...
+# $ y       : num [1:1200, 1:30, 1:3] 0 0 0 1 0 0 0 0 0 0 ...
+# $ Xocc    : num [1:1200, 1:8] -1.033 -0.724 -0.413 -1.055 -0.726 ...
+# $ Xdet    : num [1:1200, 1:3, 1:2] -1.34 -1.38 -1.42 -1.68 -1.34 ...
 # $ ncov.occ: int 8
 # $ ncov.det: num 2
-# $ nlv : num 2
-# $ nsites : int 1200
-# $ nspec : int 30
-# $ nreps : num [1:1200] 3 3 3 3 3 3 3 3 3 3 ...
+# $ nlv     : num 2
+# $ nsites  : int 1200
+# $ nspec   : int 30
+# $ nreps   : num [1:1200] 3 3 3 3 3 3 3 3 3 3 ...
 
 # Specify model in BUGS language
 cat(file = "JSDMocc.txt", "
