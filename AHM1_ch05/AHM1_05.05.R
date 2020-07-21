@@ -78,7 +78,7 @@ params <- c("alpha0", "alpha1", "alpha2", "alpha3", "sd", "Cmean[1:10]", "mu[1:1
 out1.1 <- bugs(win.data, inits, params, "multiple_linear_regression_model.txt",
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
   # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd(), DIC = FALSE)
-  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd(), DIC = FALSE) # ~~~ for autotesting
+  debug = FALSE, bugs.directory = bugs.dir, DIC = FALSE) # ~~~ for autotesting
 
 out1.1 <- jags(win.data, inits, params, "multiple_linear_regression_model.txt",
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
@@ -105,7 +105,7 @@ params <- c("alpha0", "alpha1", "alpha2", "alpha3", "sd", "mu[1:2]")
 out1.2 <- bugs(win.data, inits, params, "multiple_linear_regression_model.txt",
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
   # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd(), DIC = FALSE)
-  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd(), DIC = FALSE) # ~~~ for autotesting
+  debug = FALSE, bugs.directory = bugs.dir,DIC = FALSE) # ~~~ for autotesting
 
 print(out1.2, 2)
 
@@ -116,7 +116,8 @@ hist(out1.2$sims.list$alpha1, breaks = 100, col = "grey", main = "", ylab = "")
 text(-3500, 580, "B", cex = 2)
 hist(out1.2$sims.list$alpha2, breaks = 100, col = "grey", main = "")
 text(-3700, 580, "C", cex = 2)
-hist(out1.2$sims.list$sd, breaks = 100, col = "grey", main = "", ylim = c(0, 230), ylab = "")
+hist(out1.2$sims.list$sd, breaks = 100, col = "grey", main = "",
+    ylim = c(0, 230), ylab = "")
 text(30, 220, "D", cex = 2)
 hist(out1.2$sims.list$mu[,1], breaks = 100, col = "grey", main = "")
 text(-4000, 480, "E", cex = 2)
@@ -172,7 +173,7 @@ ni <- 6000   ;   nt <- 1   ;   nb <- 1000   ;  nc <- 3
 out1.3 <- bugs(win.data, inits, params, "missing_cov_imputation_model_1.txt",
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
   # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
-  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd()) # ~~~~ for autotesting
+  debug = FALSE, bugs.directory = bugs.dir) # ~~~~ for autotesting
 
 
 # Specify model in BUGS language
@@ -216,7 +217,7 @@ ni <- 6000   ;   nt <- 1   ;   nb <- 1000   ;  nc <- 3
 out1.4 <- bugs(win.data, inits, params, "missing_cov_imputation_model_2.txt",
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
   # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
-  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd()) # ~~~ for autotesting
+  debug = FALSE, bugs.directory = bugs.dir) # ~~~ for autotesting
 
 op <- par(cex = 1.5, lwd = 2)
 plot(elev[1:10]-0.01, out1.3$summary[6:15,1], ylim = c(-10, 10), col = "red",

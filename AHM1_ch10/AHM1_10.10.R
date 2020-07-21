@@ -3,12 +3,13 @@
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
 #
-# Chapter 10. Modeling static occurrence and species distributions using site-occupancy models
+# Chapter 10. Modeling static occurrence and species distributions using
+#             site-occupancy models
 # =========================================================================
 
 library(AHMbook)
 library(R2WinBUGS)
-bd <- "C:/WinBUGS14"
+bd <- "C:/WinBUGS14"  # location od the "WinBUGS14.exe" application
 
 # 10.10 Multi-scale occupancy models
 # ==================================

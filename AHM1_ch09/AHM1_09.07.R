@@ -146,7 +146,8 @@ model{
 Nst <- y+1  # this is for trend model
 inits <- function(){list(N=Nst, beta0=runif(1), beta1=runif(1), beta2=runif(1),
    beta3=runif(1), beta4=runif(1), alpha0=runif(1,3,5), alpha1=runif(1), r = 1)}
-params <-c('beta0', 'beta1', 'beta2', 'beta3', 'beta4', 'alpha0', 'alpha1', 'Ntot', 'D', 'r')
+params <-c('beta0', 'beta1', 'beta2', 'beta3', 'beta4', 'alpha0', 'alpha1',
+    'Ntot', 'D', 'r')
 # ni <- 22000   ;   nb <- 2000   ;   nt <- 1   ;   nc <- 3
 ni <- 2200   ;   nb <- 200   ;   nt <- 1   ;   nc <- 3  # ~~~~~ for testing
 
@@ -240,8 +241,8 @@ ni <- 2200   ;   nb <- 200   ;   nt <- 1   ;   nc <- 3  # ~~~~ for testing
 open2 <- jags (data1, inits, params, "Sollmann2.txt",
   # n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni)
   n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni, parallel=TRUE)
-par(mfrow = c(3,3))   ;   traceplot(open2)   ;   print(open2, 2)
-
+op <- par(mfrow = c(3,3))   ;   traceplot(open2)   ;   print(open2, 2)
+par(op)
 
 
 # 9.7.2.3 The Glorious Integrated HDS/Dail-Madsen Model

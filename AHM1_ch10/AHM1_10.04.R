@@ -3,13 +3,14 @@
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
 #
-# Chapter 10. Modeling static occurrence and species distributions using site-occupancy models
+# Chapter 10. Modeling static occurrence and species distributions using
+#             site-occupancy models
 # =========================================================================
 
 # Approximate execution time for this code: 12 mins
 
 library(R2WinBUGS)
-bugs.dir <- "C:/WinBUGS14"
+bugs.dir <- "C:/WinBUGS14" # location of "WinBUGS14.exe" application
 
 # 10.4 A slightly more complex site-occupancy model with covariates
 # =================================================================
@@ -227,7 +228,7 @@ ni <- 25000   ;   nt <- 10   ;   nb <- 2000   ;   nc <- 3
 out1B <- bugs(win.data, inits, params, "model.txt",
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
   # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
-  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd())  # ~~~~~ for autotesting
+  debug = FALSE, bugs.directory = bugs.dir)  # ~~~~~ for autotesting
 print(out1B, dig = 3)
 
 

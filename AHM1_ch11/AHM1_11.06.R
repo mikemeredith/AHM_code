@@ -396,7 +396,8 @@ ni <- 1200   ;   nt <- 1   ;   nb <- 200   ;   nc <- 3  # ~~~~ for testing
 out8 <- jags(win.data, inits, params, "model8.txt", n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 op <- par(mfrow = c(3,3))
-traceplot(out8, c('delta0.lpsi', 'delta1.lpsi', 'delta0.lp', 'delta1.lp', 'phi0.lpsi', 'phi1.lpsi', 'phi0.lp', 'phi1.lp'))
+traceplot(out8, c('delta0.lpsi', 'delta1.lpsi', 'delta0.lp', 'delta1.lp',
+    'phi0.lpsi', 'phi1.lpsi', 'phi0.lp', 'phi1.lp'))
 par(op)
 print(out8, dig = 3)
 
@@ -503,7 +504,8 @@ out <- jags(win.data, inits, params, "meta.analysis.txt",
 print(out, 3)
 
 lines(seq(200, 2750,5), out$mean$Npred, col = "blue", lwd = 3)
-matlines(seq(200,2750,5), out$summary[6:516,c(3, 7)], col = "blue", lwd = 2, lty= "dashed")
+matlines(seq(200,2750,5), out$summary[6:516,c(3, 7)], col = "blue",
+    lwd = 2, lty= "dashed")
 
 
 op <- par(mfrow = c(3, 3), mar = c(5,4,3,2))

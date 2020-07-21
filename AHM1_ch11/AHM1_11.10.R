@@ -165,7 +165,7 @@ sink()
 # Initial values
 ast <- matrix(rep(1, nspec*nsite), nrow = nsite)
 some.more <- 5          # May have to play with this until JAGS is happy
-Nst <- apply(Yc, c(1,3), max, na.rm = T) + some.more
+Nst <- apply(Yc, c(1,3), max, na.rm = TRUE) + some.more
 Nst[Nst == '-Inf'] <- 20          # May have to play with this, too
 Nst <- Nst
 inits <- function()list(a = ast, N = Nst)
@@ -190,7 +190,7 @@ out11 <- jags(win.data, inits, params, "model11.txt", n.chains = nc,
 op <- par(mfrow = c(3,3))
 traceplot(out11, c("mu.beta0", "sd.beta0", "mu.beta", "sd.beta", "mu.alpha0",
     "sd.alpha0", "mu.alpha", "sd.alpha") )
-    par(op)
+par(op)
 print(out11, 2)
 # ~~~~~ suggest saving for use later ~~~~~~~~~~~~~
 save(out11, file="AHM1_11.10_out11.RData")

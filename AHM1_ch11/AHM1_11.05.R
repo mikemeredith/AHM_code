@@ -8,7 +8,7 @@
 
 library(AHMbook)
 library(R2WinBUGS)
-bugs.dir <- "C:/WinBUGS14"
+bugs.dir <- "C:/WinBUGS14" # location of the "WinBUGS14.exe" application
 library(jagsUI)
 
 # ~~~~~~ this section requires the data prepared in section 11.3 ~~~~~~~~~~
@@ -47,7 +47,7 @@ mdur[NAsites] <- 0                  # impute mean for missing
 
 # Bundle data and summarize input data for BUGS
 str( win.data <- list(C = C, nsite = length(C), ele = ele, forest = forest,
-mdate = mdate, mdur = mdur) )
+    mdate = mdate, mdur = mdur) )
 
 # Specify model in BUGS language
 sink("model1.txt")
@@ -84,7 +84,7 @@ ni <- 6000   ;   nt <- 4   ;   nb <- 2000   ;   nc <- 3
 out1 <- bugs(win.data, inits, params, "model1.txt",
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
   # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
-  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd())  # ~~~~ for autotesting
+  debug = FALSE, bugs.directory = bugs.dir)  # ~~~~ for autotesting
 
 # Call JAGS from R (ART <1 min), check convergence and summarize posteriors
 library(jagsUI)
@@ -196,12 +196,11 @@ ni <- 6000   ;   nt <- 4   ;   nb <- 2000   ;   nc <- 3
 out2 <- bugs(win.data, inits, params, "model2.txt",
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
   # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
-  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd())  # ~~~~ for autotesting
+  debug = FALSE, bugs.directory = bugs.dir)  # ~~~~ for autotesting
 
 # Call JAGS from R (ART 0.6 min)
 out2J <- jags(win.data, inits, params, "model2.txt",
-  # n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
-  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)  # ~~~~~ for testing
+  n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
 jagsUI::traceplot(out2J)   ;   print(out2J, dig = 2)
 
 
@@ -251,7 +250,7 @@ ni <- 6000   ;   nt <- 4   ;   nb <- 2000   ;   nc <- 3
 out3 <- bugs(win.data, inits, params, "model3.txt",
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
   # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
-  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd())  # ~~~~ for autotesting
+  debug = FALSE, bugs.directory = bugs.dir)  # ~~~~ for autotesting
 
 # Call JAGS from R (ART 0.7 min)
 out3J <- jags(win.data, inits, params, "model3.txt",

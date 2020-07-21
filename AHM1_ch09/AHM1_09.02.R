@@ -100,7 +100,8 @@ simHDSg <- function(type = "line", nsites = 100, lambda.group = 0.75,
     n <- rep(0, nsites)
     n[as.numeric(rownames(ttt))] <- ttt
     plot(habitat, n, main = "Observed group counts (n) vs. habitat", frame = FALSE)
-    plot(table(data[,"gs"]), main = "Observed group sizes", ylab = "Frequency", frame = FALSE)
+    plot(table(data[,"gs"]), main = "Observed group sizes", ylab = "Frequency",
+        frame = FALSE)
     par(op)
   }
 

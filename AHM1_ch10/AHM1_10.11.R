@@ -3,7 +3,8 @@
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
 #
-# Chapter 10. Modeling static occurrence and species distributions using site-occupancy models
+# Chapter 10. Modeling static occurrence and species distributions using
+#             site-occupancy models
 # =========================================================================
 
 # Approximate execution time for this code: 5 mins
@@ -81,7 +82,7 @@ params <- c("int.psi", "int.theta", "int.p", "beta.lpsi", "beta.ltheta",
 
 # MCMC settings
 # ni <- 25000   ;   nt <- 2   ;   nb <- 2000   ;   nc <- 3
-ni <- 2500   ;   nt <- 1   ;   nb <- 200   ;   nc <- 3  # ~~~~~ reduce numbers for testing
+ni <- 2500   ;   nt <- 1   ;   nb <- 200   ;   nc <- 3  # ~~~ for testing
 
 # Call JAGS (ART 15 min) and summarize posterior
 out <- jags(win.data, inits, params, "model.txt", n.chains = nc,
@@ -140,13 +141,13 @@ for(i in 1:simreps){
 }
 )
 
-# ~~~~~ the following code won't work because the 'data' object was 'rm'ed in the loop ~~~~~~
+# ~~~~~ the 'data' object was 'rm'ed in the loop ~~~~~~
 # Create a new one with the same arguments
    data <- sim3Occ(nunit = 500, nsubunit = 5, nrep = 1, mean.psi = 0.8,
       beta.Xpsi = 1, sd.logit.psi = 0.4, mean.theta = 0.6,
       theta.time.range = c(-1, 1), beta.Xtheta = 0, sd.logit.theta = 0.6,
       mean.p = 0.4, p.time.range = c(0,0), beta.Xp = 0, sd.logit.p = 0.8)
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Visualize results
 op <- par(mfrow = c(1,3), mar = c(5,5,3,2), cex.lab = 1.5, cex.axis = 1.5,

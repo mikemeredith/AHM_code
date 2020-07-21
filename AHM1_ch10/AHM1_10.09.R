@@ -3,7 +3,8 @@
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
 #
-# Chapter 10. Modeling static occurrence and species distributions using site-occupancy models
+# Chapter 10. Modeling static occurrence and species distributions using
+#             site-occupancy models
 # =========================================================================
 
 # Run time with the full number of iterations: 23 mins
@@ -156,16 +157,20 @@ pred.det.dur <- predict(fm20, type="det", newdata=newData, appendData=TRUE)
 # Plot predictions against unstandardized 'prediction covs'
 op <- par(mfrow = c(2,2), mar = c(5,5,2,3), cex.lab = 1.2)
 plot(pred.occ.elev[[1]] ~ orig.elev, type = "l", lwd = 3, col = "blue",
-    ylim = c(0,1), las = 1, ylab = "Pred. occupancy prob.", xlab = "Elevation (m)", frame = FALSE)
+    ylim = c(0,1), las = 1, ylab = "Pred. occupancy prob.",
+    xlab = "Elevation (m)", frame = FALSE)
 matlines(orig.elev, pred.occ.elev[,3:4], lty = 1, lwd = 1, col = "grey")
 plot(pred.occ.forest[[1]] ~ orig.forest, type = "l", lwd = 3, col = "blue",
-    ylim = c(0,1), las = 1, ylab = "Pred. occupancy prob.", xlab = "Forest cover (%)", frame = FALSE)
+    ylim = c(0,1), las = 1, ylab = "Pred. occupancy prob.",
+    xlab = "Forest cover (%)", frame = FALSE)
 matlines(orig.forest, pred.occ.forest[,3:4], lty = 1, lwd = 1, col = "grey")
 plot(pred.det.date[[1]] ~ orig.date, type = "l", lwd = 3, col = "blue",
-    ylim = c(0,1), las = 1, ylab = "Pred. detection prob.", xlab = "Date (1 = 1 April)", frame = FALSE)
+    ylim = c(0,1), las = 1, ylab = "Pred. detection prob.",
+    xlab = "Date (1 = 1 April)", frame = FALSE)
 matlines(orig.date, pred.det.date[,3:4], lty = 1, lwd = 1, col = "grey")
 plot(pred.det.dur[[1]] ~ orig.duration, type = "l", lwd = 3, col = "blue",
-    ylim = c(0,1), las = 1, ylab = "Pred. detection prob.", xlab = "Survey duration (min)", frame = FALSE)
+    ylim = c(0,1), las = 1, ylab = "Pred. detection prob.",
+    xlab = "Survey duration (min)", frame = FALSE)
 matlines(orig.duration, pred.det.dur[,3:4], lty = 1, lwd = 1, col = "grey")
 par(op)
 
@@ -229,7 +234,7 @@ elev[elev > 2250] <- NA
 r1 <- mask(r1, elev)
 
 # Plot species distribution map (Fig. 10-14 left)
-par(mfrow = c(1,2), mar = c(1,2,2,5))
+op <- par(mfrow = c(1,2), mar = c(1,2,2,5))
 mapPalette <- colorRampPalette(c("grey", "yellow", "orange", "red"))
 plot(r1, col = mapPalette(100), axes = FALSE, box = FALSE,
     main = "Red squirrel distribution in 2007")
@@ -252,7 +257,7 @@ plot(r2, col = mapPalette(100), axes = FALSE, box = FALSE, main = "Uncertainty m
 # plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 points(data$coordx, data$coordy, pch = "+", cex = 0.8)
-
+par(op)
 
 # Get extent of squirrel occurrence in 2007
 sum(predCH$Predicted)                      # All quadrats
@@ -277,7 +282,8 @@ Eocc <- function(fm) {
 # ~~~~~ changes to unmarked::parboot ~~~~~~~~~~~~~~~~~~~~~~~
 # This now has a parallel' argument with default TRUE, but it does not work with Eocc
 # system.time(Eocc.boot <- parboot(fm20, Eocc, nsim=1000, report=10)) # 100 sec
-system.time(Eocc.boot <- parboot(fm20, Eocc, nsim=1000, report=10, parallel=FALSE)) # 100 sec
+system.time(Eocc.boot <- parboot(fm20, Eocc, nsim=1000, report=10,
+    parallel=FALSE)) # 100 sec
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 plot(Eocc.boot)         # Plot bootstrap distribution of extent of occurrence
 quantile(Eocc.boot@t.star, c(0.025, 0.975))

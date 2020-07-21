@@ -208,7 +208,7 @@ ranef(lmm1)                                   # Print random effects
 alpha_j <- fixef(lmm1)[1]+ranef(lmm1)$pop[,1]
 cbind(fixed = coef(lm)[1:3], random = alpha_j)
 
-par(lwd = 3)
+op <- par(lwd = 3)
 abline(lm$coef[1], lm$coef[4], col = "red", lty = 2)
 abline(lm$coef[2], lm$coef[4], col = "blue", lty = 2)
 abline(lm$coef[3], lm$coef[4], col = "green", lty = 2)
@@ -218,6 +218,7 @@ abline(alpha_j[3], fixef(lmm1)[2], col = "green")
 abline(fixef(lmm1), col = "black")
 legend(6.5, 14, c("Catalonia", "Aragon", "Navarra"), col=c("blue", "green", "red"),
     lty = 1, pch = 16, bty = "n", cex = 1.5)
+par(op)
 
 summary(lmm2 <- lmer(wing ~ body + (1|pop) + (0+body|pop)))
 

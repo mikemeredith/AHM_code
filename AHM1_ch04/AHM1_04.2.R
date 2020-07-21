@@ -52,7 +52,8 @@ lambda.matrix <- array(NA, dim = c(100, 100)) # Prediction matrix,
 # for every combination of values of elevation and forest cover
 for(i in 1:100){
   for(j in 1:100){
-    lambda.matrix[i, j] <- exp(beta0 + beta1 * cov1[i] + beta2 * cov2[j] + beta3 * cov1[i] * cov2[j])
+    lambda.matrix[i, j] <- exp(beta0 + beta1 * cov1[i] + beta2 * cov2[j] +
+        beta3 * cov1[i] * cov2[j])
   }
 }
 
@@ -105,7 +106,8 @@ for(i in 1:100){
     p.matrix[i, j] <- plogis(alpha0 + alpha1 * cov1[i] + alpha2 * cov2[j] + alpha3 * cov1[i] * cov2[j])
   }
 }
-image(x = cov1, y = cov2, z = p.matrix, col = mapPalette(100), xlab = "Elevation", ylab = "Wind speed", cex.lab = 1.2)
+image(x = cov1, y = cov2, z = p.matrix, col = mapPalette(100),
+    xlab = "Elevation", ylab = "Wind speed", cex.lab = 1.2)
 contour(x = cov1, y = cov2, z = p.matrix, add = TRUE, lwd = 1)
 title(main = "B")
 matpoints(elev, wind, pch="+", cex=0.7, col = "black")
@@ -115,7 +117,8 @@ for (i in 1:J){                          # Generate counts
   C[,i] <- rbinom(n = M, size = N, prob = p[,i])
 }
 
-head(cbind("True N" = N, "1st count" = C[,1], "2nd count" = C[,2], "3rd count" = C[,3]), 10)                    # First 10 rows (= sites)
+head(cbind("True N" = N, "1st count" = C[,1], "2nd count" = C[,2],
+    "3rd count" = C[,3]), 10)                    # First 10 rows (= sites)
 
 table(C)
 

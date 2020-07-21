@@ -154,7 +154,8 @@ function(N=1000, beta = 1, sigma=1, keep.all=FALSE, B=B, model="halfnorm"){
      u2 <- u2[y==1]
      d <- d[y==1]   }
   # Output
-  return(list(model=model, N=N, beta=beta, B=B, u1=u1, u2=u2, d=d, y=y, N.real=N.real, Habitat=x, grid=gr))
+  return(list(model=model, N=N, beta=beta, B=B, u1=u1, u2=u2, d=d, y=y,
+      N.real=N.real, Habitat=x, grid=gr))
 }
 
 # Generate one data set and harvest the output
@@ -432,7 +433,7 @@ params <- c("sigma", "Ntotal", "beta1", "beta0", "D", "lam0", "N")
 
 # MCMC settings
 # ni <- 12000   ;   nb <- 2000   ;   nthin <- 2   ;   nc <- 3
-ni <- 1200   ;   nb <- 200   ;   nthin <- 1   ;   nc <- 3  # ~~~~~~~~ for testing
+ni <- 1200   ;   nb <- 200   ;   nthin <- 1   ;   nc <- 3  # ~~~ for testing
 
 # Call JAGS, check convergence and summarize the results
 out3 <- jags(data, inits, params, "spatialHDS.txt", n.thin=nthin,

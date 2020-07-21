@@ -283,7 +283,7 @@ grid <- CH[,c("x", "y")]
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Draw two maps of Swiss elevation and forest cover (Fig. 7-10)
-par(mfrow = c(1,2), mar = c(1,2,3,5))
+op <- par(mfrow = c(1,2), mar = c(1,2,3,5))
 mapPalette1 <- colorRampPalette(c("grey", "yellow", "orange", "red"))
 mapPalette2 <- colorRampPalette(c("grey", "lightgreen", "darkgreen"))
 r1 <- rasterFromXYZ(cbind(x = CH$x, y = CH$y, z = CH$elevation))
@@ -297,7 +297,7 @@ plot(r2, col = mapPalette2(100), axes = FALSE, box = FALSE, main = "Forest cover
 # plot(rivers, col = "dodgerblue", add = TRUE)
 # plot(border, col = "transparent", lwd = 1.5, add = TRUE)
 # plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
-
+par(op)
 
 # Standardize elevation for all grid cells using the mean at sample plots
 elev.mean <- attr(siteCovs(mhb.umf)$elev, "scaled:center")
@@ -325,7 +325,7 @@ r1 <- mask(r1, elev)
 r2 <- mask(r2, elev)
 
 # Draw maps of jay density and standard error of density (Fig. 7–11)
-par(mfrow = c(1,2), mar = c(1,2,3,5))
+op <- par(mfrow = c(1,2), mar = c(1,2,3,5))
 plot(r1, col = mapPalette1(100), axes = FALSE, box = FALSE,
     main = "Density of European Jay", zlim = c(0, 10))
 # plot(rivers, col = "dodgerblue", add = TRUE)
@@ -336,7 +336,7 @@ plot(r2, col = mapPalette1(100), axes = FALSE, box = FALSE,
 # plot(rivers, col = "dodgerblue", add = TRUE)
 # plot(border, col = "transparent", lwd = 1.5, add = TRUE)
 # plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
-
+par(op)
 
 
 # 7.9.6 Population size of jays in Switzerland

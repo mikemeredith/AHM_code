@@ -3,7 +3,8 @@
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
 #
-# Chapter 10. Modeling static occurrence and species distributions using site-occupancy models
+# Chapter 10. Modeling static occurrence and species distributions using
+#             site-occupancy models
 # =========================================================================
 
 # Approximate execution time for this code: 10 mins
@@ -136,7 +137,7 @@ params <- c("alpha1", "beta1", "psi1", "p1", "fix.terms.occ",
 
 # MCMC settings
 # ni <- 100000   ;   nb <- 10000   ;   nt <- 90   ;   nc <- 3
-ni <- 10000   ;   nb <- 1000   ;   nt <- 10   ;   nc <- 3  # ~~~~ reduce for testing
+ni <- 10000   ;   nb <- 1000   ;   nt <- 10   ;   nc <- 3  # ~~~~ for testing
 
 # Call JAGS from R (ART 95 min) and summarize posteriors
 system.time(fhm <- jags(win.data, inits, params, "hypermodel.txt",

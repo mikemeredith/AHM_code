@@ -77,7 +77,7 @@ bugs.dir <- "C:/WinBUGS14/"          # Place where your WinBUGS installed
 out1B <- bugs(win.data, inits, params, "multiple_linear_regression_model.txt",
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
   # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
-  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd()) # ~~~~~ for autotesting
+  debug = FALSE, bugs.directory = bugs.dir) # ~~~~~ for autotesting
 
 
 # Overview of the object created by bugs
@@ -91,7 +91,7 @@ out1OB <- bugs(data=win.data, inits=inits, parameters.to.save = params,
     model.file = "multiple_linear_regression_model.txt",
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
     # debug = TRUE, working.directory = getwd())
-    debug = FALSE, working.directory = getwd()) # ~~~~~ for autotesting
+    debug = FALSE) # ~~~~~ for autotesting
 detach("package:R2OpenBUGS", unload=TRUE)  # Otherwise R2WinBUGS is 'masked'
 
 
@@ -134,7 +134,8 @@ plot(out1J)              # For JAGS analysis from jagsUI
 par(op)
 
 op <- par(mfrow = c(1, 2), mar = c(5,4,2,2), cex.main = 1)
-whiskerplot(out1J, param = c('alpha0', 'alpha1', 'alpha2', 'alpha3', 'sd', 'resi[c(1,3, 5:7)]'))    # For JAGS analysis from jagsUI
+whiskerplot(out1J, param = c('alpha0', 'alpha1', 'alpha2', 'alpha3', 'sd',
+    'resi[c(1,3, 5:7)]'))    # For JAGS analysis from jagsUI
 library(denstrip)      # Similar, but more beautiful, with package denstrip
 plot(out1J$alpha0, xlim=c(-4, 4), ylim=c(1, 5), xlab="", ylab="", type="n",
     axes = FALSE, main = "Density strip plots")
@@ -149,11 +150,14 @@ par(op)
 (fm <- summary(lm(Cmean ~ elev*forest)))
 
 
-print(cbind(out1B$summary[1:5, 1:2], out1J$summary[1:5, 1:2], rbind(fm$coef[,1:2], c(fm$sigma, NA))), 4)
+print(cbind(out1B$summary[1:5, 1:2], out1J$summary[1:5, 1:2],
+    rbind(fm$coef[,1:2], c(fm$sigma, NA))), 4)
 
 plot(lm(Cmean ~ elev*forest))
 
-mu <- out1B$mean$alpha0 + out1B$mean$alpha1 * elev + out1B$mean$alpha2 * forest + out1B$mean$alpha3 * elev * forest       # Compute the posterior mean of mu
+# Compute the posterior mean of mu
+mu <- out1B$mean$alpha0 + out1B$mean$alpha1 * elev +
+    out1B$mean$alpha2 * forest + out1B$mean$alpha3 * elev * forest
 
 op <- par(mfrow = c(2, 2), mar = c(5,4,2,2), cex.main = 1)
 plot(1:M, out1B$summary[6:272, 1], xlab = "Order of values",
@@ -210,7 +214,8 @@ abline(h = c(2.5, 2.8), col = "red", lwd = 2)
 abline(v = c(-1.9, -1.6), col = "red", lwd = 2)
 
 
-mean(out1B$sims.list$alpha1 < -1.6 & out1B$sims.list$alpha1 > -1.9 & out1B$sims.list$alpha2 > 2.5 & out1B$sims.list$alpha2 < 2.8)
+mean(out1B$sims.list$alpha1 < -1.6 & out1B$sims.list$alpha1 > -1.9 &
+    out1B$sims.list$alpha2 > 2.5 & out1B$sims.list$alpha2 < 2.8)
 
 crazy.ratio <- out1B$sims.list$alpha2 / abs(out1B$sims.list$alpha1)
 hist(crazy.ratio, main = "", breaks = 100, col = "grey", freq = FALSE)

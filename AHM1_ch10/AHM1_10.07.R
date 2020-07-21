@@ -3,7 +3,8 @@
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
 #
-# Chapter 10. Modeling static occurrence and species distributions using site-occupancy models
+# Chapter 10. Modeling static occurrence and species distributions using
+#             site-occupancy models
 # =========================================================================
 
 # Approximate execution time for this code: 10 mins
@@ -51,7 +52,7 @@ for(j in 1:3) {               # Loop j over site factor
 )
 
 # Plot results
-par(mfrow = c(3,3), mar = c(4,5,3,1), cex.main = 1.2)
+op <- par(mfrow = c(3,3), mar = c(4,5,3,1), cex.main = 1.2)
 for(j in 1:3){
    for(k in 1:3){
       lab <- paste(nsites[j],"sites,", nsurveys[k],"surveys")
@@ -62,4 +63,4 @@ for(j in 1:3){
          col = "blue", lwd = 2)
    }
 }
-
+par(op)

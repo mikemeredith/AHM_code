@@ -74,7 +74,7 @@ for(i in 1:200){
    likelihood[i] <- jointdis(y, K=10, p=p.grid[i])
 }
 
-par(mfrow=c(2,1), mar = c(5,5,3,2))
+op <- par(mfrow=c(2,1), mar = c(5,5,3,2))
 plot(p.grid, likelihood, xlab="", ylab="Likelihood", xlim=c(0,1), ty = "l", main = "Likelihood function")
 p.hat <- p.grid[likelihood == max(likelihood)]
 abline(v = p.hat)
@@ -84,6 +84,7 @@ plot(density(out), xlim=c(0,1), main = "Posterior distribution", xlab = "p", yla
 p.mean <- mean(out)
 abline(v = p.mean)
 text(p.mean, 0.5, paste("Post. mean = ", round(p.mean, 3),sep=" "))
+par(op)
 
 
 # 2.6.3 Metropolis algorithm for multi-parameter models
@@ -257,4 +258,4 @@ abline(h = -3, col = "red", lwd = 2)
 plot(out[,2], type="l", xlab="Iteration", ylab="beta1")
 abline(h = mean(out[,2]), col = "blue", lwd = 2)
 abline(h = 2, col = "red", lwd = 2)
-
+par(op)

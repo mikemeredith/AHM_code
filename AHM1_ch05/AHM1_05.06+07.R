@@ -33,7 +33,9 @@ facFor[forest > 0.5] <- 4                   # Factor level 4
 table(facFor)                               # every site assigned a level OK
 
 op <- par(mfrow = c(1, 2), mar = c(5,5,3,2), cex.lab = 1.5, cex.axis = 1.5)
-plot(Cmean ~ factor(facFor), col = c("red", "blue", "green", "grey"), xlab = "Forest cover class", ylab = "Mean count of great tits", frame.plot = FALSE, ylim = c(0,20))
+plot(Cmean ~ factor(facFor), col = c("red", "blue", "green", "grey"),
+    xlab = "Forest cover class", ylab = "Mean count of great tits",
+    frame.plot = FALSE, ylim = c(0,20))
 text(0.8, 20, "A", cex=1.6)
 
 
@@ -78,7 +80,7 @@ ni <- 6000   ;   nt <- 1   ;   nb <- 1000   ;  nc <- 3
 out3 <- bugs(win.data, inits, params, "ANCOVA1.txt",
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
   # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
-  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd())  # ~~~~ for automated testing
+  debug = FALSE, bugs.directory = bugs.dir)  # ~~~~ for automated testing
 
 out3J <- jags(win.data, inits, params, "ANCOVA1.txt", n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb)
@@ -132,7 +134,7 @@ ni <- 6000   ;   nt <- 1   ;   nb <- 1000   ;  nc <- 3
 out4 <- bugs(win.data, inits, params, "ANCOVA2.txt",
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
   # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
-  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd())  # ~~~~ for automated testing
+  debug = FALSE, bugs.directory = bugs.dir)  # ~~~~ for automated testing
 
 system.time(out4J <- jags(win.data, inits, params, "ANCOVA2.txt",
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb))

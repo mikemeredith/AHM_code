@@ -71,7 +71,7 @@ ni <- 6000   ;   nt <- 1   ;   nb <- 1000   ;  nc <- 3
 out6 <- bugs(win.data, inits, params, "Bernoulli_GLM.txt",
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
   # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
-  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd())  # ~~~~ for autotesting
+  debug = FALSE, bugs.directory = bugs.dir)  # ~~~~ for autotesting
 
 out6J <- jags(win.data, inits, params, "Bernoulli_GLM.txt",
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)

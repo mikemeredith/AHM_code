@@ -22,10 +22,11 @@ g <- function(x, sig) exp(-x^2/(2*sig^2)) # Function definition
 g(30, sig=sigma)    # Detection probability at a distance of 30m
 
 # Plot the detection function
-par(mfrow=c(1,2))
+op <- par(mfrow=c(1,2))
 curve(g(x, sig=30), 0, 100, xlab="Distance (x)", ylab="Detection prob.",
     lwd = 2, frame = FALSE)
 curve(g(x, sig=60), 0, 100, add=TRUE, lty = 2, lwd = 2)
+par(op)
 
 # Define function to simulate non-hierarchical line transect data
 sim.ldata <- function(N = 200, sigma = 30){
@@ -78,15 +79,15 @@ Lfull <- function(parm){    # Define full nll
 optim(c(log(30), log(4)), Lfull, hessian=TRUE)
 
 
-pbar<- integrate(g, 0, 100, sig=exp(3.26))$value/100
-n<- length(tmp$x)
+pbar <- integrate(g, 0, 100, sig=exp(3.26))$value/100
+n <- length(tmp$x)
 
-(Nhat.condl<- n/pbar)
-(Dhat.condl<- Nhat.condl/(10*.2))
+(Nhat.condl <- n/pbar)
+(Dhat.condl <- Nhat.condl/(10*.2))
 
-n0hat<- exp(5.01)
-(Nhat.full<- n + n0hat)
-(Dhat.full<- Nhat.full/(10*.2))
+n0hat <- exp(5.01)
+(Nhat.full <- n + n0hat)
+(Dhat.full <- Nhat.full/(10*.2))
 
 
 
@@ -335,7 +336,8 @@ Lik.cond.point <- function(parm, data, B){
 }
 
 # Fit the model
-mle3 <- optim(c(0), Lik.cond.point, data=tmp$d, B=B, method="Brent", hessian=TRUE, lower=-10, upper=10)
+mle3 <- optim(c(0), Lik.cond.point, data=tmp$d, B=B, method="Brent",
+    hessian=TRUE, lower=-10, upper=10)
 
 # Inspect the output
 mle3

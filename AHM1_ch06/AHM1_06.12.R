@@ -18,7 +18,8 @@ simpleNmix(nyear = 12, nrep = 4, beta0 = 2, beta1 = 0.1, alpha0 = 0.5,
     alpha1 = -0.1, alpha2 = 1)
 
 # Define function to simulate such data
-simpleNmix <- function(nyear = 12, nrep = 4, beta0 = 2, beta1 = 0.1, alpha0 = 0.5, alpha1 = -0.1, alpha2 = 1){
+simpleNmix <- function(nyear = 12, nrep = 4, beta0 = 2, beta1 = 0.1,
+    alpha0 = 0.5, alpha1 = -0.1, alpha2 = 1){
   # Simple function simulates data under binomial N-mixture model where you have
   # a single site that is survyed over 'nyear' primary sampling periods
   # ('seasons', 'years'), within which there are 'nrep' secondary samples each
@@ -73,15 +74,18 @@ hist(results[,1], breaks = 100, col = "grey", main = "lambda(Int) Nmix", xlim = 
 abline(v = data$beta0, col = "red", lwd = 3)
 abline(v = mean(results[,1]), col = "blue", lwd = 3)
 
-hist(results[,2], breaks = 100, col = "grey", main = "lambda(Slope Time) Nmix", xlim = c(-0.1, 0.3))
+hist(results[,2], breaks = 100, col = "grey", main = "lambda(Slope Time) Nmix",
+    xlim = c(-0.1, 0.3))
 abline(v = data$beta1, col = "red", lwd = 3)
 abline(v = mean(results[,2]), col = "blue", lwd = 3)
 
-hist(results[,6], breaks = 100, col = "grey", main = "lambda(Int) GLM", xlim = c(0, 4))
+hist(results[,6], breaks = 100, col = "grey", main = "lambda(Int) GLM",
+    xlim = c(0, 4))
 abline(v = data$beta0, col = "red", lwd = 3)
 abline(v = mean(results[,6]), col = "blue", lwd = 3)
 
-hist(results[,7], breaks = 100, col = "grey", main = "lambda(Slope Time) GLM", , xlim = c(-0.1, 0.3))
+hist(results[,7], breaks = 100, col = "grey", main = "lambda(Slope Time) GLM",
+    xlim = c(-0.1, 0.3))
 abline(v = data$beta1, col = "red", lwd = 3)
 abline(v = mean(results[,7]), col = "blue", lwd = 3)
 par(op)

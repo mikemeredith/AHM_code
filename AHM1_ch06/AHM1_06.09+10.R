@@ -234,12 +234,12 @@ map.Nmix.resi(fm5ZIP, x = tits$coordx, y = tits$coordy) # Map of average residua
 
 
 binFittedP <- fitted(fm5) %/% 2.5                     # Bin fitted values
-mMeanP <- tapply(fitted(fm5)^2, binFittedP, mean, na.rm = T)   # Mean mean
-mVarP <- tapply(residuals(fm5)^2, binFittedP, mean, na.rm = T) # Mean variance
+mMeanP <- tapply(fitted(fm5)^2, binFittedP, mean, na.rm = TRUE)   # Mean mean
+mVarP <- tapply(residuals(fm5)^2, binFittedP, mean, na.rm = TRUE) # Mean variance
 nsampleP <- table(binFittedP)                         # Sample size
 binFittedNB <- fitted(fm5NB) %/% 2.5
-mMeanNB <- tapply(fitted(fm5NB)^2, binFittedNB, mean, na.rm = T)
-mVarNB <- tapply(residuals(fm5NB)^2, binFittedNB, mean, na.rm = T)
+mMeanNB <- tapply(fitted(fm5NB)^2, binFittedNB, mean, na.rm = TRUE)
+mVarNB <- tapply(residuals(fm5NB)^2, binFittedNB, mean, na.rm = TRUE)
 nsampleNB <- table(binFittedNB)
 plot(mMeanP, mVarP, xlab = "Binned mean fitted response",
     ylab = "Mean variance of response", frame = FALSE, cex = log(nsampleP),
@@ -265,7 +265,8 @@ predict(fm5ZIP, type="det", newdata=pNewData)
 
 
 # Predictions for lambda only, incl. SE and CIs, with overdispersion
-predictSE(fm5ZIP, newdata=lamNewData, print.matrix = TRUE, type="response", parm.type = "lambda", c.hat = 2.47)
+predictSE(fm5ZIP, newdata=lamNewData, print.matrix = TRUE, type="response",
+    parm.type = "lambda", c.hat = 2.47)
 
 
 # Predictions for lambda and p, incl. SE and with overdispersion, but no CIs
@@ -305,7 +306,8 @@ newData <- data.frame(elev=0, forest=0, iLength=1/rlength)
 pred <- predictSE(fm5ZIP, parm.type="lambda", newdata=newData, c.hat = 2.47)
 par(mar = c(5,5,3,2), cex.lab = 1.5, cex.axis = 1.3)
 plot(rlength, pred[[1]], type = "l", lwd = 3, col = "blue", frame = FALSE,
-    xlab = "Transect length (km)", ylab = "Exposed population (lambda)", ylim = c(0, 16), axes = FALSE)
+    xlab = "Transect length (km)", ylab = "Exposed population (lambda)",
+    ylim = c(0, 16), axes = FALSE)
 axis(1, at = seq(2,30,2))       ;      axis(2)
 abline(v = c(1.2, 5.135, 9.4), lwd = 2)
 matlines(rlength, cbind(pred[[1]]-pred[[2]], pred[[1]]+pred[[2]]),
@@ -496,7 +498,7 @@ r1 <- mask(r1, elev)
 mapPalette <- colorRampPalette(c("grey", "yellow", "orange", "red"))
 
 # Map expected abundance of great tits in Switzerland in 2013
-par(mfrow = c(1,2), mar = c(1,1,2,4))
+op <- par(mfrow = c(1,2), mar = c(1,1,2,4))
 plot(r1, col = mapPalette(100), axes = FALSE, box = FALSE, main ="")
 # ~~~~~ these shape files were not distributed ~~~~~~~~~~~~~~
 # lakes <- readOGR(".", "lakes")
@@ -523,7 +525,7 @@ plot(r2, col = mapPalette(100), axes = FALSE, box = FALSE, main ="")
 # plot(border, col = "transparent", lwd = 1.5, add = TRUE)
 # plot(lakes, col = "skyblue", border = "royalblue", add = TRUE)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+par(op)
 
 # Predictions for p with overdispersion (very slow!)
 newData <- data.frame(elev = (CH$elev-elev.mean)/elev.sd, date=0, dur=0,

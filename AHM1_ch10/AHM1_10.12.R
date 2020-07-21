@@ -3,12 +3,13 @@
 #   Volume 1: Prelude and Static models
 #   Marc Kéry & J. Andy Royle
 #
-# Chapter 10. Modeling static occurrence and species distributions using site-occupancy models
+# Chapter 10. Modeling static occurrence and species distributions using
+#             site-occupancy models
 # =========================================================================
 
 library(AHMbook)
 library(R2WinBUGS)
-bd <- "C:/WinBUGS14"
+bd <- "C:/WinBUGS14" # location of the "WinBUGS14.exe" application
 
 # 10.12 Models for data along transects: Poisson, exponential,
 #       Weibull and removal observation models
@@ -187,7 +188,7 @@ plot(minutes, p.pred1, xlab = "Minutes after 6.00 hours (i.e., 7.00 – 19.00h)",
 plot(duration, p.pred2, xlab = "Survey duration (min)",
     ylab = "Detection prob.", ylim = c(0, 1), type = "l", col = "blue",
     lwd = 3, frame = FALSE)
-
+par(op)
 
 # 10.12.3 Occupancy models with removal design observation process (no code)
 # ------------------------------------------------------------------------

@@ -8,7 +8,9 @@
 # 4.3 Packaging everything in a function
 # ======================================
 # Function definition with set of default values
-data.fn <- function(M = 267, J = 3, mean.lambda = 2, beta1 = -2, beta2 = 2, beta3 = 1, mean.detection = 0.3, alpha1 = 1, alpha2 = -3, alpha3 = 0, show.plot = TRUE){
+data.fn <- function(M = 267, J = 3, mean.lambda = 2, beta1 = -2,
+    beta2 = 2, beta3 = 1, mean.detection = 0.3, alpha1 = 1, alpha2 = -3,
+    alpha3 = 0, show.plot = TRUE){
 #
 # Function to simulate point counts replicated at M sites during J occasions.
 # Population closure is assumed for each site.
@@ -112,7 +114,8 @@ return(list(M = M, J = J, mean.lambda = mean.lambda, beta0 = beta0, beta1 = beta
 
 data.fn()                  # Execute function with default arguments
 data.fn(show.plot = FALSE) # same, without plots
-data.fn(M = 267, J = 3, mean.lambda = 2, beta1 = -2, beta2 = 2, beta3 = 1, mean.detection = 0.3, alpha1 = 1, alpha2 = -3, alpha3 = 0) # Explicit defaults
+data.fn(M = 267, J = 3, mean.lambda = 2, beta1 = -2, beta2 = 2, beta3 = 1,
+    mean.detection = 0.3, alpha1 = 1, alpha2 = -3, alpha3 = 0) # Explicit defaults
 data <- data.fn()          # Assign results to an object called 'data'
 
 simrep <- 10000
@@ -129,9 +132,9 @@ points(SUMMAXC[order(NTOTAL)], col = "blue")
 data.fn(J = 2)              # Only 2 surveys
 data.fn(J = 1)              # No temporal replicate
 data.fn(M = 1, J = 100)     # No spatial replicates, but 100 counts
-data.fn(alpha3 = 1)          # With interaction elev-wind on p ## see errata
+data.fn(alpha3 = 1)         # With interaction elev-wind on p ## see errata
 data.fn(M = 267, J = 3, mean.lambda = 2, beta1 = -2, beta2 = 2, beta3 = 1,
-    mean.detection = 1)         # No obs. process (i.e., p = 1, perfect detection)
+    mean.detection = 1)     # No obs. process (i.e., p = 1, perfect detection)
 data.fn(mean.lambda = 50)   # Really common species
 data.fn(mean.lambda = 0.05) # Really rare species
 

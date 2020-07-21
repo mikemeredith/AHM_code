@@ -62,7 +62,8 @@ dur[is.na(dur)] <- 0   ;   dur2 <- dur^2
 iRoute <- umf@siteCovs$iLength
 
 # Design matrix for abundance model (no intercept)
-lamDM <- model.matrix(~ elev + elev2 + forest + forest2 + elev:forest + elev:forest2 + iRoute)[,-1]
+lamDM <- model.matrix(~ elev + elev2 + forest + forest2 + elev:forest +
+    elev:forest2 + iRoute)[,-1]
 
 
 # Specify model in BUGS language
@@ -176,7 +177,7 @@ ni <- 5000    ;    nt <- 1    ;    nb <- 1000    ;    nc <- 3  # ~~~~ for testin
 out1 <- bugs(win.data1, inits, params, "ZIPNmix.txt",
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
   # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
-  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd())  #  ~~~ for autotesting
+  debug = FALSE, bugs.directory = bugs.dir)  #  ~~~ for autotesting
 print(out1, dig = 3)
 
 
@@ -471,7 +472,7 @@ ni <- 18000    ;    nt <- 10    ;    nb <- 1000    ;    nc <- 3  # ~~~~ for test
 out8 <- bugs(win.data8, inits, params, "Nmix.special.txt",
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
   # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
-  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd())  # ~~~ for autotesting
+  debug = FALSE, bugs.directory = bugs.dir)  # ~~~ for autotesting
 # ~~~ you should probably save the result ~~~~~~~~~~~~~~~
 save(out8, file="AHM1_06.11_out8.RData")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

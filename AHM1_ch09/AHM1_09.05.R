@@ -237,7 +237,7 @@ plot(newdat7$DATE, pred7[,1], xlab="Standardized covariate",
 lines(newdat8$HOUR, pred8[,1], lwd=3, col="red")
 legend(0.5, 140, c("DATE", "HOUR"), col=c("black", "red"),
     lty=1, lwd=3, cex=1.2)
-
+par(op)
 
 # 9.5.4 Fitting temporary emigration HDS models in BUGS
 # ------------------------------------------------------------------------
@@ -555,7 +555,7 @@ ni <- 32000   ;   nb <- 2000   ;   nt <- 2   ;   nc <- 5
 
 # Run JAGS (ART 79 min), check convergence and summarize posteriors
 wag2 <- jags(data, inits, params, "wagtail2.txt", n.thin=nt,n.chains=nc,
-n.burnin=nb,n.iter=ni, parallel = TRUE)
+    n.burnin=nb,n.iter=ni, parallel = TRUE)
 
 # Compare posterior means to MLEs obtained from unmarked
 mle <- coef(fm5)

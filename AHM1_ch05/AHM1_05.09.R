@@ -74,7 +74,7 @@ ni <- 6000   ;   nt <- 1   ;   nb <- 1000   ;  nc <- 3
 out5 <- bugs(win.data, inits, params, "Poisson_GLM.txt",
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
   # debug = TRUE, bugs.directory = bugs.dir, working.directory = getwd())
-  debug = FALSE, bugs.directory = bugs.dir, working.directory = getwd())  # ~~~~ for automated testing
+  debug = FALSE, bugs.directory = bugs.dir)  # ~~~~ for automated testing
 
 system.time(out5J <- jags(win.data, inits, params, "Poisson_GLM.txt",
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb))

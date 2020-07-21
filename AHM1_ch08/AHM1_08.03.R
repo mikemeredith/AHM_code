@@ -141,7 +141,7 @@ print(out2, 2)
 # 8.3.3 A treatise on the integration of mathematical functions in one dimension
 # ------------------------------------------------------------------------
 sigma <- 2                        # normal scale (standard deviation)
-curve(exp(-x^2 / (2*sigma^2)), 0, 10, frame = F)
+curve(exp(-x^2 / (2*sigma^2)), 0, 10, frame = FALSE)
 
 delta <- 1                        # bin width
 mid <- seq(0.5, 9.5, delta)       # 10 rectangles
@@ -233,7 +233,8 @@ y <- c(rep(1, nind), rep(0, nz))
 dclass <- c(dclass, rep(NA, nz))
 
 # Bundle and summarize data set
-str( win.data <- list(midpt=midpt, delta=delta, B=B, nind=nind, nD=nD, dclass=dclass, y=y, nz=nz) )
+str( win.data <- list(midpt=midpt, delta=delta, B=B, nind=nind, nD=nD,
+    dclass=dclass, y=y, nz=nz) )
 
 # BUGS model
 cat("

@@ -34,7 +34,8 @@ table(N)
 
 # Plot the true system state (Fig. 6–2, left)
 op <- par(mfrow = c(1, 3), mar = c(5,5,2,2), cex.axis = 1.5, cex.lab = 1.5)
-plot(vegHt, N, xlab="Vegetation height", ylab="True abundance (N)", frame = FALSE, cex = 1.5)
+plot(vegHt, N, xlab="Vegetation height", ylab="True abundance (N)",
+    frame = FALSE, cex = 1.5)
 lines(seq(-1,1,,100), exp(beta0 + beta1* seq(-1,1,,100)), lwd=3, col = "red")
 
 
@@ -53,7 +54,8 @@ for(j in 1:J) {
 }
 
 # Plot observed data and effect of wind on det. probability (Fig. 6–2, middle)
-plot(wind, C/max(C), xlab="Wind", ylab="Scaled counts: C/max(C)", frame = FALSE, cex = 1.5)
+plot(wind, C/max(C), xlab="Wind", ylab="Scaled counts: C/max(C)",
+    frame = FALSE, cex = 1.5)
 lines(seq(-1,1,,100), plogis(alpha0 + alpha1*seq(-1,1,,100)), lwd=3, col="red")
 
 
@@ -80,8 +82,10 @@ summary(umf)
 summary(fm.Nmix1 <- pcount(~wind ~vegHt, data=umf, control=list(trace=T, REPORT=1)))
 
 
-fm.Nmix2 <- pcount(~wind ~vegHt, data=umf, mixture="NB", control=list(trace=TRUE, REPORT=5))
-fm.Nmix3 <- pcount(~wind ~vegHt, data=umf, mixture="ZIP", control=list(trace=TRUE, REPORT=5))
+fm.Nmix2 <- pcount(~wind ~vegHt, data=umf, mixture="NB",
+    control=list(trace=TRUE, REPORT=5))
+fm.Nmix3 <- pcount(~wind ~vegHt, data=umf, mixture="ZIP",
+    control=list(trace=TRUE, REPORT=5))
 cbind(AIC.P=fm.Nmix1@AIC, AIC.NB=fm.Nmix2@AIC, AIC.ZIP=fm.Nmix3@AIC)
 
 
@@ -178,8 +182,9 @@ newdat <- data.frame(time = c("1", "2", "3"), wind = 0)
 predict(fm.Nmix3, type="det", newdata=newdat, appendData = T)
 
 
-newdat <- data.frame(vegHt=seq(0, 2 ,by = 0.1), hab = factor("A", levels = c("A", "B", "C")))
-predict(fm.Nmix2, type="state", newdata=newdat, appendData = T)
+newdat <- data.frame(vegHt=seq(0, 2 ,by = 0.1),
+    hab = factor("A", levels = c("A", "B", "C")))
+predict(fm.Nmix2, type="state", newdata=newdat, appendData = TRUE)
 
 
 LRT(fm.Nmix3, fm.Nmix1)
