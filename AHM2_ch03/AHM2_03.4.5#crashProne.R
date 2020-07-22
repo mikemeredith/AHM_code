@@ -6,7 +6,7 @@
 # ===========================================
 # Code from proofs dated 2020-06-03
 
-# Approximate run time for this script: > 1 hr
+# Approximate run time for this script: 2 hrs
 # Run time with the full number of iterations: 5.2 days
 
 library(AHMbook)
@@ -161,7 +161,7 @@ params <- c("mean.phi", "mean.p", "mu.lphi", "mu.lp",
 
 # MCMC settings
 # ni <- 200000 ; nt <- 100 ; nb <- 100000 ; nc <- 3  # 5 days
-ni <- 2000 ; nt <- 1 ; nb <- 1000 ; nc <- 3 # ~~~~~~~~~~~~ for testing
+ni <- 2000 ; nt <- 1 ; nb <- 1000 ; nc <- 3 # ~~~~ for testing, 1.4 hrs
 
 # You may have to launchWinBUGS a couple of times until you don’t get an “undefined real result”
 # crash (or alternatively, you could “stabilize” the logit, see Trick 15 in Appendix 1 in Kery and Schaub,

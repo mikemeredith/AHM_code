@@ -47,7 +47,8 @@ Zmat <- t(solve(sqrt.omega, t(Zk)))
 # Visualize basis vectors (as in Fig. 9.7)
 head(Zmat) # Look at first couple of values
 library(raster)
-op <- par(mfrow = c(3, 3), mar = c(2,2,4,11), ask = TRUE)
+devAskNewPage(ask = dev.interactive(orNone=TRUE))  # ~~~ better for testing
+op <- par(mfrow = c(3, 3), mar = c(2,2,4,11), "ask")
 # for(i in 1:125){
 for(i in 1:9){  # ~~~ for testing
   r <- rasterFromXYZ(data.frame(x = coordgrid[,1], y = coordgrid[,2], z = Zmat[,i]))

@@ -37,6 +37,6 @@ DATE[is.na(DATE)] <- 0 # Mean-impute missing dates
 
 # Generate unmarked data frame
 library(unmarked)
-year <- matrix(as.character(2001:2012), 267, 12, byrow = T) # Year covar.
+year <- matrix(as.character(2001:2012), 267, 12, byrow = TRUE) # Year covar.
 summary(umf <- unmarkedMultFrame(y = y, siteCovs = data.frame(elev, forest),
     yearlySiteCovs = list(year = year), obsCovs=list(date = DATE), numPrimary = 12) )

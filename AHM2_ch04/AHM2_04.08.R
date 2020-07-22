@@ -42,24 +42,34 @@ summary(fm <- colext(~1, ~ 1, ~ 1, ~ 1, data = umf))
 
 # Compute Chi-square test statistic for actual data by season and
 # generate reference distribution of test statistic under H0 (~1.1 h)
+
+# ~~~ reduce for testing ~~~~~~
 # system.time(gof <- mb.gof.test(fm, print.table = FALSE, nsim = 1000,
-    # plot.hist = TRUE, plot.seasons = TRUE, report = 1) ) # load(AICcmodavg)
-system.time(gof <- mb.gof.test(fm, print.table = FALSE, nsim = 100,   # ~~~ reduce for testing
-    plot.hist = TRUE, plot.seasons = TRUE, report = 1, parallel = TRUE) )
+#     plot.hist = TRUE, plot.seasons = TRUE, report = 1) ) # load(AICcmodavg)
+# also version 2.3-0 of AICcmodavg has a bug in the plotting code,
+#   so set plot.seasons=FALSE
+system.time(gof <- mb.gof.test(fm, print.table = FALSE, nsim = 10,
+    plot.hist = TRUE, plot.seasons = FALSE, report = 1, parallel = FALSE) )
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gof
 # Goodness-of-fit for dynamic occupancy model
+
 # Number of seasons: 10
+
 # Chi-square statistic:
 # Season 1 Season 2 Season 3 Season 4 Season 5
-# 18.5134 73.8895 20.3665 54.8196 13.8125
+#  18.5134  73.8895  20.3665  54.8196  13.8125
 # Season 6 Season 7 Season 8 Season 9 Season 10
-# 84.9100 67.5141 67.5075 96.9058 56.9778
+#  84.9100  67.5141  67.5075  96.9058   56.9778
+
 # Total chi-square = 555.2166
 # Number of bootstrap samples = 1000
 # P-value = 0
+
 # Quantiles of bootstrapped statistics:
 # 0% 25% 50% 75% 100%
 # 39 58 66 74 117
+
 # Estimate of c-hat = 8.37
 
 
@@ -256,7 +266,8 @@ params <- c('mean.psi1', 'beta.lpsi', 'mean.phi', 'beta.lphi', 'mean.gamma',
 na <- 1000  ;  ni <- 2000  ;  nt <- 2  ;  nb <- 1000  ;  nc <- 3
 
 # Call JAGS from R, check convergence and summarize posteriors
-out.gof <- jags(bdata, inits, params, "dynocc.gof.txt", n.adapt = na, n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+out.gof <- jags(bdata, inits, params, "dynocc.gof.txt", n.adapt = na,
+    n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 op <- par(mfrow = c(3,3))    ;    traceplot(out.gof)
 par(op)
 print(out.gof, 2)

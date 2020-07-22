@@ -85,7 +85,7 @@ na <- 1000  ; ni <- 15000  ;  nt <- 1  ;  nb <- 5000  ;  nc <- 3  # ~~~~ for tes
 # Call JAGS (ART 88 min), check convergence and summarize posteriors
 out5 <- jags(bdata, inits, params, "DM3.txt", n.adapt = na, n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 
-par(mfrow = c(2, 3))  ;  traceplot(out5)
+op <- par(mfrow = c(2, 3))  ;  traceplot(out5)
 par(op)
 print(out5, 3)
               # mean      sd      2.5%       50%     97.5% overlap0 f  Rhat n.eff

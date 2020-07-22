@@ -133,6 +133,7 @@ print(out4, 2)
 # ........
 
 # ~~~~~~ extra code for these results ~~~~~~~~~~~~~~~~~~~~
+load("AHM2_01.05.1_out2.RData")
 (R2site <- 100* (out2$mean$sd.site - out4$mean$sd.site) / out2$mean$sd.site)
 (R2year <- 100* (out2$mean$sd.year - out4$mean$sd.year) / out2$mean$sd.year)
 (R2resi <- 100* (out2$mean$sd - out4$mean$sd) / out2$mean$sd)
@@ -141,5 +142,6 @@ print(out4, 2)
 # [1] 10.07
 # [1] 31.38612
 
-# Save output for use in subsequent sections
+# ~~~ Save output for use in subsequent sections ~~~
 save(out4, file="AHM2_01.05.3_out4.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

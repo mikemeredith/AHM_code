@@ -11,20 +11,13 @@
 # Approximate run time for this script: 3.5 hrs
 # Run time with the full number of iterations: 38.3 hrs
 
+library(AHMbook)
+library(unmarked)
+library(AICcmodavg)
+
 # ~~~ load crossbill data from 4.9.1 ~~~~~~~~~~
 source("AHM2_04.09.1_Crossbills.R")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~ impact of changes in R 4.0 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# The default for options("stringsAsFactors"), used in 'data.frame', changed from
-# TRUE to FALSE. This affects older versions of 'unmarked' and 'AICcmodavg', so
-# reset the old default as a temporary measure.
-if(packageVersion("unmarked") <= '1.0.0' || packageVersion("AICcmodavg") <= '2.2.2')
-  options(stringsAsFactors = TRUE)
-# This will not work from 4.1.0 as 'data.frame' ignores options("stringsAsFactors").
-# And it does not work for parallel runs.
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 # 4.9 Analysis and mapping of crossbill distribution and range dynamics in Switzerland
 # ====================================================================================
@@ -654,16 +647,19 @@ summary(fm38X <- colext(~ (elev + I(elev^2))* (forest + I(forest^2)),
     ~ (year-1) + (elev + I(elev^2))* (forest + I(forest^2)) +
         date + I(date^2) + date:elev + date:I(elev^2) +
         I(date^2):elev + I(date^2):I(elev^2), umf, starts = inits,
-    control = list(maxit = 500), se = T))
+    control = list(maxit = 500), se = TRUE))
 
 # Compute Chi-square test statistic for actual data by season
 library(AICcmodavg)
 mb.chisq(fm38X, print.table = TRUE)
 # Generate reference distribution of test statistic under H0 (takes 7h)
-# system.time( gof <- mb.gof.test(fm38X, print.table = F, nsim = 1000,
-system.time( gof <- mb.gof.test(fm38X, print.table = F, nsim = 100,  # ~~~~ for testing
-    # plot.hist = TRUE, plot.seasons = TRUE, report = 1) )
-    plot.hist = TRUE, plot.seasons = TRUE, report = 1, parallel=FALSE) ) # parallel fails
+# system.time( gof <- mb.gof.test(fm38X, print.table = FALSE, nsim = 1000,
+#    plot.hist = TRUE, plot.seasons = TRUE, report = 1) )
+# ~~~~ for testing ~~~~~~ 15 mins
+# also version 2.3-0 of AICcmodavg has a bug in the plotting code,
+#   so set plot.seasons=FALSE
+system.time( gof <- mb.gof.test(fm38X, print.table = FALSE, nsim = 10,
+    plot.hist = TRUE, plot.seasons = FALSE, report = 1, parallel=FALSE) ) # parallel fails
 (c.hat <- gof$c.hat.est)
 # [1] 2.102584  # ~~~ from the full run of 1000
 
