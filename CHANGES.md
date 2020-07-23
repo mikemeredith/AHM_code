@@ -2,9 +2,9 @@
 
 # CHANGES
 
-## 2020-07-14 to 16
+## 2020-07-14 to 24
 
-* Added AHM2 chapters 7 to 9.
+* Added AHM2 chapters 7 to 10.
 
 ## 2020-06-27
 
