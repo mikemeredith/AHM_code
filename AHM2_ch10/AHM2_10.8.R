@@ -8,6 +8,7 @@
 # Code from proofs dated 2020-07-23
 
 # Approximate execution time for this code: 25 mins
+# Run time with the full number of iterations: 2.6 hrs
 
 library(AHMbook)
 library(jagsUI)
@@ -148,7 +149,7 @@ inits <- function() {list(z = c(rep(1, dim(Y)[1]), rbinom(M-dim(Y)[1], 1, 0.5)),
 params <- c('psi', 'lam0', 'sigma', 'N')
 
 # MCMC settings
-# na <- 1000 ; ni <- 30000; nt <- 20 ; nb <- 10000 ; nc <- 3
+# na <- 1000 ; ni <- 30000; nt <- 20 ; nb <- 10000 ; nc <- 3  # 22 mins
 na <- 1000 ; ni <- 3000; nt <- 2 ; nb <- 1000 ; nc <- 3  # ~~~ for testing, 3 mins
 
 # Call JAGS (ART 15 min), assess convergence and summarize posteriors
@@ -220,7 +221,7 @@ inits <- function() {list(z = as.vector(rep(1, M)), psi = runif(1),
 params <- c('psi', 'lam0', 'sigma', 'N')
 
 # MCMC settings
-# na <- 1000 ; ni <- 20000; nt <- 3 ; nb <- 5000 ; nc <- 4
+# na <- 1000 ; ni <- 20000; nt <- 3 ; nb <- 5000 ; nc <- 4  # 36 mins
 na <- 1000 ; ni <- 2000; nt <- 3 ; nb <- 500 ; nc <- 3  # ~~~ for testing
 
 # Call JAGS (ART 49 min), assess convergence and summarize posteriors
@@ -317,7 +318,7 @@ inits <- function() {list(z = c(rep(1, dim(Y)[1]), rbinom(M - dim(Y)[1], 1, 0.5)
 params <- c('psi', 'lam0', 'sigma', 'N')
 
 # MCMC settings
-# na <- 1000 ; ni <- 10000; nt <- 5 ; nb <- 5000 ; nc <- 3
+# na <- 1000 ; ni <- 10000; nt <- 5 ; nb <- 5000 ; nc <- 3  # 32 mins
 na <- 1000 ; ni <- 1000; nt <- 1 ; nb <- 500 ; nc <- 3  # ~~~ for testing, 6 mins
 
 # Call JAGS (ART 36 min), assess convergence and summarize posteriors
@@ -453,7 +454,7 @@ inits <- function() {list(z = c(rep(1, dim(Y)[1]), rbinom(M-dim(Y)[1], 1, 0.5)),
 params <- c('psi', 'lam0', 'lam0occ', 'sigma', 'N')
 
 # MCMC settings
-# na <- 1000 ; ni <- 12000; nt <- 2 ; nb <- 2000 ; nc <- 3
+# na <- 1000 ; ni <- 12000; nt <- 2 ; nb <- 2000 ; nc <- 3  # 68 mins
 na <- 1000 ; ni <- 1200; nt <- 1 ; nb <- 200 ; nc <- 3  # ~~~ for testing
 
 # Call JAGS (ART 63 min), assess convergence and summarize posteriors

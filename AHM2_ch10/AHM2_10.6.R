@@ -8,6 +8,7 @@
 # Code from proofs dated 2020-07-23
 
 # Approximate execution time for this code: 68 mins
+# Run time with the full number of iterations: 19 hrs
 
 library(AHMbook)
 library(jagsUI)
@@ -189,7 +190,7 @@ inits <- function() {
 params <- c("mean.p", "alpha0", "alpha1", "beta0", "beta1", "N")
 
 # MCMC settings
-# na <- 5000 ; ni <- 200000 ; nt <- 100 ; nb <- 100000 ; nc <- 3
+# na <- 5000 ; ni <- 200000 ; nt <- 100 ; nb <- 100000 ; nc <- 3  # 15 hrs
 na <- 5000 ; ni <- 2000 ; nt <- 1 ; nb <- 1000 ; nc <- 3  # ~~~ for testing, 30 mins
 
 # Call JAGS (ART 892 min), assess convergence and summarize posteriors
@@ -295,7 +296,7 @@ params <- c("alpha0", "alpha1", "beta0", "beta1", "gamma0", "gamma1",
     "mean.p", "Nppm", "Nnmix")
 
 # MCMC settings
-# na <- 1000 ; ni <- 50000 ; nt <- 40 ; nb <- 10000 ; nc <- 3
+# na <- 1000 ; ni <- 50000 ; nt <- 40 ; nb <- 10000 ; nc <- 3  # 4 hrs
 na <- 1000 ; ni <- 5000 ; nt <- 4 ; nb <- 1000 ; nc <- 3  # ~~~~ for testing, 27 mins
 
 # Call JAGS (ART 282 min), assess convergence and summarize posteriors

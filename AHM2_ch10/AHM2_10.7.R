@@ -8,6 +8,7 @@
 # Code from proofs dated 2020-07-23
 
 # Approximate execution time for this code: 12 mins
+# Run time with the full number of iterations: 90 mins
 
 library(AHMbook)
 library(jagsUI)
@@ -69,7 +70,7 @@ inits <- function(){list(lambda = runif(1, 1, 2), phi = runif(1),
 params <- c("lambda", "phi", "gamma", "p")
 
 # MCMC settings
-# na <- 1000 ; ni <- 30000 ; nt <- 10 ; nb <- 20000 ; nc <- 3
+# na <- 1000 ; ni <- 30000 ; nt <- 10 ; nb <- 20000 ; nc <- 3  # 13 mins
 na <- 1000 ; ni <- 3000 ; nt <- 1 ; nb <- 2000 ; nc <- 3  # ~~~ for testing, 2 mins
 
 # Call JAGS (ART 22 min), check convergence and summarize posteriors
@@ -290,7 +291,7 @@ inits <- function(){list(lambda = runif(1, 1, 2), phiJoint = runif(1),
 params <- c("lambda", "phiJoint", "gamma", "pDM", "pCJS")
 
 # MCMC settings
-# na <- 1000 ; ni <- 30000 ; nt <- 10 ; nb <- 20000 ; nc <- 3
+# na <- 1000 ; ni <- 30000 ; nt <- 10 ; nb <- 20000 ; nc <- 3  # about 15 mins each
 na <- 1000 ; ni <- 3000 ; nt <- 1 ; nb <- 2000 ; nc <- 3  # ~~~ for testing, 2 mins each
 
 # Call JAGS, check convergence and summarize posteriors
