@@ -75,11 +75,11 @@ na <- 1000 ; ni <- 3000 ; nt <- 1 ; nb <- 2000 ; nc <- 3  # ~~~ for testing, 2 m
 # Call JAGS (ART 22 min), check convergence and summarize posteriors
 (out1 <- jags(bdata, inits, params, "DM.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE))
-# mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
-# lambda 0.594 0.069 0.467 0.591 0.735 FALSE 1 1.010 218
-# phi 0.821 0.012 0.795 0.821 0.843 FALSE 1 1.030 87
-# gamma 0.378 0.017 0.346 0.378 0.411 FALSE 1 1.004 804
-# p 0.291 0.009 0.274 0.291 0.309 FALSE 1 1.032 80
+#         mean    sd  2.5%   50% 97.5% overlap0 f  Rhat n.eff
+# lambda 0.594 0.069 0.467 0.591 0.735    FALSE 1 1.010   218
+# phi    0.821 0.012 0.795 0.821 0.843    FALSE 1 1.030    87
+# gamma  0.378 0.017 0.346 0.378 0.411    FALSE 1 1.004   804
+# p      0.291 0.009 0.274 0.291 0.309    FALSE 1 1.032    80
 
 
 # 10.7.2 Fitting the CJS model to the capture-recapture data alone
@@ -182,11 +182,11 @@ phi.esti <- rbind(out2.1$summary[1,c(1,3,7)], out2.2$summary[1,c(1,3,7)],
 rownames(phi.esti) <- data.set
 print(phi.esti, 3) # Remember phi simulated as 0.58
 # ~~~~~~~~~~~~~~~~~~~~
-# mean 2.5% 97.5%
-# 100 marked birds 0.686 0.550 0.843
-# 500 marked birds 0.623 0.564 0.684
-# 1000 marked birds 0.572 0.529 0.617
-# 5000 marked birds 0.574 0.554 0.594
+#                     mean  2.5% 97.5%
+# 100 marked birds   0.686 0.550 0.843
+# 500 marked birds   0.623 0.564 0.684
+# 1000 marked birds  0.572 0.529 0.617
+# 5000 marked birds  0.574 0.554 0.594
 # 10000 marked birds 0.590 0.576 0.604
 
 # ~~~ maybe insert figure showing this ~~~~~~~~~~~~
@@ -199,13 +199,13 @@ str(bdata1 <- list(C = C, nsites = dim(C)[1], nsurveys = dim(C)[2],
     nyears = dim(C)[3], # Data for DM model
     m_array = m_array1, r = r1, n.occ = data1$n.occ)) # Data for CJS model
 # List of 7
-# $ C : int [1:267, 1:3, 1:14] 0 3 0 0 0 0 0 0 0 0 ...
-# $ nsites : int 267
+# $ C       : int [1:267, 1:3, 1:14] 0 3 0 0 0 0 0 0 0 0 ...
+# $ nsites  : int 267
 # $ nsurveys: int 3
-# $ nyears : int 14
+# $ nyears  : int 14
 # $ m_array : num [1:5, 1:6] 459 0 0 0 0 162 584 0 0 0 ...
-# $ r : num [1:5] 2000 2459 2746 2918 3045
-# $ n.occ : num 6
+# $ r       : num [1:5] 2000 2459 2746 2918 3045
+# $ n.occ   : num 6
 # ~~~~ code for the other four cases inserted ~~~~~~~~~~~
 str(bdata2 <- list(C = C, nsites = dim(C)[1], nsurveys = dim(C)[2],
     nyears = dim(C)[3], m_array = m_array2, r = r2, n.occ = data2$n.occ))
@@ -327,7 +327,8 @@ segments(3+off, out2.2$q2.5$phi, 3+off, out2.2$q97.5$phi)
 segments(4+off, out2.3$q2.5$phi, 4+off, out2.3$q97.5$phi)
 segments(5+off, out2.4$q2.5$phi, 5+off, out2.4$q97.5$phi)
 segments(6+off, out2.5$q2.5$phi, 6+off, out2.5$q97.5$phi)
-axis(1, at = 1:6, c('n = 0', 'n = 100', 'n = 500', 'n = 1000', 'n = 5000', 'n = 10000'), las = 2)
+axis(1, at = 1:6, c('n = 0', 'n = 100', 'n = 500', 'n = 1000', 'n = 5000',
+    'n = 10000'), las = 2)
 abline(h = 0.58, col = 'red')
 axis(2)
 legend('topright', c('DM','CJS', 'IPM'), pch = c(16,1,15), cex = 1.5, bty = 'n')
@@ -337,20 +338,25 @@ par(op)
 # ~~~ and for figure 10.8 ~~~~~~~~~~~~~
 off <- 0.05
 par(mar = c(8,5,4,3), cex.lab = 1.5, cex.axis = 1.5)
-plot((1:6)-off, c(out1$mean$phi, out3.1$mean$phiJoint, out3.2$mean$phiJoint, out3.3$mean$phiJoint, out3.4$mean$phiJoint, out3.5$mean$phiJoint), ylim = c(0.5, 0.9), xlab = '', ylab = 'Estimates of phi', main = '', pch = c(16, rep(15,5)), cex = 2, frame = F, las = 1, axes = F)
+plot((1:6)-off, c(out1$mean$phi, out3.1$mean$phiJoint, out3.2$mean$phiJoint,
+    out3.3$mean$phiJoint, out3.4$mean$phiJoint, out3.5$mean$phiJoint),
+    ylim = c(0.5, 0.9), xlab = '', ylab = 'Estimates of phi', main = '',
+    pch = c(16, rep(15,5)), cex = 2, frame = FALSE, las = 1, axes = FALSE)
 segments(1-off, out1$q2.5$phi, 1-off, out1$q97.5$phi)
 segments(2-off, out3.1$q2.5$phiJoint, 2-off, out3.1$q97.5$phiJoint)
 segments(3-off, out3.2$q2.5$phiJoint, 3-off, out3.2$q97.5$phiJoint)
 segments(4-off, out3.3$q2.5$phiJoint, 4-off, out3.3$q97.5$phiJoint)
 segments(5-off, out3.4$q2.5$phiJoint, 5-off, out3.4$q97.5$phiJoint)
 segments(6-off, out3.5$q2.5$phiJoint, 6-off, out3.5$q97.5$phiJoint)
-points((2:6)+off, c(out2.1$mean$phi, out2.2$mean$phi, out2.3$mean$phi, out2.4$mean$phi, out2.5$mean$phi), pch = 1, cex = 2)
+points((2:6)+off, c(out2.1$mean$phi, out2.2$mean$phi, out2.3$mean$phi,
+    out2.4$mean$phi, out2.5$mean$phi), pch = 1, cex = 2)
 segments(2+off, out2.1$q2.5$phi, 2+off, out2.1$q97.5$phi)
 segments(3+off, out2.2$q2.5$phi, 3+off, out2.2$q97.5$phi)
 segments(4+off, out2.3$q2.5$phi, 4+off, out2.3$q97.5$phi)
 segments(5+off, out2.4$q2.5$phi, 5+off, out2.4$q97.5$phi)
 segments(6+off, out2.5$q2.5$phi, 6+off, out2.5$q97.5$phi)
-axis(1, at = 1:6, c('n = 0', 'n = 100', 'n = 500', 'n = 1000', 'n = 5000', 'n = 10000'), las = 2)
+axis(1, at = 1:6, c('n = 0', 'n = 100', 'n = 500', 'n = 1000', 'n = 5000',
+    'n = 10000'), las = 2)
 abline(h = 0.58, col = 'red')
 axis(2)
 legend('topright', c('DM','CJS', 'IPM'), pch = c(16,1,15), cex = 1.5, bty = 'n')

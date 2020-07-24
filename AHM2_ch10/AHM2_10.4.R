@@ -18,13 +18,13 @@ library(jagsUI)
 library(AHMbook)
 
 # Choose sample size and parameter values for both data sets
-nsites1 <- 267 # Sample size for count data
-nsites2 <- 520 # Sample size for detection/nondetection data
-nsurveys <- 3 # Number of surveys in both data sets
-mean.lam <- 3 # Average expected abundance (lambda) per site
-beta3.lam <- -1 # Coefficient of site covariate on lambda
-mean.p <- 0.4 # Average per-individual detection probability (p)
-beta5.p <- 1 # Effect of a site covariate on p
+nsites1 <- 267      # Sample size for count data
+nsites2 <- 520      # Sample size for detection/nondetection data
+nsurveys <- 3       # Number of surveys in both data sets
+mean.lam <- 3       # Average expected abundance (lambda) per site
+beta3.lam <- -1     # Coefficient of site covariate on lambda
+mean.p <- 0.4       # Average per-individual detection probability (p)
+beta5.p <- 1        # Effect of a site covariate on p
 beta.p.survey <- -2 # Effect of observational covariate on p
 
 # Create and summarize data set 1
@@ -63,17 +63,17 @@ str(bdata <- list(y1 = data1$C, y2 = y2, nsites1 = nsites1,
     nsites2 = nsites2, nsurveys = nsurveys, elev1 = elev1, elev2 = elev2,
     hcov1 = hcov1, hcov2 = hcov2, wind1 = wind1, wind2 = wind2))
 # List of 11
-# $ y1 : int [1:267, 1:3] 12 1 0 1 4 1 8 2 0 0 ...
-# $ y2 : num [1:520, 1:3] 1 0 0 1 1 0 0 0 1 0 ...
+# $ y1      : int [1:267, 1:3] 12 1 0 1 4 1 8 2 0 0 ...
+# $ y2      : num [1:520, 1:3] 1 0 0 1 1 0 0 0 1 0 ...
 # $ nsites1 : num 267
 # $ nsites2 : num 520
 # $ nsurveys: num 3
-# $ elev1 : num [1:267] -1.531 -1.827 -0.519 -0.652 -1.305 ...
-# $ elev2 : num [1:520] 0.717 1.305 1.579 -0.26 -1.236 ...
-# $ hcov1 : num [1:267] 1.799 -0.151 -1.117 -1.992 0.477 ...
-# $ hcov2 : num [1:520] 0.783 -0.0222 -1.1118 0.1099 1.572 ...
-# $ wind1 : num [1:267, 1:3] -1.8643 1.6644 1.3608 -1.2845 -0.0189 ...
-# $ wind2 : num [1:520, 1:3] -0.299 -0.318 1.319 0.136 1.72 ...
+# $ elev1   : num [1:267] -1.531 -1.827 -0.519 -0.652 -1.305 ...
+# $ elev2   : num [1:520] 0.717 1.305 1.579 -0.26 -1.236 ...
+# $ hcov1   : num [1:267] 1.799 -0.151 -1.117 -1.992 0.477 ...
+# $ hcov2   : num [1:520] 0.783 -0.0222 -1.1118 0.1099 1.572 ...
+# $ wind1   : num [1:267, 1:3] -1.8643 1.6644 1.3608 -1.2845 -0.0189 ...
+# $ wind2   : num [1:520, 1:3] -0.299 -0.318 1.319 0.136 1.72 ...
 
 # ~~~~ extra code for model 1 ~~~~~~~
 # Specify binomial Nmix model in BUGS language
@@ -210,11 +210,11 @@ esti.IM <- cbind(out2$summary[c(1,3,4,6:9),c(1:2)],
         out2$summary[c(1,3,4,6:9),1])))
 print(cbind(truth, esti.Nmix, esti.IM), 2)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# truth mean sd %CV mean sd %CV
-# mean.lam 3.0 3.15 0.152 4.8 3.09 0.123 4.0
-# beta.lam -1.0 -0.99 0.034 3.5 -0.99 0.028 2.9
-# mean.p 0.4 0.38 0.017 4.5 0.38 0.015 4.0
-# beta.lp1 1.0 1.03 0.061 6.0 0.97 0.049 5.0
-# beta.lp2 -2.0 -1.98 0.073 3.7 -2.00 0.061 3.0
-# Ntotal1 1395.0 1436.66 33.484 2.3 1414.35 30.137 2.1
-# Ntotal2 2873.0 NA NA NA 2982.09 106.994 3.6
+#           truth    mean     sd %CV    mean      sd %CV
+# mean.lam    3.0    3.15  0.152 4.8    3.09   0.123 4.0
+# beta.lam   -1.0   -0.99  0.034 3.5   -0.99   0.028 2.9
+# mean.p      0.4    0.38  0.017 4.5    0.38   0.015 4.0
+# beta.lp1    1.0    1.03  0.061 6.0    0.97   0.049 5.0
+# beta.lp2   -2.0   -1.98  0.073 3.7   -2.00   0.061 3.0
+# Ntotal1  1395.0 1436.66 33.484 2.3 1414.35  30.137 2.1
+# Ntotal2  2873.0      NA     NA  NA 2982.09 106.994 3.6

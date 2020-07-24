@@ -8,6 +8,7 @@
 # Code from proofs dated 2020-07-23
 
 # Approximate execution time for this code: 4 mins
+# Run time with full number of iterations: 25 mins
 
 library(AHMbook)
 library(jagsUI)
@@ -20,15 +21,15 @@ library(AHMbook)
 
 # Simulate two data sets from same process
 # Constants for simulation function
-M1 <- 500 # Number of sites with abundance-class surveys
-J1 <- 5 # Number of surveys in abundance-class survey
-M2 <- 100 # Number of sites with full-count surveys
-J2 <- 2 # Number of surveys in full-count surveys
-mean.lam <- 50 # Abundance intercept
+M1 <- 500       # Number of sites with abundance-class surveys
+J1 <- 5         # Number of surveys in abundance-class survey
+M2 <- 100       # Number of sites with full-count surveys
+J2 <- 2         # Number of surveys in full-count surveys
+mean.lam <- 50  # Abundance intercept
 beta.lam <- 0.5 # Coefficients of a site covariate in abundance
-mean.p1 <- 0.4 # Detection intercept in abundance-class survey
-mean.p2 <- 0.5 # Detection intercept in full-count survey
-beta.p <- -1 # Coefficients of a site covariate in detection
+mean.p1 <- 0.4  # Detection intercept in abundance-class survey
+mean.p2 <- 0.5  # Detection intercept in full-count survey
+beta.p <- -1    # Coefficients of a site covariate in detection
 
 # Simulate data set 1 for abundance-class surveys
 set.seed(1)
@@ -48,7 +49,7 @@ head(Aclass) # ... and the abundance-class data
 
 table(Aclass) # Summary of the class data
 # Aclass
-# 1 2 3 4 5
+#   1   2   3   4  5
 # 687 897 543 348 25
 breaks # Remember the class boundaries
 # [1] 0 10 25 50 100 200
@@ -73,13 +74,13 @@ for(i in 1:n){
   limits[i, 1:2] <- c(breaks[Cclass[i]], breaks[Cclass[i]+1])
 }
 head(cbind('True count' = c(data1$C), 'Abundance class' = c(Aclass), limits))
-# True count Abundance class Lower Upper
-# 1 15 2 10 25
-# 2 21 2 10 25
-# 3 44 3 25 50
-# 4 8 1 0 10
-# 5 41 3 25 50
-# 6 98 4 50 100
+#   True count Abundance class Lower Upper
+# 1         15               2    10    25
+# 2         21               2    10    25
+# 3         44               3    25    50
+# 4          8               1     0    10
+# 5         41               3    25    50
+# 6         98               4    50   100
 
 # Vectorize the environmental covariate and get site index
 X3vec <- rep(data1$site.cov[,3], 5)
@@ -95,12 +96,12 @@ y <- rep(1, 2500)
 str(bdata <- list(y = y, M = nrow(Aclass), X2 = data1$site.cov[,2],
     X3vec = X3vec, sitevec = sitevec, n = length(Cclass), limits = limits))
 # List of 7
-# $ y : num [1:2500] 1 1 1 1 1 1 1 1 1 1 ...
-# $ M : int 500
-# $ X2 : num [1:500] 0.217 0.753 0.632 0.653 -0.111 ...
-# $ X3vec : num [1:2500] 0.123 0.739 -0.467 1.82 -1.527 ...
+# $ y      : num [1:2500] 1 1 1 1 1 1 1 1 1 1 ...
+# $ M      : int 500
+# $ X2     : num [1:500] 0.217 0.753 0.632 0.653 -0.111 ...
+# $ X3vec  : num [1:2500] 0.123 0.739 -0.467 1.82 -1.527 ...
 # $ sitevec: int [1:2500] 1 2 3 4 5 6 7 8 9 10 ...
-# $ n : int 2500
+# $ n      : int 2500
 # $ limits : num [1:2500, 1:2] 10 10 25 0 25 50 10 25 10 0 ...
 # ..- attr(*, "dimnames") = List of 2
 # .. ..$ : chr [1:2500] "1" "2" "3" "4" ...
@@ -145,7 +146,7 @@ params <- c("alpha.lam", "beta.lam", "mean.lam", "alpha.p", "beta.p",
     "mean.p", "Ntotal", "N", "C")
 
 # MCMC settings
-# na <- 1000 ; nc <- 3 ; ni <- 20000 ; nb <- 10000 ; nt <- 10
+# na <- 1000 ; nc <- 3 ; ni <- 20000 ; nb <- 10000 ; nt <- 10  # 6 mins
 na <- 1000 ; nc <- 3 ; ni <- 2000 ; nb <- 1000 ; nt <- 1  # ~~~ for testing, 1 min
 
 # Call JAGS (ART 13 min), gauge convergence and summarize posteriors
@@ -182,12 +183,12 @@ UCI <- c(out1$q97.5$mean.p, out1$q97.5$beta.p, out1$q97.5$mean.lam,
     out1$q97.5$beta.lam, out1$q97.5$Ntotal)
 cbind(truth, pm, LCI, UCI)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# truth pm LCI UCI
-# mean.p 0.4 0.4377538 0.4031205 0.4749968
-# alpha1 -1.0 -1.0433506 -1.1099861 -0.9804712
-# mean.lambda 50.0 46.9308778 43.6895419 50.2425595
-# beta1 0.5 0.5054756 0.4887845 0.5230504
-# Ntotal 29955.0 28006.0973333 26153.8750000 29943.0750000
+#               truth            pm           LCI           UCI
+# mean.p          0.4     0.4377538     0.4031205     0.4749968
+# alpha1         -1.0    -1.0433506    -1.1099861    -0.9804712
+# mean.lambda    50.0    46.9308778    43.6895419    50.2425595
+# beta1           0.5     0.5054756     0.4887845     0.5230504
+# Ntotal      29955.0 28006.0973333 26153.8750000 29943.0750000
 
 
 # 10.5.2 Fitting the integrated model
@@ -258,7 +259,7 @@ params <- c("mean.lam", "beta.lam", "mean.p1", "mean.p2", "beta.p",
     "Ntotal1", "Ntotal2", "GTotalN", "N1", "C1", "N2")
 
 # MCMC settings
-# na <- 1000 ; nc <- 3 ; ni <- 50000 ; nb <- 10000 ; nt <- 40
+# na <- 1000 ; nc <- 3 ; ni <- 50000 ; nb <- 10000 ; nt <- 40  # 16 mins
 na <- 1000 ; nc <- 3 ; ni <- 5000 ; nb <- 1000 ; nt <- 4  # ~~~~ for testing, 2 mins
 
 # Call JAGS (ART 22 min), gauge convergence and summarize posteriors
@@ -285,16 +286,12 @@ colnames(esti1) <- c('mean(1)', '2.5% (1)', ' 97.5% (1)')
 colnames(esti2) <- c('mean(2)', '2.5% (2)', ' 97.5% (2)')
 cbind(truth, esti1, esti2)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# truth mean 2.5% 97.5% mean 2.5% 97.5%
-# mean.lam 50.0 46.93 43.69 50.24 48.74 46.06 51.99
-# beta.lam 0.5 0.51 0.49 0.52 0.50 0.48 0.51
-# mean.p1 0.4 0.44 0.40 0.47 0.42 0.39 0.45
-# mean.p2 0.5 NA NA NA 0.52 0.48 0.56
-# beta.p -1.0 -1.04 -1.11 -0.98 -1.02 -1.08 -0.97
-# Ntotal1 29955.0 28006.10 26153.88 29943.08 28921.67 27345.82 30844.10
-# Ntotal2 5549.0 NA NA NA 5345.71 5056.93 5688.00
-# GNtotal 35504.0 NA NA NA 34267.38 32432.00 36485.03
-
-
-
-
+#            truth     mean     2.5%    97.5%     mean     2.5%    97.5%
+# mean.lam    50.0    46.93    43.69    50.24    48.74    46.06    51.99
+# beta.lam     0.5     0.51     0.49     0.52     0.50     0.48     0.51
+# mean.p1      0.4     0.44     0.40     0.47     0.42     0.39     0.45
+# mean.p2      0.5       NA       NA       NA     0.52     0.48     0.56
+# beta.p      -1.0    -1.04    -1.11    -0.98    -1.02    -1.08    -0.97
+# Ntotal1  29955.0 28006.10 26153.88 29943.08 28921.67 27345.82 30844.10
+# Ntotal2   5549.0       NA       NA       NA  5345.71  5056.93  5688.00
+# GNtotal  35504.0       NA       NA       NA 34267.38 32432.00 36485.03

@@ -16,13 +16,13 @@ library(jagsUI)
 # 10.3 Example 1: Combination of “raw” and aggregated occupancy data
 # ==================================================================
 
-nsites1 <- 267 # Sample size in full data set
+nsites1 <- 267  # Sample size in full data set
 nsites2 <- 2000 # Sample size in aggregated data set
-nsurveys <- 3 # Number of surveys (= occasions)
+nsurveys <- 3   # Number of surveys (= occasions)
 mean.occ <- 0.4 # Average occupancy at mean covariate value
-beta1 <- -3 # Coefficient of 'elevation' on occupancy
+beta1 <- -3     # Coefficient of 'elevation' on occupancy
 mean.det <- 0.4 # Average per-survey detection probability
-alpha2 <- -3 # Effect of 'wind speed' on detection
+alpha2 <- -3    # Effect of 'wind speed' on detection
 
 # Create and summarize data set 1
 library(AHMbook)
@@ -106,7 +106,7 @@ print(out1, 2) # not shown
 str(bdata <- list(y1 = y1, nsite1 = nrow(y1), nrep1 = ncol(y1), elev1 = elev1,
     wind1 = wind1, y2agg = y2agg, nsite2 = length(y2agg), elev2 = elev2))
 # List of 8
-# $ y1 : int [1:267, 1:3] 1 0 0 1 1 0 0 0 0 1 ...
+# $ y1    : int [1:267, 1:3] 1 0 0 1 1 0 0 0 0 1 ...
 # $ nsite1: int 267
 # $ nrep1 : int 3
 # $ elev1 : num [1:267] -0.469 -0.256 0.146 0.816 -0.597 ...
@@ -175,9 +175,9 @@ nocc.table <- rbind(c('truth' = data1$sumZ, 'observed' = data1$sumZ.obs,
 rownames(nocc.table) <- c('Data set 1', 'Data set 2')
 nocc.table
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# truth observed mean 2.5% 97.5%
-# Data set 1 118 99 115.061 108 123.000
-# Data set 2 892 732 869.712 819 923.025
+#            truth observed    mean 2.5%   97.5%
+# Data set 1   118       99 115.061  108 123.000
+# Data set 2   892      732 869.712  819 923.025
 
 # Comparison of truth and estimates from simple model and IM
 # ~~~ extra code to produce table ~~~
@@ -187,8 +187,8 @@ esti.simple <- out1$summary[c(1,3,4,6), c(1,3,7)]
 esti.IM <- out2$summary[c(1,3,4,6), c(1,3,7)]
 print(cbind(truth, esti.simple, esti.IM), 3)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# truth mean 2.5% 97.5% mean 2.5% 97.5%
-# Occupancy intercept 0.4 0.415 0.335 0.499 0.394 0.352 0.438
-# Occupancy slope -3.0 -2.617 -3.425 -1.892 -2.966 -3.340 -2.639
-# Detection intercept 0.4 0.450 0.376 0.526 0.460 0.406 0.524
-# Detection slope -3.0 -2.885 -3.513 -2.281 -2.863 -3.491 -2.281
+#                     truth   mean   2.5%  97.5%   mean   2.5%  97.5%
+# Occupancy intercept   0.4  0.415  0.335  0.499  0.394  0.352  0.438
+# Occupancy slope      -3.0 -2.617 -3.425 -1.892 -2.966 -3.340 -2.639
+# Detection intercept   0.4  0.450  0.376  0.526  0.460  0.406  0.524
+# Detection slope      -3.0 -2.885 -3.513 -2.281 -2.863 -3.491 -2.281

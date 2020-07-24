@@ -51,31 +51,31 @@ str(dat <- simDataDK(sqrt.npix = 100, alpha = c(-2,-1), beta = c(6,0.5),
 
 # Inspect the presence-only data generated
 head(dat$loc.det) # Actual coordinates of 294 points detected
-# x y
-# [1,] 0.5388595 0.2530584
-# [2,] 0.2553583 0.6808913
-# [3,] -0.8700825 0.3739989
-# [4,] 0.9571221 0.2905681
-# [5,] 0.1677716 -0.1535967
-# [6,] 0.8483838 0.4965985
+#               x          y
+# [1,]  0.5388595  0.2530584
+# [2,]  0.2553583  0.6808913
+# [3,] -0.8700825  0.3739989
+# [4,]  0.9571221  0.2905681
+# [5,]  0.1677716 -0.1535967
+# [6,]  0.8483838  0.4965985
 
 head(dat$pixel.id.det) # Pixel ID of 294 points detected
 # [1] 3777 1563 3107 3598 5759 2593
 
 # Are there any pixels with more than one point ?
 table(table(dat$pixel.id.det))
-# 1 2
+#   1 2
 # 286 4
 
 # Overview of the point count data set (with 250 quads)
 head(dat$countData)
-# quadID x w N
-# [1,] 2 0.4697062 0.42953716 6 3 2 4
-# [2,] 10 -0.1762401 0.91133985 1 0 0 0
-# [3,] 11 -0.2730764 0.72495689 4 2 1 1
-# [4,] 14 -0.4757779 0.02358506 4 2 3 1
-# [5,] 15 -0.5031330 -0.21286719 1 0 0 0
-# [6,] 17 -0.4987504 -0.62829456 2 1 1 1
+#      quadID          x           w N
+# [1,]      2  0.4697062  0.42953716 6 3 2 4
+# [2,]     10 -0.1762401  0.91133985 1 0 0 0
+# [3,]     11 -0.2730764  0.72495689 4 2 1 1
+# [4,]     14 -0.4757779  0.02358506 4 2 3 1
+# [5,]     15 -0.5031330 -0.21286719 1 0 0 0
+# [6,]     17 -0.4987504 -0.62829456 2 1 1 1
 
 
 # 10.6.2 Fitting a poisson point pattern (PPP) model to the opportunistic data alone:
@@ -92,10 +92,10 @@ logarea <- log(dat$s.area / dat$npix)
 # Bundle data
 str(bdata <- list(y = y, logarea = logarea, npix = dat$npix, xcov = dat$xcov))
 # List of 4
-# $ y : num [1:10000] 0 0 0 0 0 0 0 0 0 0 ...
+# $ y      : num [1:10000] 0 0 0 0 0 0 0 0 0 0 ...
 # $ logarea: num -7.82
-# $ npix : num 10000
-# $ xcov : num [1:10000] 0.374 0.372 0.369 0.365 0.36 ...
+# $ npix   : num 10000
+# $ xcov   : num [1:10000] 0.374 0.372 0.369 0.365 0.36 ...
 
 # Specify model in BUGS language
 cat(file = "ipp.txt", "
@@ -123,7 +123,7 @@ inits <- function() {list(beta0 = runif(1), beta1 = runif(1)) }
 params <- c("beta0", "beta1", "N")
 
 # MCMC settings
-# na <- 1000 ; ni <- 5000 ; nt <- 2 ; nb <- 3000 ; nc <- 3
+# na <- 1000 ; ni <- 5000 ; nt <- 2 ; nb <- 3000 ; nc <- 3  # 12 mins
 na <- 1000 ; ni <- 500 ; nt <- 1 ; nb <- 300 ; nc <- 3  # ~~~~ for testing, 3 mins
 
 # Call JAGS (ART 8 min), assess convergence and summarize posteriors
@@ -132,10 +132,10 @@ out1 <- jags(bdata, inits, params, "ipp.txt", n.adapt = na, n.thin = nt,
 op <- par(mfrow = c(2,2)) ; traceplot(out1)
 par(op)
 print(out1, 3)
-# mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
-# beta0 4.144 0.069 4.006 4.146 4.276 FALSE 1 1.009 256
-# beta1 0.587 0.074 0.439 0.585 0.731 FALSE 1 1.014 152
-# N 295.373 17.408 261.973 295.407 327.695 FALSE 1 1.000 1500
+#          mean     sd    2.5%     50%   97.5% overlap0 f  Rhat n.eff
+# beta0   4.144  0.069   4.006   4.146   4.276    FALSE 1 1.009   256
+# beta1   0.587  0.074   0.439   0.585   0.731    FALSE 1 1.014   152
+# N     295.373 17.408 261.973 295.407 327.695    FALSE 1 1.000  1500
 
 
 # 10.6.3 Accounting for spatial sampling and detection bias in the PPP model
@@ -146,11 +146,11 @@ print(out1, 3)
 str(bdata <- list(y = y, logarea = logarea, npix = dat$npix, xcov = dat$xcov,
     wcov = dat$wcov))
 # List of 5
-# $ y : num [1:10000] 0 0 0 0 0 0 0 0 0 0 ...
+# $ y      : num [1:10000] 0 0 0 0 0 0 0 0 0 0 ...
 # $ logarea: num -7.82
-# $ npix : num 10000
-# $ xcov : num [1:10000] 0.374 0.372 0.369 0.365 0.36 ...
-# $ wcov : num [1:10000] 0.0631 0.123 0.1829 0.2427 0.3022 ...
+# $ npix   : num 10000
+# $ xcov   : num [1:10000] 0.374 0.372 0.369 0.365 0.36 ...
+# $ wcov   : num [1:10000] 0.0631 0.123 0.1829 0.2427 0.3022 ...
 
 # Specify model in BUGS language
 cat(file = "thinned.ipp.txt", "
@@ -198,21 +198,22 @@ out2 <- jags(bdata, inits, params, "thinned.ipp.txt", n.adapt = na, n.thin = nt,
 op <- par(mfrow = c(2,2)) ; traceplot(out2)
 par(op)
 print(out2, 3)
-# mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
-# mean.p 0.154 0.147 0.000 0.110 0.482 FALSE 1.00 1.023 93
-# alpha0 -2.640 2.101 -8.233 -2.092 -0.071 FALSE 0.98 1.104 38
-# alpha1 -0.973 0.247 -1.588 -0.903 -0.660 FALSE 1.00 1.018 129
-# beta0 6.756 1.907 4.828 6.124 12.101 FALSE 1.00 1.119 36
-# beta1 0.580 0.076 0.437 0.577 0.732 FALSE 1.00 1.001 2424
-# N 120506.472 927113.374 581.071 2133.640 911248.463 FALSE 1.00 1.310 81
+#              mean         sd    2.5%      50%      97.5% overlap0    f  Rhat n.eff
+# mean.p      0.154      0.147   0.000    0.110      0.482    FALSE 1.00 1.023    93
+# alpha0     -2.640      2.101  -8.233   -2.092     -0.071    FALSE 0.98 1.104    38
+# alpha1     -0.973      0.247  -1.588   -0.903     -0.660    FALSE 1.00 1.018   129
+# beta0       6.756      1.907   4.828    6.124     12.101    FALSE 1.00 1.119    36
+# beta1       0.580      0.076   0.437    0.577      0.732    FALSE 1.00 1.001  2424
+# N      120506.472 927113.374 581.071 2133.640 911248.463    FALSE 1.00 1.310    81
+
 
 # Compare estimates of thinned PPM with truth in data simulation
-# truth mean 2.5% 97.5%
-# alpha0 -2.0 -2.640 -8.233 -0.0714
-# alpha1 -1.0 -0.973 -1.588 -0.6596
-# beta0 6.0 6.756 4.828 12.1007
-# beta1 0.5 0.580 0.437 0.7324
-# N 1831.0 120506.472 581.071 911248.4629
+#         truth       mean    2.5%       97.5%
+# alpha0   -2.0     -2.640  -8.233     -0.0714
+# alpha1   -1.0     -0.973  -1.588     -0.6596
+# beta0     6.0      6.756   4.828     12.1007
+# beta1     0.5      0.580   0.437      0.7324
+# N      1831.0 120506.472 581.071 911248.4629
 
 
 # 10.6.4 Fitting the integrated model: a bugs implementation of the model of Dorazio (2014)
@@ -227,17 +228,17 @@ str(bdata <- list(
     nsite = dat$nquadrats, nsurveys = dat$nsurveys,
     area = dat$s.area * (dat$quadrat.size^2 / dat$npix) ) )
 # List of 11
-# $ y : num [1:10000] 0 0 0 0 0 0 0 0 0 0 ...
+# $ y       : num [1:10000] 0 0 0 0 0 0 0 0 0 0 ...
 # $ logarea : num -7.82
-# $ npix : num 10000
-# $ xcov : num [1:10000] 0.374 0.372 0.369 0.365 0.36 ...
-# $ wcov : num [1:10000] 0.0631 0.123 0.1829 0.2427 0.3022 ...
-# $ C : num [1:250, 1:3] 3 0 2 2 0 1 1 0 2 1 ...
-# $ covarX : num [1:250] 0.47 -0.176 -0.273 -0.476 -0.503 ...
-# $ covarW : num [1:250] 0.4295 0.9113 0.725 0.0236 -0.2129 ...
-# $ nsite : num 250
+# $ npix    : num 10000
+# $ xcov    : num [1:10000] 0.374 0.372 0.369 0.365 0.36 ...
+# $ wcov    : num [1:10000] 0.0631 0.123 0.1829 0.2427 0.3022 ...
+# $ C       : num [1:250, 1:3] 3 0 2 2 0 1 1 0 2 1 ...
+# $ covarX  : num [1:250] 0.47 -0.176 -0.273 -0.476 -0.503 ...
+# $ covarW  : num [1:250] 0.4295 0.9113 0.725 0.0236 -0.2129 ...
+# $ nsite   : num 250
 # $ nsurveys: num 3
-# $ area : num 0.0064
+# $ area    : num 0.0064
 
 # Specify model in BUGS language
 cat(file = "JointPPPNmix.txt", "
@@ -303,16 +304,16 @@ out3 <- jags(bdata, inits, params, "JointPPPNmix.txt", n.adapt = na,
 op <- par(mfrow = c(2,2)) ; traceplot(out3)
 par(op)
 print(out3, 2)
-# mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
-# alpha0 -1.86 0.11 -2.07 -1.86 -1.64 FALSE 1.00 1 1113
-# alpha1 -0.92 0.09 -1.10 -0.92 -0.75 FALSE 1.00 1 3000
-# beta0 5.93 0.06 5.82 5.93 6.04 FALSE 1.00 1 3000
-# beta1 0.55 0.04 0.46 0.55 0.63 FALSE 1.00 1 3000
-# gamma0 0.14 0.09 -0.03 0.14 0.33 TRUE 0.94 1 1965
-# gamma1 -1.55 0.09 -1.73 -1.55 -1.37 FALSE 1.00 1 3000
-# mean.p 0.54 0.02 0.49 0.54 0.58 FALSE 1.00 1 1969
-# Nppm 1729.81 93.60 1549.71 1726.98 1918.92 FALSE 1.00 1 3000
-# Nnmix 1664.60 63.50 1545.00 1662.50 1795.00 FALSE 1.00 1 1711
+#           mean    sd    2.5%     50%   97.5% overlap0    f Rhat n.eff
+# alpha0   -1.86  0.11   -2.07   -1.86   -1.64    FALSE 1.00    1  1113
+# alpha1   -0.92  0.09   -1.10   -0.92   -0.75    FALSE 1.00    1  3000
+# beta0     5.93  0.06    5.82    5.93    6.04    FALSE 1.00    1  3000
+# beta1     0.55  0.04    0.46    0.55    0.63    FALSE 1.00    1  3000
+# gamma0    0.14  0.09   -0.03    0.14    0.33     TRUE 0.94    1  1965
+# gamma1   -1.55  0.09   -1.73   -1.55   -1.37    FALSE 1.00    1  3000
+# mean.p    0.54  0.02    0.49    0.54    0.58    FALSE 1.00    1  1969
+# Nppm   1729.81 93.60 1549.71 1726.98 1918.92    FALSE 1.00    1  3000
+# Nnmix  1664.60 63.50 1545.00 1662.50 1795.00    FALSE 1.00    1  1711
 
 # Compare estimates of joint model with truth in data simulation
 # ~~~~ extra code for the table ~~~~~~~~~~~
@@ -320,14 +321,14 @@ truth <- c(dat$alpha, dat$beta, dat$gamma, dat$N.ipp)
 esti <- out3$summary[c(1:6,8), c(1,3,7)]
 print(cbind(truth, esti), 3)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# truth mean 2.5% 97.5%
-# alpha0 -2.0 -1.859 -2.0743 -1.636
-# alpha1 -1.0 -0.924 -1.1045 -0.745
-# beta0 6.0 5.933 5.8199 6.045
-# beta1 0.5 0.546 0.4630 0.630
-# gamma0 0.0 0.143 -0.0349 0.330
-# gamma1 -1.5 -1.548 -1.7293 -1.373
-# Nppm 1831.0 1729.814 1549.7149 1918.916
+#         truth     mean      2.5%    97.5%
+# alpha0   -2.0   -1.859   -2.0743   -1.636
+# alpha1   -1.0   -0.924   -1.1045   -0.745
+# beta0     6.0    5.933    5.8199    6.045
+# beta1     0.5    0.546    0.4630    0.630
+# gamma0    0.0    0.143   -0.0349    0.330
+# gamma1   -1.5   -1.548   -1.7293   -1.373
+# Nppm   1831.0 1729.814 1549.7149 1918.916
 
 
 # ~~~ extra code for figure 10.6 ~~~~~~~~~~~~~~

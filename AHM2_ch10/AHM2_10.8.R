@@ -98,15 +98,15 @@ Yaug[1:dim(Yscr)[1],] <- Yscr
 str(bdata <- list(y = Yaug, M = M, nsurveys = K, ntraps = nrow(scrtraps),
     Xl = Xl, Yl = Yl, Xu = Xu, Yu = Yu, X = as.matrix(scrtraps)),1)
 # List of 9
-# $ y : num [1:150, 1:36] 0 0 1 0 0 0 0 0 0 0 ...
-# $ M : num 150
+# $ y       : num [1:150, 1:36] 0 0 1 0 0 0 0 0 0 0 ...
+# $ M       : num 150
 # $ nsurveys: num 4
-# $ ntraps : int 36
-# $ Xl : num -1
-# $ Yl : num -1
-# $ Xu : num 12
-# $ Yu : num 12
-# $ X : int [1:36, 1:2] 3 4 5 6 7 8 3 4 5 6 ...
+# $ ntraps  : int 36
+# $ Xl      : num -1
+# $ Yl      : num -1
+# $ Xu      : num 12
+# $ Yu      : num 12
+# $ X       : int [1:36, 1:2] 3 4 5 6 7 8 3 4 5 6 ...
 
 # Specify simple SCR0 model for SCR data in BUGS language
 cat(file = "SCR0.txt", "
@@ -157,11 +157,11 @@ out1 <- jags(bdata, inits, params, "SCR0.txt", n.adapt = na, n.chains = nc,
 op <- par(mfrow = c(2, 3)) ; traceplot(out1)
 par(op)
 print(out1, 3)
-# mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
-# psi 0.423 0.096 0.252 0.415 0.627 FALSE 1 1.002 818
-# lam0 0.554 0.127 0.344 0.541 0.832 FALSE 1 1.000 3000
-# sigma 0.573 0.060 0.472 0.568 0.706 FALSE 1 1.001 2163
-# N 63.380 13.565 40.000 62.000 93.000 FALSE 1 1.002 853
+#         mean     sd   2.5%    50%  97.5% overlap0 f  Rhat n.eff
+# psi    0.423  0.096  0.252  0.415  0.627    FALSE 1 1.002   818
+# lam0   0.554  0.127  0.344  0.541  0.832    FALSE 1 1.000  3000
+# sigma  0.573  0.060  0.472  0.568  0.706    FALSE 1 1.001  2163
+# N     63.380 13.565 40.000 62.000 93.000    FALSE 1 1.002   853
 
 
 # 10.8.4 Analysis of counts of unmarked individuals using an SCR
@@ -172,15 +172,15 @@ print(out1, 3)
 str(bdata <- list(n = n, M = M, nsurveys = K, ntraps = nrow(occtraps), Xl = Xl,
     Yl = Yl, Xu = Xu, Yu = Yu, X = as.matrix(occtraps)))
 # List of 9
-# $ n : int [1:64] 2 0 0 5 2 7 3 1 0 0 ...
-# $ M : num 150
+# $ n       : int [1:64] 2 0 0 5 2 7 3 1 0 0 ...
+# $ M       : num 150
 # $ nsurveys: num 4
-# $ ntraps : int 64
-# $ Xl : num -1
-# $ Yl : num -1
-# $ Xu : num 12
-# $ Yu : num 12
-# $ X : int [1:64, 1:2] 1 2 3 4 5 6 7 8 9 10 ...
+# $ ntraps  : int 64
+# $ Xl      : num -1
+# $ Yl      : num -1
+# $ Xu      : num 12
+# $ Yu      : num 12
+# $ X       : int [1:64, 1:2] 1 2 3 4 5 6 7 8 9 10 ...
 
 # Specify basic Chandler-Royle (2013) model for counts in BUGS language
 cat(file = "CRmodel.txt", "
@@ -229,24 +229,24 @@ out2 <- jags(bdata, inits, params, "CRmodel.txt", n.adapt = na,
 op <- par(mfrow = c(2, 3)) ; traceplot(out2)
 par(op)
 print(out2, 3)
-# mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
-# psi 0.622 0.236 0.113 0.643 0.979 FALSE 1 1.003 985
-# lam0 0.638 0.221 0.263 0.618 1.119 FALSE 1 1.007 516
-# sigma 0.505 0.215 0.303 0.442 1.192 FALSE 1 1.018 443
-# N 93.634 35.409 17.000 97.000 148.000 FALSE 1 1.003 996
+#         mean     sd   2.5%    50%   97.5% overlap0 f  Rhat n.eff
+# psi    0.622  0.236  0.113  0.643   0.979    FALSE 1 1.003   985
+# lam0   0.638  0.221  0.263  0.618   1.119    FALSE 1 1.007   516
+# sigma  0.505  0.215  0.303  0.442   1.192    FALSE 1 1.018   443
+# N     93.634 35.409 17.000 97.000 148.000    FALSE 1 1.003   996
 
 
 # Results for M = 300:
-# mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
-# psi 0.495 0.233 0.086 0.466 0.955 FALSE 1 1.013 197
-# lam0 0.634 0.223 0.257 0.612 1.137 FALSE 1 1.002 2009
-# sigma 0.415 0.191 0.223 0.375 1.045 FALSE 1 1.044 165
-# N 148.478 70.032 26.000 140.000 287.000 FALSE 1 1.013 194
+#          mean     sd   2.5%     50%   97.5% overlap0 f  Rhat n.eff
+# psi     0.495  0.233  0.086   0.466   0.955    FALSE 1 1.013   197
+# lam0    0.634  0.223  0.257   0.612   1.137    FALSE 1 1.002  2009
+# sigma   0.415  0.191  0.223   0.375   1.045    FALSE 1 1.044   165
+# N     148.478 70.032 26.000 140.000 287.000    FALSE 1 1.013   194
 
 # Remember what the true values were ...
 (truth <- c('N' = N, 'lam0' = lam0, 'sigma' = sigma))
-# N lam0 sigma
-# 50.0 0.6 0.6
+#    N lam0 sigma
+# 50.0  0.6   0.6
 
 
 # 10.8.5 Model 3: The integrated model for joint analysis of SCR and count data
@@ -258,17 +258,17 @@ str(bdata <- list(yscr = Yaug, n = n, M = M, nsurveys = K,
     Yu = Yu, scrtraps = as.matrix(scrtraps), occtraps = as.matrix(occtraps)))
 # List of 12
 # $ yscr : int [1:150, 1:36] 0 0 1 0 0 0 0 0 0 0 ...
-# $ n : int [1:64] 2 0 0 5 2 7 3 1 0 0 ...
-# $ M : num 150
-# $ nsurveys : num 4
+# $ n         : int [1:64] 2 0 0 5 2 7 3 1 0 0 ...
+# $ M         : num 150
+# $ nsurveys  : num 4
 # $ n.scrtraps: int 36
 # $ n.occtraps: int 64
-# $ Xl : num -1
-# $ Yl : num -1
-# $ Xu : num 12
-# $ Yu : num 12
-# $ scrtraps : int [1:36, 1:2] 3 4 5 6 7 8 3 4 5 6 ...
-# $ occtraps : int [1:64, 1:2] 1 2 3 4 5 6 7 8 9 10 ...
+# $ Xl        : num -1
+# $ Yl        : num -1
+# $ Xu        : num 12
+# $ Yu        : num 12
+# $ scrtraps  : int [1:36, 1:2] 3 4 5 6 7 8 3 4 5 6 ...
+# $ occtraps  : int [1:64, 1:2] 1 2 3 4 5 6 7 8 9 10 ...
 
 # Specify integrated Chandler-Royle+SCR model in BUGS language
 cat(file = "IM_SCR.txt", "
@@ -326,11 +326,11 @@ out3 <- jags(bdata, inits, params, "IM_SCR.txt", n.adapt = na, n.chains = nc,
 op <- par(mfrow = c(2, 3)) ; traceplot(out3)
 par(op)
 print(out3, 3)
-# mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
-# psi 0.394 0.081 0.250 0.392 0.563 FALSE 1 1.001 1181
-# lam0 0.559 0.103 0.374 0.553 0.780 FALSE 1 1.002 909
-# sigma 0.580 0.060 0.480 0.574 0.717 FALSE 1 1.002 888
-# N 58.856 10.582 40.000 58.000 81.000 FALSE 1 1.001 1795
+#         mean     sd   2.5%    50%  97.5% overlap0 f  Rhat n.eff
+# psi    0.394  0.081  0.250  0.392  0.563    FALSE 1 1.001  1181
+# lam0   0.559  0.103  0.374  0.553  0.780    FALSE 1 1.002   909
+# sigma  0.580  0.060  0.480  0.574  0.717    FALSE 1 1.002   888
+# N     58.856 10.582 40.000 58.000 81.000    FALSE 1 1.001  1795
 
 
 # 10.8.6 Model 4: The integrated model for joint analysis of SCR and occupancy data
@@ -376,18 +376,18 @@ str(bdata <- list(yscr = Yaug, yocc=Yocc, M = M, nsurveys = K,
     Xu = Xu, Yu = Yu, scrtraps = as.matrix(scrtraps),
     occtraps = as.matrix(occtraps)) ,1)
 # List of 12
-# $ yscr : num [1:150, 1:36, 1:4] 0 0 0 0 0 0 0 0 0 0 ...
-# $ yocc : num [1:64, 1:4] 0 0 0 1 0 0 0 0 0 1 ...
-# $ M : num 150
-# $ nsurveys : num 4
+# $ yscr      : num [1:150, 1:36, 1:4] 0 0 0 0 0 0 0 0 0 0 ...
+# $ yocc      : num [1:64, 1:4] 0 0 0 1 0 0 0 0 0 1 ...
+# $ M         : num 150
+# $ nsurveys  : num 4
 # $ n.scrtraps: int 36
 # $ n.occtraps: int 64
-# $ Xl : num -1
-# $ Yl : num -1
-# $ Xu : num 12
-# $ Yu : num 12
-# $ scrtraps : int [1:36, 1:2] 3 4 5 6 7 8 3 4 5 6 ...
-# $ occtraps : int [1:64, 1:2] 1 2 3 4 5 6 7 8 9 10 ...
+# $ Xl        : num -1
+# $ Yl        : num -1
+# $ Xu        : num 12
+# $ Yu        : num 12
+# $ scrtraps  : int [1:36, 1:2] 3 4 5 6 7 8 3 4 5 6 ...
+# $ occtraps  : int [1:64, 1:2] 1 2 3 4 5 6 7 8 9 10 ...
 
 # Specify integrated SCR/occupancy model in BUGS language
 cat(file = "SCRocc.txt","
@@ -462,12 +462,12 @@ out4 <- jags(bdata, inits, params, "SCRocc.txt", n.adapt = na, n.chains = nc,
 op <- par(mfrow = c(2, 3)) ; traceplot(out4)
 par(op)
 print(out4, 3)
-# mean sd 2.5% 50% 97.5% overlap0 f Rhat n.eff
-# psi 0.406 0.077 0.270 0.402 0.571 FALSE 1 1.000 15000
-# lam0 0.812 0.165 0.533 0.798 1.171 FALSE 1 1.000 15000
-# lam0occ 0.573 0.143 0.342 0.559 0.893 FALSE 1 1.000 8749
-# sigma 0.574 0.044 0.496 0.570 0.670 FALSE 1 1.001 10135
-# N 60.731 10.036 44.000 60.000 83.000 FALSE 1 1.000 15000
+#           mean     sd   2.5%    50%  97.5% overlap0 f  Rhat n.eff
+# psi      0.406  0.077  0.270  0.402  0.571    FALSE 1 1.000 15000
+# lam0     0.812  0.165  0.533  0.798  1.171    FALSE 1 1.000 15000
+# lam0occ  0.573  0.143  0.342  0.559  0.893    FALSE 1 1.000  8749
+# sigma    0.574  0.044  0.496  0.570  0.670    FALSE 1 1.001 10135
+# N       60.731 10.036 44.000 60.000 83.000    FALSE 1 1.000 15000
 
 
 # 10.8.7 Concluding comments on data integration in the context of
