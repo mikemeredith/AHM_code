@@ -1,15 +1,15 @@
 # AHM code
 
-The book *Applied Hierarchical Modeling in Ecology: Analysis of distribution, abundance and species richness in R and BUGS* by Marc Kéry and Andy Royle contains lots of R and BUGS code. The code for the first volume (AHM1), with some updates, is available as a single huge text file on the [main book web page](http://www.mbr-pwrc.usgs.gov/pubanalysis/keryroylebook/). Volume 2 (AHM2) will shortly appear with more code, and the plan is to make this available plus additional code not included in the book.
+The two-volume work *Applied Hierarchical Modeling in Ecology: Analysis of distribution, abundance and species richness in R and BUGS* by Marc Kéry and Andy Royle contains lots of R and BUGS code. This repository has all the code, including code referred to as "available on the website" but not printed.
 
-The initial post was the 2017 code, chopped into separate scripts for each main section of the book. See the CHANGES file for details of changes since then. The main changes are:
+The aim is to have code which works with current versions of R, JAGS and contributed R packages. The code is regularly tested and updated code inserted, with the original printed code retained but commented out with `#`. Please open an issue if you find other code which does not work.
 
-* Code added at the top of the script to recreate or reload objects from previous sections.
-* Some original code no longer works with current versions of R and packages. New code which does work has been inserted and the old code commented out with `#`.
-* Some changes have been made to facilitate automated checking of scripts.
+In addition to these updates, some code has been inserted:
+* Code added at the top of the script to recreate or reload objects from previous sections; each script is self-contained.
+* Some changes have been made to facilitate automated checking of scripts, in particular reductions in the number of iterations for simulations, bootstraps and MCMC runs.
 * After long runs of `unmarked`, `JAGS` or `WinBUGS`, I've inserted code to save the results to `RData` files.
 
-Additional comments and new code are marked off with twiddly lines like this:
+Additional code and comments are marked off with twiddly lines like this:
 ```
 # ~~~~ oldfunction has been replaced with newfunction ~~~~~~~
 # oldfunction(foo)
@@ -17,4 +17,10 @@ newfunction(foo)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
 
-Please open an issue if you find other code which does not work.
+## Volume 1 (AHM1)
+
+The code for the first volume (AHM1), with updates up to 2017, is available as a single huge text file on the [main book web page](http://www.mbr-pwrc.usgs.gov/pubanalysis/keryroylebook/).
+
+## Volume 2 (AHM2)
+
+The book is scheduled to appear in mid-September. The code here is based on the final proofs.

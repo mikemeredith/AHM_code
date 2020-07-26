@@ -11,6 +11,10 @@
 library(AHMbook)
 library(jagsUI)
 
+# ~~~~~~~ changes to RNG defaults ~~~~~~~~~~~~~~~~~~~~~~~~
+# Use the old default random number generator to get the printed numbers
+RNGversion("3.2.0")
+
 # 9.4 Mark-Recapture/Double observer Distance Sampling
 # ====================================================
 

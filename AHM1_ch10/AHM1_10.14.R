@@ -13,10 +13,9 @@
 library(AHMbook) # Requires version ‘0.1.4.9088’ or later
 library(jagsUI)
 
-# ~~~~~~~ changes to RNG defaults ~~~~~~~~~~~~~~~~~~~~~~~~~
-# The values in the book were generated with R 3.5; to get the same
-#   values in later versions you need the old RNG settings:
-RNGversion("3.5.0")
+# ~~~~~~~ changes to RNG defaults ~~~~~~~~~~~~~~~~~~~~~~~~
+# Use the old default random number generator to get the printed numbers
+RNGversion("3.2.0")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 

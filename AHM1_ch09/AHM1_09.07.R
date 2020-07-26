@@ -13,7 +13,11 @@ library(AHMbook)
 library(unmarked)
 library(jagsUI)
 
-# 9.7 Open HDS models: modelling population dynamics
+# ~~~~~~~ changes to RNG defaults ~~~~~~~~~~~~~~~~~~~~~~~~
+# Use the old default random number generator to get the printed numbers
+RNGversion("3.2.0")
+
+# 9.7 Open HDS models: modeling population dynamics
 # ==================================================
 
 # 9.7.1 Simulating the ISSJ data over multiple years

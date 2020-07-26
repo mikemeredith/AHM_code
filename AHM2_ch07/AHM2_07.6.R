@@ -12,6 +12,11 @@
 library(jagsUI)
 library(AHMbook)
 
+# ~~~~~~~ changes to RNG defaults ~~~~~~~~~~~~~~~~~~~~~~~~
+# Use the old default random number generator to get the printed numbers
+RNGversion("3.5.0")
+
+
 # 7.6 Modeling  false positives from bioacoustics monitoring data
 # ===============================================================
 
