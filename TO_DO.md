@@ -17,7 +17,7 @@ The following are still outstanding:
 * Figure 2.10
 
 ### AHM2 chapter 3
-* 3.3.1  "We do this by browsing...(see webside for code)."
+* 3.3.1  "We do this by browsing...(see website for code)."
 
 ### AHM2 chapter 4
 * 4.7 Book text says "You will find all the code on the website", but not clear what is referred to.
@@ -40,11 +40,3 @@ The following are still outstanding:
 
 ### AHM2 chapter 9
 (all good)
-
-## Other things to fix
-
-* Calls to `par` should be followed by code to reset the old pars.
-* Add times for code execution to all scripts.
-
-
-
