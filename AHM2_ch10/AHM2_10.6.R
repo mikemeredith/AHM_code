@@ -19,7 +19,7 @@ library(jagsUI)
 # 10.6.1 Data simulation under the model of Dorazio (2014)
 # --------------------------------------------------------
 
-# Call function with default values for arguments
+# Call function with default values for arguments (produces figure 10.5)
 str(dat <- simDataDK(sqrt.npix = 100, alpha = c(-1,-1), beta = c(6,0.5),
     drop.out.prop.pb = 0.7, quadrat.size = 4, gamma = c(0,-1.5),
     nquadrats = 250, nsurveys = 3, show.plot = TRUE), 1)

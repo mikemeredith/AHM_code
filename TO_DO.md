@@ -40,3 +40,9 @@ The following are still outstanding:
 
 ### AHM2 chapter 9
 (all good)
+
+### AHM2 chapter 10
+* Figure 10.10
+
+### AHM2 chapter 11
+* Figures 11.13, 11.14, 11.15, 11.17.
