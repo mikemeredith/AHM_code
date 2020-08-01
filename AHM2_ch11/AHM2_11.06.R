@@ -5,6 +5,7 @@
 # Code from proofs dated 2020-07-30
 
 # Approximate execution time for this code: 60 mins
+# Run time with the full number of iterations: 2.8 hrs
 
 library(AHMbook)
 library(jagsUI)
