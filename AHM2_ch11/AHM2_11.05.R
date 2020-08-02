@@ -117,18 +117,19 @@ par(op)
 
 # ~~~~ extra code for figure 11.4 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 pixel <- out3$sims.list$pixel*out3$sims.list$z
-post <-table(pixel)/nrow(pixel)
+post <- table(pixel)/nrow(pixel)
 post <- post[-1] # remove the 0 values, z = 0 individuals
 
+library(raster)
 op <- par(mfrow=c(2,1),mar=c(2,2,2,6))
-prior.mean<- mean(out3$sims.list$beta)*as.vector(Habitat)
-prior.mean<- mean(out3$sims.list$psi)*M*exp(prior.mean)/sum(exp(prior.mean))
+prior.mean <- mean(out3$sims.list$beta)*as.vector(Habitat)
+prior.mean <- mean(out3$sims.list$psi)*M*exp(prior.mean)/sum(exp(prior.mean))
 plot(rast.prior<- rasterFromXYZ(cbind(Habgrid,prior.mean)),axes=FALSE,box=FALSE,
     col=rampYOR(225, bias=2), ylim=c(0,1))
 title("Prior mean density (estimated)", line=0)
 axis(1)
 axis(2)
-plot(rast.post<-rasterFromXYZ(cbind(Habgrid,as.vector(post))),axes=FALSE,
+plot(rast.post <- rasterFromXYZ(cbind(Habgrid,as.vector(post))),axes=FALSE,
     box=FALSE, col=rampYOR(225, bias=2))
 title("Posterior mean density", line=0)
 axis(1)

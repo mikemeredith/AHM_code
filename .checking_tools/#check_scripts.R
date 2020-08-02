@@ -32,7 +32,7 @@ library(rgdal)
 # .ow <- options(warn=1)
 
 # Set up log file
-.logFile <- paste0("#check_log_", Sys.Date(), ".log")
+.logFile <- paste0("#check_log_", format(Sys.time(), "%Y-%m-%d_%H%M"), ".log")
 cat("\nCheck log file for", getwd(), "\n", file = .logFile)
 cat(format(Sys.time()), file = .logFile, append = TRUE)
 cat("\n\n################################################################\n",
@@ -71,9 +71,10 @@ otime <- Sys.time() - .startTime  # overall time
 
 # Add overall time and sessionInfo to the end of the log file.
 sink(.logFile, append=TRUE)
-cat("\n#############################################\n")
+cat("\n\n#############################################\n")
+cat(format(Sys.time()), file = .logFile, append = TRUE)
 cat("\nOverall time taken", round(otime, 2), attr(otime, "units"), "\n")
-cat("SessionInfo:\n\n")
+cat("\nSessionInfo:\n\n")
 print(sessionInfo())
 sink(NULL)
 
