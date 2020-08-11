@@ -1,8 +1,10 @@
 # AHM code
 
-The two-volume work *Applied Hierarchical Modeling in Ecology: Analysis of distribution, abundance and species richness in R and BUGS* by Marc Kéry and Andy Royle contains lots of R and BUGS code. This repository has all the code, including code referred to as "available on the website" but not printed.
+The two-volume work *Applied Hierarchical Modeling in Ecology: Analysis of distribution, abundance and species richness in R and BUGS* by Marc Kéry and Andy Royle contains lots of R and BUGS code.
 
-The aim is to have code which works with current versions of R, JAGS and contributed R packages. The code is regularly tested and updated code inserted, with the original printed code retained but commented out with `#`. Please open an issue if you find other code which does not work.
+The R package `AHMbook`, available on CRAN, has all the data sets and the custom functions used in the books. Commented code for the functions is on GitHub [here](https://github.com/mikemeredith/AHMbook).
+
+This repository has all the code in the printed books, plus code referred to as "available on the website" but not printed. The aim is to have code which works with current versions of R, JAGS and contributed R packages. The code is regularly tested and updated code inserted, with the original printed code retained but commented out with `#`. Please open an issue if you find other code which does not work.
 
 In addition to these updates, some code has been inserted:
 * Code added at the top of the script to recreate or reload objects from previous sections; each script is self-contained.
@@ -11,7 +13,7 @@ In addition to these updates, some code has been inserted:
 
 Additional code and comments are marked off with twiddly lines like this:
 ```
-# ~~~~ oldfunction has been replaced with newfunction ~~~~~~~
+#~~~~ oldfunction has been replaced with newfunction ~~~~~~~
 # oldfunction(foo)
 newfunction(foo)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
