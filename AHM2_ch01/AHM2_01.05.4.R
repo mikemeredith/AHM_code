@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 1 : RELATIVE ABUNDANCE MODELS FOR POPULATION DYNAMICS
 # =============================================================
-# Code from proofs dated 2020-06-03
+# Code from proofs dated 2020-08-18
 
 # Approximate run time for this script: 30 mins
 # Run time with the full number of iterations: 6 hrs
@@ -27,20 +27,23 @@ T <- ncol(C)
 
 # Bundle data
 str(bdata <- list(C = C, M = M, T = T))
+
 # Specify model in BUGS language
 cat(file = "model5.txt","
 model {
+
   # Priors
   for(i in 1:M){
     site[i] ~ dnorm(0, 0.001) # Prior for site effects
   }
-  year[1] <- 0 # Constraint on year effects
+  year[1] <- 0                # Constraint on year effects
   for(t in 2:T){
     year[t] ~ dnorm(0, 0.001) # Prior for year effects 2:T
   }
   tau <- pow(sd, -2)
   sd ~ dunif(0, 3)
-  rho ~ dunif(-1,1) # Autoregressive param. for temp. autocorrelation
+  rho ~ dunif(-1,1)           # Autoregressive param. for temp. autocorrelation
+
   # ’Likelihood’
   # First year
   for (i in 1:M){
@@ -48,6 +51,7 @@ model {
     C[i,1] ~ dpois(lambda[i,1])
     log(lambda[i,1]) <- site[i] + year[1] + w[i,1]
     w[i,1] <- eps[i,1] / sqrt(1 - rho * rho)
+
     # Later years
     for(t in 2:T){
       eps[i,t] ~ dnorm(0, tau) # (same) unstructured random variation
@@ -56,6 +60,7 @@ model {
       w[i,t] <- rho * w[i,t-1] + eps[i,t]
     }
   }
+
   # Derived quantities
   for(t in 1:T){
     popindex[t] <- sum(lambda[,t])
@@ -64,12 +69,11 @@ model {
 ")
 
 # Initial values
-inits <- function() list(site = rnorm(M), year = c(NA, rnorm(T-1)), rho = runif(1),
-  eps = array(0.1, dim=c(M, T)))
+inits <- function() list(site = rnorm(M), year = c(NA, rnorm(T-1)),
+    rho = runif(1), eps = array(0.1, dim=c(M, T)))
 
 # Parameters monitored
-# params <- c("popindex", "site", "year", "lam.sel", "rho", "sd")
-params <- c("rho", "sd" , "popindex", "site", "year") # lam.sel not in this model
+params <- c("popindex", "site", "year", "lam.sel", "rho", "sd")
 
 # MCMC settings
 # na <- 10000 ; ni <- 250000 ; nt <- 200 ; nb <- 50000 ; nc <- 3
@@ -77,7 +81,7 @@ na <- 10000 ; ni <- 25000 ; nt <- 20 ; nb <- 5000 ; nc <- 3  # ~~~ for testing, 
 
 # Call JAGS (ART 251 min), check convergence and summarize posteriors
 out5 <- jags(bdata, inits, params, "model5.txt", n.adapt = na, n.chains = nc,
-  n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+    n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 par(mfrow = c(3,2)) ; traceplot(out5) ; par(mfrow = c(1,1))
 summary(out5) ; jags.View(out5) ; print(out5, 3)
 #      mean    sd  2.5%   50% 97.5% overlap0 f  Rhat n.eff
@@ -87,3 +91,4 @@ summary(out5) ; jags.View(out5) ; print(out5, 3)
 
 # ~~~~ Save output for use in subsequent sections ~~~~~
 save(out5, file="AHM2_01.05.4_out5.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

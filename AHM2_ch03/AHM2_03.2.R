@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 3 : HIERARCHICAL MODELS OF SURVIVAL
 # ===========================================
-# Code from proofs dated 2020-06-03
+# Code from proofs dated 2020-08-18
 
 library(AHMbook)
 library(jagsUI)
@@ -19,9 +19,10 @@ library(jagsUI)
 # 3.2.2 A simulation function for data under basic CJS models
 # -----------------------------------------------------------
 
-# Fig. 3.1
+# Fig. 3.1 (of course, have to load AHMbook first)
 set.seed(1)
-str(data <- simCJS(n.occ = 6, n.marked = 20, phi = 0.7, p = 0.4, show.plot = TRUE))
+str(data <- simCJS(n.occ = 6, n.marked = 20, phi = 0.7, p = 0.4,
+    show.plot = TRUE))
 # List of 9
 # $ n.occ   : num 6
 # $ n.marked: num [1:5] 20 20 20 20 20
@@ -35,8 +36,11 @@ str(data <- simCJS(n.occ = 6, n.marked = 20, phi = 0.7, p = 0.4, show.plot = TRU
 
 # Some settings for the function
 str(data <- simCJS()) # Implicit defaults
-str(data <- simCJS(n.occ = 20, phi = rep(0.7, 19), p = rep(0.4, 19))) # More occasions
-str(data <- simCJS(n.occ = 6, n.marked = c(10, 20, 30, 40, 50))) # Different numbers of annual release totals
+str(data <- simCJS(n.occ = 20, phi = rep(0.7, 19),
+    p = rep(0.4, 19))) # More occasions
+str(data <- simCJS(n.occ = 6,
+    n.marked = c(10, 20, 30, 40, 50)))                # Different numbers of annual
+                                                      # release totals
 str(data <- simCJS(n.occ = 20, phi = 0.9, p = 0.4))   # More occasions and higher survival
 str(data <- simCJS(n.marked = 100))                   # More individuals
 str(data <- simCJS(phi = c(0.1, 0.3, 0.5, 0.7, 0.9))) # phi time-dep
@@ -71,15 +75,19 @@ str(data <- simCJS())
 library(wiqid)
 (mle <- survCJS(data$ch, model=list(phi~1, p~1), freq=1, ci = 0.95))
 (mle <- survCJS(data$ch)) # Same
+
 # Call: survCJS(DH = data$ch)
+
 # Real values (duplicates omitted):
 # est lowCI uppCI
 # phi1 0.6173 0.4893 0.7310
 # p1 0.4385 0.2947 0.5933
+
 # AIC: 244.6032
 
 # Bundle and summarize data set
-str(bdata <- list(y = data$ch, f = data$f, n.ind = data$n.ind, n.occ = data$n.occ))
+str(bdata <- list(y = data$ch, f = data$f, n.ind = data$n.ind,
+    n.occ = data$n.occ))
 # List of 4
 # $ y    : num [1:100, 1:6] 1 1 1 1 1 1 1 1 1 1 ...
 # $ f    : int [1:100] 1 1 1 1 1 1 1 1 1 1 ...
@@ -89,9 +97,11 @@ str(bdata <- list(y = data$ch, f = data$f, n.ind = data$n.ind, n.occ = data$n.oc
 # Specify model in BUGS language
 cat(file = "cjs1.txt","
 model {
+
   # Priors
   phi ~ dunif(0, 1) # Apparent survival
   p ~ dunif(0, 1) # Recapture
+
   # Likelihood
   for (i in 1:n.ind){
     # Define latent state at first capture
@@ -116,8 +126,8 @@ params <- c("phi", "p", "z")
 na <- 5000 ; ni <- 120000 ; nt <- 10 ; nb <- 20000 ; nc <- 3
 
 # Call JAGS (ART 1 min), check convergence and summarize posteriors
-out1 <- jags(bdata, inits, params, "cjs1.txt", n.adapt = na, n.chains = nc, n.thin = nt,
-    n.iter = ni, n.burnin = nb, parallel = TRUE)
+out1 <- jags(bdata, inits, params, "cjs1.txt", n.adapt = na,
+    n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 op <- par(mfrow = c(2,3)) ; traceplot(out1)
 par(op)
 print(out1, 3)
@@ -138,7 +148,8 @@ print(cbind(mle$real[c(1,6),], out1$summary[1:2, c(1, 3, 7)]), 3)
 # Plot estimates of z matrix (Fig. 3.2)
 mapPalette <- colorRampPalette(c("white", "black"))
 image(x = 1:data$n.occ, y = 1:data$n.ind, z = t(out1$mean$z), col = mapPalette(10),
-    axes = T, xlab = "Year", ylab = "Individual")
+    axes = TRUE, xlab = "Year", ylab = "Individual")
+
 
 # 3.2.4 Bayesian analysis of the fully time-dependent CJS model
 # -------------------------------------------------------------
@@ -149,16 +160,19 @@ str(data <- simCJS(n.occ = 6, n.marked = 100, phi = runif(5, 0.2, 0.8),
     p = runif(5, 0.2, 0.9)))
 
 # Bundle and summarize data set
-str(bdata <- list(y = data$ch, f = data$f, n.ind = data$n.ind, n.occ = data$n.occ))
+str(bdata <- list(y = data$ch, f = data$f, n.ind = data$n.ind,
+    n.occ = data$n.occ))
 
 # Specify model in BUGS language
 cat(file = "cjs2.txt","
 model {
+
   # Priors
   for(t in 1:(n.occ-1)){
-    phi[t] ~ dunif(0, 1) # Apparent survival
-    p[t] ~ dunif(0, 1) # Recapture
+    phi[t] ~ dunif(0, 1)   # Apparent survival
+    p[t] ~ dunif(0, 1)     # Recapture
   }
+
   # Likelihood
   for (i in 1:n.ind){
     # Define latent state at first capture
@@ -183,8 +197,8 @@ params <- c("phi", "p", "z")
 na <- 1000 ; ni <- 20000 ; nt <- 5 ; nb <- 10000 ; nc <- 3
 
 # Call JAGS (ART 2 min), check convergence and summarize posteriors
-out2 <- jags(bdata, inits, params, "cjs2.txt", n.adapt = na, n.chains = nc, n.thin = nt,
-    n.iter = ni, n.burnin = nb, parallel = T)
+out2 <- jags(bdata, inits, params, "cjs2.txt", n.adapt = na,
+    n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 op <- par(mfrow = c(2,3)) ; traceplot(out2)
 par(op)
 print(out2, 3) # not shown

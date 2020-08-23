@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 1 : RELATIVE ABUNDANCE MODELS FOR POPULATION DYNAMICS
 # =============================================================
-# Code from proofs dated 2020-06-03
+# Code from proofs dated 2020-08-18
 
 # Approximate time to execute this code: 4 mins
 
@@ -63,9 +63,10 @@ na <- 1000 ; ni <- 15000; nt <- 10 ; nb <- 5000 ; nc <- 3
 # Call JAGS (ART 5 min), check convergence and summarize posteriors
 library(jagsUI)
 out1 <- jags(bdata, inits, params, "model1.txt", n.adapt = na, n.chains = nc,
-  n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+    n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 
-par(mfrow = c(3,3)) ; traceplot(out1) ; par(mfrow = c(1,1))
+op <- par(mfrow = c(3,3)) ; traceplot(out1)
+par(op)
 jags.View(out1) ; print(out1, 2) # Two formats for posterior summaries
 
 # ~~~~~ save output for use in subsequent sections
@@ -76,12 +77,12 @@ save(out1, file="AHM2_01.04_out1.RData")
 cvec <- c(C)
 sitevec <- rep(1:267, 18)
 yrvec <- rep(1:18, each = 267)
-cbind(sitevec, yrvec, cvec) # Look at data in this format
+cbind(sitevec, yrvec, cvec)   # Look at data in this format
 summary(fm <- glm(cvec ~ as.factor(sitevec) + as.factor(yrvec) - 1,
     family = 'poisson'))
 
 cor(exp(fm$coef[1:nsite]), exp(out1$summary[1:nsite,1])) # > 0.999
-cor(fm$coef[268:284], out1$summary[269:285,1]) # >0.0999 # > 0.999 surely!
+cor(fm$coef[268:284], out1$summary[269:285,1])           # > 0.999
 
 # ~~~~~ code to plot figure 1.4 ~~~~~~~~~~~~~~
 # Plot population size index
@@ -94,27 +95,27 @@ segments(year, out1$q2.5$popindex, year, out1$q97.5$popindex)
 params <- c("site", "year", "popindex", "C")
 na <- 100 ; ni <- 1500 ; nt <- 2 ; nb <- 500 ; nc <- 2
 out1X <- jags(bdata, inits, params, "model1.txt", n.adapt = na, n.chains = nc,
-  n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+    n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 
 (n.missing <- rowSums(is.na(C)) )
 (na.sites <- which(n.missing > 0) )
 head(C[160:169, 1:13]) # Some of the data with many NAs ...
 # ... and the corresponding estimates
 head(round(out1X$mean$C[160:169, 1:13], 1))
-#     [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13]
-# [1,] 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0 0 0
-# [2,] 1.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0 0 0
-# [3,] 5.0 5.1 4.6 5.5 6.1 6.3 6.6 6.1 6.3 6.6 1 0 10
-# [4,] 1.6 4.0 1.0 1.0 2.0 1.0 2.0 1.0 2.0 1.0 2 3 1
-# [5,] 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1 1 0
-# [6,] 8.0 6.0 3.0 7.0 9.0 8.0 11.0 8.0 19.0 11.0 13 12 17
+#      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13]
+# [1,]  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   0.0     0     0     0
+# [2,]  1.0  0.0  0.0  1.0  0.0  0.0  0.0  0.0  0.0   0.0     0     0     0
+# [3,]  5.0  5.1  4.6  5.5  6.1  6.3  6.6  6.1  6.3   6.6     1     0    10
+# [4,]  1.6  4.0  1.0  1.0  2.0  1.0  2.0  1.0  2.0   1.0     2     3     1
+# [5,]  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   0.0     1     1     0
+# [6,]  8.0  6.0  3.0  7.0  9.0  8.0 11.0  8.0 19.0  11.0    13    12    17
 
 head(round(out1X$sd$C[160:169, 1:13], 1))
-# [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13]
-# [1,] 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0 0 0
-# [2,] 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0 0 0
-# [3,] 2.4 2.4 2.2 2.5 2.6 2.7 2.9 2.7 2.6 2.7 0 0 0
-# [4,] 1.3 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0 0 0
-# [5,] 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0 0 0
-# [6,] 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0 0 0
+#      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13]
+# [1,]  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   0.0     0     0     0
+# [2,]  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   0.0     0     0     0
+# [3,]  2.4  2.4  2.2  2.5  2.6  2.7  2.9  2.7  2.6   2.7     0     0     0
+# [4,]  1.3  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   0.0     0     0     0
+# [5,]  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   0.0     0     0     0
+# [6,]  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   0.0     0     0     0
 

@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 1 : RELATIVE ABUNDANCE MODELS FOR POPULATION DYNAMICS
 # =============================================================
-# Code from proofs dated 2020-06-03
+# Code from proofs dated 2020-08-18
 
 # 1.3 Crested tit count data from the Swiss MHB Breeding Bird Survey
 # ==================================================================
@@ -29,6 +29,7 @@ datetmp <- as.matrix(dat[,24:77])
 datefull <- array(datetmp, dim = c(nsite, 3, nyear))
 durtmp <- as.matrix(dat[,78:131])
 durfull <- array(durtmp, dim = c(nsite, 3, nyear))
+
 # Get mean date of survey and mean survey duration for each site and year
 date <- apply(datefull, c(1,3), mean, na.rm = TRUE)
 dur <- apply(durfull, c(1,3), mean, na.rm = TRUE)

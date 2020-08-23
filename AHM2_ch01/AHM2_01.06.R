@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 1 : RELATIVE ABUNDANCE MODELS FOR POPULATION DYNAMICS
 # =============================================================
-# Code from proofs dated 2020-06-03
+# Code from proofs dated 2020-08-18
 
 # Approximate run time for this script: 35 mins
 # Run time with the full number of iterations: 6.6 hrs
@@ -28,6 +28,7 @@ nzero <- apply(C, 1, function(x) sum(x == 0, na.rm = TRUE))
 plot(sort(nzero)) # Make a graph of number of zero years
 sum(nzero <= 1)   # 97 sites with at most 1 zero year
 table(nzero)
+
 # Bundle data with restriction on sites
 sel <- nzero <= 1 # Select sites with <= 1 zero count
 newM <- sum(sel)  # Define new number of sites
@@ -40,6 +41,7 @@ str(bdata <- list(C = C[sel,], M = newM, T = ncol(C[sel,])))
 # Specify model in BUGS language
 cat(file = "model6.txt","
 model {
+
   # Priors
   for(i in 1:M){
     n[i, 1] ~ dnorm(0, 0.01)I(0,) # Prior for initial pop. sizes
@@ -52,6 +54,7 @@ model {
     sigma2.obs[i] <- pow(sigma.obs[i], 2)
     tau.obs[i] <- pow(sigma.obs[i], -2)
   }
+
   # ’Likelihood’
   # State process
   for (i in 1:M){
@@ -60,12 +63,14 @@ model {
       n[i, t+1] <- n[i, t] * gamma[i, t]
     }
   }
+
   # Observation process
   for (i in 1:M){
     for (t in 1:T){
       C[i, t] ~ dnorm(n[i, t], tau.obs[i])
     }
   }
+
   # Derived quantities
   for(t in 1:T){
     popindex[t] <- sum(n[,t])
@@ -75,33 +80,36 @@ model {
 
 # Initial values
 inits <- function(){list(sigma.proc = runif(newM, 0, 5),
-  mean.gamma = runif(newM, 0.1, 2), sigma.obs = runif(newM, 0, 10),
-  n = cbind(runif(newM, 0, 50), array(NA, dim = c(newM, ncol(C)-1))))}
+    mean.gamma = runif(newM, 0.1, 2), sigma.obs = runif(newM, 0, 10),
+    n = cbind(runif(newM, 0, 50), array(NA, dim = c(newM, ncol(C)-1))))}
 
 # Parameters monitored
 params <- c("mean.gamma", "sigma2.proc", "sigma2.obs", "popindex", "n")
 
 # MCMC settings
 # na <- 10000 ; ni <- 6e6 ; nt <- 1000 ; nb <- 5e6 ; nc <- 2
-na <- 10000 ; ni <- 6e5 ; nt <- 100 ; nb <- 5e5 ; nc <- 2  # ~~~~~~ for testing, 32 mins
+na <- 10000 ; ni <- 6e5 ; nt <- 100 ; nb <- 5e5 ; nc <- 2  # ~~~ for testing, 32 mins
 
 # Call JAGS (ART 505 min), check convergence and summarize posteriors
 out6 <- jags(bdata, inits, params, "model6.txt", n.adapt = na, n.chains = nc,
-  n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-par(mfrow = c(4,4)) ; traceplot(out6) # all params
+    n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+op <- par(mfrow = c(4,4)) ; traceplot(out6) # all params
+par(op)
 summary(out6) ; jags.View(out6) ; print(out6$summary[1:320,-c(4:6)], 3)
+
 # Check how many and which parameters have failed to converge
 which(out6$summary[,8] > 1.1) # 7 derived quants or latent variables
 
 # Produce Fig. 1.6
-par(mfrow = c(1, 2))
+op <- par(mfrow = c(1, 2))
 graphSSM(out6, bdata$C)
+par(op)
 
 # ~~~~ Produce Fig. 1.7 ~~~~~~~~~~~~~~~~
 # Load all the model output from previous sections
 load("AHM2_01.04_out1.RData")
 load("AHM2_01.05.1_out2.RData")
-load("AHM2_01.05.2_out3.RData") #### fixed
+load("AHM2_01.05.2_out3.RData")
 load("AHM2_01.05.3_out4.RData")
 load("AHM2_01.05.4_out5.RData")
 off <- 0.15

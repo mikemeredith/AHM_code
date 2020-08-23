@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 1 : RELATIVE ABUNDANCE MODELS FOR POPULATION DYNAMICS
 # =============================================================
-# Code from proofs dated 2020-06-03
+# Code from proofs dated 2020-08-18
 
 # Run time with the full number of iterations: 1 hr
 
@@ -24,7 +24,6 @@ T <- ncol(C)
 # 1.5.2 A GLMM with trends in relative abundance
 # ----------------------------------------------
 
-
 # Bundle data (and center Year)
 str(bdata <- list(C = C, yr = year - mean(year), M = M, T = T) )
 # List of 4
@@ -36,6 +35,7 @@ str(bdata <- list(C = C, yr = year - mean(year), M = M, T = T) )
 # Specify model in BUGS language
 cat(file = "model3.txt","
 model {
+
   # ’Priors’
   mu ~ dnorm(0, 0.1) # Grand mean (intercept)
   for(i in 1:M){
@@ -47,6 +47,7 @@ model {
   sd.gamma ~ dunif(0, 0.2) # Variability of trends
   tau.site <- pow(sd.site, -2)
   sd.site ~ dunif(0, 3)
+
   for(t in 1:T){
     year[t] ~ dnorm(0, tau.year) # Random year effects
   }
@@ -54,6 +55,7 @@ model {
   sd.year ~ dunif(0, 2)
   tau <- pow(sd, -2)
   sd ~ dunif(0, 1)
+
   # ’Likelihood’
   for (i in 1:M){
     for(t in 1:T){
@@ -62,6 +64,7 @@ model {
       eps[i,t] ~ dnorm(0, tau) # Overdispersion
     }
   }
+
   # Derived quantities
   for(t in 1:T){
     popindex[t] <- sum(lambda[,t]) # Population index
@@ -75,11 +78,11 @@ model {
 
 # Initial values
 inits <- function() list(mu = rnorm(1), gamma = rnorm(M), site = rnorm(M),
-  year = rnorm(T), eps = array(1, dim=c(M, T)))
+    year = rnorm(T), eps = array(1, dim=c(M, T)))
 
 # Parameters monitored
 params <- c("mu", "mu.gamma", "sd.gamma", "sd.site", "sd.year", "sd", "gamma",
-  "site", "year", "popindex", "pred.lam1", "pred.lam2")
+    "site", "year", "popindex", "pred.lam1", "pred.lam2")
 
 # MCMC settings
 # na <- 5000 ; ni <- 60000 ; nt <- 40 ; nb <- 20000 ; nc <- 3
@@ -87,7 +90,7 @@ na <- 5000 ; ni <- 6000 ; nt <- 4 ; nb <- 2000 ; nc <- 3  # ~~~~ for testing
 
 # Call JAGS (ART 88 min), check convergence and summarize posteriors
 out3 <- jags(bdata, inits, params, "model3.txt", n.adapt = na, n.chains = nc,
-  n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+    n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 
 par(mfrow = c(3,2)) ; traceplot(out3) ; par(mfrow = c(1,1))
 summary(out3) ; jags.View(out3) ; print(out3$summary[1:800,-c(4:6)], 3)
@@ -121,10 +124,12 @@ table(out3$summary[7:273,'overlap0'])
 # 45 222
 
 summary(apply(out3$sims.list$gamma > 0, 1, sum))
-# Min. 1st Qu. Median Mean 3rd Qu. Max.
-# 111.0 157.0 166.0 166.2 175.0 216.0
+#  Min. 1st Qu. Median  Mean 3rd Qu.  Max.
+# 111.0   157.0  166.0 166.2   175.0 216.0
 
+# ~~~ for the comparison, need to load model out2 ~~~~
 load("AHM2_01.05.1_out2.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 (R2site <- 100* (out2$mean$sd.site - out3$mean$sd.site) / out2$mean$sd.site)
 (R2year <- 100* (out2$mean$sd.year - out3$mean$sd.year) / out2$mean$sd.year)
 (R2resi <- 100* (out2$mean$sd - out3$mean$sd) / out2$mean$sd)
@@ -132,6 +137,6 @@ load("AHM2_01.05.1_out2.RData")
 # [1] 13.56628
 # [1] 29.6783
 
-# Save output for use in subsequent sections
+# ~~~ Save output for use in subsequent sections ~~~
 save(out3, file="AHM2_01.05.2_out3.RData")
-
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

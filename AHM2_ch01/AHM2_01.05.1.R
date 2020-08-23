@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 1 : RELATIVE ABUNDANCE MODELS FOR POPULATION DYNAMICS
 # =============================================================
-# Code from proofs dated 2020-06-03
+# Code from proofs dated 2020-08-18
 
 # Approximate execution time for this code: 6 mins
 
@@ -44,6 +44,7 @@ model {
   sd.year ~ dunif(0, 3)
   tau <- pow(sd, -2)
   sd ~ dunif(0, 3)
+
   # ’Likelihood’
   for (i in 1:M){
     for(t in 1:T){
@@ -52,6 +53,7 @@ model {
       eps[i,t] ~ dnorm(0, tau) # 'Overdispersion'
     }
   }
+
   # Derived quantities
   for(t in 1:T){
     popindex[t] <- sum(lambda[,t])
@@ -61,7 +63,7 @@ model {
 
 # Initial values
 inits <- function() list(mu = rnorm(1), site = rnorm(M), year = rnorm(T),
-  eps = array(1, dim=c(M, T)))
+    eps = array(1, dim=c(M, T)))
 
 # Parameters monitored
 params <- c("mu", "sd.site", "sd.year", "sd", "site", "year", "popindex")
@@ -71,7 +73,7 @@ na <- 1000 ; ni <- 15000 ; nt <- 10 ; nb <- 5000 ; nc <- 3
 
 # Call JAGS (ART 4 min), check convergence and summarize posteriors
 out2 <- jags(bdata, inits, params, "model2.txt", n.adapt = na, n.chains = nc,
-  n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+    n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 
 op <- par(mfrow = c(3, 2)) ; traceplot(out2)
 par(op)

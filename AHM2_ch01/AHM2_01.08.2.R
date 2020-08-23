@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 1 : RELATIVE ABUNDANCE MODELS FOR POPULATION DYNAMICS
 # =============================================================
-# Code from proofs dated 2020-06-03
+# Code from proofs dated 2020-08-18
 
 # Approximate run time for this script: 3.5 hrs
 # Run time with the full number of iterations: 40 hrs
@@ -45,9 +45,9 @@ jdate <- white$date - 150 # 1 = Day 151
 date <- (jdate/ 10) - mean((jdate/ 10)) # Express in units of 10 days
 
 # Data bundle
-str(bdata <- list(C = white$C, pop = white$site, year = year, date = date, lat = lat,
-    lat2 = lat^2, npop = max(white$site), nyear = max(year), nobs = length(year),
-    pi = pi) )
+str(bdata <- list(C = white$C, pop = white$site, year = year,
+    date = date, lat = lat, lat2 = lat^2, npop = max(white$site), nyear = max(year),
+    nobs = length(year), pi = pi) )
 # List of 10
 # $ C    : int [1:9651] 15 59 53 4 4 16 25 63 74 28 ...
 # $ pop  : num [1:9651] 1 1 1 1 1 1 1 1 1 1 ...
@@ -63,6 +63,7 @@ str(bdata <- list(C = white$C, pop = white$site, year = year, date = date, lat =
 # Specify model in BUGS language
 cat(file = "modelPH.txt","
 model {
+
   ### Priors and linear models for parameters
   # Initial abundance
   for(i in 1:npop){
@@ -76,6 +77,7 @@ model {
   beta.llam[2] ~ dnorm(0, 0.1)
   tau.llam <- pow(sd.llam, -2)
   sd.llam ~ dunif(0.001, 5)
+
   # Interannual population growth rate
   for(t in 1:(nyear-1)){
     for(i in 1:npop){
@@ -100,6 +102,7 @@ model {
   sd.lgam.site ~ dunif(0.001, 1)
   tau.lgam.time <- pow(sd.lgam.time, -2)
   sd.lgam.time ~ dunif(0.001, 1)
+
   # Mean (or peak) activity period
   for(t in 1:nyear){
     for(i in 1:npop){ # Peak activity period
@@ -123,6 +126,7 @@ model {
   sd.mu.site ~ dunif(0.001, 1)
   tau.mu.time <- pow(sd.mu.time, -2)
   sd.mu.time ~ dunif(0.001, 1)
+
   # Half-length of activity period
   for(t in 1:nyear){
     for(i in 1:npop){ # Length of activity period
@@ -147,6 +151,7 @@ model {
   sd.lsig.site ~ dunif(0.001, 1)
   tau.lsig.time <- pow(sd.lsig.time, -2)
   sd.lsig.time ~ dunif(0.001, 1)
+
   # ’Likelihood’
   # Model for between-year dynamics
   for(i in 1:npop){
@@ -158,6 +163,7 @@ model {
       n[i,t] ~ dpois(gamma[i, t-1]*n[i,(t-1)])
     }
   }
+
   # Phenomenological within-season population model
   for(i in 1:nobs){
     C[i] ~ dpois(lambda[i])
@@ -174,11 +180,11 @@ inits <- function() list(n = 2*nst)
 
 # Parameters monitored
 # Choose if want both hyperparams and latent variables
-params <- c("mu.llam", "mean.lambda", "alpha.llam", "beta.llam", "sd.llam",
-    "alpha0.lgam", "mean.gamma", "alpha.lgam", "beta.lgam", "sd.lgam.site",
-    "sd.lgam.time", "mean.mu", "alpha0.mu", "beta.mu", "sd.mu.site", "sd.mu.time",
-    "mean.sigma", "mu.lsig", "alpha0.lsig", "beta.lsig", "sd.lsig.site", "sd.lsig.time",
-    "expn1", "n1", "n", "alpha.lgam.site", "alpha.lgam.time", "gamma", "alpha.mu.site",
+params <- c("mu.llam", "mean.lambda", "alpha.llam", "beta.llam",
+    "sd.llam", "alpha0.lgam", "mean.gamma", "alpha.lgam", "beta.lgam",
+    "sd.lgam.site", "sd.lgam.time", "mean.mu", "alpha0.mu", "beta.mu",
+    "sd.mu.site", "sd.mu.time", "mean.sigma", "mu.lsig", "alpha0.lsig",
+    "beta.lsig", "sd.lsig.site", "sd.lsig.time", "expn1", "n1", "n", "alpha.lgam.site", "alpha.lgam.time", "gamma", "alpha.mu.site",
     "alpha.mu.time", "mu", "alpha.lsig.site", "alpha.lsig.time", "sigma")
 
 # MCMC settings

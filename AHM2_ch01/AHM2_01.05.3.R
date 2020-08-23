@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 1 : RELATIVE ABUNDANCE MODELS FOR POPULATION DYNAMICS
 # =============================================================
-# Code from proofs dated 2020-06-03
+# Code from proofs dated 2020-08-18
 
 # Run time with the full number of iterations: 8 mins
 
@@ -25,17 +25,17 @@ T <- ncol(C)
 # -------------------------------------------------------------------------------
 
 # Scale some covariates and mean-impute missing values in them
-elev.sc <- standardize(dat$elev) # elevation of site
-forest.sc <- standardize(dat$forest) # forest cover of site
+elev.sc <- standardize(dat$elev)       # elevation of site
+forest.sc <- standardize(dat$forest)   # forest cover of site
 date.sc <- standardize(date)
-date.sc[is.na(date.sc)] <- 0 # mean impute
+date.sc[is.na(date.sc)] <- 0           # mean impute
 dur.sc <- standardize(dur)
-dur.sc[is.na(dur.sc)] <- 0 # mean impute
+dur.sc[is.na(dur.sc)] <- 0             # mean impute
 
 # Bundle and summarize data
-str(bdata <- list(C = C, yr = year - mean(year), elev = elev.sc, forest = forest.sc,
-  date = date.sc, dur = dur.sc, twosurveys = as.numeric(dat$nsurveys == 2), M = M,
-  T = T) )
+str(bdata <- list(C = C, yr = year - mean(year), elev = elev.sc,
+    forest = forest.sc, date = date.sc, dur = dur.sc,
+    twosurveys = as.numeric(dat$nsurveys == 2), M = M, T = T) )
 # List of 9
 # $ C         : int [1:267, 1:18] 1 0 NA 0 3 NA NA 5 0 0 ...
 # $ yr        : num [1:18] -8.5 -7.5 -6.5 -5.5 -4.5 -3.5 -2.5 -1.5 ...
@@ -50,35 +50,39 @@ str(bdata <- list(C = C, yr = year - mean(year), elev = elev.sc, forest = forest
 # Specify model in BUGS language
 cat(file = "model4.txt","
 model {
+
   # ’Priors’ and linear models
-  mu ~ dnorm(0, 0.1) # Grand mean (intercept)
+  mu ~ dnorm(0, 0.1)               # Grand mean (intercept)
   for(i in 1:M){
-    site[i] ~ dnorm(0, tau.site) # Random site effects
+    site[i] ~ dnorm(0, tau.site)   # Random site effects
   }
+
   # Linear model for effect of elevation on expectation of trends
   for(i in 1:M){ # NOTE: here we model the trends
     gamma[i] ~ dnorm(mu.gamma[i], tau.gamma) # Random site-level trends
     mu.gamma[i] <- alpha.mu.gamma + beta1.mu.gamma * elev[i] +
         beta2.mu.gamma * pow(elev[i],2)
   }
-  alpha.mu.gamma ~ dnorm(0, 0.1) # intercept of mean trend on elev
-  beta1.mu.gamma ~ dnorm(0, 0.1) # lin effect of elev on trend
-  beta2.mu.gamma ~ dnorm(0, 0.1) # quad effect of elev on trend
+  alpha.mu.gamma ~ dnorm(0, 0.1)   # intercept of mean trend on elev
+  beta1.mu.gamma ~ dnorm(0, 0.1)   # lin effect of elev on trend
+  beta2.mu.gamma ~ dnorm(0, 0.1)   # quad effect of elev on trend
   tau.gamma <- pow(sd.gamma, -2)
-  sd.gamma ~ dunif(0, 0.2) # Variability of trends
+  sd.gamma ~ dunif(0, 0.2)         # Variability of trends
+
   # Other priors
   tau.site <- pow(sd.site, -2)
   sd.site ~ dunif(0, 3)
   for(i in 1:7){
-    theta[i] ~ dnorm(0, 0.1) # Covariate effects
+    theta[i] ~ dnorm(0, 0.1)       # Covariate effects
   }
   for(t in 1:T){
-    year[t] ~ dnorm(0, tau.year) # Random year effects
+    year[t] ~ dnorm(0, tau.year)   # Random year effects
   }
   tau.year <- pow(sd.year, -2)
   sd.year ~ dunif(0, 2)
   tau <- pow(sd, -2)
   sd ~ dunif(0, 1)
+
   # ’Likelihood’
   for (i in 1:M){
     for(t in 1:T){
@@ -91,6 +95,7 @@ model {
       eps[i,t] ~ dnorm(0, tau)
     }
   }
+
   # Derived quantities
   for(t in 1:T){
     popindex[t] <- sum(lambda[,t])
@@ -100,11 +105,11 @@ model {
 
 # Initial values
 inits <- function() list(mu = rnorm(1), gamma = rnorm(M), theta = rnorm(7),
-  site = rnorm(M), year = rnorm(T), eps = array(1, dim=c(M, T)))
-# Parameters monitored
+    site = rnorm(M), year = rnorm(T), eps = array(1, dim=c(M, T)))
 
-params <- c("mu", "alpha.mu.gamma", "beta1.mu.gamma", "beta2.mu.gamma", "sd.beta",
-  "theta", "sd.site", "sd.year", "sd", "popindex")
+# Parameters monitored
+params <- c("mu", "alpha.mu.gamma", "beta1.mu.gamma", "beta2.mu.gamma",
+    "sd.beta", "theta", "sd.site", "sd.year", "sd", "popindex")
 # could also monitor some random effects: "gamma", "site", "year",
 
 # MCMC settings
@@ -112,7 +117,7 @@ na <- 5000 ; ni <- 10000 ; nt <- 5 ; nb <- 5000 ; nc <- 3
 
 # Call JAGS (ART 7 min), check convergence and summarize posteriors
 out4 <- jags(bdata, inits, params, "model4.txt", n.adapt = na, n.chains = nc,
-  n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+    n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 par(mfrow = c(3,2)) ; traceplot(out4) ; par(mfrow = c(1,1))
 print(out4, 2)
 #                  mean    sd   2.5%    50%  97.5% overlap0     f  Rhat n.eff

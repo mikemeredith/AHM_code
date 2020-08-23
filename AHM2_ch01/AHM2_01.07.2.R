@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 1 : RELATIVE ABUNDANCE MODELS FOR POPULATION DYNAMICS
 # =============================================================
-# Code from proofs dated 2020-06-03
+# Code from proofs dated 2020-08-18
 
 # Approximate run time for this script: 1 hr
 # Run time with the full number of iterations: 7.4 hrs
@@ -42,9 +42,11 @@ sel <- nzero <= 1 # Select sites with <= 1 zero count
 
 # Bundle data (same as for Gaussian SSMs)
 str(bdata <- list(C = C[sel,], M = nrow(C[sel,]), T = ncol(C[sel,])))
+
 # Specify model in BUGS language
 cat(file = "model10d.txt","
 model {
+
   # Priors
   # Model for expected initial abundance
   for(i in 1:M){
@@ -53,7 +55,8 @@ model {
   mu.alpha.lam <- log(mean.lambda)
   mean.lambda ~ dunif(0, 50) # Mean of lambda
   tau.alpha.lam <- pow(sd.alpha.lam, -2)
-  sd.alpha.lam ~ dnorm(0, 2) I(0.001,) # Site-level OD
+  sd.alpha.lam ~ dnorm(0, 2) I(0.001,)    # Site-level OD
+
   # Model for ’immigration-free’ population growth rate
   for(i in 1:M){
     for(t in 1:(T-1)){
@@ -63,8 +66,9 @@ model {
   mu.alpha.gam <- log(mean.gamma)
   mean.gamma ~ dunif(0.9, 1.1) # Mean of gamma
   tau.alpha.gam <- pow(sd.alpha.gam, -2)
-  sd.alpha.gam ~ dnorm(0, 100) I(0.001,) # Site/ year-level OD
+  sd.alpha.gam ~ dnorm(0, 100) I(0.001,)   # Site/ year-level OD
   # curve(dnorm(x, 0, sqrt(1 / 100)), 0, 0.5)
+
   # Model for detection probability
   for(i in 1:M){
     for(t in 1:T){
@@ -74,7 +78,7 @@ model {
   mu.alpha.p <- logit(mean.p)
   mean.p ~ dunif(0, 1) # Mean of p
   tau.alpha.p <- pow(sd.alpha.p, -2)
-  sd.alpha.p ~ dnorm(0, 10) I(0.001,) # Site/ year-level OD
+  sd.alpha.p ~ dnorm(0, 10) I(0.001,)      # Site/ year-level OD
 
   # Model for random immigration
   for(t in 1:(T-1)){
@@ -82,7 +86,8 @@ model {
     logrho[t] ~ dnorm(0, tau.rho)
   }
   tau.rho <- pow(sd.rho, -2)
-  sd.rho ~ dnorm(0, 0.5)I(0.001,) # Half-normal prior for sd
+  sd.rho ~ dnorm(0, 0.5)I(0.001,)          # Half-normal prior for sd
+
   # ’Likelihood’
   # State process
   for(i in 1:M){
@@ -90,12 +95,14 @@ model {
     N[i,1] ~ dpois(lambda[i])
     log(lambda[i]) <- loglam[i]
     loglam[i] <- alpha.lam[i]
+
     # Transition model
     for(t in 2:T){
       N[i,t] ~ dpois(N[i,t-1] * gamma[i, t-1] + rho[t-1])
       log(gamma[i, t-1]) <- loggam[i, t-1]
       loggam[i, t-1] <- alpha.gam[i, t-1]
     }
+
     # Observation process
     for(t in 1:T){
       C[i,t] ~ dbin(p[i,t], N[i,t])
@@ -103,6 +110,7 @@ model {
       lp[i,t] <- alpha.p[i,t]
     }
   }
+
   # Derived quantities
   for(t in 1:T){
     popindex[t] <- sum(N[,t])
@@ -119,9 +127,10 @@ Nst[is.na(Nst)] <- 0
 inits <- function(){list(N = Nst + 1)}
 
 # Parameters monitored
-params <- c("mean.lambda", "mean.gamma", "mean.p", "mu.alpha.lam", "mu.alpha.gam",
-  "mu.alpha.p", "sd.alpha.lam", "sd.alpha.gam", "sd.alpha.p", "sd.rho", "rho",
-  "popindex", "gammaX", "alpha.lam", "alpha.gam", "alpha.p", "N")
+params <- c("mean.lambda", "mean.gamma", "mean.p", "mu.alpha.lam",
+    "mu.alpha.gam", "mu.alpha.p", "sd.alpha.lam", "sd.alpha.gam",
+    "sd.alpha.p", "sd.rho", "rho", "popindex", "gammaX", "alpha.lam",
+    "alpha.gam", "alpha.p", "N")
 
 # MCMC settings
 # na <- 5000 ; ni <- 1e6 ; nt <- 500 ; nb <- 5e5 ; nc <- 3
@@ -133,15 +142,15 @@ out10d <- jags(bdata, inits, params, "model10d.txt", n.adapt = na, n.chains = nc
 par(mfrow = c(2,2)) ; traceplot(out10d) ; par(mfrow = c(1,1))
 summary(out10d) ; jags.View(out10d) ; print(out10d$summary[1:100,-c(4:6)], 2)
 
-# Save output for use in subsequent sections
+# ~~~ Save output for use in subsequent sections ~~~
 save(out10d, file="AHM2_01.07.2_out10d.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 # 1.7.2.2 Demographic SSM with generalized Markovian dynamics and with covariates
 # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-# We assume you still have these covariates in your workspace, otherwise, you have to get them first.
+
 # Bundle and summarize data
-# str(bdata <- list(C = C[sel,], M = nrow(C[sel,]), T = ncol(C[sel,]).,
 str(bdata <- list(C = C[sel,], M = nrow(C[sel,]), T = ncol(C[sel,]),
     elev = elev.sc[sel], forest = forest.sc[sel], date = date.sc[sel,],
     dur = dur.sc[sel,]))
@@ -157,32 +166,37 @@ str(bdata <- list(C = C[sel,], M = nrow(C[sel,]), T = ncol(C[sel,]),
 # Specify model in BUGS language
 cat(file = "model11.txt","
 model {
+
   # Priors
   # Model for expected initial abundance
   alpha.lam <- log(mean.lambda)
-  mean.lambda ~ dunif(0, 50) # Mean of lambda
-  for(v in 1:3){ # Covariate coefficients
+  mean.lambda ~ dunif(0, 50)             # Mean of lambda
+  for(v in 1:3){                         # Covariate coefficients
     beta.lam[v] ~ dnorm(0, 1)
   }
+
   # Model for ’immigration-free’ population growth rate
   alpha.gam <- log(mean.gamma)
-  mean.gamma ~ dunif(0.9, 1.1) # Mean of gamma
-  for(v in 1:3){ # Covariate coefficients
+  mean.gamma ~ dunif(0.9, 1.1)           # Mean of gamma
+  for(v in 1:3){                         # Covariate coefficients
     beta.gam[v] ~ dnorm(0, 1)
   }
+
   # Model for detection probability
   alpha.p <- logit(mean.p)
-  mean.p ~ dunif(0, 1) # Mean of p
-  for(v in 1:3){ # Covariate coefficients
+  mean.p ~ dunif(0, 1)                   # Mean of p
+  for(v in 1:3){                         # Covariate coefficients
     beta.p[v] ~ dnorm(0, 0.1)
   }
+
   # Model for random immigration
   for(t in 1:(T-1)){
     log(rho[t]) <- logrho[t]
     logrho[t] ~ dnorm(0, tau.rho)
   }
   tau.rho <- pow(sd.rho, -2)
-  sd.rho ~ dnorm(0, 0.5)I(0.001,) # Half-normal prior for sd
+  sd.rho ~ dnorm(0, 0.5)I(0.001,)        # Half-normal prior for sd
+
   # ’Likelihood’
   # State process
   for(i in 1:M){
@@ -191,6 +205,7 @@ model {
     log(lambda[i]) <- loglam[i]
     loglam[i] <- alpha.lam + beta.lam[1] * elev[i] + beta.lam[2] * pow(elev[i],2) +
     beta.lam[3] * forest[i]
+
     # Transition model
     for(t in 2:T){
       N[i,t] ~ dpois(N[i,t-1] * gamma[i, t-1] + rho[t-1])
@@ -198,6 +213,7 @@ model {
       loggam[i, t-1] <- alpha.gam + beta.gam[1] * elev[i] +
         beta.gam[2] * pow(elev[i],2) + beta.gam[3] * forest[i]
     }
+
     # Observation process
     for(t in 1:T){
       C[i,t] ~ dbin(p[i,t], N[i,t])
@@ -206,47 +222,60 @@ model {
         beta.p[3] * dur[i,t]
     }
   }
+
   # Derived quantities
   for(t in 1:T){
     popindex[t] <- sum(N[,t])
   }
   for(t in 1:(T-1)){
-    gammaX[t] <- popindex[t+1] / popindex[t] # Derived growth rate
+    gammaX[t] <- popindex[t+1] / popindex[t]    # Derived growth rate
   }
 }
 ")
 
 # Parameters monitored
-params <- c("mean.lambda", "mean.gamma", "mean.p", "sd.rho", "beta.lam", "beta.gam",
-  "beta.p", "rho", "popindex", "gammaX", "alpha.lam", "alpha.gam", "alpha.p", "N")
+params <- c("mean.lambda", "mean.gamma", "mean.p", "sd.rho", "beta.lam",
+    "beta.gam", "beta.p", "rho", "popindex", "gammaX", "alpha.lam",
+    "alpha.gam", "alpha.p", "N")
 
 # MCMC settings
 na <- 5000 ; ni <- 100000 ; nt <- 50 ; nb <- 50000 ; nc <- 3
 
 # Call JAGS (ART 47 min), check convergence and summarize posteriors
 out11 <- jags(bdata, inits, params, "model11.txt", n.adapt = na, n.chains = nc,
-  n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-par(mfrow = c(2,2)) ; traceplot(out11) ; par(mfrow = c(1,1))
+    n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+op <- par(mfrow = c(2,2)) ; traceplot(out11)
+par(op)
 summary(out11) ; jags.View(out11) ; print(out11$summary[1:100,-c(4:6)], 2)
 
-# Save output for use in subsequent sections
+# ~~~ Save output for use in subsequent sections ~~~
 save(out11, file="AHM2_01.07.2_out11.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # 1.7.2.3 Comparison of the inferences under the demographic state-space models
 # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-# ~~~~~~~~ code to plot something resembling Fig 1.11 ~~~~~~~~~~~~~~~
-# ...but with histograms instead of density plots.
-# Produce plots of overdispersion and random immigration random effects
-op <- par(mfrow = c(2, 2), mar = c(5,5,4,2), cex.lab = 1.5, cex.axis = 1.5)
-hist(out10d$sims.list$sd.alpha.lam, breaks = 30, freq = F, col = 'grey',
-    main = 'Abundance overdispersion (SD)', xlim = c(0,1))
-hist(out10d$sims.list$sd.alpha.gam, breaks = 30, freq = F, col = 'grey',
-    main = 'Growth rate overdispersion (SD)', xlim = c(0,1))
-hist(out10d$sims.list$sd.alpha.p, breaks = 30, freq = F, col = 'grey',
-    main = 'Detection overdispersion (SD)', xlim = c(0,1))
-hist(out10d$sims.list$sd.rho, breaks = 30, freq = F, col = 'grey',
-    main = 'Random immigration (SD)')
+# ~~~~~~~~ code to produce Fig 1.11 ~~~~~~~~~~~~~~~
+op <- par(mfrow = c(2,2))
+plot(density(out10d$sims.list$sd.alpha.lam), col = 'black', lwd = 2,
+    main = "SD of OD in lambda", xlab = 'sd.alpha.lam', ylab = 'Density',
+    frame = FALSE, axes = FALSE, xlim = c(0, 1))
+axis(1)  ;  axis(2)
+
+plot(density(out10d$sims.list$sd.alpha.gam), col = 'black', lwd = 2,
+    main = "SD of OD in gamma", xlab = 'sd.alpha.gam', ylab = 'Density',
+    frame = FALSE, axes = FALSE, xlim = c(0, 1))
+axis(1)  ;  axis(2)
+
+plot(density(out10d$sims.list$sd.alpha.p), col = 'black', lwd = 2,
+    main = "SD of OD in p", xlab = 'sd.alpha.p', ylab = 'Density',
+    frame = FALSE, axes = FALSE, xlim = c(0, 1))
+axis(1)  ;  axis(2)
+
+plot(density(out10d$sims.list$sd.rho), col = 'black', lwd = 2,
+    main = "SD of Random immigration", xlab = 'sd.rho', ylab = 'Density',
+    frame = FALSE, axes = FALSE, xlim = c(0, 3))
+axis(1)  ;  axis(2)
 par(op)
 
 # ~~~~~~~~ figure 1.12 ~~~~~~~~~~
@@ -301,3 +330,5 @@ plot(duro, predp.dur, xlab = "Duration (min)", ylab = "Expected p",
     frame = FALSE, ylim = c(0.2, 0.8))
 par(op)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Code for figure 1.13 is at the end of the file "AHM2_01.07.2extra.R"

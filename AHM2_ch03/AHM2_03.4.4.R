@@ -5,7 +5,7 @@
 #
 # Chapter 3 : HIERARCHICAL MODELS OF SURVIVAL
 # ===========================================
-# Code from proofs dated 2020-06-03
+# Code from proofs dated 2020-08-18
 
 # Approximate run time for this script: 40 mins
 # Run time with the full number of iterations: 59 hrs
@@ -46,7 +46,7 @@ str(winnb <- nb2WB(neigh)) # Function to get CAR ingredients for BUGS
 # List of 3
 # $ adj    : int [1:3458] 2 3 4 1 3 5 6 1 2 4 ... # ID of neighbors
 # $ weights: num [1:3458] 1 1 1 1 1 1 1 1 1 1 ... # Weights: here, equal
-# $ num    : int [1:495] 3 4 6 5 3 6 6 6 5 5 ... # Number of neighbors
+# $ num    : int [1:495] 3 4 6 5 3 6 6 6 5 5 ...  # Number of neighbors
 
 # Frequency distribution of the number of neighbors
 table(winnb$num) # Every block is connected to at least two neighbors
@@ -56,8 +56,9 @@ dim(MARR) # The nyear = 11 dimension (now #2) must come last for WinBUGS
 dim(MARRWB <- aperm (MARR, c(3, 1, 2))) # MARR for WinBUGS
 
 # Bundle and summarize data set for WinBUGS
-str(bdata <- list(MARRWB = MARRWB, R = R, n.site = nsite, n.occ = nyear, n.block = nblock,
-    BlockID = willowWarbler$CES$BlockID, adj = winnb$adj, weights = winnb$weights, num = winnb$num))
+str(bdata <- list(MARRWB = MARRWB, R = R, n.site = nsite, n.occ = nyear,
+    n.block = nblock, BlockID = willowWarbler$CES$BlockID, adj = winnb$adj,
+    weights = winnb$weights, num = winnb$num))
 # List of 9
 # $ MARRWB : num [1:193, 1:10, 1:11] 1 3 0 2 0 0 0 0 0 0 ...
 # $ R      : num [1:10, 1:193] 13 5 0 0 0 0 0 0 0 0 ...
@@ -72,6 +73,7 @@ str(bdata <- list(MARRWB = MARRWB, R = R, n.site = nsite, n.occ = nyear, n.block
 # Specify model in BUGS language
 cat(file = "cjs8.txt","
 model {
+
   # Priors and linear models
   for (s in 1:n.site){
     for (t in 1:(n.occ-1)){
@@ -80,19 +82,22 @@ model {
       lphi[t, s] <- alpha.lphi.site[s] + beta.lphi.time[t]
       lp[t, s] <- alpha.lp.site[s] + beta.lp.time[t]
     }
-    # rho is spatial effect at the block level
+    # eta is spatial effect at the block level
     alpha.lphi.site[s] <- mu.lphi + eta[BlockID[s]]
     alpha.lp.site[s] ~ dnorm(mu.lp, tau.lp.site) I(-12, 12)
+
     # backtransform site means
     mean.p.site[s] <- 1 / (1 + exp(-alpha.lp.site[s]))
   }
   for (t in 1:(n.occ-1)){
     beta.lphi.time[t] ~ dnorm(0, tau.lphi.time) I(-12, 12)
     beta.lp.time[t] ~ dnorm(0, tau.lp.time) I(-12, 12)
+
     # backtransform time means
     mean.phi.time[t] <- 1 / (1 + exp(-mu.lphi + beta.lphi.time[t]))
     mean.p.time[t] <- 1 / (1 + exp(-mu.lphi + beta.lp.time[t]))
   }
+
   # Hyperpriors for hyperparams
   mu.lphi <- logit(mean.phi)
   mean.phi ~ dunif(0, 1)
@@ -104,6 +109,7 @@ model {
   sd.lphi.time ~ dunif(0, 1)
   tau.lp.time <- pow(sd.lp.time, -2)
   sd.lp.time ~ dunif(0, 1)
+
   # CAR prior distribution for spatial random effects eta
   # NOTE: this is defined on the entire grid of 495 blocks
   eta[1:n.block] ~ car.normal(adj[], weights[], num[], tau)
@@ -118,6 +124,7 @@ model {
       MARRWB[s, t,1:n.occ] ~ dmulti(pr[t,s, ], R[t,s])
     }
   }
+
   # Define the cell probabilities of the m-array
   # Main diagonal
   for (s in 1:n.site){
@@ -144,12 +151,12 @@ model {
 ")
 
 # Initial values
-inits <- function(){list(mean.phi = runif(1), mean.p = runif(1), eta = rep(0, nblock))}
+inits <- function(){list(mean.phi = runif(1), mean.p = runif(1),
+    eta = rep(0, nblock))}
 
 # Parameters monitored
-params <- c("mean.phi", "mean.p", "mu.lphi", "mu.lp",
-    "sd.lp.site", "sd.lphi.time", "sd.lp.time", "mean.p.site", "mean.phi.time", "mean.p.time",
-    "veta", "sdeta", "eta")
+params <- c("mean.phi", "mean.p", "mu.lphi", "mu.lp", "sd.lp.site", "sd.lphi.time",
+    "sd.lp.time", "mean.p.site", "mean.phi.time", "mean.p.time", "veta", "sdeta", "eta")
 
 # ~~~~ alternative code for running WinBUGS ~~~~~
 # ~~~~ in parallel is given below ~~~~~~~~~~~~~~~
@@ -160,8 +167,8 @@ ni <- 1000 ; nt <- 5 ; nb <- 500 ; nc <- 3 # ~~~~~~~ for testing
 
 # Call WinBUGS from R (ART 52 h!) and summarize posteriors
 # bugs.dir must be set to WinBUGS location, e.g., "c:/WinBUGS14/"
-out8 <- bugs(bdata, inits, params, "cjs8.txt", n.chains = nc, n.thin = nt, n.iter = ni,
-    n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
+out8 <- bugs(bdata, inits, params, "cjs8.txt", n.chains = nc, n.thin = nt,
+    n.iter = ni, n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
 print(out8$summary[c(1:7, 221,222),c(1:3,5,7:9)], 3)
 #                mean     sd      2.5%     50%  97.5% Rhat n.eff
 # mean.phi      0.287 0.0187  0.251397  0.2874  0.324 1.00   730
@@ -211,3 +218,27 @@ library(mcmcOutput)
 diagPlot(mco8, c(1:7, 11, 12))
 View(summary(mco8))
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+# ~~~~~~~ code for figure 3.14 ~~~~~~~~~~~~~~~~~~~~~
+library(raster)
+phi.block <- array(NA, dim = c(nblock, out8$n.sims))
+sims <- out8$sims.list        # Grab the simulations first
+for (b in 1:nblock){
+  phi.block[b,] <- plogis(sims$mu.lphi + sims$eta[,b])
+}
+post.mean <- apply(phi.block, 1, mean)    # Posterior mean
+post.sd <- apply(phi.block, 1, sd)        # Posterior standard deviation
+mapPalette <- colorRampPalette(c("grey", "yellow", "orange", "red"))
+
+par(mfrow = c(1, 2))
+# Plot posterior mean of predicted apparent survival
+r1 <- rasterFromXYZ(data.frame(x = willowWarbler$blocks$blockX,
+    y = willowWarbler$blocks$blockY, z = post.mean))
+plot(r1, col = mapPalette(100), axes = FALSE, box = FALSE)
+# points(CES[, 1:2], pch = 16, col='black', cex = 1) # Can add CES locations
+# Plot uncertainty in this estimate of predicted apparent survival
+r2 <- rasterFromXYZ(data.frame(x = willowWarbler$blocks$blockX,
+    y = willowWarbler$blocks$blockY, z = post.sd))
+plot(r2, col = mapPalette(100), axes = FALSE, box = FALSE, zlim = c(0, 0.08))
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

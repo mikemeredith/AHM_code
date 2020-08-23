@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 1 : RELATIVE ABUNDANCE MODELS FOR POPULATION DYNAMICS
 # =============================================================
-# Code from proofs dated 2020-06-03
+# Code from proofs dated 2020-08-18
 
 library(AHMbook)
 library(jagsUI)
@@ -18,7 +18,7 @@ library(jagsUI)
 str(out <- simPH(npop = 18, nyear = 17, nrep = 10, date.range = 1:150,
     initial.lambda = 300, gamma.parms = c(0, 0.3), mu.range = c(50, 80),
     sigma.range = c(10, 20), p.range = c(0.4, 0.6), show.plot = TRUE))
-# Produces Fig. 1.15
+# ~~~ Produces Fig. 1.15
 
 # Execute function
 str(out <- simPH())                        # Implicit defaults
@@ -40,6 +40,8 @@ set.seed(1)
 str(data <- simPH(npop = 18, nyear = 17, nrep = 10, date.range = 1:150,
     initial.lambda = 500, mu.range = c(50, 80), sigma.range = c(20, 30),
     p.range = c(1, 1)))
+# ~~~ Produces Fig 1.15
+
 # Bundle and summarize data set: add pop and year info
 str(bugs.data <- list(C = data$C, date = data$date, npop = data$npop,
     nyear = data$nyear, nsurvey = data$nrep, pi = pi) )
@@ -54,6 +56,7 @@ str(bugs.data <- list(C = data$C, date = data$date, npop = data$npop,
 # Specify model in BUGS language
 cat(file = "modelPH.txt","
 model {
+
   # Priors
   # Top-level priors
   for(i in 1:npop){
@@ -68,6 +71,7 @@ model {
     sigma[t] ~ dunif(0.01, 50)
   }
   sigma[nyear] ~ dunif(0.01, 50)
+
   # Likelihood
   # Model for between-year dynamics
   for(i in 1:npop){
@@ -79,6 +83,7 @@ model {
       n[i,t] ~ dpois(n[i,(t-1)]*gamma[t-1])
     }
   }
+
   # Phenomenological within-season population model
   for(i in 1:npop){
     for(t in 1:nyear){
@@ -104,10 +109,11 @@ params <- c("expn1", "n", "n1", "mu", "gamma", "sigma")
 na <- 1000 ; ni <- 10000 ; nt <- 5 ; nb <- 5000 ; nc <- 3
 
 # Call JAGS (ART 3 min), assess convergence and summarize posteriors
-out12 <- jags(bugs.data, inits, params, "modelPH.txt", n.adapt = na, n.chains = nc,
-  n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-par(mfrow = c(3,3)) ; traceplot(out12, c("expn1", "n1", "gamma", "sigma"))
-summary(out12) ; View(out12) ; print(out12, dig = 3)
+out12 <- jags(bugs.data, inits, params, "modelPH.txt", n.adapt = na,
+    n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+op <- par(mfrow = c(3,3)) ; traceplot(out12, c("expn1", "n1", "gamma", "sigma"))
+par(op)
+summary(out12) ; jags.View(out12) ; print(out12, dig = 3)
 
 # ~~~~~~~~~~ extra code for figure 1.16 ~~~~~~~~~~~~
 # Compare estimates of N1, gamma, mu and sigma to the truth

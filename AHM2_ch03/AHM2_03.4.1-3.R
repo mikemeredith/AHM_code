@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 3 : HIERARCHICAL MODELS OF SURVIVAL
 # ===========================================
-# Code from proofs dated 2020-06-03
+# Code from proofs dated 2020-08-18
 
 # Approximate run time for this script: 1 hr
 # Run time with the full number of iterations: 10.5 hrs
@@ -51,27 +51,30 @@ sitevec <- birds$cesID
 # Number of captures per bird, year and site
 table(apply(ch, 1, sum))    # Table of capture frequency per bird
 apply(ch, 2, sum)           # Number of birds per year
-plot(table(table(sitevec))) # Frequency distribution of number of birds captured per site (not shown)
+plot(table(table(sitevec))) # Frequency distribution of number of
+                            # birds captured per site (not shown)
 summary(as.numeric(table(sitevec)))
-# 1 2 3 4 5 6
+#    1    2   3  4  5 6
 # 8997 1214 279 48 12 1
-# [1] 692 795 1022 1423 1372 1231 1283 1331 1575 1516 280
-# Min. 1st Qu. Median Mean 3rd Qu. Max.
-# 2.00 14.00 30.00 54.67 76.00 338.00
+
+#     1986 1987 1988 1989 1990 1991 1992 1993 1994 1995 1996
+# [1]  692  795 1022 1423 1372 1231 1283 1331 1575 1516  280
+
+#  Min. 1st Qu. Median  Mean 3rd Qu.   Max.
+# 2.00    14.00  30.00 54.67   76.00 338.00
 
 # Map of GDD covariate values and 193 CES locations (Fig. 3.11)
 library(raster)
 mapPalette <- colorRampPalette(c("gray", "yellow", "orange", "red"))
-
 r1 <- with(cells, rasterFromXYZ(data.frame(x = lon, y = lat, z = gdd)))
 plot(r1, col = mapPalette(100), axes = FALSE, box = FALSE,
     main ="Map of GDD covariate with 193 CES locations")
 with(CES, points(cesx, cesy, pch=16, col='blue', cex = 0.8))
 
 # Get sample sizes
-(nyear <- ncol(ch)) # Number years: 11
-(nsite <- nrow(CES)) # Number of CE sites: 193
-(nblock <- nrow(blocks)) # Number of blocks: 495
+(nyear <- ncol(ch))        # Number years: 11
+(nsite <- nrow(CES))       # Number of CE sites: 193
+(nblock <- nrow(blocks))   # Number of blocks: 495
 
 (marr <- ch2marray(ch))
 #       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11]
@@ -115,6 +118,7 @@ str(bdata <- list(MARR = MARR, R = R, n.site = nsite, n.occ = nyear))
 # Specify model in BUGS language
 cat(file = "cjs6.txt","
 model {
+
   # Priors and linear models
   for (s in 1:n.site){
     for (t in 1:(n.occ-1)){
@@ -136,6 +140,7 @@ model {
     mean.phi.time[t] <- ilogit(mu.lphi + beta.lphi.time[t])
     mean.p.time[t] <- ilogit(mu.lp + beta.lp.time[t])
   }
+
   # Hyperpriors for hyperparams
   mu.lphi <- logit(mean.phi)
   mean.phi ~ dunif(0, 1)
@@ -149,6 +154,7 @@ model {
   sd.lphi.time ~ dunif(0, 3)
   tau.lp.time <- pow(sd.lp.time, -2)
   sd.lp.time ~ dunif(0, 3)
+
   # Multinomial likelihood for the m-array data (JAGS style)
   for (s in 1:n.site){
     for (t in 1:(n.occ-1)){
@@ -184,16 +190,17 @@ model {
 inits <- function(){list(mean.phi = runif(1), mean.p = runif(1))}
 
 # Parameters monitored
-params <- c("mean.phi", "mean.p", "sd.lphi.site", "sd.lp.site", "sd.lphi.time",
-    "sd.lp.time", "mean.phi.site", "mean.p.site", "mean.phi.time", "mean.p.time")
+params <- c("mean.phi", "mean.p", "sd.lphi.site", "sd.lp.site",
+    "sd.lphi.time", "sd.lp.time", "mean.phi.site", "mean.p.site",
+    "mean.phi.time", "mean.p.time")
 
 # MCMC settings
 # na <- 1000 ; ni <- 30000 ; nt <- 10 ; nb <- 20000 ; nc <- 3
 na <- 1000 ; ni <- 3000 ; nt <- 1 ; nb <- 2000 ; nc <- 3  # ~~~ for testing
 
 # Call JAGS (ART 192 min), check convergence and summarize posteriors
-out6 <- jags(bdata, inits, params, "cjs6.txt", n.adapt = na, n.chains = nc, n.thin = nt,
-    n.iter = ni, n.burnin = nb, parallel = TRUE)
+out6 <- jags(bdata, inits, params, "cjs6.txt", n.adapt = na, n.chains = nc,
+    n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 op <- par(mfrow = c(2,3)) ; traceplot(out6)
 par(op)
 print(out6, 3)
@@ -234,8 +241,8 @@ gdd2.site <- scaled.gdd2[CES$CellID]
 lat.site <- scaled.lat[CES$CellID]
 
 # Bundle and summarize data set
-str(bdata <- list(MARR = MARR, R = R, n.site = nsite, n.occ = nyear, gdd1.site = gdd1.site,
-    gdd2.site = gdd2.site, lat.site = lat.site))
+str(bdata <- list(MARR = MARR, R = R, n.site = nsite, n.occ = nyear,
+    gdd1.site = gdd1.site, gdd2.site = gdd2.site, lat.site = lat.site))
     # , n.cell = n.cell, gdd1.grid = scaled.gdd, gdd2.grid = scaled.gdd2, lat.grid = lat # if want to make predictions inside BUGS
 # List of 7
 # $ MARR     : num [1:10, 1:11, 1:193] 1 0 0 0 0 0 0 0 0 0 ...
@@ -249,6 +256,7 @@ str(bdata <- list(MARR = MARR, R = R, n.site = nsite, n.occ = nyear, gdd1.site =
 # Specify model in BUGS language
 cat(file = "cjs7.txt","
 model {
+
   # Priors and linear models
   for (s in 1:n.site){
     for (t in 1:(n.occ-1)){
@@ -257,11 +265,13 @@ model {
       lphi[t, s] <- alpha.lphi.site[s] + beta.lphi.time[t]
       lp[t, s] <- alpha.lp.site[s] + beta.lp.time[t]
     }
+
     # Linear model for site-level effects: add covariates
     alpha.lphi.site[s] ~ dnorm(mu.lphi.site[s], tau.lphi.site)
     mu.lphi.site[s] <- alpha.mu.lphi + beta1 * gdd1.site[s] + beta2 * gdd2.site[s] + beta3 *
     lat.site[s]
     alpha.lp.site[s] ~ dnorm(mu.lp, tau.lp.site)
+
     # backtransform site means
     mean.phi.site[s] <- ilogit(alpha.lphi.site[s])
     mean.p.site[s] <- ilogit(alpha.lp.site[s])
@@ -270,6 +280,7 @@ model {
   for (t in 1:(n.occ-1)){
     beta.lphi.time[t] ~ dnorm(0, tau.lphi.time)
     beta.lp.time[t] ~ dnorm(0, tau.lp.time)
+
     # backtransform time means
     mean.phi.time[t] <- ilogit(alpha.mu.lphi + beta.lphi.time[t])
     mean.p.time[t] <- ilogit(mu.lp + beta.lp.time[t])
@@ -287,16 +298,19 @@ model {
   sd.lphi.time ~ dunif(0, 3)
   tau.lp.time <- pow(sd.lp.time, -2)
   sd.lp.time ~ dunif(0, 3)
+
   # Coefficients for gdd1, gdd2 and lat
   beta1 ~ dnorm(0, 0.1)
   beta2 ~ dnorm(0, 0.1)
   beta3 ~ dnorm(0, 0.1)
+
   # Multinomial likelihood for the m-array data (JAGS style)
   for (s in 1:n.site){
     for (t in 1:(n.occ-1)){
       MARR[t,1:n.occ,s] ~ dmulti(pr[t, , s], R[t,s])
     }
   }
+
   # Define the cell probabilities of the m-array
   # Main diagonal
   for (s in 1:n.site){
@@ -313,12 +327,14 @@ model {
       }
     }
   }
+
   # Last column of m-array: probability of non-recapture
   for (s in 1:n.site){
     for (t in 1:(n.occ-1)){
       pr[t,n.occ,s] <- 1-sum(pr[t,1:(n.occ-1),s])
     }
   }
+
   # Derived quantities: predictions for entire grid
   #for (s in 1:n.cell){
   # phi.grid[s] <- ilogit(alpha.mu.lphi + beta1 * gdd1.grid[s] + beta2 * #gdd2.grid[s] + beta3 * lat.grid[s])
@@ -327,13 +343,13 @@ model {
 ")
 
 # Initial values
-inits <- function(){list(mean.phi = runif(1), mean.p = runif(1), beta1 = rnorm(1),
-  beta2 = rnorm(1), beta3 = rnorm(1))}
+inits <- function(){list(mean.phi = runif(1), mean.p = runif(1),
+    beta1 = rnorm(1), beta2 = rnorm(1), beta3 = rnorm(1))}
 
 # Parameters monitored
-params <- c("mean.phi", "mean.p", "alpha.mu.lphi", "mu.lp",
-    "sd.lphi.site", "sd.lp.site", "sd.lphi.time", "sd.lp.time", "mean.phi.site",
-    "mean.p.site", "mean.phi.time", "mean.p.time", "beta1", "beta2", "beta3")
+params <- c("mean.phi", "mean.p", "alpha.mu.lphi", "mu.lp", "sd.lphi.site",
+    "sd.lp.site", "sd.lphi.time", "sd.lp.time", "mean.phi.site", "mean.p.site",
+    "mean.phi.time", "mean.p.time", "beta1", "beta2", "beta3")
     # , "phi.grid" # for predictions within JAGS
 
 # MCMC settings
@@ -341,8 +357,8 @@ params <- c("mean.phi", "mean.p", "alpha.mu.lphi", "mu.lp",
 na <- 5000 ; ni <- 6000 ; nt <- 3 ; nb <- 3000 ; nc <- 3 # ~~~~~~~~~ for testing
 
 # Call JAGS (ART 330 min), check convergence and summarize posteriors
-out7 <- jags(bdata, inits, params, "cjs7.txt", n.adapt = na, n.chains = nc, n.thin = nt,
-    n.iter = ni, n.burnin = nb, parallel = TRUE)
+out7 <- jags(bdata, inits, params, "cjs7.txt", n.adapt = na, n.chains = nc,
+    n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 op <- par(mfrow = c(2,3)) ; traceplot(out7)
 par(op)
 print(out7, 3)
@@ -364,15 +380,28 @@ print(out7, 3)
 # beta2            -0.735 0.506 -1.683 -0.730  0.248     TRUE 0.931 1.016   153
 # beta3             0.320 0.102  0.123  0.323  0.519    FALSE 0.999 1.003   664
 
-# ncell <- nrow(cov.grid) ###############
-ncell <- nrow(cells) ###############
+ncell <- nrow(cells)
 phi.grid <- array(NA, dim = c(ncell, out7$mcmc.info$n.samples))
 
 # Derived quantities: predictions for entire grid
-sims <- out7$sims.list # Grab the posterior simulations
+sims <- out7$sims.list                # Grab the posterior simulations
 for (s in 1:ncell){
   phi.grid[s,] <- plogis(sims$alpha.mu.lphi + sims$beta1 * scaled.gdd1[s] + sims$beta2 *
       scaled.gdd2[s] + sims$beta3 * scaled.lat[s])
 }
 post.mean <- apply(phi.grid, 1, mean) # Posterior mean
 post.sd <- apply(phi.grid, 1, sd)     # Posterior standard deviation
+
+
+# ~~~~~~~~~ code for figure 3.13 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+library(raster)
+mapPalette <- colorRampPalette(c("grey", "yellow", "orange", "red"))
+
+par(mfrow = c(1, 2))#, mar = c(2, 6, 2, 8), cex.lab = 2, cex.axis = 2)
+# Plot posterior mean of predicted apparent survival
+r1 <- rasterFromXYZ(data.frame(x = cells$lon, y = cells$lat, z = post.mean))
+plot(r1, col = mapPalette(100), axes = FALSE, box = F)
+# Plot uncertainty in this estimate of predicted apparent survival
+r2 <- rasterFromXYZ(data.frame(x = cells$lon, y = cells$lat, z = post.sd))
+plot(r2, col = mapPalette(100), axes = F, box = FALSE, zlim = c(0, 0.1))
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
