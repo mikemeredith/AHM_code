@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
-# Code from proofs dated 2020-06-11
+# Code from proofs dated 2020-08-18
 
 # Approximate run time for this script: 10 hrs
 
@@ -21,6 +21,7 @@ source("AHM2_02.02.R")
 
 # 2.3.3 Fitting the year-stratified model in unmarked (“stacking” the data)
 # -------------------------------------------------------------------------
+
 # Stack the data
 nyears <- 14               # Number of years
 Cstacked <- NULL
@@ -44,7 +45,8 @@ trend <- rep(1:nyears, each=dim(C)[1]) - 7.5
 # Create and summarize an unmarked data frame
 library(unmarked)
 summary(umf <- unmarkedFramePCount(y = Cstacked,
-    siteCovs = data.frame(elev = elevstretched, forest = foreststretched, trend = trend),
+    siteCovs = data.frame(elev = elevstretched,
+    forest = foreststretched, trend = trend),
     obsCovs = list(date = DATEstacked, int = INTstacked)))
 
 # Fit some models with default Poisson mixture for abundance.
@@ -75,9 +77,9 @@ system.time(fm9nb <- pcount(~date + I(date^2) + int ~ elev + I(elev^2)+
 forest + trend, umf, mixture = "NB", se = FALSE))  # 2.6 mins
 
 # Organize models into a fitList and create a model selection table
-fl <- fitList(fm0 = fm0, fm1 = fm1, fm2 = fm2, fm3 = fm3, fm4 = fm4, fm5 = fm5, fm6 = fm6,
-    fm7 = fm7, fm8 = fm8, fm9 = fm9, fm5nb = fm5nb, fm6nb = fm6nb, fm7nb = fm7nb,
-    fm8nb = fm8nb, fm9nb = fm9nb)
+fl <- fitList(fm0 = fm0, fm1 = fm1, fm2 = fm2, fm3 = fm3, fm4 = fm4, fm5 = fm5,
+    fm6 = fm6, fm7 = fm7, fm8 = fm8, fm9 = fm9, fm5nb = fm5nb, fm6nb = fm6nb,
+    fm7nb = fm7nb, fm8nb = fm8nb, fm9nb = fm9nb)
 modSel(fl)
 #       nPars      AIC   delta   AICwt cumltvWt
 # fm9nb    10 16006.57    0.00 1.0e+00        1
@@ -98,9 +100,9 @@ fm9nb.K400 <- pcount(~date + I(date^2) + int ~ elev + I(elev^2) + forest +
     trend, umf, K = 400, mixture = "NB", control = list(trace = TRUE,
     REPORT = 1, maxit = 500), se = FALSE)
 
-cbind('K = 100' = coef(fm9nb), 'K = 200' = coef(fm9nb.K200),
+cbind('K = 118' = coef(fm9nb), 'K = 200' = coef(fm9nb.K200),
     'K = 400' =coef(fm9nb.K400))
-#                    K = 100     K = 200     K = 400
+#                    K = 118     K = 200     K = 400
 # lam(Int)        1.14020215  1.14967788  1.14967788
 # lam(elev)      -0.62345703 -0.62357562 -0.62357562
 # lam(I(elev^2)) -0.25303162 -0.25303890 -0.25303890
@@ -129,17 +131,19 @@ system.time(fm9nb <- pcount(~date + I(date^2) + int ~ elev + I(elev^2) +
 system.time(pb1 <- parboot(fm9nb, fitstats, nsim = 100, report = 1, ncores = 3))  # 20 mins
 
 # Call: parboot(object = fm9nb, statistic = fitstats, nsim = 100, report = 1)
+
 # Parametric Bootstrap Statistics:
-# t0 mean(t0 - t_B) StdDev(t0 - t_B) Pr(t_B > t0)
-# SSE 11319 -916.9 897 0.8416
-# Chisq 23281 1857.8 792 0.0099
-# freemanTukey 4660 -90.6 124 0.7624
+#                 t0 mean(t0 - t_B) StdDev(t0 - t_B) Pr(t_B > t0)
+# SSE          11319         -916.9              897       0.8416
+# Chisq        23281         1857.8              792       0.0099
+# freemanTukey  4660          -90.6              124       0.7624
 
 # t_B quantiles:
-# 0% 2.5% 25% 50% 75% 97.5% 100%
-# SSE 9834 10363 11683 12289 12745 13700 15569
-# Chisq 19343 19872 20951 21408 21901 23002 23360
-# freemanTukey 4445 4520 4678 4761 4842 4967 5061
+#                 0% 2.5%    25%   50%   75% 97.5%  100%
+# SSE           9834 10363 11683 12289 12745 13700 15569
+# Chisq        19343 19872 20951 21408 21901 23002 23360
+# freemanTukey  4445  4520  4678  4761  4842  4967  5061
+
 # t0 = Original statistic compuated from data
 # t_B = Vector of bootstrap samples
 
@@ -147,26 +151,31 @@ system.time(pb1 <- parboot(fm9nb, fitstats, nsim = 100, report = 1, ncores = 3))
 # system.time(pb1P <- parboot(fm9, fitstats, nsim = 100, report = 1))  # 393 secs
 system.time(pb1P <- parboot(fm9, fitstats, nsim = 100, report = 1, ncores=3))  # 40 mins
 # Call: parboot(object = fm9, statistic = fitstats, nsim = 100, report = 1)
+
 # Parametric Bootstrap Statistics:
-# t0 mean(t0 - t_B) StdDev(t0 - t_B) Pr(t_B > t0)
-# SSE 11232 6334 124.6 0
-# Chisq 23355 12923 161.3 0
-# freemanTukey 4588 1055 38.4 0
+#                 t0 mean(t0 - t_B) StdDev(t0 - t_B) Pr(t_B > t0)
+# SSE          11232           6334            124.6            0
+# Chisq        23355          12923            161.3            0
+# freemanTukey  4588           1055             38.4            0
+
 # t_B quantiles:
-# 0% 2.5% 25% 50% 75% 97.5% 100%
-# SSE 4614 4653 4821 4901 4979 5147 5183
-# Chisq 10080 10120 10324 10455 10538 10717 10758
-# freemanTukey 3443 3455 3513 3531 3559 3604 3634
+#                 0%  2.5%   25%   50%   75% 97.5%  100%
+# SSE           4614  4653  4821  4901  4979  5147  5183
+# Chisq        10080 10120 10324 10455 10538 10717 10758
+# freemanTukey  3443  3455  3513  3531  3559  3604  3634
+
 # t0 = Original statistic compuated from data
 # t_B = Vector of bootstrap samples
 
 # AIC-best (NegBin) model
 fm9nb
 # Call:
-# pcount(formula = ~date + I(date^2) + int ~ elev + I(elev^2) +
-# forest + trend, data = umf, K = 200, mixture = "NB",
-# se = TRUE, control = list(trace = TRUE, REPORT = 1, maxit = 500))
+#   pcount(formula = ~date + I(date^2) + int ~ elev + I(elev^2) +
+#   forest + trend, data = umf, K = 200, mixture = "NB",
+#   se = TRUE, control = list(trace = TRUE, REPORT = 1, maxit = 500))
+
 # Abundance:
+
 # Estimate SE z P(>|z|)
 # (Intercept) 1.1497 0.13627 8.44 3.26e-17
 # elev -0.6236 0.04065 -15.34 4.18e-53
@@ -175,14 +184,18 @@ fm9nb
 # trend 0.0435 0.00788 5.52 3.49e-08
 
 # Detection:
+
 # Estimate SE z P(>|z|)
 # (Intercept) -1.8426 0.1478 -12.47 1.09e-35
 # date -0.1627 0.0231 -7.04 1.99e-12
 # I(date^2) 0.0394 0.0200 1.97 4.86e-02
 # int 0.2553 0.0444 5.75 8.74e-09
+
 # Dispersion:
+
 # Estimate SE z P(>|z|)
 # -0.776 0.0503 -15.4 9.12e-54
+
 # AIC: 16006.49
 
 # AIC-best Poisson model
@@ -257,12 +270,15 @@ curve(plogis(cp[6] + cp[7] * standardize2match(x, dateso) + cp[8] *
 # -------------------------------------------------------------------------
 
 # Create an array to hold coefficient estimates
-simrep <- 100
+# simrep <- 100
+simrep <- 10  # ~~~ for testing
 npbs.esti <- array(NA, dim = c(length(coef(fm9nb)), simrep))
 rownames(npbs.esti) <- names(coef(fm9nb))
+
 # Other preps
 nyears <- 14
 trend <- rep(1:nyears, each = dim(C)[1]) - 7.5
+
 # Launch bootstrap
 for(b in 1:simrep){
   cat(paste("\n*** Bootstrap rep", b, "***\n"))

@@ -6,7 +6,7 @@
 # Chapter 4 : MODELING SPECIES DISTRIBUTION AND RANGE DYNAMICS, AND POPULATION
 #             DYNAMICS USING DYNAMIC OCCUPANCY MODELS
 # ============================================================================
-# Code from proofs dated 2020-06-17
+# Code from proofs dated 2020-08-18
 
 # Expected run time for this script: 2.2 hrs
 # Run time with the full number of iterations: 15.5 hrs
@@ -28,23 +28,23 @@ RNGversion("3.5.0")
 
 # Read in the data set from AHMbook package
 data(spottedWoodpecker)
-str(dat <- spottedWoodpecker) # Look at overview of data set
+str(dat <- spottedWoodpecker)        # Look at overview of data set
 
 # Add to data scaled date (such that 0 is 1 May and 1 unit is 1 month)
 dat$date <- (dat$jdate - 121) / 30
 
 # Check sample sizes in original data set
-nsites <- length(unique(dat$site)) # 1545 sites
-nyears <- length(unique(dat$year)) # 26 years
-ndays <- length(unique(dat$jdate)) # 162 days in breeding season
+nsites <- length(unique(dat$site))   # 1545 sites
+nyears <- length(unique(dat$year))   # 26 years
+ndays <- length(unique(dat$jdate))   # 162 days in breeding season
 
 # Randomly thin out the data set by subsampling 30%
-dat.full <- dat # Make a copy of full data set
-prop.data <- 0.3 # Proportion of data to be used
-ncase <- nrow(dat) # 116204
-set.seed(1) # Ensures you get the same subset
+dat.full <- dat                      # Make a copy of full data set
+prop.data <- 0.3                     # Proportion of data to be used
+ncase <- nrow(dat)                   # 116204
+set.seed(1)                          # Ensures you get the same subset
 sel.cases <- sort(sample(1:ncase, ncase * prop.data))
-dat <- dat[sel.cases,] # Smaller data set
+dat <- dat[sel.cases,]               # Smaller data set
 
 # Look at subsampled data set
 str(dat)
@@ -62,18 +62,18 @@ str(dat)
 dat$site <- as.numeric(as.factor(dat[,"site"]))
 
 # Sample sizes in new (subsampled) data set
-nsites <- length(unique(dat$site)) # 1433 sites
-nyears <- length(unique(dat$year)) # 26 years
-ndays <- length(unique(dat$jdate)) # 162 days
+nsites <- length(unique(dat$site))   # 1433 sites
+nyears <- length(unique(dat$year))   # 26 years
+ndays <- length(unique(dat$jdate))   # 162 days
 
 # Plot annual total N of records and of middle spotted records (Fig. 4.24)
 op <- par(mfrow = c(1,2), mar = c(5,5,4,3), cex.lab = 1.5, cex.axis = 1.5)
 plot(1990:2015, tapply(dat$nsurvey, list(dat$year), sum, na.rm = TRUE),
   cex = 2, type = 'b', pch = 16, ylab = 'Number of surveys', xlab = 'Year',
-  frame = F)
+  frame = FALSE)
 plot(1990:2015, tapply(dat$y, list(dat$year), sum, na.rm = TRUE),
   cex = 2, type = 'b', pch = 16, ylab = 'Number of middle spotted records',
-  xlab = 'Year', frame = F)
+  xlab = 'Year', frame = FALSE)
 par(op)
 
 # Compute number of middle spotted records per site/year (det. frequency)
@@ -87,7 +87,7 @@ table(df <- tapply(dat$y, list(dat$site, dat$year), sum, na.rm = TRUE))
 
 # Proportion of missing value per site x year X day combo ?
 (prop.NA <- 1 - (nrow(dat) / (nsites * nyears * ndays)))
-# [1] 0.9942243 # This is HUGE !!!
+# [1] 0.9942243                      # This is HUGE !!!
 
 # Compute observed occupancy
 zobs <- tapply(dat$y, list(dat$site, dat$year), max, na.rm = TRUE)
@@ -112,7 +112,7 @@ str(bdata <- list(y = dat[,'y'], nsurveys = dat[,'nsurvey'],
 zst <- zobs ; zst[is.na(zst)] <- 1
 inits <- function(){list(z = zst)}
 
-# ~~~~~~ extra code for models 1 to 6 (only model 7 shown in the book) ~~~~~~~~~~~~~~~~~~
+# ~~~~~~ extra code for models 1 to 6 (only model 7 shown in the book) ~~~~~~
 # Model 1: Static model with years as blocks (treated as fixed effects)
 # --------------------------------------------------------------------
 
@@ -531,8 +531,6 @@ par(op)
 print(out6, dig = 2)
 # ~~~~~~~~~~ end of extra code ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Model 7: Same as 6, with annual heterogeneity in site-level extra dispersion in p
-# ------------------------------------------------
 
 # Model 7: Same as 6, with annual heterogeneity in
 # site-level extra dispersion in p
@@ -540,6 +538,7 @@ print(out6, dig = 2)
 # Specify model in BUGS language for vertical data format
 cat(file = "occmodel7.txt", "
 model {
+
   # Specify priors
   psi1 ~ dunif(0, 1) # Initial occupancy
   for (t in 1:(nyears-1)){ # For survival and persistence
@@ -553,6 +552,7 @@ model {
     beta.lp.1[t] ~ dnorm(mu.beta.lp1, tau.beta.lp1)
     beta.lp.2[t] ~ dnorm(mu.beta.lp2, tau.beta.lp2)
   }
+
   # Hyperpriors for hyperparameters
   mu.lphi <- logit(mean.phi)
   mean.phi ~ dunif(0, 1)
@@ -572,14 +572,16 @@ model {
   sd.lp ~ dunif(0, 1)
   sd.beta.lp1 ~ dunif(0, 1)
   sd.beta.lp2 ~ dunif(0, 1)
+
   # Annually varying site random effects in detection
   for(t in 1:nyears){
     for(i in 1:nsites){
       eps.site[i,t] ~ dnorm(0, tau.p.site[year[i]])
     }
   tau.p.site[t] <- pow(sd.p.site[t],-2)
-  sd.p.site[t] ~ dunif(0.001, 10) # SD's estimated as fixed effects
+  sd.p.site[t] ~ dunif(0.001, 10)          # SD's estimated as fixed effects
   }
+
   # Ecological submodel: Define state conditional on parameters
   for (i in 1:nsites){
     z[i,1] ~ dbern(psi1)
@@ -587,15 +589,17 @@ model {
       z[i,t] ~ dbern(z[i,t-1]*phi[t-1] + (1-z[i,t-1])*gamma[t-1])
     }
   }
+
   # Observation model
   for (i in 1:nobs){
     logit(p[i]) <- alpha.lp[year[i]] + beta.lp.1[year[i]] * date[i] +
         beta.lp.2[year[i]] * pow(date[i],2) + eps.site[site[i], year[i]]
     y[i] ~ dbin(z[site[i],year[i]]*p[i], nsurveys[i])
   }
+
   # Derived parameters
-  psi[1] <- psi1 # Population occupancy
-  n.occ[1] <- sum(z[1:nsites,1]) # Number of occupied sites in sample
+  psi[1] <- psi1                     # Population occupancy
+  n.occ[1] <- sum(z[1:nsites,1])     # Number of occupied sites in sample
   for (t in 2:nyears){
     psi[t] <- psi[t-1]*phi[t-1] + (1-psi[t-1])*gamma[t-1]
     n.occ[t] <- sum(z[1:nsites,t])
@@ -611,7 +615,7 @@ params <- c("psi", "phi", "gamma", "n.occ", "mean.phi", "mu.lphi",
 
 # MCMC settings
 # na <- 5000 ; ni <- 50000 ; nb <- 25000 ; nt <- 25 ; nc <- 3
-na <- 5000 ; ni <- 500 ; nb <- 250 ; nt <- 1 ; nc <- 3  # ~~~~~~~~~~~ testing, 50 mins
+na <- 5000 ; ni <- 500 ; nb <- 250 ; nt <- 1 ; nc <- 3  # ~~~ testing, 50 mins
 
 # Call JAGS (ART 832 min), check convergence and summarize posteriors
 out7 <- jags(bdata, inits, params, "occmodel7.txt", n.adapt = na,
@@ -620,11 +624,13 @@ op <- par(mfrow = c(3,3)) ; traceplot(out7)
 par(op)
 print(out7, dig = 2)
 
+# ~~~~ save output for use later ~~~~~~~~~~~~~~~~~
 save(out1, out2, out3, out4, out5, out6, out7, file="AHM2_10.2_output.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# ~~~~~~~~~~ code for Figures 25 - 27 ~~~~~~~~~~~~~~~
-# Plot estimated occupancy trajectories for all models (Fig. 4.25)
-op <- par(mar = c(5,5,3,3), cex.lab = 1.5, cex.axis = 1.5)
+# ~~~~~~~~~~ code for Figures 4.25 - 4.27 ~~~~~~~~~~~~~~~
+# Fig. 4.25
+# Plot estimated occupancy trajectories for all models
 plot(1990:2015, psiobs, type = "h", xlab = "Year", ylab = "Occupancy", main = '',
     ylim = c(0, 0.7), lwd = 20, lend = 'butt', frame = FALSE, col = 'grey', las = 1)
 abline(h = seq(0, 0.75, 0.25), col = 'grey', lty = 2)
@@ -632,46 +638,56 @@ points(1990:2015, out1$mean$psi, pch = '1', type = 'b', col = 'blue', cex = 1.3)
 points(1990:2015, out2$mean$psi, pch = '2', type = 'b', col = 'blue', cex = 1.3)
 points(1990:2015, out3$mean$psi, pch = '3', type = 'b', col = 'blue', cex = 1.3)
 points(1990:2015, out4$mean$psi, pch = '4', type = 'b', col = 'blue', cex = 1.3)
-lines(1990:2015, out3$mean$trendline, lty = 1, lwd = 2)
-lines(1990:2015, out4$mean$trendline, lty = 1, lwd = 2)
+# lines(1990:2015, out3$mean$trendline, lty = 1, lwd = 2)
+# lines(1990:2015, out4$mean$trendline, lty = 1, lwd = 2)
 
 points(1990:2015, out5$mean$psi, pch = '5', type = 'b', col = 'red', cex = 1.3)
 points(1990:2015, out6$mean$psi, pch = '6', type = 'b', col = 'red', cex = 1.3)
 points(1990:2015, out7$mean$psi, pch = '7', type = 'b', col = 'red', cex = 1.3)
-par(op)
 
-# Plot of yearly estimates of phi, gamma and p and site-level detection heterogeneity (Fig. 4.26)
+# Fig. 4.26
+# Plot of yearly estimates of phi, gamma and p and site-level detection
+#   heterogeneity
 # For former three compare model 5 (fixed-effects) and 7 (random-effects)
 op <- par(mfrow = c(2,2))
 off <- 0.2
-plot(1990:2014-off, out5$mean$gamma, xlab = "Year", ylab = "gamma", las = 1, frame = FALSE,
-    pch = 16, cex = 2, ylim = c(0, 0.4) , col = 'blue')
-segments(1990:2014-off, out5$q2.5$gamma, 1990:2014-off, out5$q97.5$gamma, lwd = 3, col = 'blue')
-points(1990:2014+off, out7$mean$gamma, pch = 16, cex = 2, col = 'red')
-segments(1990:2014+off, out7$q2.5$gamma, 1990:2014+off, out7$q97.5$gamma, lwd = 3, col = 'red')
+plot(1990:2014-off, out5$mean$gamma, xlab = "Year", ylab = "gamma", las = 1,
+    frame = FALSE, pch = 16, ylim = c(0, 0.4) , col = 'blue')
+segments(1990:2014-off, out5$q2.5$gamma, 1990:2014-off, out5$q97.5$gamma,
+    col = 'blue')
+points(1990:2014+off, out7$mean$gamma, pch = 16, col = 'red')
+segments(1990:2014+off, out7$q2.5$gamma, 1990:2014+off, out7$q97.5$gamma,
+    col = 'red')
 
 off <- 0.2
-plot(1990:2014-off, out5$mean$phi, xlab = "Year", ylab = "phi", las = 1, frame = FALSE,
-    pch = 16, cex = 2, ylim = c(0, 1) , col = 'blue')
-segments(1990:2014-off, out5$q2.5$phi, 1990:2014-off, out5$q97.5$phi, lwd = 3, col = 'blue')
-points(1990:2014+off, out7$mean$phi, pch = 16, cex = 2, col = 'red')
-segments(1990:2014+off, out7$q2.5$phi, 1990:2014+off, out7$q97.5$phi, lwd = 3, col = 'red')
+plot(1990:2014-off, out5$mean$phi, xlab = "Year", ylab = "phi", las = 1,
+    frame = FALSE, pch = 16, ylim = c(0, 1) , col = 'blue')
+segments(1990:2014-off, out5$q2.5$phi, 1990:2014-off, out5$q97.5$phi,
+    col = 'blue')
+points(1990:2014+off, out7$mean$phi, pch = 16, col = 'red')
+segments(1990:2014+off, out7$q2.5$phi, 1990:2014+off, out7$q97.5$phi,
+    col = 'red')
 
 off <- 0.2
-plot(1990:2015-off, plogis(out5$mean$alpha.lp), xlab = "Year", ylab = "p", las = 1, frame = FALSE,
-    pch = 16, cex = 2, ylim = c(0, 1) , col = 'blue')
-segments(1990:2015-off, plogis(out5$q2.5$alpha.lp), 1990:2015-off, plogis(out5$q97.5$alpha.lp),
-    lwd = 3, col = 'blue')
-points(1990:2015-off, plogis(out7$mean$alpha.lp), pch = 16, cex = 2, ylim = c(0.05, 0.2) , col = 'red')
-segments(1990:2015-off, plogis(out7$q2.5$alpha.lp), 1990:2015-off, plogis(out7$q97.5$alpha.lp),
-    lwd = 3, col = 'red')
+plot(1990:2015-off, plogis(out5$mean$alpha.lp), xlab = "Year", ylab = "p",
+    las = 1, frame = FALSE, pch = 16, ylim = c(0, 1) , col = 'blue')
+segments(1990:2015-off, plogis(out5$q2.5$alpha.lp), 1990:2015-off,
+    plogis(out5$q97.5$alpha.lp), col = 'blue')
+points(1990:2015+off, plogis(out7$mean$alpha.lp), pch = 16,
+    ylim = c(0.05, 0.2) , col = 'red')
+segments(1990:2015+off, plogis(out7$q2.5$alpha.lp), 1990:2015+off,
+    plogis(out7$q97.5$alpha.lp), col = 'red')
+legend('topright', legend=c("Fixed effects (Model 5)",
+    "Random effects (Model 7"), pch=16,
+    col=c('blue', 'red'), bty='n')
 
-plot(1990:2015, out7$mean$sd.p.site, xlab = "Year", ylab = "sd.p.site", las = 1, frame = FALSE,
-    pch = 16, cex = 2, ylim = c(0, 10))
-segments(1990:2015, out7$q2.5$sd.p.site, 1990:2015, out7$q97.5$sd.p.site, lwd = 3)
+plot(1990:2015, out7$mean$sd.p.site, xlab = "Year", ylab = "sd.p.site",
+    las = 1, frame = FALSE, pch = 16, ylim = c(0, 10))
+segments(1990:2015, out7$q2.5$sd.p.site, 1990:2015, out7$q97.5$sd.p.site)
 par(op)
 
-# Seasonal pattern of detection probability (Figure 4.27)
+# Figure 4.27
+# Seasonal pattern of detection probability
 # Get date covariate for prediction and standardize in same way as in analysis
 range(dat$jdat)
 pred.date.original <- 51:212
@@ -686,32 +702,36 @@ coef.beta2 <- out7$mean$beta.lp.2
 nyears <- length(coef.alpha)
 pred.p <- array(NA, dim = c(length(pred.date), nyears))
 for(k in 1:nyears){
-  pred.p[,k] <- plogis(coef.alpha[k] + coef.beta1[k] * pred.date + coef.beta2[k] * pred.date^2)
+  pred.p[,k] <- plogis(coef.alpha[k] + coef.beta1[k] * pred.date +
+      coef.beta2[k] * pred.date^2)
 }
 # Average over all years
 mean.pred <- apply(pred.p, 1, mean)
 
-op <- par(mfrow = c(1, 2), "cex.lab", "cex.axis")
-plot(pred.date.original, mean.pred, type = "l", lwd = 3, main = "", xlim = c(51, 210),
-    ylim = c(0, 0.5), ylab = "Detection probability", xlab = "Julian Date", frame = FALSE)
+op <- par(mfrow = c(1, 2))
+plot(pred.date.original, mean.pred, type = "l", lwd = 3, main = "",
+    xlim = c(51, 210), ylim = c(0, 0.5), ylab = "Detection probability",
+    xlab = "Julian Date", frame = FALSE)
 for(t in 1:nyears){
-  lines(pred.date.original, pred.p[,t], type = "l", lwd = 2, col = "grey")
+  lines(pred.date.original, pred.p[,t], type = "l", col = "grey")
 }
 lines(pred.date.original, mean.pred, type = "l", lwd = 2)
 
 # Model average annual occupancy with equal weights
 str(out1$sims.list$psi)   # Look at format of data
-str(allsamps <- rbind(out1$sims.list$psi, out2$sims.list$psi, out3$sims.list$psi,
-    out4$sims.list$psi, out5$sims.list$psi, out6$sims.list$psi, out7$sims.list$psi))
+str(allsamps <- rbind(out1$sims.list$psi, out2$sims.list$psi,
+    out3$sims.list$psi, out4$sims.list$psi, out5$sims.list$psi,
+    out6$sims.list$psi, out7$sims.list$psi))
 pm <- apply(allsamps, 2, mean)
 psd <- apply(allsamps, 2, sd)
-CRI <- apply(allsamps, 2, function(x) quantile(x, c(0.025, 0.975)))
+CRI <- apply(allsamps, 2, quantile, probs=c(0.025, 0.975))
 
 # Plot model-averaged occupancy trajectory
-par(mar = c(5,5,3,3), cex.lab = 1.5, cex.axis = 1.5)
-plot(1990:2015, psiobs, type = "h", xlab = "Year", ylab = "Occupancy", main = '',
-    ylim = c(0, 0.7), lwd = 10, lend = 'butt', frame = F, col = 'grey', las = 1)
+plot(1990:2015, psiobs, type = "h", xlab = "Year", ylab = "Occupancy",
+    ylim = c(0, 0.7), lwd = 10, lend = 'butt', frame = FALSE,
+    col = 'grey', las = 1)
 abline(h = seq(0, 0.75, 0.25), col = 'grey', lty = 2)
-points(1990:2015, pm, type = 'b', cex = 1.5, pch = 16)
+points(1990:2015, pm, type = 'o', cex = 1.5, pch = 16)
 segments(1990:2015, CRI[1,], 1990:2015, CRI[2,])
 par(op)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

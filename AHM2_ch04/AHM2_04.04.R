@@ -6,7 +6,7 @@
 # Chapter 4 : MODELING SPECIES DISTRIBUTION AND RANGE DYNAMICS, AND POPULATION
 #             DYNAMICS USING DYNAMIC OCCUPANCY MODELS
 # ============================================================================
-# Code from proofs dated 2020-06-17
+# Code from proofs dated 2020-08-18
 
 library(AHMbook)
 
@@ -15,14 +15,14 @@ library(AHMbook)
 
 library(AHMbook)
 str(data <- simDynocc( # Explicit defaults
-nsites = 250, nyears = 10, nsurveys = 3, year.of.impact = NA,
-mean.psi1 = 0.4, beta.Xpsi1 = 0,
-range.phi = c(0.5, 1), impact.phi = 0, beta.Xphi = 0,
-range.gamma = c(0, 0.5), impact.gamma = 0, beta.Xgamma = 0,
-range.p = c(0.1, 0.9), beta.Xp = 0,
-range.beta1.survey = c(0, 0), range.beta2.survey = c(0, 0),
-trend.sd.site = c(0, 0), trend.sd.survey = c(0, 0),
-trend.sd.site.survey = c(0, 0), show.plot = TRUE))
+    nsites = 250, nyears = 10, nsurveys = 3, year.of.impact = NA,
+    mean.psi1 = 0.4, beta.Xpsi1 = 0,
+    range.phi = c(0.5, 1), impact.phi = 0, beta.Xphi = 0,
+    range.gamma = c(0, 0.5), impact.gamma = 0, beta.Xgamma = 0,
+    range.p = c(0.1, 0.9), beta.Xp = 0,
+    range.beta1.survey = c(0, 0), range.beta2.survey = c(0, 0),
+    trend.sd.site = c(0, 0), trend.sd.survey = c(0, 0),
+    trend.sd.site.survey = c(0, 0), show.plot = TRUE))
 
 # All four parameters constant
 str(data <- simDynocc(nsites = 250, nyears = 10, nsurveys = 3, mean.psi1 = 0.6,
@@ -70,4 +70,4 @@ str(data <- simDynocc(trend.sd.site.survey = c(3, 3)) ) # No trend
 str(data <- simDynocc(trend.sd.site.survey = c(1, 3)) ) # With trend
 
 str(data <- simDynocc(nsites = 250, nyears = 20, nsurveys = 3,
-year.of.impact = 10, impact.phi = 80, impact.gamma = 50) )
+    year.of.impact = 10, impact.phi = 80, impact.gamma = 50) )

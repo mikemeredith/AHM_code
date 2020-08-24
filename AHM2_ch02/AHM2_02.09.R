@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
-# Code from proofs dated 2020-06-11
+# Code from proofs dated 2020-08-18
 
 # Approximate run time for this script: 15 mins
 
@@ -107,15 +107,14 @@ model {
 } # end model
 ")
 
-# ~~~~~~~~~~~~~~~ the simFrogDisease function is now in AHMbook ~~~~~~~~~~~~~~~
 
-# Simulate a data set
+# Simulate a data set (using function from book website)
 set.seed(2019)
 str(sodata <- simFrogDisease(nsites = 100, nyears = 3, nsurveys = 3,
     alpha.lam = 3, omega = c(0.9, 0.7), gamma = c(2,1),
     p = c(0.8, 0.8, 0.8), recovery = 0.1, infection = 0.1))
 
-# Bundle data
+# Bundle the data
 str(bdata <- list(yN = sodata$yN, yI = sodata$yI,
     nsites = dim(sodata$yN)[1], nsurveys = dim(sodata$yN)[2],
     nyears = dim(sodata$yN)[3]))
@@ -139,7 +138,8 @@ params <- c("alpha.lamN", "alpha.lamI", "mean.pN", "mean.pI",
     "mean.psi_NI", "mean.psi_IN", "fitN", "fitN.new", "fitI", "fitI.new")
 
 # MCMC settings
-na <- 1000 ; ni <- 60000 ; nb <- 10000 ; nt <- 5 ; nc <- 10
+# na <- 1000 ; ni <- 60000 ; nb <- 10000 ; nt <- 5 ; nc <- 10
+na <- 1000 ; ni <- 60000 ; nb <- 10000 ; nt <- 5 ; nc <- 3  # ~~~ for testing
 
 # Call JAGS (ART 14 min), gauge convergence and summarize posteriors
 set.seed(127) # Cheating: use this seed to get good initial values.
@@ -167,7 +167,6 @@ print(out9, dig = 2)
 op <- par(mfrow=c(1,2)) # Not shown
 pp.check(out9, observed = 'fitN', simulated = 'fitN.new')
 pp.check(out9, observed = 'fitI', simulated = 'fitI.new')
-pp.check(out9, observed = 'fitI', simulated = 'fitI.new')
 par(op)
 
 # 2.9.2 Example 2: dusky salamanders -- a three-state model with two observable states
@@ -190,7 +189,7 @@ str(bdata <- list(nsites = nsites, nyears = nyears, nsurveys = nsurveys, n = n))
 # $ n        : int [1:21, 1:7, 1:2, 1:2] 12 0 0 0 0 0 1 3 6 0 ...
 
 # Specify model in BUGS language
-cat(file = "Zipkin.txt", "
+cat(file = "ZipkinModel.txt", "
 model {
   # Priors
   for(c in 1:3){ # Loop over 3 states
@@ -201,6 +200,7 @@ model {
   phi[2] ~ dunif(0, 1)
   p[1] ~ dunif(0, 1) # Detection
   p[2] ~ dunif(0, 1)
+
   # Process model
   for(i in 1:nsites) { # Loop over sites
     #Initial abundance state
@@ -222,6 +222,7 @@ model {
       N[i,t,2] <- S[i,t,1] + G[i,t,2]
       N[i,t,3] <- S[i,t,2] + S[i,t,3] + G[i,t,3]
     }
+
     # Observation model
     for(t in 1:nyears) {
       for(j in 1:nsurveys) {
@@ -232,6 +233,7 @@ model {
       }
     }
   }
+
   # Derived quantities: Total N for each stage and year
   for (t in 1:nyears) {
     Ntotal[1,t] <- sum(N[,t,1])
@@ -243,15 +245,16 @@ model {
 
 # Find initial values that work for JAGS ...
 lamNew <- NA ; phiNew <- NA ; gammaNew <- NA ; pNew <- NA
-lamNew[1] <- 5 * 10 # Initial population size (juveniles)
-lamNew[2] <- 5 * 10 # Initial population size (adults)
-phiNew[1] <- 0.90 # Survival rate (juveniles)
-phiNew[2] <- 0.90 # Survival rate (adults)
-gammaNew[1] <- 5 * 10 # Recruitment rate
-gammaNew[2] <- 5 * 10 # Movement rate (juveniles)
-gammaNew[3] <- 5 * 10 # Movement rate (adults)
-pNew[1] <- 0.8 # Detection probability
+lamNew[1] <- 5 * 10     # Initial population size (juveniles)
+lamNew[2] <- 5 * 10     # Initial population size (adults)
+phiNew[1] <- 0.90       # Survival rate (juveniles)
+phiNew[2] <- 0.90       # Survival rate (adults)
+gammaNew[1] <- 5 * 10   # Recruitment rate
+gammaNew[2] <- 5 * 10   # Movement rate (juveniles)
+gammaNew[3] <- 5 * 10   # Movement rate (adults)
+pNew[1] <- 0.8          # Detection probability
 pNew[2] <- 0.8
+
 # Starting values for N[,1,] can be all-important !!!
 N <- N1 <- array(NA, dim = c(nsites, nyears, 3) )
 for(i in 1:nsites){
@@ -264,6 +267,7 @@ for(i in 1:nsites){
   }
 }
 N1[,1,] <- N[,1,]
+
 # Package all that into the Initial values function
 inits <- function() list(phi = phiNew, gamma = runif(3,1,3), p = pNew, N = N1)
 
@@ -274,7 +278,7 @@ params <- c("lambda", "phi", "gamma", "p", "Ntotal")
 na <- 1000 ; ni <- 100000 ; nb <-50000 ; nt <- 2 ; nc <- 3
 
 # Call JAGS (ART 7 min), check convergence and summarize posteriors
-out10 <- jags(bdata, inits, params, "Zipkin.txt", n.adapt = na, n.thin = nt,
+out10 <- jags(bdata, inits, params, "ZipkinModel.txt", n.adapt = na, n.thin = nt,
     n.chains = nc, n.burnin = nb, n.iter = ni, parallel = TRUE)
 op <- par(mfrow = c(3,3)) ; traceplot(out10)
 par(op)

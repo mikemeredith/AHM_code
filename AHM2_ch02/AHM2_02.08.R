@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
-# Code from proofs dated 2020-06-11
+# Code from proofs dated 2020-08-18
 
 library(jagsUI)
 
@@ -59,6 +59,7 @@ str(bdata <- list(y3d = y3d, nsites = nsites, nseasons = nseasons,
 # Specify model in BUGS language
 cat(file = "mnDM.txt", "
 model{
+
   # Prior distributions, regression parameters
   alpha0 ~ dnorm(0,0.01)
   alpha1 ~ dnorm(0,0.01)
@@ -69,6 +70,7 @@ model{
   # Here, we could add covariate models for logit(phi) and log(gamma)
   phi ~ dunif(0,1)
   gamma ~ dunif(0,5)
+
   # ’Likelihood’
   for (i in 1:nsites){
     for (t in 1:nseasons){
@@ -90,6 +92,7 @@ model{
       cellprobs.cond[i,t,5] <- cp[i,t,5]/ sum(cp[i,t,1:7])
       cellprobs.cond[i,t,6] <- cp[i,t,6]/ sum(cp[i,t,1:7])
       cellprobs.cond[i,t,7] <- cp[i,t,7]/ sum(cp[i,t,1:7])
+
       # Conditional 4-part version of the model
       pdet[i,t] <- sum(cp[i,t, 1:7])
       y3d[i,1:7,t] ~ dmulti(cellprobs.cond[i,t,1:7], nobs[i,t])
@@ -99,6 +102,7 @@ model{
      # Poisson regression model for abundance
     log(lambda0[i]) <- beta0 + beta1*woody[i] + beta2*struct[i]
     N[i,1] ~ dpois(lambda0[i]) # Population size
+
     # Population dynamics model for subsequent years
     for (t in 2:nseasons){ # Loop over primary periods
       S[i,t] ~ dbinom(phi, N[i, t-1]) # Survivors

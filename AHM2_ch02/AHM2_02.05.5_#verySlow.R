@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
-# Code from proofs dated 2020-06-11
+# Code from proofs dated 2020-08-18
 
 # Approximate execution time for this code: 1.9 days
 #   excluding the 2 blocks wrapped in if(FALSE){} which take
@@ -36,20 +36,26 @@ system.time(summary(fm3 <- pcountOpen(lam = ~1, gam = ~1, omega = ~1,
 system.time(summary(fm3x <- pcountOpen(lam = ~1, gam = ~1, omega = ~1,
     p = ~1, data = umf, dynamics = "autoreg", K = 150,
     control = list(trace = TRUE, REPORT = 1)))) # not shown # 2 mins
+
 # Backtransform parameter estimates and compare with truth
 (lam <- exp(coef(fm3, type = "lambda")))  # Initial abundance
 (gam <- exp(coef(fm3, type = "gamma")))   # Recruitment
 (om <- plogis(coef(fm3, type = "omega"))) # Apparent survival
 (p <- plogis(coef(fm3, type = "det")))    # Detection
 str(data[4:7]) # Compare with The Truth
+
 # lam(Int)
 # 4.088409
+
 # gamAR(Int)
 # 0.5014593
+
 # omega(Int)
 # 0.8047996
+
 # p(Int)
 # 0.698113
+
 # List of 4
 # $ mean.lambda : num 4
 # $ mean.gamma.rel : num 0.5
@@ -136,18 +142,21 @@ if(FALSE) {
   system.time(summary(fm4.1.se <- pcountOpen(lam = ~1, gam = ~1,
       omega = ~1, p = ~1, data = umf, dynamics = "autoreg",
       control = list(trace = TRUE, REPORT = 1))))  # 3 mins
+
   # Add in site covariate on lambda (ART 179 sec, no SEs)
   tmp <- coef(fm4.1.se)
   inits <- c(tmp[1], 0, tmp[2:4])
   system.time(summary(fm4.2.se <- pcountOpen(lam = ~ cov.lam, gam = ~1,
       omega = ~1, p = ~1, data = umf, dynamics = "autoreg",
       control = list(trace = TRUE, REPORT = 1), starts = inits)))
+
   # Add in observation covariate on p
   tmp <- coef(fm4.2.se)
   inits <- c(tmp, 0)
   system.time(summary(fm4.3.se <- pcountOpen(lam = ~ cov.lam, gam = ~1,
       omega = ~1, p = ~ cov.p, data = umf, dynamics = "autoreg",
       control = list(trace = TRUE, REPORT = 1), starts = inits) ))
+
   # Add in site covariate on gamma. Starts need a bit of help....
   tmp <- coef(fm4.3.se)
   inits <- c(tmp[1:2], -0.6, 0.9, qlogis(0.8), tmp[5:6])
@@ -181,6 +190,7 @@ system.time(summary(fm4.5 <- pcountOpen(lam = ~ cov.lam,
     gam = ~ cov.gamma, omega = ~ cov.phi, p = ~ cov.p, data = umf,
     dynamics = "autoreg", K = max(data$yy) + 100, se = FALSE,
     control = list(trace = TRUE, REPORT = 1), starts = inits) ))
+
 # user system elapsed
 # 177435.19 1.32 177449.20 # 2.1 days
 
@@ -188,6 +198,7 @@ system.time(summary(fm4.5 <- pcountOpen(lam = ~ cov.lam,
 system.time(summary(fm4.5.se <- pcountOpen(lam = ~ cov.lam, gam = ~ cov.gamma, omega = ~
 cov.phi, p = ~ cov.p, data = umf, dynamics = "autoreg", K = max(data$yy) + 100, control =
 list(trace = TRUE, REPORT = 1), starts = inits) ))
+
 # user system elapsed
 # 240161.03 1.86 240178.64 # 2.8 days
 }
@@ -198,14 +209,17 @@ fm4.5.se
 # Estimate SE z P(>|z|)
 # (Intercept) 1.439 0.0754 19.09 2.99e-81
 # cov.lam 0.632 0.1350 4.68 2.83e-06
+
 # Recruitment:
 # Estimate SE z P(>|z|)
 # (Intercept) -0.552 0.125 -4.41 1.05e-05
 # cov.gamma 0.880 0.104 8.48 2.25e-17
+
 # Apparent Survival:
 # Estimate SE z P(>|z|)
 # (Intercept) 0.943 0.333 2.83 0.00470
 # cov.phi -0.793 0.248 -3.20 0.00137
+
 # Detection:
 # Estimate SE z P(>|z|)
 # (Intercept) 0.841 0.0807 10.4 2.12e-25
@@ -231,6 +245,7 @@ model {
   beta.phi ~ dnorm(0,0.1)
   beta.gamma ~ dnorm(0,0.1)
   beta.p ~ dnorm(0,0.1)
+
   # Likelihood
   for(i in 1:nsites){
     # State process: initial condition
@@ -238,6 +253,7 @@ model {
     log(lambda[i]) <- alpha.lam + beta.lam * cov.lam[i]
     logit(phi[i]) <- alpha.phi + beta.phi*cov.phi[i]
     log(gamma[i]) <- alpha.gamma + beta.gamma*cov.gamma[i]
+
     # State process: transition model
     for(t in 1:(nyears-1)){
       S[i,t+1] ~ dbin(phi[i], N[i,t])
@@ -246,12 +262,13 @@ model {
       R[i,t+1] ~ dpois(tmp[i,t]) # per-capita recruitment = 'autoreg’
       N[i,t+1] <- S[i,t+1] + R[i,t+1]
     }
+
     # Observation process
     for(t in 1:nyears){
       for(j in 1:nsurveys){
         logit(p[i,t,j]) <- alpha.p + beta.p*cov.p[i,t,j]
         C[i,t,j] ~ dbin(p[i,t,j], N[i,t])
-      } # end j
+      }
     }
   }
   # Derived quantities
@@ -263,7 +280,7 @@ model {
 
 # Initial values that usually seem to work
 R1 <- apply(data$y, c(1,2), max) + 10 # Use observed max. counts + 10
-# as inits for recruitment
+                                      # as inits for recruitment
 R1[,1] <- NA
 Nst <- apply(data$y, c(1,2), max)+2
 Nst[,2:ncol(Nst)] <- NA
@@ -280,12 +297,13 @@ params <- c("mean.lambda", "mean.phi", "mean.gamma", "mean.p",
 # na <- 1000 ; ni <- 500000 ; nt <- 250 ; nb <- 250000 ; nc <- 3  # 35 mins
 na <- 1000 ; ni <- 50000 ; nt <- 25 ; nb <- 25000 ; nc <- 3 # ~~~ for testing, 4 mins
 
-# Call JAGS (ART 66 min), check convergence and summarize posteriors
+# Call JAGS (ART 33 min), check convergence and summarize posteriors
 out4 <- jags(bdata, inits, params, "DM2.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 op <- par(mfrow = c(2, 3)) ; traceplot(out4)
 par(op)
 print(out4, 2) # not printed
+
 # Compare estimates with truth
 cbind('truth' = unlist(data[4:11]), round(out4$summary[1:8, c(1,3,7)],3))
 #                truth   mean   2.5%  97.5%

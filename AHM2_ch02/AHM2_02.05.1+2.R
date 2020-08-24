@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
-# Code from proofs dated 2020-06-11
+# Code from proofs dated 2020-08-18
 
 # ~~~ run without the 2 slowest models took 45 hrs ~~~~~~~~~~~~~
 
@@ -20,6 +20,7 @@ library(AHMbook)
 
 simDM0 <- function(nsites = 50, nsurveys = 3, nyears = 5, lambda = 4,
     phi = 0.8, gamma = 1.5, p = 0.7){
+
   ## Simulation for multiple-visit data (from pcountOpen help file)
   ## No covariates, constant time intervals between primary periods
   # nsites: Number of sites
@@ -29,6 +30,7 @@ simDM0 <- function(nsites = 50, nsurveys = 3, nyears = 5, lambda = 4,
   # lambda: Initial expected abundance
   # phi, gamma: apparent survival and recruitment rates, respectively
   # p: detection probability
+
   y <- array(NA, dim = c(nsites, nyears, nsurveys))
   N <- matrix(NA, nsites, nyears)
   S <- R <- matrix(NA, nsites, nyears-1)
@@ -41,6 +43,7 @@ simDM0 <- function(nsites = 50, nsurveys = 3, nyears = 5, lambda = 4,
   for(j in 1:nsurveys){ # Observation process
     y[,,j] <- rbinom(nsites*nyears, N, p)
   }
+
   # Put observed data into two dimensions
   yy <- array(NA, dim = c(nsites, nsurveys*nyears))
   for(t in 1:nyears){
@@ -73,18 +76,19 @@ str(bdata <- list(C = data$y, nsites = dim(data$y)[1], nsurveys = dim(data$y)[3]
 cat(file = "DM1.txt","
 model {
   # Priors
-  lambda ~ dunif(0, 100) # Population growth rate
-  phi ~ dunif(0, 1) # apparent survival (omega in paper/unmarked)
-  gamma ~ dunif(0, 5) # per-capita recruitment rate
-  p ~ dunif(0, 1) # Detection probability
+  lambda ~ dunif(0, 100)   # Population growth rate
+  phi ~ dunif(0, 1)        # apparent survival (omega in paper/unmarked)
+  gamma ~ dunif(0, 5)      # per-capita recruitment rate
+  p ~ dunif(0, 1)          # Detection probability
+
   # Likelihood
   for(i in 1:nsites){
     # State process: initial condition
     N[i,1] ~ dpois(lambda)
     # State process: transition model
     for(t in 1:(nyears-1)){
-      S[i,t+1] ~ dbin(phi, N[i,t]) # Survival process
-      # R[i,t+1] ~ dpois(gamma) # 'absolute' recruitment = 'constant'
+      S[i,t+1] ~ dbin(phi, N[i,t])     # Survival process
+      # R[i,t+1] ~ dpois(gamma)        # 'absolute' recruitment = 'constant'
       R[i,t+1] ~ dpois(N[i,t] * gamma) # per-capita recruitment = 'autoreg’
       N[i,t+1] <- S[i,t+1] + R[i,t+1]
     }
@@ -100,8 +104,8 @@ model {
 
 # Initial values
 Nst <- apply(data$y, c(1,2), max) + 2
-Nst[, 2:5] <- NA # cols 2:5 of N are deterministic, N <- S + R.
-R1 <- apply(data$y, c(1,2), max) # Observed max. counts + 1 as inits
+Nst[, 2:5] <- NA                   # cols 2:5 of N are deterministic, N <- S + R.
+R1 <- apply(data$y, c(1,2), max)   # Observed max. counts + 1 as inits
 R1[,1] <- NA
 inits <- function(){list( lambda = runif(1, 6, 16), phi = runif(1),
     gamma = runif(1), p = runif(1), N = Nst, R = R1 + 1 )}
@@ -113,12 +117,13 @@ params <- c("lambda", "phi", "gamma", "p")
 na <- 1000 ; ni <- 25000 ; nt <- 4 ; nb <- 5000 ; nc <- 3
 
 # Call JAGS (ART 2 min), check convergence and summarize posteriors
-out1 <- jags(bdata, inits, params, "DM1.txt", n.adapt = na, n.chains = nc, n.thin = nt,
-  n.iter = ni, n.burnin = nb, parallel = TRUE)
+out1 <- jags(bdata, inits, params, "DM1.txt", n.adapt = na, n.chains = nc,
+    n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 
 op <- par(mfrow = c(2, 3)) ; traceplot(out1)
 par(op)
 print(out1, 3)
+
 # Per-capita recruitment parameterisation
 #         mean    sd  2.5%   50% 97.5% overlap0 f  Rhat n.eff
 # lambda 4.168 0.315 3.575 4.159 4.813    FALSE 1 1.000 15000
@@ -137,14 +142,15 @@ model {
   phi ~ dunif(0, 1) # apparent survival (omega in paper/unmarked)
   gamma ~ dunif(0, 5) # per-capita recruitment rate
   p ~ dunif(0, 1) # Detection probability
+
   # Likelihood
   for(i in 1:nsites){
     # State process: initial condition
     N[i,1] ~ dpois(lambda)
     # State process: transition model
     for(t in 1:(nyears-1)){
-      S[i,t+1] ~ dbin(phi, N[i,t]) # Survival process
-      R[i,t+1] ~ dpois(gamma) # 'absolute’ recruitment = 'constant’
+      S[i,t+1] ~ dbin(phi, N[i,t])       # Survival process
+      R[i,t+1] ~ dpois(gamma)            # 'absolute’ recruitment = 'constant’
       # R[i,t+1] ~ dpois(N[i,t] * gamma) # per-capita recruitment = 'autoreg’
       N[i,t+1] <- S[i,t+1] + R[i,t+1]
     } # end t
@@ -165,6 +171,7 @@ out1b <- jags(bdata, inits, params, "DM1b.txt", n.adapt = na,
 op <- par(mfrow = c(2, 3)) ; traceplot(out1b)
 par(op)
 print(out1b, 2)
+
 # Absolute parameterisation
 #        mean   sd 2.5%  50% 97.5% overlap0 f Rhat n.eff
 # lambda 4.09 0.31 3.51 4.08  4.72    FALSE 1    1  8586
@@ -172,5 +179,6 @@ print(out1b, 2)
 # gamma  1.14 0.17 0.85 1.13  1.51    FALSE 1    1  1061
 # p      0.70 0.02 0.66 0.70  0.73    FALSE 1    1  5387
 
-# ~~~ save the work so far
+# ~~~ save the work so far ~~~
 save.image("AHM2_02.05.2.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

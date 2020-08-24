@@ -14,10 +14,6 @@ library(AICcmodavg)
 load("AHM2_04.09.3_fm50.RData")
 c.hat <- 2.102584
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~ impact of changes in R 4.0 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-if(packageVersion("unmarked") <= '1.0.0' || packageVersion("AICcmodavg") <= '2.2.2')
-  options(stringsAsFactors = TRUE)
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # 4.9 Analysis and mapping of crossbill distribution and range dynamics in Switzerland
 # ====================================================================================
@@ -28,7 +24,9 @@ if(packageVersion("unmarked") <= '1.0.0' || packageVersion("AICcmodavg") <= '2.2
 # ~~~~ code to produce the table ~~~~~~~~~~~
 # Produce a table with means, sds and CIs for all parameters
 tmp <- summary(fm50)        # Print summary
-tmp <- cbind(MLE = coef(fm50), SE = c(tmp[[1]][,2], tmp[[2]][,2], tmp[[3]][,2], tmp[[4]][,2]), rbind(confint(fm50, type = "psi"), confint(fm50, type = "col"), confint(fm50, type = "ext"), confint(fm50, type = "det")))
+tmp <- cbind(MLE = coef(fm50), SE = c(tmp[[1]][,2], tmp[[2]][,2], tmp[[3]][,2],
+    tmp[[4]][,2]), rbind(confint(fm50, type = "psi"), confint(fm50, type = "col"),
+    confint(fm50, type = "ext"), confint(fm50, type = "det")))
 print(tmp, 3)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

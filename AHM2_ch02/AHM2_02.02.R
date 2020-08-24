@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
-# Code from proofs dated 2020-06-11
+# Code from proofs dated 2020-08-18
 
 # 2.2 Swiss MHB Data for the Green Woodpecker
 # ===========================================
@@ -44,23 +44,28 @@ annual.mean <- apply(mean.C, 2, mean, na.rm = TRUE)
 annual.mean2 <- apply(C, 3, mean, na.rm = TRUE)     # Direct 3D average
 site.mean <- apply(mean.C, 1, mean, na.rm = TRUE)
 nsites.with.data <- apply(!is.na(mean.C), 2, sum, na.rm = TRUE)
+
 cat("N sites with data per year:\n", nsites.with.data, "\n")
 # N sites with data per year:
 # 265 265 261 263 265 267 267 264 263 263 265 265 264 262 262
+
 nsites.detected <- apply(mean.C > 0, 2, sum, na.rm = TRUE)
 cat("N sites with Pecker detected per year:\n", nsites.detected, "\n")
 # N sites with Pecker detected per year:
 # 49 77 88 93 90 84 103 114 99 127 114 121 136 147
+
 cat("Observed occupancy prob.:\n",
     round(nsites.detected/nsites.with.data,2), "\n")
 # Observed occupancy prob.:
 # 0.18 0.29 0.34 0.35 0.34 0.31 0.39 0.43 0.38 0.48 0.43 0.46 0.52 0.56
+
 cat("Observed mean count per year:\n", round(annual.mean, 2), "\n")
 # Observed mean count per year:
 # 0.15 0.33 0.42 0.48 0.45 0.43 0.39 0.54 0.49 0.53 0.43 0.52 0.56 0.58
+
 cat("Observed mean count (site):\n") ; summary(site.mean)
 # Observed mean count (site):
-# Min. 1st Qu. Median Mean 3rd Qu. Max.
+#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
 # 0.00000 0.02381 0.23077 0.44850 0.54304 3.90476
 
 # Scale elevation and forest cover

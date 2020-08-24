@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
-# Code from proofs dated 2020-06-11
+# Code from proofs dated 2020-08-18
 
 # Approximate run time for this script: 20 mins
 
@@ -19,6 +19,7 @@ source("AHM2_02.02.R")
 
 # 2.3.1 Adding covariates and estimating a common trend over time
 # ---------------------------------------------------------------
+
 # Bundle data
 str(bdata <- list(C = C, nsites = dim(C)[1], nsurveys = dim(C)[2],
     nyears = dim(C)[3], elev = elev, forest = forest, DATE = DATE,
@@ -48,6 +49,7 @@ model {
   for (k in 1:4){
     beta[k] ~ dnorm(0, 0.01)
   }
+
   # Likelihood
   # Ecological model for true abundance
   for (i in 1:nsites){
@@ -63,6 +65,7 @@ model {
       }
     }
   }
+
   # Derived quantity: Total abundance across all surveyed sites
   for (t in 1:nyears){
     totalN[t] <- sum(N[,t])
@@ -98,6 +101,7 @@ print(out2, digits = 2) # shown partially only
 # beta[3]   0.13 0.02  0.10  0.13  0.17    FALSE 1.00 1.00  2422
 # beta[4]   0.05 0.01  0.03  0.05  0.06    FALSE 1.00 1.01  2914
 # [... output truncated ...]
+
 
 # ~~~~~~~~~~~~ extra code for figure 2.3 ~~~~~~~~~~~~~~~~~~~~~
 # Quick plots of response curves of lambda and p to all covariates

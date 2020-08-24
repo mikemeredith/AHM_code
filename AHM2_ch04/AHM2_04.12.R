@@ -6,7 +6,7 @@
 # Chapter 4 : MODELING SPECIES DISTRIBUTION AND RANGE DYNAMICS, AND POPULATION
 #             DYNAMICS USING DYNAMIC OCCUPANCY MODELS
 # ============================================================================
-# Code from proofs dated 2020-06-17
+# Code from proofs dated 2020-08-18
 
 library(AHMbook)
 library(jagsUI)
@@ -19,15 +19,15 @@ simDemoDynocc(nsites = 100, nyears = 10, nvisit = 5, psi1 = 0.6,
     show.plot = TRUE)
 
 # Some functionality of function simDemoDynocc
-str(data <- simDemoDynocc(psi1 = 1)) # All sites initially occupied
-str(data <- simDemoDynocc(nsites = 1000)) # Plenty more sites
-str(data <- simDemoDynocc(nyears = 100)) # Plenty more years
-str(data <- simDemoDynocc(nvisit = 20)) # Plenty more visits
-str(data <- simDemoDynocc(range.phi = c(0.8, 0.8))) # Constant survival
+str(data <- simDemoDynocc(psi1 = 1))        # All sites initially occupied
+str(data <- simDemoDynocc(nsites = 1000))            # Plenty more sites
+str(data <- simDemoDynocc(nyears = 100))             # Plenty more years
+str(data <- simDemoDynocc(nvisit = 20))              # Plenty more visits
+str(data <- simDemoDynocc(range.phi = c(0.8, 0.8)))  # Constant survival
 str(data <- simDemoDynocc(range.phi = c(0.2,0.3), range.r = c(0,0.2))) # Decline
 str(data <- simDemoDynocc(range.phi = c(0.8,1), range.r = c(0.5,0.7))) # Increase
-str(data <- simDemoDynocc(nvisit = 1)) # Single visit
-str(data <- simDemoDynocc(range.p = c(1,1))) # Perfect detection
+str(data <- simDemoDynocc(nvisit = 1))               # Single visit
+str(data <- simDemoDynocc(range.p = c(1,1)))         # Perfect detection
 
 # Generate a data set with year-specific parameters
 set.seed(24)
@@ -47,12 +47,14 @@ str(bdata <- list(y = data$y, nsites = data$nsites, nyears = data$nyears,
 # Specify model in BUGS language
 cat(file = "DemoDynocc1.txt", "
 model {
+
   # Priors
   for(t in 1:(nyears-1)){
     phi[t] ~ dunif(0,1)
     r[t] ~ dunif(0,1)
     p[t] ~ dunif(0,1) # only nyears-1 p params in conditional model !
   }
+
   # Likelihood
   # Alive/dead process specified conditional on first detection
   for(i in 1:nsites){
@@ -62,6 +64,7 @@ model {
           (1-z[i,t-1]) * r[t-1])
     }
   }
+
   # Observations conditional on Alive/dead process
   for(i in 1:nsites){
     for(t in (first[i]+1):nyears) {
@@ -85,17 +88,18 @@ na <- 1000 ; ni <- 6000 ; nt <- 4 ; nb <- 2000 ; nc <- 3
 
 # Call JAGS (ART 2 min), check convergence and summarize posteriors
 out1 <- jags(bdata, inits, params, "DemoDynocc1.txt", n.adapt = na,
-    n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = T)
+    n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 op <- par(mfrow = c(2,2)) ; traceplot(out1)
 par(op)
 print(out1, dig = 2)
 
 # ~~~~~~~~~ extra code for figure 4.35 ~~~~~~~~~~~~~~~~~~
 # Compare estimates and truth
-op <- par(mfrow = c(1, 3), mar = c(5, 5, 4, 2), cex.lab = 1.5)
+op <- par(mfrow = c(1, 3))
 lim <- c(0,1)
 plot(data$phi, out1$mean$phi, xlab = "True phi", ylab = "Estimated phi",
-    main = "Survival probability", pch = 16, xlim = lim, ylim = lim, frame = FALSE)
+    main = "Survival probability", pch = 16, xlim = lim, ylim = lim,
+    frame = FALSE)
 segments(data$phi, out1$q2.5$phi, data$phi, out1$q97.5$phi, lwd = 2)
 abline(0, 1, col = 'red', lwd = 2)
 abline(lm(out1$mean$phi ~ data$phi), col =  'blue', lwd = 2)
@@ -133,6 +137,7 @@ str(bdata <- list(y = y, nsites = nrow(y), nyears = ncol(y), first = f) )
 # Specify model in BUGS language
 cat(file = "DemoDynocc2.txt", "
 model {
+
   # Priors
   phi[1] ~ dunif(0, 1) # Survival in first interval
   r[1] ~ dunif(0, 1) # Recruitment in first interval
@@ -142,6 +147,7 @@ model {
     logit(phi[t]) <- lphi[t]
     logit(r[t]) <- lr[t]
   }
+
   # Random-walk smoother
   for (t in 2:(nyears-1)){ # Survival and recruitment in later intervals
     lphi[t] ~ dnorm(lphi[t-1], tau.lphi)
@@ -151,6 +157,7 @@ model {
   sd.lphi ~ dunif(0, 1)
   tau.lr <- pow(sd.lr,-2)
   sd.lr ~ dunif(0, 1)
+
   # Likelihood
   # Alive/dead process specified conditional on first detection
   for(i in 1:nsites){
@@ -174,19 +181,18 @@ na <- 1000 ; ni <- 12000 ; nt <- 6 ; nb <- 6000 ; nc <- 3
 
 # Call JAGS (ART 3 min), check convergence and summarize posteriors
 out2 <- jags(bdata, inits, params, "DemoDynocc2.txt", n.adapt = na,
-    n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = T)
+    n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 op <- par(mfrow = c(2,2)) ; traceplot(out2)
 par(op)
 print(out2, dig = 2) # not shown
 
 # ~~~~~~~~~ extra code for figure 4.36 ~~~~~~~~~~~~~~~~~
 # Visualize 'local survival' and recruitment
-op <- par(mar = c(5,5,4,4), cex.lab = 1.5, cex.axis = 1.5)
 plot(1964:2015, out2$mean$phi, xlab = 'Year', ylab = 'Probability',
-    type = 'b', cex = 1.5, pch = 1, ylim = c(0,1), frame = FALSE)
+    type = 'b', pch = 1, ylim = c(0,1), frame = FALSE)
 segments(1964:2015, out2$q2.5$phi, 1964:2015, out2$q97.5$phi)
-points(1964:2015, out2$mean$r, type = 'b', cex = 1.5, pch = 16)
+points(1964:2015, out2$mean$r, type = 'b', pch = 16)
 segments(1964:2015, out2$q2.5$r, 1964:2015, out2$q97.5$r)
-legend('bottomright', c('Local survival', 'Recruitment'), pch = c(1, 16), bty = 'n', cex = 1.5)
-par(op)
+legend('bottomright', c('Local survival', 'Recruitment'), pch = c(1, 16),
+    bty = 'n')
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

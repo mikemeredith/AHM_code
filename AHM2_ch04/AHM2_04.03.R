@@ -6,7 +6,7 @@
 # Chapter 4 : MODELING SPECIES DISTRIBUTION AND RANGE DYNAMICS, AND POPULATION
 #             DYNAMICS USING DYNAMIC OCCUPANCY MODELS
 # ============================================================================
-# Code from proofs dated 2020-06-17
+# Code from proofs dated 2020-08-18
 
 library(unmarked)
 
@@ -14,23 +14,23 @@ library(unmarked)
 # ===================================================================
 
 # Choose sample sizes and prepare arrays for z and y
-nsites <- 100      # Number of sites
-nyears <- 12       # Number of years
-nsurveys <- 2      # Number of presence/absence measurements
+nsites <- 100            # Number of sites
+nyears <- 12             # Number of years
+nsurveys <- 2            # Number of presence/absence measurements
 z <- array(NA, dim = c(nsites, nyears))           # latent presence/absence
 y <- array(NA, dim = c(nsites, nsurveys, nyears)) # observed data
 
 # Set parameter values as per above
-psi1 <- 0.7   # Prob. of initial occupancy or presence
-phi <- 0.9    # Persistence probability
-gamma <- 0.05 # Colonization probability
-p <- 0.25     # Probability of detection
+psi1 <- 0.7                         # Prob. of initial occupancy or presence
+phi <- 0.9                          # Persistence probability
+gamma <- 0.05                       # Colonization probability
+p <- 0.25                           # Probability of detection
 (psi.eq <- gamma / (gamma+(1-phi))) # Equilibrium occupancy
 
 # Generate initial presence/absence (i.e., the truth in year 1)
-set.seed(1) # So we all get same data set
+set.seed(1)               # So we all get same data set
 z[,1] <- rbinom(n = nsites, size = 1, prob = psi1)
-sum(z[,1]) / nsites # True occupancy proportion in year 1
+sum(z[,1]) / nsites       # True occupancy proportion in year 1
 # [1] 0.68
 
 # Generate presence/absence (i.e., the truth) in subsequent years
@@ -42,17 +42,17 @@ apply(z, 2, sum) / nsites # True occupancy proportions
 # [1] 0.68 0.68 0.63 0.58 0.49 0.46 0.47 0.42 0.38 0.37 0.31 0.34
 
 # Detection/nondetection data (i.e. presence/absence measurements)
-for(t in 1:nyears){ # Loop over years 1 to 12
-  for(j in 1:nsurveys){ # Loop over repeat visits 1 and 2
+for(t in 1:nyears){             # Loop over years 1 to 12
+  for(j in 1:nsurveys){         # Loop over repeat visits 1 and 2
     y[,j,t] <- rbinom(n = nsites, size = 1, prob = z[,t] * p)
   }
 }
-y ; str(y) # Look at the data thus far simulated
+y ; str(y)                      # Look at the data thus far simulated
 
 # Generate missing values: create simple version of unbalanced data set
-prob.missing <- 0.2 # Constant NA probability
-y2 <- y # Duplicate balanced data set
-for(i in 1:nsites){ # Loop over every datum in 3D array
+prob.missing <- 0.2           # Constant NA probability
+y2 <- y                       # Duplicate balanced data set
+for(i in 1:nsites){           # Loop over every datum in 3D array
   for(j in 1:nsurveys){
     for(t in 1:nyears){
       turnNA <- rbinom(1, 1, prob.missing)
@@ -60,22 +60,22 @@ for(i in 1:nsites){ # Loop over every datum in 3D array
     }
   }
 }
-y2 ; str(y2) # Look at the data now
+y2 ; str(y2)                  # Look at the data now
 
 table(nvisits <- apply(y2, c(1,3), function(x) sum(!is.na(x))))
 
 # Compute true expected and realized occupancy (psi and psi.fs)
 psi <- numeric(nyears) ; psi[1] <- psi1
-for(t in 2:nyears){ # Compute true values of psi
+for(t in 2:nyears){            # Compute true values of psi
   psi[t] <- psi[t-1] * phi + (1 - psi[t-1]) * gamma
 }
-psi.fs <- colSums(z) / 100 # True realized occupancy
+psi.fs <- colSums(z) / 100     # True realized occupancy
 
 # Compute observed occupancy proportion
 zobs <- apply(y2, c(1,3), function(x) max(x, na.rm = TRUE))
-zobs[zobs == '-Inf'] <- NA # 13 site/years without visits
+zobs[zobs == '-Inf'] <- NA     # 13 site/years without visits
 psi.obs <- apply(zobs, 2, sum, na.rm = TRUE) / apply(zobs, 2, function(x)
-sum(!is.na(x)))
+    sum(!is.na(x)))
 
 # ~~~~~ code for figure 4.2 ~~~~~~~~~~~~
 # Plot trajectories of psi, psi.fs, psi.eq and psi.obs
@@ -99,12 +99,14 @@ str(yy)
 # Package and summarize data set
 summary(umf <- unmarkedMultFrame(y = yy, numPrimary = nyears))
 # unmarkedFrame Object
+
 # 100 sites
 # Maximum number of observations per site: 24
 # Mean number of observations per site: 18.86
 # Number of primary survey periods: 12
 # Number of secondary survey periods: 2
 # Sites with at least one detection: 70
+
 # Tabulation of y observations:
 # 0 1 <NA>
 # 1651 235 514
@@ -117,19 +119,24 @@ summary(fm <- colext(psiformula = ~1, # First-year occupancy
     data = umf))
 # Call:
 # colext(psiformula = ~1, gammaformula = ~1, epsilonformula = ~1,
-# pformula = ~1, data = umf)
+#   pformula = ~1, data = umf)
+
 # Initial (logit-scale):
 # Estimate SE z P(>|z|)
 # 1.07 0.435 2.47 0.0135
+
 # Colonization (logit-scale):
 # Estimate SE z P(>|z|)
 # -3.76 0.93 -4.04 5.3e-05
+
 # Extinction (logit-scale):
 # Estimate SE z P(>|z|)
 # -2.4 0.304 -7.88 3.24e-15
+
 # Detection (logit-scale):
 # Estimate SE z P(>|z|)
 # -1.16 0.127 -9.1 9.18e-20
+
 # AIC: 1167.49
 # Number of sites: 100
 # optim convergence code: 0
@@ -137,16 +144,19 @@ summary(fm <- colext(psiformula = ~1, # First-year occupancy
 # Bootstrap iterations: 0
 
 # Backtransform estimates to probability scale
-backTransform(fm, type = "psi") # First-year occupancy
-backTransform(fm, type = "col") # Colonization probability
-backTransform(fm, type = "ext") # Extinction probability
-backTransform(fm, type = "det") # Detection probability
+backTransform(fm, type = "psi")     # First-year occupancy
+backTransform(fm, type = "col")     # Colonization probability
+backTransform(fm, type = "ext")     # Extinction probability
+backTransform(fm, type = "det")     # Detection probability
 # Estimate     SE LinComb (Intercept)
 #    0.745 0.0825    1.07           1
+
 # Estimate     SE LinComb (Intercept)
 #   0.0228 0.0207   -3.76           1
+
 # Estimate     SE LinComb (Intercept)
 #   0.0835 0.0233    -2.4           1
+
 # Estimate     SE LinComb (Intercept)
 #    0.239 0.0231   -1.16           1
 
@@ -186,11 +196,13 @@ str(bdata <- list(y = y2, nsites = dim(y2)[1], nsurveys = dim(y2)[2],
 # Specify model in BUGS language
 cat(file = "dynocc.txt","
 model {
+
   # Priors
   psi1 ~ dunif(0, 1)
   phi ~ dunif(0, 1)
   gamma ~ dunif(0, 1)
   p ~ dunif(0, 1)
+
   # Likelihood
   # Ecological submodel: Define state conditional on parameters
   for (i in 1:nsites){ # Loop over nsites sites
@@ -201,6 +213,7 @@ model {
       z[i,t] ~ dbern(z[i,t-1] * phi + (1-z[i,t-1]) * gamma)
     }
   }
+
   # Observation model
   for (i in 1:nsites){
     for (j in 1:nsurveys){
@@ -209,6 +222,7 @@ model {
       }
     }
   }
+
   # Derived parameters
   eps <- 1 - phi # Extinction probability
   psi[1] <- psi1 # Population occupancy
@@ -237,7 +251,7 @@ par(op)
 print(out1, 3) # not shown
 
 # ~~~~~~~ code for the table ~~~~~~~~~~~~~~~~~~
-truth <- c("psi1" = psi1, "col" = gamma, "ext" = 1-phi, "det" = p) # Note that we present eps
+truth <- c("psi1" = psi1, "col" = gamma, "ext" = 1-phi, "det" = p)
 Bayes <- out1$summary[c(1, 15, 14, 16), c(1,3,7)]
 round(cbind(truth, MLEandCI, Bayes), 3)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

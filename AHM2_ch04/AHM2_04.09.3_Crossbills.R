@@ -6,7 +6,7 @@
 # Chapter 4 : MODELING SPECIES DISTRIBUTION AND RANGE DYNAMICS, AND POPULATION
 #             DYNAMICS USING DYNAMIC OCCUPANCY MODELS
 # ============================================================================
-# Code from proofs dated 2020-06-17
+# Code from proofs dated 2020-08-18
 
 # Approximate run time for this script: 35 mins
 # Run time with the full number of iterations: 48 mins
@@ -19,10 +19,6 @@ load("AHM2_04.09.2_output.RData")
 c.hat <- 2.102584
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~ impact of changes in R 4.0 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-if(packageVersion("unmarked") <= '1.0.0' || packageVersion("AICcmodavg") <= '2.2.2')
-  options(stringsAsFactors = TRUE)
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # 4.9 Analysis and mapping of crossbill distribution and range dynamics in Switzerland
 # ====================================================================================
@@ -1600,15 +1596,15 @@ aictab(list('fm38X' = fm38X, 'fm39' = fm39, 'fm40' = fm40, 'fm41' = fm41,
 
 # Model selection based on QAICc:
 # (c-hat estimate = 2.102584)
-# K QAICc Delta_QAICc QAICcWt Cum.Wt Quasi.LL
-# fm50 62 3017.34 0.00 0.53 0.53 -1427.52
-# fm51 61 3018.17 0.83 0.35 0.87 -1429.64
-# fm49 63 3020.73 3.39 0.10 0.97 -1427.50
-# fm48 64 3024.19 6.85 0.02 0.99 -1427.50
-# fm47 65 3025.69 8.35 0.01 1.00 -1426.50
+#        K   QAICc Delta_QAICc QAICcWt Cum.Wt Quasi.LL
+# fm50  62 3017.34        0.00    0.53   0.53 -1427.52
+# fm51  61 3018.17        0.83    0.35   0.87 -1429.64
+# fm49  63 3020.73        3.39    0.10   0.97 -1427.50
+# fm48  64 3024.19        6.85    0.02   0.99 -1427.50
+# fm47  65 3025.69        8.35    0.01   1.00 -1426.50
 # [ ... list truncated ...]
-# fm39 73 3051.49 34.15 0.00 1.00 -1424.75
-# fm38X 74 3055.30 37.96 0.00 1.00 -1424.74
+# fm39  73 3051.49       34.15    0.00   1.00 -1424.75
+# fm38X 74 3055.30       37.96    0.00   1.00 -1424.74
 
 # ~~~~~~~~~~~~ more bonus code ~~~~~~~~~~~~~~~~~~~~~
 # Now, QAICc comes up again. All the other critical terms in the model have p-values smaller than I(date^2), so it is unlikely that dropping them would lead to an improvement in QAICc. Hence, we assume that model 50 is the one with the best QAICc that can be identified by single-step changes in the model.

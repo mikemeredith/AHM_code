@@ -6,7 +6,7 @@
 # Chapter 4 : MODELING SPECIES DISTRIBUTION AND RANGE DYNAMICS, AND POPULATION
 #             DYNAMICS USING DYNAMIC OCCUPANCY MODELS
 # ============================================================================
-# Code from proofs dated 2020-06-17
+# Code from proofs dated 2020-08-18
 
 # 4.9 Analysis and mapping of crossbill distribution and range dynamics in Switzerland
 # ====================================================================================
@@ -33,7 +33,7 @@ forest <- (cb$forest - mean.forest) / sd.forest
 mean.date <- mean(dates, na.rm=TRUE)
 sd.date <- sd(c(dates), na.rm=TRUE)
 DATE <- (dates - mean.date) / sd.date
-DATE[is.na(DATE)] <- 0 # Mean-impute missing dates
+DATE[is.na(DATE)] <- 0        # Mean-impute missing dates
 
 # Generate unmarked data frame
 library(unmarked)

@@ -6,17 +6,14 @@
 # Chapter 4 : MODELING SPECIES DISTRIBUTION AND RANGE DYNAMICS, AND POPULATION
 #             DYNAMICS USING DYNAMIC OCCUPANCY MODELS
 # ============================================================================
-# Code from proofs dated 2020-06-17
+# Code from proofs dated 2020-08-18
 
 # Run time with the full number of iterations: 32 mins
 
 library(AHMbook)
 library(AICcmodavg)
 library(jagsUI)
-# ~~~~~~~~~~~~~~~~~~~~~~~~ impact of changes in R 4.0 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-if(packageVersion("unmarked") <= '1.0.0' || packageVersion("AICcmodavg") <= '2.2.2')
-  options(stringsAsFactors = TRUE)
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 # 4.8 Goodness of fit
 # ===================
@@ -303,7 +300,7 @@ print(out.gof, 2)
       # [  ... output truncated ...  ]
 
 # Summary of test results for the open and the closed parts
-op <- par(mfrow = c(1,3), mar = c(5,5,5,4), cex.lab = 1.5, cex.axis = 1.5, cex.main = 1.5)
+op <- par(mfrow = c(1,3))
 
 # Plots of expected versus observed value of fit stats
 # Open part

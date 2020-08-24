@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
-# Code from proofs dated 2020-06-11
+# Code from proofs dated 2020-08-18
 
 # Approximate run time for this script: 10 mins
 
@@ -26,8 +26,9 @@ simMultMix <- function(nsites = 100, nyears = 4, nsurveys = 3, lambda = 3,
   #
   # lambda, theta and p: expected abundance, availability and detection prob.
   y <- array(NA, c(nsites, nyears, nsurveys))
-  M <- rpois(nsites, lambda) # Local population size
+  M <- rpois(nsites, lambda)      # Local population size
   N <- matrix(NA, nsites, nyears) # Individuals available for detection
+
   for(i in 1:nsites) {
     N[i,] <- rbinom(nyears, M[i], theta)
     y[i,,1] <- rbinom(nyears, N[i,], p) # Observe some
@@ -50,8 +51,8 @@ str(data <- simMultMix(nsites = 100, nyears = 4, nsurveys = 3, lambda = 3,
 library(unmarked)
 umf <- unmarkedFrameGMM(y = data$y2d, numPrimary = data$nyears, type = "removal")
 (fm <- gmultmix(~1, ~1, ~1, data = umf, K = 30))
-backTransform(fm, type = "lambda") # Individuals per plot
-backTransform(fm, type = "phi") # Prob(available) (phi)
+backTransform(fm, type = "lambda")     # Individuals per plot
+backTransform(fm, type = "phi")        # Prob(available) (phi)
 (p <- backTransform(fm, type = "det")) # Prob. of detection
 p <- coef(p)
 
@@ -65,6 +66,7 @@ head(getP(fm))
 re <- ranef(fm)
 plot(re, layout=c(5, 1), xlim = c(-1, 20), subset = site%in%1:5, lwd = 5)
 
+
 # 2.7.2 Chandler’s alder flycatcher data
 # --------------------------------------
 
@@ -77,6 +79,7 @@ alfl$captureHistory <- paste(alfl$interval1, alfl$interval2, alfl$interval3, sep
 alfl$captureHistory <- factor(alfl$captureHistory,
     levels = c("001", "010", "011", "100", "101", "110", "111"))
 alfl$id <- factor(alfl$id, levels = rownames(alfl.covs))
+
 head(alfl, 5)
 #          id survey interval1 interval2 interval3 captureHistory
 # 1 crick1_05      1         1         1         1            111
@@ -109,6 +112,7 @@ summary(umf.cr1 <- unmarkedFrameMPois(y = alfl.H1,
     siteCovs = alfl.covs[,c("woody", "struct", "time.1")],
     obsCovs = list(interval = intervalMat), obsToY = o2y,
     piFun = "crPiFun") )
+
 # Standardize some obsCovs
 time <- as.matrix(alfl.covs[,c("time.1", "time.2", "time.3")] )
 time <- time - median(time)
@@ -117,6 +121,7 @@ date <- date - median(date)
 
 occ <- matrix(NA, nrow = 50, ncol = 9)
 occ <- col(occ)
+
 summary(alfl.umf <- unmarkedFrameGMM(y = Ywide,
     siteCovs = alfl.covs[,c("woody", "struct")], obsCovs = list(occ = occ),
     numPrimary = 3, yearlySiteCovs = list(time = time, date = date),
@@ -138,6 +143,7 @@ m3f <- gmultmix( ~1, ~1, ~time + date, data = alfl.umf, mixture = "P")
 m3g <- gmultmix( ~1, ~time + date, ~date, data = alfl.umf, mixture = "P")
 m3h <- gmultmix( ~1, ~time + date, ~time + date, data = alfl.umf, mixture = "P")
 m3i <- gmultmix( ~1, ~date, ~time + date, data = alfl.umf, mixture = "P")
+
 (fl <- modSel(fitList(m0, m1, m1b, m1c, m2, m2b, m2c, m3, m3b, m3c, m3d,
     m3e, m3f, m3g, m3h, m3i)) )
 #     nPars    AIC delta  AICwt cumltvWt
@@ -150,14 +156,17 @@ m3i <- gmultmix( ~1, ~date, ~time + date, data = alfl.umf, mixture = "P")
 # [... output truncated ... ]
 
 m3g
+
 # Abundance:
 # Estimate SE z P(>|z|)
 # 0.406 0.154 2.64 0.00818
+
 # Availability:
 # Estimate SE z P(>|z|)
 # (Intercept) -0.2607 0.2635 -0.989 3.22e-01
 # time -0.3985 0.1423 -2.800 5.11e-03
 # date -0.0615 0.0144 -4.277 1.89e-05
+
 # Detection:
 # Estimate SE z P(>|z|)
 # (Intercept) 0.7173 0.1618 4.43 9.33e-06
@@ -177,34 +186,40 @@ m3g3 <- gmultmix(~woody + struct, ~time + date, ~date, data = alfl.umf, mixture 
 # . . . [output truncated] . . .
 
 m3g3
+
 # Abundance:
 # Estimate SE z P(>|z|)
 # (Intercept) -0.7886 0.4054 -1.95 0.05177
 # woody 1.9647 0.6275 3.13 0.00174
 # struct 0.0554 0.0364 1.52 0.12849
+
 # Availability:
 # Estimate SE z P(>|z|)
 # (Intercept) -0.3644 0.2886 -1.26 2.07e-01
 # time -0.4020 0.1442 -2.79 5.30e-03
 # date -0.0575 0.0144 -4.00 6.46e-05
+
 # Detection:
 # Estimate SE z P(>|z|)
 # (Intercept) 0.7177 0.1617 4.44 9.13e-06
 # date -0.0369 0.0117 -3.14 1.69e-03
 
 # Carry out a parametric bootstrap goodness-of-fit test (ART 7 min)
-# (pb <- parboot(m3g3, fitstats, nsim = 1000, report = 1))  # hogs all cores
 (pb <- parboot(m3g3, fitstats, nsim = 1000, report = 1, ncores=3))
+
 # Parametric Bootstrap Statistics:
+
 # t0 mean(t0 - t_B) StdDev(t0 - t_B) Pr(t_B > t0)
 # SSE 87.1 -14.16 15.4 0.823
 # Chisq 1046.5 6.79 92.5 0.434
 # freemanTukey 115.8 -0.73 11.9 0.513
+
 # t_B quantiles:
 # 0% 2.5% 25% 50% 75% 97.5% 100%
 # SSE 58 73 91 100 111 135 158
 # Chisq 819 880 977 1030 1095 1244 1477
 # freemanTukey 83 93 109 116 125 139 155
+
 # t0 = Original statistic compuated from data
 # t_B = Vector of bootstrap samples
 
@@ -213,7 +228,7 @@ m3g3
 
 Ystacked <- rbind(Ywide[,1:7], Ywide[,8:14], Ywide[,15:21])
 sc <- alfl.covs[,c("woody", "struct")]
-sc <- rbind(sc, sc, sc) # Repeat the site covs matrix
+sc <- rbind(sc, sc, sc)                         # Repeat the site covs matrix
 sc <- cbind(sc, date = c(date), time = c(time)) # YearlySiteCovs become siteCovs
 summary(umf2 <- unmarkedFrameGMM(y = Ystacked, siteCovs = sc, numPrimary = 1,
     obsToY = o2y, piFun = "crPiFun") )
@@ -240,6 +255,7 @@ m3f <- gmultmix( ~time + date, ~1, ~time, data=umf2, mixture = "P")
 m3g <- gmultmix( ~date,  ~1, ~time + date, data=umf2, mixture = "P")
 m3h <- gmultmix( ~time + date, ~1, ~date, data=umf2, mixture = "P")
 m3i <- gmultmix( ~time + date, ~1, ~time + date, data=umf2, mixture = "P")
+
 ( fl <- modSel(fitList(m0, m1, m1b, m1c, m2, m2b, m2c, m3,
     m3b, m3c, m3d, m3e, m3f, m3g, m3h, m3i)) )
 #     nPars    AIC delta  AICwt cumltvWt
@@ -254,10 +270,12 @@ m3i <- gmultmix( ~time + date, ~1, ~time + date, data=umf2, mixture = "P")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 m2c
+
 # Abundance:
 # Estimate SE z P(>|z|)
 # (Intercept) -0.5061 0.11643 -4.35 1.38e-05
 # date -0.0258 0.00785 -3.28 1.04e-03
+
 # Detection:
 # Estimate SE z P(>|z|)
 # (Intercept) 0.7122 0.1627 4.38 1.21e-05
@@ -267,9 +285,8 @@ m2c
 m3g1 <- gmultmix( ~date + woody, ~1, ~date, data = umf2, mixture = "P")
 m3g2 <- gmultmix( ~date + struct, ~1, ~date, data = umf2, mixture = "P")
 m3g3 <- gmultmix( ~date + woody + struct, ~1, ~date, data = umf2, mixture = "P")
-# Fit list
-# (fl <- modSel(fitList(m0, m1, m1b, m1c, m2, m2b, m2c, m3, m3b, m3c, m3d, m3e, m3f, m3g, m3h,
-# m3i, m3g1, m3g2, m3g3)) )
+
+# ~~~~ model selection not shown ~~~~~~~~~~~
 (fl <- modSel(fitList(m0, m1, m1b, m1c, m2, m2b, m2c, m3, m3g1, m3g2, m3g3)) )
 #      nPars    AIC   delta   AICwt cumltvWt
 # m3g3     6 576.56  0.0000 5.0e-01      0.5
@@ -278,35 +295,42 @@ m3g3 <- gmultmix( ~date + woody + struct, ~1, ~date, data = umf2, mixture = "P")
 # m2c      4 597.88 21.3200 1.2e-05      1.0
 # m3h      5 598.61 22.0527 8.1e-06      1.0
 # ... output truncated ...
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Top model
 m3g3
+
 # Abundance:
 # Estimate SE z P(>|z|)
 # (Intercept) -1.6709 0.31285 -5.34 9.26e-08
 # date -0.0259 0.00807 -3.21 1.33e-03
 # woody 2.1163 0.50174 4.22 2.47e-05
 # struct 0.0403 0.02793 1.44 1.49e-01
+
 # Detection:
 # Estimate SE z P(>|z|)
 # (Intercept) 0.7156 0.1621 4.41 1.02e-05
 # date -0.0371 0.0117 -3.16 1.60e-03
 
 # Goodness-of-fit analysis (ART 7 min)
-# (pb <- parboot(m3g3, fitstats, nsim = 1000))
 (pb <- parboot(m3g3, fitstats, nsim = 1000, ncores = 3))
+
 # Parametric Bootstrap Statistics:
+
 # t0 mean(t0 - t_B) StdDev(t0 - t_B) Pr(t_B > t0)
 # SSE 86.2 -10.30 12.2 0.803
 # Chisq 1083.3 41.84 75.9 0.285
 # freemanTukey 114.0 -1.42 10.3 0.564
+
 # t_B quantiles:
 # 0% 2.5% 25% 50% 75% 97.5% 100%
 # SSE 61 74 89 96 104 122 135
 # Chisq 819 909 986 1037 1090 1195 1323
 # freemanTukey 81 94 108 116 122 135 149
+
 # t0 = Original statistic compuated from data
 # t_B = Vector of bootstrap samples
+
 
 # 2.7.3 Temporary emigration models in BUGS
 # -----------------------------------------
@@ -338,6 +362,7 @@ str(bdata <- list(y3d = y3d, nsites = nsites, nseasons = nseasons,
 # Specify model in BUGS language
 cat(file="CR_TE.txt", "
 model {
+
   # Priors
   # Abundance parameters
   beta0 ~ dnorm(0, 0.01)
@@ -350,6 +375,7 @@ model {
   # Detection parameters
   alpha0 ~ dnorm(0, 0.01)
   alpha1 ~ dnorm(0, 0.01)
+
   # Likelihood
   for (i in 1:nsites) {
     # Linear model for lambda
@@ -386,6 +412,7 @@ model {
     }
     M[i] ~ dpois(lambda[i]) #Part 1: Abundance model
   }
+
   # Derived quantities
   for(k in 1:nseasons){
     Davail[k] <- mean(phi[,k])*exp(beta0)/ area

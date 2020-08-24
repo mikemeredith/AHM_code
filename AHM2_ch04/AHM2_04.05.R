@@ -5,7 +5,7 @@
 # Chapter 4 : MODELING SPECIES DISTRIBUTION AND RANGE DYNAMICS, AND POPULATION
 #             DYNAMICS USING DYNAMIC OCCUPANCY MODELS
 # ============================================================================
-# Code from proofs dated 2020-06-17
+# Code from proofs dated 2020-08-18
 
 # Approximate run time for this script: 20 mins
 # Run time with the full number of iterations: 4.5 hrs
@@ -36,15 +36,18 @@ summary( umf <- unmarkedMultFrame(y = yy, siteCovs = data.frame(Xpsi1 = data$Xps
     yearlySiteCovs = list(year = year, Xphi = data$Xphi, Xgamma = data$Xgamma),
     obsCovs = list(Xp = xxp), numPrimary = data$nyears) )
 # unmarkedFrame Object
+
 # 250 sites
 # Maximum number of observations per site: 30
 # Mean number of observations per site: 30
 # Number of primary survey periods: 10
 # Number of secondary survey periods: 3
 # Sites with at least one detection: 224
+
 # Tabulation of y observations:
 # 0 1
 # 6492 1008
+
 # Site-level covariates:
 # Xpsi1
 # Min. :-1.94769
@@ -53,6 +56,7 @@ summary( umf <- unmarkedMultFrame(y = yy, siteCovs = data.frame(Xpsi1 = data$Xps
 # Mean : 0.03930
 # 3rd Qu.: 0.92469
 # Max. : 1.97074
+
 # Observation-level covariates:
 # Xp
 # Min. :-1.999574
@@ -61,14 +65,15 @@ summary( umf <- unmarkedMultFrame(y = yy, siteCovs = data.frame(Xpsi1 = data$Xps
 # Mean : 0.009213
 # 3rd Qu.: 1.003295
 # Max. : 1.999421
+
 # Yearly-site-level covariates:
-# year Xphi Xgamma
-# 01 : 250 Min. :-1.99758 Min. :-1.999199
-# 02 : 250 1st Qu.:-1.07270 1st Qu.:-0.983174
-# 03 : 250 Median :-0.08815 Median :-0.008474
-# 04 : 250 Mean :-0.03517 Mean : 0.008517
-# 05 : 250 3rd Qu.: 1.01944 3rd Qu.: 1.092480
-# 06 : 250 Max. : 1.99972 Max. : 1.996779
+#     year        Xphi               Xgamma
+# 01 : 250   Min. :-1.99758     Min. :-1.999199
+# 02 : 250   1st Qu.:-1.07270   1st Qu.:-0.983174
+# 03 : 250   Median :-0.08815   Median :-0.008474
+# 04 : 250   Mean :-0.03517     Mean : 0.008517
+# 05 : 250   3rd Qu.: 1.01944   3rd Qu.: 1.092480
+# 06 : 250   Max. : 1.99972     Max. : 1.996779
 # (Other):1000
 
 fm1 <- colext(psiformula = ~1, # First-year occupancy
@@ -128,8 +133,9 @@ str(bdata <- list(y = data$y, nsites = data$nsites, nsurveys = data$nsurveys,
     nyears = data$nyears))
 
 # Specify model in BUGS language
-cat(file = "dynocc.txt"," # overwrite previous file
+cat(file = "dynocc.txt","         # overwrite previous file
   model {
+
   # Specify priors
   psi1 ~ dunif(0, 1)
   for (t in 1:(nyears-1)){
@@ -138,6 +144,7 @@ cat(file = "dynocc.txt"," # overwrite previous file
     p[t] ~ dunif(0, 1)
   }
   p[nyears] ~ dunif(0, 1)
+
   # Ecological submodel: Define state conditional on parameters
   for (i in 1:nsites){
     z[i,1] ~ dbern(psi1)
@@ -145,6 +152,7 @@ cat(file = "dynocc.txt"," # overwrite previous file
       z[i,t] ~ dbern(z[i,t-1]*phi[t-1] + (1-z[i,t-1])*gamma[t-1])
     }
   }
+
   # Observation model
   for (i in 1:nsites){
     for (j in 1:nsurveys){
@@ -153,6 +161,7 @@ cat(file = "dynocc.txt"," # overwrite previous file
       }
     }
   }
+
   # Derived parameters
   # Sample and population occupancy, growth rate and turnover
   # Also, logit-scale params for direct comparison with unmarked
@@ -173,12 +182,12 @@ cat(file = "dynocc.txt"," # overwrite previous file
 ")
 
 # Initial values
-zst <- apply(data$y, c(1, 3), max) # Obs. occurrence as inits for z
+zst <- apply(data$y, c(1, 3), max)     # Obs. occurrence as inits for z
 inits <- function(){ list(z = zst)}
 
 # Parameters monitored
 params <- c("psi", "phi", "gamma", "p", "n.occ", "growthr", "turnover",
-    "lpsi1", "lgamma", "leps", "lp") # could add 'z'
+    "lpsi1", "lgamma", "leps", "lp")   # could add 'z'
 
 # MCMC settings
 na <- 1000 ; ni <- 20000 ; nt <- 10 ; nb <- 10000 ; nc <- 3
@@ -186,7 +195,7 @@ na <- 1000 ; ni <- 20000 ; nt <- 10 ; nb <- 10000 ; nc <- 3
 # Call JAGS (ART 3 min), check convergence and summarize posteriors
 library("jagsUI")
 out2 <- jags(bdata, inits, params, "dynocc.txt", n.adapt = na, n.chains = nc,
-n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+    n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 op <- par(mfrow = c(3, 3)) ; traceplot(out2)
 par(op)
 print(out2, dig = 2) # not shown
@@ -194,9 +203,9 @@ print(out2, dig = 2) # not shown
 # system.time(fm8 <- nonparboot(fm8, B = 500) ) # Takes about 3 hours
 system.time(fm8 <- nonparboot(fm8, B = 50) )    # ~~~~ for testing
 cbind(psi = data$mean.psi, smoothed = smoothed(fm8)[2,],
-    SE = fm8@smoothed.mean.bsse[2,]) # Finite sample occupancy
+    SE = fm8@smoothed.mean.bsse[2,])            # Finite sample occupancy
 cbind(psi = data$mean.psi, projected = projected(fm8)[2,],
-    SE = fm8@projected.mean.bsse[2,]) # Population occupancy
+    SE = fm8@projected.mean.bsse[2,])           # Population occupancy
 
 round(cbind(psi = data$mean.psi, ML.estimates = projected(fm8)[2,],
     ML.ASE = fm8@projected.mean.bsse[2,], Bayesian.estimates = out2$summary[1:10,
@@ -232,53 +241,52 @@ legend('topright', legend = c('True psi', 'Obs. psi', 'Estimated psi (unmarked)'
 
 nd1 <- data.frame(year = c('01','02','03','04','05','06','07','08','09'))
 nd2 <- data.frame(year = c('01','02','03','04','05','06','07','08','09','10'))
-if(packageVersion("unmarked") >= '1.0.0.9008') { # needs patched version of unmarked
-  E.ext <- predict(fm8, type = 'ext', newdata = nd1)
-  E.col <- predict(fm8, type = 'col', newdata = nd1)
-  E.det <- predict(fm8, type = 'det', newdata = nd2)
 
-  # ~~~~~~~~ code for figure 4.6 ~~~~~~~~~~~~~~~~~
-  # Plot for extinction probability
-  op <- par(mfrow=c(3,1), mar=c(5, 4, 3, 3), cex = 0.8)
-  with(E.ext, { # simplify requesting columns of the data frame returned by predict
-     plot(1:9, Predicted, pch=16, xaxt='n', xlab='',
-         main=expression(paste('Extinction probability ( ', epsilon, ' )')),
-         ylab = "", ylim=c(0,1), col="green")
-     axis(1, at=1:9, labels=nd1$year[1:9])
-     segments(1:9, lower, 1:9, upper, col="green")
-     points((1:9)-0.1, 1-data$mean.phi, col="red", lwd = 1, pch=16)
-     points((1:9)+0.1, 1-out2$summary[11:19,1], col="blue", lwd = 1, pch=16)
-     segments(((1:9)+0.1), (1-out2$summary[11:19,3]), ((1:9)+0.1),
-        (1-out2$summary[11:19,7]), col = "blue", lwd = 1)
-  })
+E.ext <- predict(fm8, type = 'ext', newdata = nd1)
+E.col <- predict(fm8, type = 'col', newdata = nd1)
+E.det <- predict(fm8, type = 'det', newdata = nd2)
 
-  # Plot for colonization probability
-  with(E.col, {
-     plot(1:9, Predicted, pch=16, xaxt='n', xlab='',
-         main=expression(paste('Colonization probability ( ', gamma, ' )')),
-         ylab = "", ylim=c(0,1), col="green")
-     axis(1, at=1:9, labels=nd1$year[1:9])
-     segments(1:9, lower, 1:9, upper, col="green")
-     points((1:9)-0.1, data$mean.gamma, col="red", lwd = 1, pch=16)
-     points((1:9)+0.1, out2$summary[20:28,1], col="blue", lwd = 1, pch=16)
-     segments(((1:9)+0.1), out2$summary[20:28,3], ((1:9)+0.1),
-        out2$summary[20:28,7], col =   "blue", lwd = 1)
-  })
+# ~~~~~~~~ code for figure 4.6 ~~~~~~~~~~~~~~~~~
+# Plot for extinction probability
+op <- par(mfrow=c(3,1), mar=c(5, 4, 3, 3), cex = 0.8)
+with(E.ext, { # simplify requesting columns of the data frame returned by predict
+   plot(1:9, Predicted, pch=16, xaxt='n', xlab='',
+       main=expression(paste('Extinction probability ( ', epsilon, ' )')),
+       ylab = "", ylim=c(0,1), col="green")
+   axis(1, at=1:9, labels=nd1$year[1:9])
+   segments(1:9, lower, 1:9, upper, col="green")
+   points((1:9)-0.1, 1-data$mean.phi, col="red", lwd = 1, pch=16)
+   points((1:9)+0.1, 1-out2$summary[11:19,1], col="blue", lwd = 1, pch=16)
+   segments(((1:9)+0.1), (1-out2$summary[11:19,3]), ((1:9)+0.1),
+      (1-out2$summary[11:19,7]), col = "blue", lwd = 1)
+})
 
-  # Plot for detection probability: note 10 years
-  with(E.det, {
-     plot(1:10, Predicted, pch=16, xaxt='n', xlab='Year',
-         main=expression(paste('Detection probability ( ', p, ' )')),
-         ylab = "", ylim=c(0,1), col="green")
-     axis(1, at=1:10, labels=nd2$year[1:10])
-     segments(1:10, lower, 1:10, upper, col="green")
-     points((1:10)-0.1, data$mean.p, col="red", lwd = 1, pch=16)
-     points((1:10)+0.1, out2$summary[29:38,1], col="blue", lwd = 1, pch=16)
-     segments(((1:10)+0.1), out2$summary[29:38,3], ((1:10)+0.1),
-        out2$summary[29:38,7], col = "blue", lwd = 1)
-     legend(1, 1, c('Truth', 'MLEs', 'Posterior means'), col=c("red", "green",
-        "blue"), pch=16, cex=0.8)
-  })
-  par(op)
-  # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-}
+# Plot for colonization probability
+with(E.col, {
+   plot(1:9, Predicted, pch=16, xaxt='n', xlab='',
+       main=expression(paste('Colonization probability ( ', gamma, ' )')),
+       ylab = "", ylim=c(0,1), col="green")
+   axis(1, at=1:9, labels=nd1$year[1:9])
+   segments(1:9, lower, 1:9, upper, col="green")
+   points((1:9)-0.1, data$mean.gamma, col="red", lwd = 1, pch=16)
+   points((1:9)+0.1, out2$summary[20:28,1], col="blue", lwd = 1, pch=16)
+   segments(((1:9)+0.1), out2$summary[20:28,3], ((1:9)+0.1),
+      out2$summary[20:28,7], col =   "blue", lwd = 1)
+})
+
+# Plot for detection probability: note 10 years
+with(E.det, {
+   plot(1:10, Predicted, pch=16, xaxt='n', xlab='Year',
+       main=expression(paste('Detection probability ( ', p, ' )')),
+       ylab = "", ylim=c(0,1), col="green")
+   axis(1, at=1:10, labels=nd2$year[1:10])
+   segments(1:10, lower, 1:10, upper, col="green")
+   points((1:10)-0.1, data$mean.p, col="red", lwd = 1, pch=16)
+   points((1:10)+0.1, out2$summary[29:38,1], col="blue", lwd = 1, pch=16)
+   segments(((1:10)+0.1), out2$summary[29:38,3], ((1:10)+0.1),
+      out2$summary[29:38,7], col = "blue", lwd = 1)
+   legend(1, 1, c('Truth', 'MLEs', 'Posterior means'), col=c("red", "green",
+      "blue"), pch=16, cex=0.8)
+})
+par(op)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

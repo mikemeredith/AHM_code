@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
-# Code from proofs dated 2020-06-11
+# Code from proofs dated 2020-08-18
 
 # Approximate run time for this script: 15 hrs
 
@@ -13,6 +13,8 @@ library(AHMbook)
 
 # ~~~~ need the Green Woodpecker data prepared in 2.2 ~~~~~~~~
 source("AHM2_02.02.R")
+# ~~~~ and this from 2.3.4 ~~~~~~~~~
+nyears <- 14
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -29,6 +31,7 @@ str(bdata <- list(C = C, nsites = dim(C)[1], nsurveys = dim(C)[2],
 # Specify model in BUGS language
 cat(file = "Nmix3.txt","
 model {
+
   # Priors
   lambda ~ dunif(0, 100)
   theta ~ dunif(0, 1)
@@ -39,19 +42,21 @@ model {
   for (k in 1:3){
     alpha[k] ~ dnorm(0, 0.01)
   }
+
   # Likelihood
   # Ecological model for true abundance
-  for (i in 1:nsites){ # Loop over sites
-    M[i] ~ dpois(lambda) # Super-population size M
-    for(t in 1:nyears){ # Loop over years
-      N[i,t] ~ dbin(theta, M[i]) # 'Current' population size N
-      for (j in 1:nsurveys){ # Loop over reps
-        C[i,j,t] ~ dbin(p[i,j,t], N[i,t]) # Actual counts
+  for (i in 1:nsites){                      # Loop over sites
+    M[i] ~ dpois(lambda)                    # Super-population size M
+    for(t in 1:nyears){                     # Loop over years
+      N[i,t] ~ dbin(theta, M[i])            # 'Current' population size N
+      for (j in 1:nsurveys){                # Loop over reps
+        C[i,j,t] ~ dbin(p[i,j,t], N[i,t])   # Actual counts
         logit(p[i,j,t]) <- alpha0[t] + alpha[1] * DATE[i,j,t] + alpha[2] *
         pow(DATE[i,j,t],2) + alpha[3] * INT[i,j,t]
       }
     }
   }
+
   # Derived quantity: Total M and total N across all surveyed sites
   totalM <- sum(M[])
   for (t in 1:nyears){
@@ -63,14 +68,15 @@ model {
 # Initial values: Need for both N and M !
 Nst <- apply(C, c(1,3), max, na.rm = TRUE)+1 # Inits for latent N
 Nst[Nst == '-Inf'] <- 1
-Mst <- apply(Nst, 1, max) # .. and for latent M
+Mst <- apply(Nst, 1, max)                    # .. and for latent M
 inits <- function() list(M = Mst, N =Nst, alpha = runif(3), lambda = runif(1))
 
 # Parameters monitored
 params <- c("alpha0", "alpha", "lambda", "theta", "totalM", "totalN")
 
 # MCMC settings
-na <- 1000 ; ni <- 15000 ; nt <- 10 ; nb <- 5000 ; nc <- 3
+# na <- 1000 ; ni <- 15000 ; nt <- 10 ; nb <- 5000 ; nc <- 3
+na <- 1000 ; ni <- 1500 ; nt <- 1 ; nb <- 500 ; nc <- 3  # ~~~~ testing
 
 # Call JAGS (ART 21 min), check convergence and summarize posteriors
 out3 <- jags(bdata, inits, params, "Nmix3.txt", n.adapt = na,
@@ -96,6 +102,7 @@ print(out3, 3) # partially shown
 # Specify model in BUGS language
 cat(file = "Nmix3b.txt","
 model {
+
   # Priors
   lambda ~ dunif(0, 100)
   for (t in 1:nyears){
@@ -106,25 +113,27 @@ model {
   for (k in 1:3){
     alpha[k] ~ dnorm(0, 0.01)
   }
+
   # Likelihood
   # Ecological model for true abundance
-  for (i in 1:nsites){ # Loop over sites
-    M[i] ~ dpois(lambda) # Super-population size M
-    for(t in 1:nyears){ # Loop over years
-      N[i,t] ~ dbin(theta[t], M[i]) # 'Current’ population size N
-      for (j in 1:nsurveys){ # Loop over reps
+  for (i in 1:nsites){                    # Loop over sites
+    M[i] ~ dpois(lambda)                  # Super-population size M
+    for(t in 1:nyears){                   # Loop over years
+      N[i,t] ~ dbin(theta[t], M[i])       # 'Current’ population size N
+      for (j in 1:nsurveys){              # Loop over reps
         C[i,j,t] ~ dbin(p[i,j,t], N[i,t]) # Actual counts
         logit(p[i,j,t]) <- alpha0[t] + alpha[1] * DATE[i,j,t] + alpha[2] *
         pow(DATE[i,j,t],2) + alpha[3] * INT[i,j,t]
-      } # end j
-    } # end t
-  } # end i
+      }
+    }
+  }
+
   # Derived quantity: Total M and total N across all surveyed sites
   totalM <- sum(M[])
   for (t in 1:nyears){
     totalN[t] <- sum(N[,t])
-  } # end t
-} # end model
+  }
+}
 ")
 
 # Initial values (omitted, same as previous model)
@@ -133,7 +142,8 @@ model {
 params <- c("alpha0", "alpha", "lambda", "theta", "totalM", "totalN")
 
 # MCMC settings
-na <- 1000 ; ni <- 15000 ; nt <- 10 ; nb <- 5000 ; nc <- 3
+# na <- 1000 ; ni <- 15000 ; nt <- 10 ; nb <- 5000 ; nc <- 3
+na <- 1000 ; ni <- 1500 ; nt <- 1; nb <- 500 ; nc <- 3  # ~~~ for testing
 
 # Call JAGS (ART 21 min), check convergence and summarize posteriors
 out3b <- jags(bdata, inits, params, "Nmix3b.txt", n.adapt = na,
@@ -184,9 +194,12 @@ summary(fm0nb <- gpcount(~1, ~1, ~1, umf, K=100, mixture="NB"))
 
 # Mean super-population size on natural scale
 backTransform(fm0p, type="lambda")
+
 # Backtransformed linear combination(s) of Abundance estimate(s)
-# Estimate SE LinComb (Intercept)
-# 4.28 0.176 1.45 1
+
+# Estimate    SE LinComb (Intercept)
+#     4.28 0.176    1.45           1
+
 # Transformation: exp
 # Other parameters (not shown)
 backTransform(fm0p, type = "phi") # not shown
@@ -196,10 +209,12 @@ backTransform(fm0p, type = "det") # not shown
 # ART ~ 2 hours
 summary(fm0nb.200 <- gpcount(~1, ~1, ~1, umf, K=200, mixture="NB"))
 # (omitted)
+
 fm0nb.200@AIC
 # [1] 15638.88
 fm0nb@AIC
 # [1] 15692.69
+
 rbind(coef(fm0nb), coef(fm0nb.200))
 #      lambda(Int)  phi(Int)     p(Int) alpha(alpha)
 # [1,]    2.749116 -2.243541 -0.8483574   -0.5088587

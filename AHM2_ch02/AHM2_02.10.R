@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
-# Code from proofs dated 2020-06-11
+# Code from proofs dated 2020-08-18
 
 # Approximate run time for this script: 15 mins
 
@@ -76,6 +76,7 @@ model {
   gamma ~ dunif(0, 1)
   kappa ~ dunif(0, 1)
   p ~ dunif(0, 1)
+
   # Process model
   for(i in 1:nsites) {
     N[i,1] ~ dpois(lambda0)
@@ -88,6 +89,7 @@ model {
       N[i,t] <- S[i,t-1] - E[i,t-1] + R[i,t-1] + I[i,t-1]
     }
   }
+
   # Observation model
   for (i in 1:nsites) {
     for (t in 1:nyears) {
@@ -110,7 +112,8 @@ inits <- function() list(lambda0 = runif(1, 1, 5), phi = runif(1),
 params <- c("lambda0", "phi", "gamma", "kappa", "p")
 
 # MCMC settings
-na <- 2000 ; ni <- 20000 ; nt <- 10 ; nb <- 10000 ; nc <- 3
+# na <- 2000 ; ni <- 20000 ; nt <- 10 ; nb <- 10000 ; nc <- 3
+na <- 2000 ; ni <- 2000 ; nt <- 1 ; nb <- 1000 ; nc <- 3  # ~~~ testing
 
 # Call JAGS (ART 22 min), check convergence and summarize posteriors
 out11 <- jags(bdata, inits, params, model = "spatialDMmodel.txt",

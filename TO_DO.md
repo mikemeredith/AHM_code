@@ -15,6 +15,9 @@ The following are still outstanding:
 * 2.4.3 Code for the analysis for each of the 10-min samples (occasions).
 * Figure 2.10
 
+### AHM2 chapter 5
+* Figure 5.11 (and the code to produce the variables plotted).
+
 ### AHM2 chapter 7
 * 7.6.6 "We conducted a small simulation study to evaluate the influence of the coupled occupancy model on classification (see the book website for code)."
 * Figures 7.3, 7.5.

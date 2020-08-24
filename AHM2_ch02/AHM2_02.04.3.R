@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
-# Code from proofs dated 2020-06-11
+# Code from proofs dated 2020-08-18
 
 library(jagsUI)
 library(AHMbook)
@@ -33,9 +33,9 @@ library(unmarked)
 umfcs <- unmarkedFrameGMM(y = matrix(cswa$counts, 43),
     siteCovs = covs[,c("plotArea", "patchArea", "woodHt", "woodCov")],
     yearlySiteCovs = list(
-    time = covs[,c("time1", "time2", "time3")],
-    date = covs[,c("date1", "date2", "date3")],
-    obs = covs[,c("obs1", "obs2", "obs3")]),
+        time = covs[,c("time1", "time2", "time3")],
+        date = covs[,c("date1", "date2", "date3")],
+        obs = covs[,c("obs1", "obs2", "obs3")]),
     piFun = "instRemPiFun", obsToY = o2y, numPrimary = 3)
 
 # Standardize the first 2 yearlySiteCovs (time, date) and summarize
@@ -48,39 +48,46 @@ summary(umfcs) # Not shown
 # Create a list to hold the models, fit a basic model and summarize
 cswamods <- list()
 (cswamods$Null <- gmultmix(~offset(log(plotArea)), ~1, ~1, umfcs))
-cswamods$Null
 # Call:
 # gmultmix(lambdaformula = ~offset(log(plotArea)), phiformula = ~1,
 # pformula = ~1, data = umfcs)
+
 # Abundance:
 # Estimate SE z P(>|z|)
 # 0.94 0.214 4.39 1.11e-05
+
 # Availability:
 # Estimate SE z P(>|z|)
 # -0.302 0.334 -0.905 0.365
+
 # Detection:
 # Estimate SE z P(>|z|)
 # -0.519 0.177 -2.94 0.00332
+
 # AIC: 343.4377
 
 (lam.cswa <- backTransform(cswamods$Null, type = "lambda"))
 # Backtransformed linear combination(s) of Abundance estimate(s)
+
 # Estimate SE LinComb (Intercept)
 # 2.56 0.548 0.94 1
+
 # Transformation: exp
+
 (theta.cswa <- backTransform(cswamods$Null, type = "phi"))
 # Backtransformed linear combination(s) of Availability estimate(s)
+
 # Estimate SE LinComb (Intercept)
 # 0.425 0.0816 -0.302 1
+
 # Transformation: logistic
+
 coef(lam.cswa) * coef(theta.cswa)
 # [1] 1.088081
 
 # Density estimate from spot mapping
 (cswaDsm <- sum(cswa$spotMaps$CSWA) / sum(cswa$spotMaps$parea))
 # [1] 1.109612
-mean(cswa$spotMaps$CSWA / cswa$spotMaps$parea)
-# [1] 1.345462
 
 cswamods$Wh.. <- gmultmix(~offset(log(plotArea)) + woodHt, ~1, ~1, umfcs)
 cswamods$Wh2.. <- gmultmix(~offset(log(plotArea)) + woodHt + I(woodHt^2), ~1,~1, umfcs)
@@ -128,19 +135,23 @@ cswamods$Wh2Wc..Wh
 # Call:
 # gmultmix(lambdaformula = ~offset(log(plotArea)) + woodHt + I(woodHt^2) +
 # woodCov, phiformula = ~1, pformula = ~woodHt, data = umfcs)
+
 # Abundance:
 # Estimate SE z P(>|z|)
 # (Intercept) -2.30 0.953 -2.41 0.01595
 # woodHt 4.25 1.402 3.03 0.00243
 # I(woodHt^2) -1.44 0.510 -2.83 0.00462
 # woodCov 2.22 0.776 2.87 0.00416
+
 # Availability:
 # Estimate SE z P(>|z|)
 # -0.902 0.527 -1.71 0.0872
+
 # Detection:
 # Estimate SE z P(>|z|)
 # (Intercept) 0.198 0.495 0.40 0.689
 # woodHt -0.558 0.375 -1.49 0.136
+
 # AIC: 325.7116
 
 # Compute N / A (birds / ha)
@@ -155,25 +166,28 @@ getD(cswamods$Wh2Wc..Wh, covs=covs)
 # [1] 1.092638
 
 # Bootstrap assessment of uncertainty. ART ~ 1.5 mins
-# cswa.Dhat <- parboot(cswamods$Wh2Wc..Wh, statistic = getD, covs = covs, nsim = 500)
 cswa.Dhat <- parboot(cswamods$Wh2Wc..Wh, statistic = getD, covs = covs,
     nsim = 500, ncores=3)
-plot(cswa.Dhat); abline(v = 1.109612, col = 4) # Figure 2.8
-summary(cswa.Dhat@t.star) # Not shown
+plot(cswa.Dhat); abline(v = 1.109612, col = 4) # Not shown
+summary(cswa.Dhat@t.star)                      # Not shown
 
 # Goodness-of-fit assessment (ART 6 min)
-(gof <- parboot(cswamods$Wh2Wc..Wh, statistic = fitstats, nsim = 1000, ncores=3))
+gof <- parboot(cswamods$Wh2Wc..Wh, statistic = fitstats, nsim = 1000, ncores=3)
 plot(gof) # Not shown
+gof
+
 # Parametric Bootstrap Statistics:
 # t0 mean(t0 - t_B) StdDev(t0 - t_B) Pr(t_B > t0)
 # SSE 63.6 -7.532 13.36 0.692
 # Chisq 374.5 15.820 113.75 0.299
 # freemanTukey 66.4 0.902 7.11 0.445
+
 # t_B quantiles:
 # 0% 2.5% 25% 50% 75% 97.5% 100%
 # SSE 37 49 62 70 80 101 139
 # Chisq 195 253 307 341 387 533 2076
 # freemanTukey 40 51 61 66 70 79 88
+
 # t0 = Original statistic compuated from data
 # t_B = Vector of bootstrap samples
 
@@ -193,18 +207,23 @@ cswapcmods <- list()
 # Abundance:
 # Estimate SE z P(>|z|)
 # 0.94 0.214 4.39 1.11e-05
+
 # Detection:
 # Estimate SE z P(>|z|)
 # -0.319 0.332 -0.961 0.337
+
 # AIC: 241.481
 
 # Back-transform density and availability probability
 (lam.cswapc <- backTransform(cswapcmods$Null, type = "state"))
 # Backtransformed linear combination(s) of Abundance estimate(s)
+
 # Estimate SE LinComb (Intercept)
 # 2.56 0.548 0.94 1
+
 (theta.cswapc <- backTransform(cswapcmods$Null, type = "det"))
 # Backtransformed linear combination(s) of Detection estimate(s)
+
 # Estimate SE LinComb (Intercept)
 # 0.421 0.0808 -0.319 1
 
@@ -213,8 +232,6 @@ coef(lam.cswapc) * coef(theta.cswapc)
 # [1] 1.077969
 sum(cswa$spotMaps$CSWA) / sum(cswa$spotMaps$parea)
 # [1] 1.109612
-mean(cswa$spotMaps$CSWA / cswa$spotMaps$parea)
-# [1] 1.345462
 
 # Now we fit a whole suite of models (ART really quick)
 cswapcmods$Wh. <- pcount(~1 ~offset(log(plotArea)) + woodHt, umf)
@@ -226,9 +243,9 @@ cswapcmods$.T <- pcount(~time ~offset(log(plotArea)), umf)
 cswapcmods$.D <- pcount(~date ~offset(log(plotArea)), umf)
 cswapcmods$.O <- pcount(~obs ~offset(log(plotArea)), umf)
 cswapcmods$.TxD <- pcount(~time*date ~offset(log(plotArea)), umf)
-# ~~~~~~~~~~~~~~~~~~~ these do not appear in the book ~~~~~~~~~~~~~~
 cswapcmods$Wh2Wc. <- pcount(~1 ~offset(log(plotArea)) + woodHt + I(woodHt^2) +
     woodCov, umf)
+# ~~~~~~~~~~~~~~~~~~~ these do not appear in the book ~~~~~~~~~~~~~~
 cswapcmods$Wh2WcA. <- pcount(~1 ~offset(log(plotArea)) + woodHt + I(woodHt^2) +
     woodCov + patchArea, umf)
 cswapcmods$Wh2Wc.T <- pcount(~time ~offset(log(plotArea)) + woodHt +
@@ -276,14 +293,17 @@ getDpc(cswapcmods$Wh2Wc., covs = covs)
 # [1] 1.109612
 
 # Parametric bootstrap (ART 3 min)
-( cswapc.Dhat <- parboot(cswapcmods$Wh2Wc., statistic = getDpc, nsim = 1000,
-    covs = covs, ncores=3) )
+cswapc.Dhat <- parboot(cswapcmods$Wh2Wc., statistic = getDpc, nsim = 1000,
+    covs = covs, ncores=3)
+cswapc.Dhat
   # Parametric Bootstrap Statistics:
   # t0 mean(t0 - t_B) StdDev(t0 - t_B) Pr(t_B > t0)
   # 1 3.75 -2.02 5.72 0.584
+
   # t_B quantiles:
   # 0% 2.5% 25% 50% 75% 97.5% 100%
   # [1,] 1.6 2.2 3.1 4.1 5.7 27 48
+
   # t0 = Original statistic compuated from data
   # t_B = Vector of bootstrap samples
 
@@ -291,18 +311,20 @@ getDpc(cswapcmods$Wh2Wc., covs = covs)
 (SE <- sd(cswapc.Dhat@t.star))
 (CI <- quantile(cswapc.Dhat@t.star, c(0.025, 0.975)))
 
+
 # Removal models fit to each time period (ART quick)
 # Occasion 1
 o2y1 <- diag(3)
 o2y1[upper.tri(o2y1)] <- 1
 umfcs1 <- unmarkedFrameMPois(y = cswa$count[,,1],
     siteCovs = covs[,c("plotArea", "patchArea", "woodHt", "woodCov",
-    "time1", "date1", "obs1")],
+        "time1", "date1", "obs1")],
     piFun = "instRemPiFun", obsToY = o2y1)
 sc1 <- siteCovs(umfcs1)
 colnames(sc1)[5:7] <- c("time", "date", "obs")
 sc1[, 5:6] <- scale(sc1[, 5:6])
 siteCovs(umfcs1) <- sc1
+
 cswamods1 <- list()
 cswamods1$Null <- multinomPois(~1 ~offset(log(plotArea)), umfcs1)
 cswamods1$Wh. <- multinomPois(~1 ~offset(log(plotArea)) + woodHt, umfcs1)
@@ -323,9 +345,10 @@ cswamods1$Wh2Wc.T <- multinomPois(~time ~offset(log(plotArea)) + woodHt +
     I(woodHt^2) + woodCov, umfcs1)
 cswamods1$Wh2Wc.D <- multinomPois(~date ~offset(log(plotArea)) + woodHt +
     I(woodHt^2) + woodCov, umfcs1)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cswamods1$Wh2Wc.Wh <- multinomPois(~woodHt ~offset(log(plotArea)) + woodHt +
     I(woodHt^2) + woodCov, umfcs1)
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 cswafits1 <- fitList(fits = cswamods1)
 (ms.cswa1 <- modSel(cswafits1))
 #          nPars    AIC delta   AICwt cumltvWt
@@ -343,6 +366,7 @@ cswafits1 <- fitList(fits = cswamods1)
 sum(predict(cswamods1$Wh2Wc.Wh, type = "state")$Predicted) /
     (sum(cswa$spotMaps$parea) - 0.62) # darty had no point count data
 # [1] 0.4809083
+
 getDr1 <- function(fit, spotMaps) {
   D <- sum( predict(fit, type = "state")$Predicted)/(sum(spotMaps$parea) -0.62)
   return(D)
@@ -361,8 +385,10 @@ Dhat.rem1
 # Parametric Bootstrap Statistics:
 # t0 mean(t0 - t_B) StdDev(t0 - t_B) Pr(t_B > t0)
 # 1 0.481 -9.54 159 0.461
+
 # t_B quantiles:
 # 0% 2.5% 25% 50% 75% 97.5% 100%
 # [1,] 0.26 0.33 0.43 0.5 0.56 1.4 3937
+
 # t0 = Original statistic compuated from data
 # t_B = Vector of bootstrap samples

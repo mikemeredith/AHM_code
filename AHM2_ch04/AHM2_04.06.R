@@ -6,7 +6,7 @@
 # Chapter 4 : MODELING SPECIES DISTRIBUTION AND RANGE DYNAMICS, AND POPULATION
 #             DYNAMICS USING DYNAMIC OCCUPANCY MODELS
 # ============================================================================
-# Code from proofs dated 2020-06-17
+# Code from proofs dated 2020-08-18
 
 library(AHMbook)
 library(jagsUI)
@@ -20,10 +20,12 @@ eps <- 0.2
 ( psi.eq <- gam / (gam + eps) )
 # [1] 0.3333333
 
+# ~~~~ code for figure 4.7 is at the end of the script ~~~~
+
 # Simulate a data set
 set.seed(24)
 data <- simDynocc(mean.psi1 = 0.8, range.phi = c(1-eps, 1-eps),
-    range.gamma = c(gam, gam), range.p = c(0.4, 0.4)) # library(AHMbook)
+    range.gamma = c(gam, gam), range.p = c(0.4, 0.4))    # library(AHMbook)
 
 # Stack detection histories
 ystack <- array(NA, dim = c(data$nsites * data$nyears, data$nsurveys))
@@ -33,13 +35,13 @@ for(t in 1:data$nyears){
 
 # Create year covariate and factor (both site covariates in unmarked)
 year <- 1:data$nyears
-yr <- rep(1:data$nyears, each = data$nsites) # year as cont. cov.
-yrfac <- as.factor(yr) # year as a factor
+yr <- rep(1:data$nyears, each = data$nsites)             # year as cont. cov.
+yrfac <- as.factor(yr)                                   # year as a factor
 
 # Format and summarize data
 library(unmarked)
 summary(umf <- unmarkedFrameOccu(y = ystack, siteCovs = data.frame(yr = yr,
-    yrfac = yrfac)) ) # require(unmarked)
+    yrfac = yrfac)) )                                    # require(unmarked)
 
 # (1) Analysis of stacked data: treating year as a factor
 summary(fm1 <- occu(~1 ~yrfac-1, data = umf))
@@ -76,6 +78,7 @@ for(b in 1:simrep){
 # Get bootstrap SE and CI for all annual predictions
 se.bs <- apply(bs.pred, 1, sd)
 ci.bs <- t(apply(bs.pred, 1, function(x)quantile(x, c(0.025, 0.975))))
+
 # Compare asymptotic and bootstrapped SEs and CIs
 round(cbind('ASE' = pred.yr[,2], 'Asymp_LCL' = pred.yr[,3],
     'Asymp_UCL' = pred.yr[,4], 'Bootstrapped SE' = se.bs,
@@ -99,6 +102,7 @@ str(bdata <- list(y = data$y, nsites = dim(data$y)[1],
 # Specify model in BUGS language
 cat(file = "occ.txt","
 model {
+
   # Specify priors and specify model for occupancy
   for (t in 1:nyears){
     logit(psi[t]) <- alpha + beta.trend * (t-5.5) + eps.year[t]
@@ -110,6 +114,7 @@ model {
   beta.trend ~ dnorm(0, 0.01)
   tau.lpsi <- pow(sd.lpsi, -2)
   sd.lpsi ~ dunif(0, 10)
+
   # Ecological submodel: Define state conditional on parameters
   for (i in 1:nsites){
     for (t in 1:nyears){
@@ -120,6 +125,7 @@ model {
       }
     }
   }
+
   # Derived parameters
   for (t in 1:nyears){
     n.occ[t] <- sum(z[1:nsites,t]) # Finite sample occupancy

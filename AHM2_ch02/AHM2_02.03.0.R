@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
-# Code from proofs dated 2020-06-11
+# Code from proofs dated 2020-08-18
 
 library(jagsUI)
 
@@ -27,26 +27,27 @@ str(bdata <- list(C = C, nsites = dim(C)[1], nsurveys = dim(C)[2],
 # Specify model in BUGS language
 cat(file = "Nmix1.txt","
 model {
+
   # Priors
-  for (t in 1:nyears){ # Loop over years ('seasons')
-    lambda[t] ~ dunif(0, 100) # Expected abundance
-    p[t] ~ dunif(0, 1) # Detection probability
-  } # end t
+  for (t in 1:nyears){           # Loop over years ('seasons')
+    lambda[t] ~ dunif(0, 100)    # Expected abundance
+    p[t] ~ dunif(0, 1)           # Detection probability
+  }
   # Ecological model for true abundance
-  for (i in 1:nsites){ # Loop over 26 sites
-    for(t in 1:nyears){ # Loop over 14 years
+  for (i in 1:nsites){           # Loop over 26 sites
+    for(t in 1:nyears){          # Loop over 14 years
       N[i,t] ~ dpois(lambda[t])
       # Observation model for replicated counts
-      for (j in 1:nsurveys){ # Loop over 3 occasions
+      for (j in 1:nsurveys){     # Loop over 3 occasions
         C[i,j,t] ~ dbin(p[t], N[i,t])
-      } # end j
-    } # end t
-  } # end i
+      }
+    }
+  }
   # Derived quantity: Total abundance across all surveyed sites
   for (t in 1:nyears){
-    totalN[t] <- sum(N[,t]) # includes sites with missing surveys
-  } # end t
-} # end model
+    totalN[t] <- sum(N[,t])      # includes sites with missing surveys
+  }
+}
 ")
 
 # Initial values: avoid data/prior/inits conflict
@@ -61,8 +62,8 @@ params <- c("lambda", "p", "totalN")
 na <- 100 ; ni <- 3000 ; nt <- 2 ; nb <- 1000 ; nc <- 3
 
 # Run JAGS (ART 1 min), check convergence and summarize posteriors
-out1 <- jags(bdata, inits, params, "Nmix1.txt", n.adapt = na,
-    n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+out1 <- jags(bdata, inits, params, "Nmix1.txt", n.adapt = na, n.chains = nc,
+    n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 op <- par(mfrow = c(3, 3)) ; traceplot(out1)
 par(op)
 print(out1, digits = 2) # not shown

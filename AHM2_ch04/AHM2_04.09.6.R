@@ -6,7 +6,7 @@
 # Chapter 4 : MODELING SPECIES DISTRIBUTION AND RANGE DYNAMICS, AND POPULATION
 #             DYNAMICS USING DYNAMIC OCCUPANCY MODELS
 # ============================================================================
-# Code from MS
+# Code from proofs dated 2020-08-18 and MS dated 2019-01-04
 
 # Approximate run time for this script: 25 mins
 
@@ -39,11 +39,13 @@ op <- par(mfrow = c(1, 2), mar = c(1,2,1,7), cex = 1.5)
 # par(mfrow = c(2, 1), mar = c(2,2,2,5))
 r1 <- rasterFromXYZ(data.frame(x = ch$x, y = ch$y, z = ch$elevation))
 mapPalette1 <- colorRampPalette(c("grey", "yellow", "orange", "red"))
-plot(r1, col = mapPalette1(100), axes = FALSE, box = FALSE, main = "", zlim = c(0, 4500))
+plot(r1, col = mapPalette1(100), axes = FALSE, box = FALSE, main = "",
+    zlim = c(0, 4500))
 par(cex = 1.5)
 r2 <- rasterFromXYZ(data.frame(x = ch$x, y = ch$y, z = ch$forest))
 mapPalette2 <- colorRampPalette(c("grey", "lightgreen", "darkgreen"))
-plot(r2, col = mapPalette2(100), axes = FALSE, box = FALSE, main = "", zlim = c(0, 100))
+plot(r2, col = mapPalette2(100), axes = FALSE, box = FALSE, main = "",
+    zlim = c(0, 100))
 par(op)
 # ~~~~~~~~~~~~ end of extra code ~~~~~~~~~~~~~~~~
 
@@ -55,22 +57,20 @@ FP <- (ch$forest - mean.forest) / sd.forest
 
 # Extract parameter estimates for each parameter type
 tmp <- summary(fm50)
-psipar <- tmp$psi[,1] # Params in model for initial occupancy
+psipar <- tmp$psi[,1]         # Params in model for initial occupancy
 names(psipar) <- rownames(tmp$psi)
-colpar <- tmp$col[,1] # Params in model for colonization
+colpar <- tmp$col[,1]         # Params in model for colonization
 names(colpar) <- rownames(tmp$col)
-extpar <- tmp$ext[,1] # Params in model for extinction
+extpar <- tmp$ext[,1]         # Params in model for extinction
 names(extpar) <- rownames(tmp$ext)
-detpar <- tmp$det[,1] # Params in model for detection
+detpar <- tmp$det[,1]         # Params in model for detection
 names(detpar) <- rownames(tmp$det)
 
 # Create arrays to contain predictions for each km2 in Switzerland
 # First-year occupancy
 pred.occ1 <- numeric(nrow(ch))
-
 # Colonization and extinction prob. (note one fewer year)
 pred.col <- pred.ext <- matrix(NA, nrow = nrow(ch), ncol = (nyears-1))
-
 # Occupancy (all years) and detection prob.
 pred.occ <- pred.det <- matrix(NA, nrow = nrow(ch), ncol = nyears)
 
@@ -119,7 +119,7 @@ pred <- modavgPred(cand.set = list(fm50), newdata = newData,
 se.pred <- pred$matrix.output[,2] # Grab inflated SE
 
 
-# ~~~~~~~~~~ extra code for summarising and plotting ~~~~~~~~~~~~
+# ~~~~~~~~~~ remaining code from MS dated 2019-01-04 ~~~~~~~~~~~~
 all.pred <- cbind(pred.occ, pred.col, pred.ext, pred.det)
 colnames(all.pred) <- c("Occupancy 2001", "Occupancy 2002", "Occupancy 2003", "Occupancy 2004", "Occupancy 2005", "Occupancy 2006", "Occupancy 2007", "Occupancy 2008", "Occupancy 2009", "Occupancy 2010", "Occupancy 2011", "Occupancy 2012",
   "Colonization 2001-2002", "Colonization 2002-2003", "Colonization 2003-2004", "Colonization 2004-2005","Colonization 2005-2006", "Colonization 2006-2007",
@@ -167,18 +167,105 @@ print(annual.averages, 2)
         # Detection 2012
                # 0.41922
 
-# Compute range size for every year and plot
+# Compute range size and CI for every year
+# ----------------------------------------
 rs <- apply(all.pred[,1:nyears], 2, sum)
 print(cbind('Range size (km2)' = rs),0)   # not shown
 
-# ~~~ this is plotted as Figure 4.19 ~~~~~~~~~~~~
+# Calculate bootstrap CIs for range size
+# Prepare covariates and constants
+# nyears <- 12
+# EP <- (ch$elevation - mean.ele) / sd.ele
+# FP <- (ch$forest - mean.forest) / sd.forest
+
+# Create arrays to contain predictions for each km2 in Switzerland
+# First-year occupancy
+pred.occ1 <- numeric(nrow(ch))
+# Colonization and extinction prob. (note one fewer year)
+pred.col <- pred.ext <- matrix(NA, nrow = nrow(ch), ncol = (nyears-1))
+# Occupancy (all years) and detection prob.
+pred.occ <- pred.det <- matrix(NA, nrow = nrow(ch), ncol = nyears)
+
+# Get bootstrapped estimates of SE and CI for range size (rs)
+# nboot <- 1000           # number of bootstrap samples
+nboot <- 10  # ~~~ for testing
+boot.rs.hat <- array(NA, dim = c(12, nboot))
+system.time(
+for(i in 1:nboot){      # Start loop
+  cat(paste("\n ** Nonparametric bootstrap rep", i, "**\n") )
+  # Draw bootstrap sample
+  bootsamp <- sample(1:267, replace = TRUE)
+  # Create unmarked data frame
+  umfboot <- unmarkedMultFrame(y= as.matrix(cb[bootsamp,6:41]), siteCovs=data.frame(elev = elev[bootsamp], forest = forest[bootsamp]), yearlySiteCovs=list(year=year), obsCovs=list(date=DATE[bootsamp,]), numPrimary=12)
+  # Fit model 50, use estimates from fm50 as inits, do not compute SE's
+  inits <- coef(fm50)
+  fmtmp <- colext(~ (elev + I(elev^2))* (forest + I(forest^2)) -
+     I(elev^2):I(forest^2),
+  ~ (year-1) + (elev + I(elev^2))* (forest + I(forest^2)),
+  ~ (year-1) + (elev + I(elev^2))* (forest + I(forest^2)) -
+    I(elev^2):I(forest^2) - elev:I(forest^2) - I(forest^2),
+  ~ (year-1) + elev + forest + I(forest^2) + date + I(date^2) +
+    elev:forest, umfboot, starts = inits,
+    control=list(trace=T, REPORT=25, maxit=500), se = FALSE)
+
+  # Take estimates and plug them in to estimate occupancy in every km2 of Switzerland and then sum those up, just as we did for the actual analysis
+# Extract parameter estimates for each parameter type
+tmp <- summary(fmtmp)
+psipar <- tmp$psi[,1]             # Params in model for initial occupancy
+names(psipar) <- rownames(tmp$psi)
+colpar <- tmp$col[,1]             # Params in model for colonization
+names(colpar) <- rownames(tmp$col)
+extpar <- tmp$ext[,1]             # Params in model for extinction
+names(extpar) <- rownames(tmp$ext)
+detpar <- tmp$det[,1]             # Params in model for detection
+names(detpar) <- rownames(tmp$det)
+
+# Compute predicted first-year occupancy probability
+pred.occ1 <- plogis(psipar[1] + psipar["elev"]*EP +
+   psipar["I(elev^2)"]*EP^2 + psipar["forest"]*FP +
+   psipar["I(forest^2)"]*FP^2 + psipar["elev:forest"]*EP*FP +
+   psipar["I(elev^2):forest"]*EP^2*FP)
+pred.occ[,1] <- pred.occ1
+
+# Compute predicted colonization and extinction probability and occupancy for later years (j>1)
+for(j in 1:(nyears-1)){
+  # Colonisation
+  pred.col[,j] <- plogis(colpar[j] + colpar["elev"]*EP +
+    colpar["I(elev^2)"]*EP^2 + colpar["forest"]*FP +
+    colpar["I(forest^2)"]*FP^2 + colpar["elev:forest"]*EP*FP +
+    colpar["elev:I(forest^2)"]*EP*FP^2 +
+    colpar["I(elev^2):forest"]*EP^2*FP +
+    colpar["I(elev^2):I(forest^2)"]*EP^2*FP^2)
+
+  # Extinction
+  pred.ext[,j] <- plogis(extpar[j] + extpar["elev"]*EP +
+    extpar["I(elev^2)"]*EP^2 + extpar["forest"]*FP +
+    extpar["elev:forest"]*EP*FP + extpar["I(elev^2):forest"]*EP^2*FP)
+
+  # Compute occupancy for later years recursively
+  pred.occ[,(j+1)] <- pred.occ[,j] * (1-pred.ext[,j]) +
+    (1-pred.occ[,j]) * pred.col[,j]
+}
+
+  # Add up range size (rs) and save
+  boot.rs.hat[,i] <- apply(pred.occ, 2, sum)
+} )  # 10 took 9 mins
+
+# Get 'bootstrapped 95% CI'
+CI.rs <- apply(boot.rs.hat, 1, function(x) quantile(x, prob = c(0.025, 0.975)))
+
+# Plot range size with 95% CIs - figure 4.19
+plot(2001:2012, rs, xlab = "Year", ylab = "Number of occupied 1km2 quadrats",
+    pch = 16, ylim = c(5000, 20000), type = "b", frame = FALSE, cex = 2)
+segments(2001:2012, CI.rs[1,], 2001:2012, CI.rs[2,])
+
 
 map.fn <- function(data = all.pred, elev.limit = 2250){
   #   Produces Swiss maps of occupancy-related stuff.
   #   Needs Swiss landscape data (from 'unmarked') in object named 'ch'
   #   Input is matrix 'all.pred', which has the same number of rows as ch (i.e., 42275)
 
-  # Take following by hand to produce Figure in book
+  # Take following by hand to produce Figure 4.20 in book
   # 2 and 9
   # 13 and 15
   # 24 and 25
@@ -205,7 +292,8 @@ map.fn <- function(data = all.pred, elev.limit = 2250){
     elevRaster[elevRaster > elev.limit]<-NA
     r <- mask(r, elevRaster)
     # Plot the map using custom color palette
-    plot(r, col = mapPalette(100), axes = FALSE, box = FALSE, main = param.name, zlim = c(0, 1))
+    plot(r, col = mapPalette(100), axes = FALSE, box = FALSE,
+        main = param.name, zlim = c(0, 1))
   }
 }
 

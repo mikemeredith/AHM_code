@@ -6,9 +6,9 @@
 # Chapter 4 : MODELING SPECIES DISTRIBUTION AND RANGE DYNAMICS, AND POPULATION
 #             DYNAMICS USING DYNAMIC OCCUPANCY MODELS
 # ============================================================================
-# Code from proofs dated 2020-06-17
+# Code from proofs dated 2020-08-18
 
-# Approximate run time for this script: 75 mins
+# Approximate run time for this script: 3.5 hrs
 # Run time with the full number of iterations: 38.3 hrs
 
 library(AHMbook)
@@ -626,7 +626,8 @@ print(data.frame(NLL=tmptab), digits = 10)  # table foot of p277
 # Fig. 4.14 shows that these 10 models fits produce virtually identical estimates for most parameters, and that discrepancies occurred only for a few parameters with extreme values.
 # Plot of estimates from these 10 model fits
 oldpar <- par(cex.lab = 1.5, cex.axis = 1.5)
-plot(coef(fm38.list[[1]]), xlab = 'Parameter', ylab = 'Estimate', frame = FALSE, pch = 1, cex = 1.5)
+plot(coef(fm38.list[[1]]), xlab = 'Parameter', ylab = 'Estimate', frame = FALSE,
+    pch = 1, cex = 1.5)
 abline(h = 0)
 abline(v = 1:73, col = 'grey')
 points(coef(fm38.list[[best]]), pch = 16, cex = 1.5)

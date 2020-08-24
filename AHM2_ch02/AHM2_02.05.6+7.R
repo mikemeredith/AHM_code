@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 2 : MODELING POPULATION DYNAMICS WITH COUNT DATA
 # ========================================================
-# Code from proofs dated 2020-06-11
+# Code from proofs dated 2020-08-18
 
 # Approximate run time for this script: 2 hrs
 
@@ -12,15 +12,17 @@ library(jagsUI)
 library(unmarked)
 library(AHMbook)
 
+# ~~~ need to prepare data ~~~~
+source(file="AHM2_02.02.R")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 # 2.5 Dynamic N-mixture model of Dail-Madsen
 # ==========================================
 
 # 2.5.6 Case study of the Swiss MHB data for the green woodpecker:
 #   Bayesian analysis of the Dail-Madsen model for robust design data with BUGS
 # -----------------------------------------------------------------------------
-source(file="AHM2_02.02.R")
 
-# ~~~~ code from Andy, 2020-06-13 ~~~~~~~~~~
 # Bundle data
 str(bdata <- list(C = C, nsites = dim(C)[1], nsurveys = dim(C)[2],
     nyears = dim(C)[3], elev = elev, forest = forest, DATE = DATE, INT = INT))
@@ -50,7 +52,7 @@ model {
     # State process: transition model
     for(t in 1:(nyears-1)){
       S[i,t+1] ~ dbin(phi, N[i,t])
-      R[i,t+1] ~ dpois(gamma)  # 'absolute' recruitment = 'constant'
+      R[i,t+1] ~ dpois(gamma)              # 'absolute' recruitment = 'constant'
       ###R[i,t+1] ~ dpois(N[i,t] * gamma)  # per-capita recr. = 'autoreg'
       N[i,t+1] <- S[i,t+1] + R[i,t+1]
     }
@@ -73,7 +75,8 @@ N1 <- apply(apply(C, c(1,3), max, na.rm = TRUE), 1, max, na.rm = TRUE)
 N1[N1 == '-Inf'] <- 2
 Nst <- array(NA, dim = dim(Rst))
 Nst[,1] <- N1
-inits <- function(){list(lambda = runif(1, 1, 8), phi = runif(1), gamma = runif(1), p = runif(1), R = Rst+1, N = Nst+2)}
+inits <- function(){list(lambda = runif(1, 1, 8), phi = runif(1),
+    gamma = runif(1), p = runif(1), R = Rst+1, N = Nst+2)}
 
 # Parameters monitored
 params <- c("lambda", "phi", "gamma", "p")
@@ -93,12 +96,13 @@ print(out5, 3)
 # phi          0.821   0.012     0.797     0.821     0.845    FALSE 1 1.005   425
 # gamma        0.378   0.017     0.345     0.378     0.412    FALSE 1 1.001  1582
 # p            0.290   0.009     0.273     0.290     0.308    FALSE 1 1.004   575
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 # Bundle data
 str(bdata <- list(C = C, nsites = dim(C)[1], nsurveys = dim(C)[2],
   nyears = dim(C)[3], elev = as.vector(elev),forest = as.vector(forest),
   DATE = DATE, length = peckers$route.length, INT = INT)) # note length added
+
 # Specify model in BUGS language
 cat(file = "DM4.txt","
 model {
@@ -116,6 +120,7 @@ model {
   beta.jul2 ~ dnorm(0,0.1)
   beta.int ~ dnorm(0,0.1)
   beta.int2 ~ dnorm(0,0.1)
+
   # Likelihood
   for(i in 1:nsites){
     # State process: initial condition
@@ -126,10 +131,11 @@ model {
     # State process: transition model
     for(t in 1:(nyears-1)){
       S[i,t+1] ~ dbin(phi, N[i,t])
-      R[i,t+1] ~ dpois(gamma0) # constant recruitment
+      R[i,t+1] ~ dpois(gamma0)             # constant recruitment
       ###R[i,t+1] ~ dpois(N[i,t] * gamma0) # per-capita recruitment
       N[i,t+1] <- S[i,t+1] + R[i,t+1]
     }
+
     # Observation process
     for(t in 1:nyears){
       for(j in 1:nsurveys){
@@ -154,6 +160,7 @@ Nst <- array(NA, dim = dim(Rst))
 tmp <- apply(C, 1, max, na.rm = TRUE)
 tmp[tmp == '-Inf'] <- 2
 Nst[,1] <- tmp
+
 # Initial values
 inits <- function(){list(R = Rst, N = Nst+1, alpha.lam = rnorm(1, -1,1),
     beta.elev = rnorm(1), beta.elev2 = rnorm(1), beta.for = rnorm(1), beta.ilen = runif(1,-1,0),
@@ -161,9 +168,9 @@ inits <- function(){list(R = Rst, N = Nst+1, alpha.lam = rnorm(1, -1,1),
     beta.jul = rnorm(1), beta.jul2 = rnorm(1), beta.int = rnorm(1), beta.int2 = rnorm(1))}
 
 # Parameters monitored
-params <-c("alpha.lam", "beta.elev", "beta.elev2", "beta.for", "beta.ilen", "phi",
-    "alpha.gamma", "beta.gamma", "sigma.gamma", "gamma0", "alpha.p", "beta.jul",
-    "beta.jul2", "beta.int", "beta.int2")
+params <-c("alpha.lam", "beta.elev", "beta.elev2", "beta.for",
+    "beta.ilen", "phi", "alpha.gamma", "beta.gamma", "sigma.gamma", "gamma0",
+    "alpha.p", "beta.jul", "beta.jul2", "beta.int", "beta.int2")
 
 # MCMC settings
 # na <- 1000 ; ni <- 70000 ; nt <- 4 ; nb <- 10000 ; nc <- 4
@@ -172,8 +179,8 @@ na <- 1000 ; ni <- 7000 ; nt <- 1 ; nb <- 1000 ; nc <- 3  # ~~~ for testing, 7 m
 # try different seeds in hopes of getting one that runs
 set.seed(299, kind = "Mersenne-Twister")
 # Call JAGS (ART 83 min), check convergence and summarize posteriors
-out6 <- jags(bdata, inits, params, "DM4.txt", n.adapt = na, n.chains = nc, n.thin = nt,
-    n.iter = ni, n.burnin = nb, parallel = TRUE)
+out6 <- jags(bdata, inits, params, "DM4.txt", n.adapt = na, n.chains = nc,
+    n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 op <- par(mfrow = c(2,3)) ; traceplot(out6)
 par(op)
 print(out6, digits=2)
@@ -192,8 +199,10 @@ print(out6, digits=2)
 # beta.int    0.24 0.04  0.16  0.24  0.31    FALSE 1.00 1.01   362
 # beta.int2  -0.09 0.02 -0.13 -0.09 -0.05    FALSE 1.00 1.00  4514
 
-# ~~~ save the work so far
+# ~~~ save the work so far ~~~~
 save.image("AHM2_02.05.6.RData")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 # 2.5.7 Likelihood analysis of the Swiss woodpecker data in unmarked
 # ------------------------------------------------------------------
@@ -210,6 +219,7 @@ for(i in 2:nyears){
   dur <- cbind(dur, DUR[,,i])
   int <- cbind(int, INT[,,i])
 }
+
 library(unmarked)
 sitecovs <- data.frame(cbind(elev = as.numeric(elev),
     forest = as.numeric(forest), ilength = 1 / peckers$route.length))
@@ -247,8 +257,8 @@ system.time(dm4b <- pcountOpen(lam = ~elev + I(elev^2) + forest + ilength, gam =
     dynamics = "constant", K = Kmax) )  # 9 mins
 
 # Construct fitList and produce AIC table
-fl <- fitList(dm0 = dm0, dm1 = dm1, dm2 = dm2, dm3 = dm3, dm4 = dm4, dm0b = dm0b, dm1b = dm1b,
-    dm2b = dm2b, dm3b = dm3b, dm4b = dm4b)
+fl <- fitList(dm0 = dm0, dm1 = dm1, dm2 = dm2, dm3 = dm3, dm4 = dm4, dm0b = dm0b,
+    dm1b = dm1b, dm2b = dm2b, dm3b = dm3b, dm4b = dm4b)
 modSel(fl)
 #     nPars      AIC delta   AICwt cumltvWt
 # dm4     8 15745.49  0.00 1.0e+00        1
@@ -281,6 +291,7 @@ modSel(fl)
 # dm5     9 16115.39 13.79 0.00081     1.00
 
 dm8
+
 # Abundance:
 # Estimate SE z P(>|z|)
 # (Intercept) 0.894 0.4781 1.87 0.06144
@@ -288,12 +299,15 @@ dm8
 # I(elev^2) -0.375 0.1786 -2.10 0.03589
 # forest 0.183 0.0977 1.88 0.06050
 # ilength -5.012 2.1848 -2.29 0.02178
+
 # Recruitment:
 # Estimate SE z P(>|z|)
 # -0.978 0.0515 -19 1.27e-80
+
 # Apparent Survival:
 # Estimate SE z P(>|z|)
 # 1.57 0.0965 16.3 2.22e-59
+
 # Detection:
 # Estimate SE z P(>|z|)
 # (Intercept) -0.9814 0.0532 -18.45 4.89e-76
