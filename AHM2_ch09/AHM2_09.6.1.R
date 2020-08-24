@@ -5,7 +5,7 @@
 #
 # Chapter 9 : SPATIAL MODELS OF DISTRIBUTION AND ABUNDANCE
 # ========================================================
-# Code from proofs dated 2020-07-15
+# Code from proofs dated 2020-08-19
 
 # Approximate execution time for this code: 16 mins
 # Run time with the full number of iterations: 1.5 hrs
@@ -20,7 +20,7 @@ library(jagsUI)
 # 9.6.1 Autologistic dynamic occupancy models
 # -------------------------------------------
 
-# 9.6.1.1 Data Simulation under the Autologistic Dynocc Model
+# 9.6.1.1 Data simulation under the autologistic dynocc model
 # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 library(AHMbook)
@@ -41,7 +41,7 @@ library(unmarked)
 str( dat <- simDynoccSpatial(beta.Xpsi = 1, beta.Xphi = 1, beta.Xgamma = 1,
     beta.Xp = 1) )
 summary(dat$umf)
-summary(fm0 <- colext(~1, ~1, ~1, ~1, dat$umf)) # constant model
+summary(fm0 <- colext(~1, ~1, ~1, ~1, dat$umf))              # constant model
 summary(fm1 <- colext(~Xpsi1, ~Xgamma, ~Xphi, ~Xp, dat$umf)) # data-generating model
 
 # Example 2: Generate data with autocovariate effects
@@ -53,12 +53,14 @@ summary(fm2 <- colext(~1, ~Xauto, ~Xauto, ~1, dat$umf)) # 'true' autologistic
 confint(fm1, type = 'col') ; confint(fm1, type = 'ext') # CIs
 confint(fm2, type = 'col') ; confint(fm2, type = 'ext')
 
-# 9.6.1.2 Fitting the Simplest Autologistic Dynocc Model to Simulated Data
+# 9.6.1.2 fitting the simplest autologistic dynocc model to simulated data
 # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-str(dat <- simDynoccSpatial(side = 30, nyears = 10, nsurveys = 3, mean.psi1 = 0.1,
-    range.phi = c(0.5, 0.5), range.gamma = c(0.2, 0.2), range.p = c(0.4, 0.4),
-    beta.Xautolog = c(1, 1), seed.XAC = 1, seed = 24, ask.plot = TRUE) )
+str(dat <- simDynoccSpatial(side = 30, nyears = 10, nsurveys = 3,
+    mean.psi1 = 0.1, range.phi = c(0.5, 0.5), range.gamma = c(0.2, 0.2),
+    range.p = c(0.4, 0.4), beta.Xautolog = c(1, 1), seed.XAC = 1,
+    seed = 24, ask.plot = TRUE) )
 
+library(unmarked)
 summary(dat$umf)
 fm <- colext(~1, ~Xauto, ~Xauto, ~1, dat$umf)
 summary(fm)
@@ -76,13 +78,13 @@ for(i in 1:nyears){
 
 # Grab and look at the adjacency matrix: marks neighbors with a 1
 amat <- dat$amatrix
-table(apply(amat, 2, sum)) # Frequency of number of neighbors
+table(apply(amat, 2, sum))     # Frequency of number of neighbors
 
 # Compute the neighborhood info
 library(spdep)
 neigh <- dnearneigh(dat$grid, d1 = 0, d2 = sqrt(2) + 0.1)
-str(winnb <- nb2WB(neigh)) # Function to get CAR ingredients for BUGS
-numN <- winnb$num # Number of neighbors for each cell
+str(winnb <- nb2WB(neigh))    # Function to get CAR ingredients for BUGS
+numN <- winnb$num             # Number of neighbors for each cell
 
 # Put the neighbor IDs into a matrix
 neighID <- array(NA, dim = c(nsites, 8))
@@ -108,23 +110,21 @@ str(bdata <- list(y = y, nsites = nsites, nsurveys = nsurveys, nyears = nyears,
 # $ neighID : int [1:900, 1:8] 2 1 2 3 4 5 6 7 8 9 ...
 # $ numN    : int [1:900] 3 5 5 5 5 5 5 5 5 5 ...
 
-# autocov[i,t-1] <- sum(z[neighID[i,1:numN[i]], t-1]) / numN[i]
-
-# logit(phi[i,t-1]) <- alpha.lphi + beta.lphi * autocov[i,t-1]
-# logit(gamma[i,t-1]) <- alpha.lgamma + beta.lgamma * autocov[i,t-1]
 
 # Specify model in BUGS language
 cat(file = "autologistic1.txt","
 model {
+
   # Priors
-  psi1 ~ dunif(0, 1) # Initial occupancy
-  phi.int ~ dunif(0, 1) # Persistence
+  psi1 ~ dunif(0, 1)                   # Initial occupancy
+  phi.int ~ dunif(0, 1)                # Persistence
   alpha.lphi <- logit(phi.int)
   beta.lphi ~ dnorm(0, 0.01)
-  gamma.int ~ dunif(0, 1) # Colonization
+  gamma.int ~ dunif(0, 1)              # Colonization
   alpha.lgamma <- logit(gamma.int)
   beta.lgamma ~ dnorm(0, 0.01)
-  p ~ dunif(0, 1) # Detection
+  p ~ dunif(0, 1)                      # Detection
+
   # Likelihood
   # Ecological submodel
   for (i in 1:nsites){
@@ -137,6 +137,7 @@ model {
       logit(gamma[i,t-1]) <- alpha.lgamma + beta.lgamma * autocov[i,t-1]
     }
   }
+
   # Observation model
   for (i in 1:nsites){
     for (j in 1:nsurveys){
@@ -145,7 +146,6 @@ model {
       }
     }
   }
-  # Derived parameters
 }
 ")
 
@@ -164,7 +164,8 @@ na <- 1000 ; ni <- 600 ; nt <- 1 ; nb <- 300 ; nc <- 3  # ~~~ for testing, 8 min
 # Call JAGS (ART 30 min), check convergence and summarize posteriors
 out1 <- jags(bdata, inits, params, "autologistic1.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-par(mfrow = c(3,3)) ; traceplot(out1) ; par(mfrow = c(1,1))
+op <- par(mfrow = c(3,3)) ; traceplot(out1)
+par(op)
 print(out1, 3)
 
 # Compare estimates with truth
@@ -184,7 +185,7 @@ print(cbind(truth, out1$summary[1:8, c(1:3,7)]), 3)
 # p             0.40  0.400 0.00712  0.3861  0.414
 
 
-# 9.6.1.3 Fitting an Autologistic Dynocc Model to the Eurasian Lynx Data
+# 9.6.1.3 Fitting an autologistic dynocc model to the Eurasian lynx data
 # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 # Get the data
@@ -255,6 +256,7 @@ for(t in 1:nyears){
   # browser() # ~~~ take out for testing
 }
 
+# Bundle and summmarize data set
 str(bdata <- list(y = y, nsites = nsites, nsurveys = nsurveys, nyears = nyears,
     neighID = neighID, numN = numN, forest = forest))
 # List of 7
@@ -269,6 +271,7 @@ str(bdata <- list(y = y, nsites = nsites, nsurveys = nsurveys, nyears = nyears,
 # Specify model in BUGS language
 cat(file = "autologistic2.txt","
 model {
+
   # Priors
   psi1.int ~ dunif(0, 1) # Initial occupancy
   alpha.lpsi1 <- logit(psi1.int)
@@ -284,6 +287,7 @@ model {
   p.int ~ dunif(0, 1) # Detection
   alpha.lp <- logit(p.int)
   beta.lp.forest ~ dnorm(0, 0.1)
+
   # Likelihood
   # Ecological submodel
   for (i in 1:nsites){
@@ -299,6 +303,7 @@ model {
       beta.lgamma.auto * autocov[i,t-1]
     }
   }
+
   # Observation model
   for (i in 1:nsites){
     logit(p[i]) <- alpha.lp + beta.lp.forest * forest[i]
@@ -328,7 +333,8 @@ na <- 100 ; ni <- 600 ; nt <- 1 ; nb <- 300 ; nc <- 3  # ~~~ for testing, 6 mins
 # Call JAGS (ART 48 min), check convergence and summarize posteriors
 out2 <- jags(bdata, inits, params, "autologistic2.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-par(mfrow = c(3,3)) ; traceplot(out2)
+op <- par(mfrow = c(3,3)) ; traceplot(out2)
+par(op)
 print(out2$summary[1:14, c(1:4,7)], 2)
 #                      mean     sd   2.5%    25%  97.5%
 # psi1.int            0.062 0.0202  0.027  0.047  0.106
@@ -354,7 +360,8 @@ pred.autocov <- seq(0, 1, length.out = 1000)
 pred <- array(NA, dim = c(1000, 2, nsims))
 for(i in 1:nsims){
   pred[,1,i] <- plogis(tmp$alpha.lphi[i] + tmp$beta.lphi.auto[i] * pred.autocov)
-  pred[,2,i] <- plogis(tmp$alpha.lgamma[i] + tmp$beta.lgamma.auto[i] * pred.autocov)
+  pred[,2,i] <- plogis(tmp$alpha.lgamma[i] +
+      tmp$beta.lgamma.auto[i] * pred.autocov)
 }
 pm <- apply(pred, c(1,2), mean)
 CRI <- apply(pred, c(1,2), quantile, prob = c(0.025, 0.975))
@@ -381,10 +388,10 @@ op <- par(mfrow = c(1,2), mar = c(1,1,3,5))
 r <- rasterFromXYZ(data.frame(x = grid[,1], y = grid[,2], z = oforest))
 plot(r, col = mapPalette(100), axes = FALSE, box = FALSE, zlim = c(0, 100),
     main = 'Winter 1994/1995')
-points(grid[,1], y = grid[,2], pch = 15, col = rgb(0,0,0, out2$mean$z[,1]), cex = 1)
+points(grid[,1], y = grid[,2], pch = 15, col = rgb(0,0,0, out2$mean$z[,1]))
 r <- rasterFromXYZ(data.frame(x = grid[,1], y = grid[,2], z = oforest))
 plot(r, col = mapPalette(100), axes = FALSE, box = FALSE, zlim =
   c(0, 100), main = 'Winter 2016/2017')
-points(grid[,1], y = grid[,2], pch = 15, col = rgb(0,0,0, out2$mean$z[,23]), cex = 1)
+points(grid[,1], y = grid[,2], pch = 15, col = rgb(0,0,0, out2$mean$z[,23]))
 par(op)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

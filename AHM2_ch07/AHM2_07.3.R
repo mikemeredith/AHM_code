@@ -5,7 +5,7 @@
 #
 # Chapter 7 : MODELING FALSE POSITIVES
 # ====================================
-# Code from proofs dated 2020-07-08
+# Code from proofs dated 2020-08-19
 
 library(unmarked)
 library(AHMbook)
@@ -18,20 +18,20 @@ library(AICcmodavg)
 # 7.3.1 Multi-method models in unmarked
 # -------------------------------------
 
-set.seed(129) # RNG seed
-nsites <- 200 # number of sites
-nsurveys1 <- 3 # number of occasions with Type 1 data
-nsurveys2 <- 4 # number of occasions with Type 2 data
-psi <- 0.6 # expected proportion of sites occupied
-p <- c(0.7,0.5) # detection prob of method 1 and method 2
-fp <- 0.05 # false-positive error probability (p_10)\
+set.seed(129)          # RNG seed
+nsites <- 200          # number of sites
+nsurveys1 <- 3         # number of occasions with Type 1 data
+nsurveys2 <- 4         # number of occasions with Type 2 data
+psi <- 0.6             # expected proportion of sites occupied
+p <- c(0.7,0.5)        # detection prob of method 1 and method 2
+fp <- 0.05             # false-positive error probability (p_10)
 
 # Simulate latent occupancy states and data
 z <- rbinom(nsites, 1, psi)
 y <- matrix(NA, nrow = nsites, ncol = nsurveys1 + nsurveys2)
 for(i in 1:nsites){
-  p1 <- p[1]*z[i] # certainly detection (method 1)
-  p2 <- p[2]*z[i] + fp*(1-z[i]) # uncertainly detection (method 2)
+  p1 <- p[1]*z[i]                      # certainly detection (method 1)
+  p2 <- p[2]*z[i] + fp*(1-z[i])        # uncertainly detection (method 2)
   y[i,1:3] <- rbinom(nsurveys1, 1, p1) # simulate method 1 data
   y[i,4:7] <- rbinom(nsurveys2, 1, p2) # simulate method 2 data
 }
@@ -46,13 +46,16 @@ summary(umf1 <- unmarkedFrameOccuFP(y = y, obsCovs = list(Method = Method),
     type = type)) # not shown
 ( m1 <- occuFP(detformula = ~ Method, FPformula = ~1, stateformula = ~ 1,
     data = umf1) )
+
 # Occupancy:
 # Estimate SE z P(>|z|)
 # 0.544 0.149 3.65 0.000267
+
 # Detection:
 # Estimate SE z P(>|z|)
 # (Intercept) 0.901 0.119 7.59 3.09e-14
 # Method2 -0.967 0.147 -6.59 4.34e-11
+
 # false positive:
 # Estimate SE z P(>|z|)
 # -2.9 0.282 -10.3 7.31e-25
@@ -66,8 +69,8 @@ coef(m1)
 pred.df <- data.frame(Method = c("1","2"))
 round(rbind(
     "det" = predict(m1, type = 'det', newdata = pred.df),
-    "fp" = predict(m1, type = 'fp', newdata = pred.df[1,,drop=F]),
-    "state" = predict(m1, type = 'state', newdata = pred.df[1,,drop=F])),3)
+    "fp" = predict(m1, type = 'fp', newdata = pred.df[1,,drop=FALSE]),
+    "state" = predict(m1, type = 'state', newdata = pred.df[1,,drop=FALSE])),3)
 #       Predicted    SE lower upper
 # det.1     0.711 0.024 0.661 0.756
 # det.2     0.483 0.022 0.440 0.527
@@ -103,7 +106,7 @@ lynx2 <- lynx[lynx[,"type"] == "uncertain", ]
 lynx <- cbind(lynx1[,c(2,3:5)], lynx2[,3:5] )
 colnames(lynx) <- c("site.nr", "y.1", "y.2", "y.3", "y.4", "y.5", "y.6")
 occ <- cbind(lynx1[, c("occ.1", "occ.2", "occ.3")],
-lynx2[, c("occ.1", "occ.2", "occ.3")])
+    lynx2[, c("occ.1", "occ.2", "occ.3")])
 colnames(occ) <- c("occ.1", "occ.2", "occ.3", "occ.4", "occ.5", "occ.6")
 lynx <- cbind(lynx,lynx1[, c("Year", "sYear", "Cntry")])
 
@@ -116,27 +119,32 @@ summary(lynx.umf <- unmarkedFrameOccuFP(y = y,
 
 # Models to investigate trends in recording (takes approx. 15 mins)
 cand.mods <- list(
-    "p(c)fp(c)psi(c*t)" = occuFP(~Cntry, ~Cntry, ~1, ~Cntry*sYear, data = lynx.umf),
+    "p(c)fp(c)psi(c*t)" = occuFP(~Cntry, ~Cntry, ~1, ~Cntry*sYear,
+        data = lynx.umf),
     "p(c*t)fp(c)psi(c*t)" = occuFP(~Cntry*sYear, ~Cntry, ~1, ~Cntry*sYear,
         data = lynx.umf),
     "p(c)fp(c*t)psi(c*t)" = occuFP(~Cntry, ~Cntry*sYear, ~1, ~Cntry*sYear,
         data = lynx.umf),
-    "p(c*t)fp(c*t)psi(c*t)" = occuFP(~Cntry*sYear, ~Cntry*sYear, ~1, ~Cntry*sYear,
-        data = lynx.umf),
+    "p(c*t)fp(c*t)psi(c*t)" = occuFP(~Cntry*sYear, ~Cntry*sYear, ~1,
+        ~Cntry*sYear, data = lynx.umf),
     "p(c+t)fp(c+t)psi(c*t)" = occuFP(~Cntry + sYear, ~Cntry + sYear, ~1,
         ~Cntry*sYear, data = lynx.umf),
     "p(c+t)fp(c+t)psi(c+t)" = occuFP(~Cntry + sYear, ~Cntry + sYear, ~1,
         ~Cntry + sYear, data = lynx.umf),
     "p(c)fp(c)psi(c)" = occuFP(~Cntry, ~Cntry, ~1, ~Cntry, data = lynx.umf),
-    "p(c*t)fp(c)psi(c)" = occuFP(~Cntry*sYear, ~Cntry, ~1, ~Cntry, data = lynx.umf),
-    "p(c)fp(c*t)psi(c)" = occuFP(~Cntry, ~Cntry*sYear, ~1, ~Cntry, data = lynx.umf),
+    "p(c*t)fp(c)psi(c)" = occuFP(~Cntry*sYear, ~Cntry, ~1, ~Cntry,
+        data = lynx.umf),
+    "p(c)fp(c*t)psi(c)" = occuFP(~Cntry, ~Cntry*sYear, ~1, ~Cntry,
+        data = lynx.umf),
     "p(c*t)fp(c*t)psi(c)" = occuFP(~Cntry*sYear, ~Cntry*sYear, ~1, ~Cntry,
         data = lynx.umf),
     "p(c+t)fp(c+t)psi(c)" = occuFP(~Cntry + sYear, ~Cntry + sYear, ~1, ~Cntry,
         data = lynx.umf),
     "p(c)fp(c)psi(t)" = occuFP(~Cntry, ~Cntry, ~1, ~sYear, data = lynx.umf),
-    "p(c*t)fp(c)psi(t)" = occuFP(~Cntry*sYear, ~Cntry, ~1, ~sYear, data = lynx.umf),
-    "p(c)fp(c*t)psi(t)" = occuFP(~Cntry, ~Cntry*sYear, ~1, ~sYear, data = lynx.umf),
+    "p(c*t)fp(c)psi(t)" = occuFP(~Cntry*sYear, ~Cntry, ~1, ~sYear,
+        data = lynx.umf),
+    "p(c)fp(c*t)psi(t)" = occuFP(~Cntry, ~Cntry*sYear, ~1, ~sYear,
+        data = lynx.umf),
     "p(c*t)fp(c*t)psi(t)" = occuFP(~Cntry*sYear, ~Cntry*sYear, ~1, ~sYear,
         data = lynx.umf),
     "p(c+t)fp(c+t)psi(t)" = occuFP(~Cntry + sYear, ~Cntry + sYear, ~1, ~sYear,
@@ -151,17 +159,20 @@ cand.mods <- list(
 
 # Select and summarize the AIC-top model
 ( topmod <- cand.mods$`p(c+t)fp(c+t)psi(c*t)` )
+
 # Occupancy:
 # Estimate SE z P(>|z|)
 # (Intercept) -3.649 0.0935 -39.01 0.00e+00
 # CntrySwitzerland 2.508 0.0991 25.31 2.61e-141
 # sYear -0.314 0.0766 -4.10 4.22e-05
 # CntrySwitzerland:sYear 0.584 0.0807 7.24 4.49e-13
+
 # Detection:
 # Estimate SE z P(>|z|)
 # (Intercept) -1.319 0.0904 -14.60 3.01e-48
 # CntrySwitzerland 0.176 0.0953 1.85 6.48e-02
 # sYear 0.154 0.0310 4.98 6.24e-07
+
 # false positive:
 # Estimate SE z P(>|z|)
 # (Intercept) -6.546 0.253 -25.868 1.54e-147
@@ -169,5 +180,4 @@ cand.mods <- list(
 # sYear -0.978 0.200 -4.885 1.04e-06
 
 
-# ~~~ insert code for figure 7.3 ~~~~~~~
-
+# ~~~ TODO insert code for figure 7.3 ~~~~~~~

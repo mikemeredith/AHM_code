@@ -5,8 +5,7 @@
 #
 # Chapter 7 : MODELING FALSE POSITIVES
 # ====================================
-# Code from proofs dated 2020-07-08
-
+# Code from proofs dated 2020-08-19
 library(unmarked)
 library(jagsUI)
 
@@ -15,19 +14,19 @@ library(jagsUI)
 
 # Random seed and simulation settings
 set.seed(129, kind = "Mersenne")
-nsites <- 200 # number of sites (i = 1, ..., M)
-nsurveys <- 7 # number of visits (k = 1, ..., J)
-psi <- 0.6    # expected psi
-p <- 0.7      # detection probability (p_11)
-fp <- 0.05    # false positive error probability (p_10)
+nsites <- 200     # number of sites (i = 1, ..., M)
+nsurveys <- 7     # number of visits (k = 1, ..., J)
+psi <- 0.6        # expected psi
+p <- 0.7          # detection probability (p_11)
+fp <- 0.05        # false positive error probability (p_10)
 
 # Simulate the latent states and the data
 z <- matrix(NA, nrow = nsites, ncol = 1)        # empty matrix for occ states
 z[1:nsites] <- rbinom(nsites, 1, psi)           # occupancy states
 y <- matrix(NA, nrow = nsites, ncol = nsurveys) # empty matrix for det.
 for(i in 1:nsites){
-  pr_yequals1 <- p*z[i] + fp*(1-z[i]) # p11 + p10
-  y[i,] <- rbinom(nsurveys, 1, pr_yequals1) # realized observations
+  pr_yequals1 <- p*z[i] + fp*(1-z[i])           # p11 + p10
+  y[i,] <- rbinom(nsurveys, 1, pr_yequals1)     # realized observations
 }
 
 # Bundle data and summarize data bundle
@@ -36,10 +35,12 @@ str( bdata <- list(y = y, nsites = nrow(y), nsurveys = ncol(y)) )
 # Specify model in BUGS language
 cat(file = "occufp.txt","
 model {
+
   # Priors
   psi ~ dunif(0, 1)
   p ~ dunif(0, 1)
   fp ~ dunif(0, 1)
+
   # Likelihood and process model
   for (i in 1:nsites) { # Loop over sites
     z[i] ~ dbern(psi) # State model
@@ -76,14 +77,14 @@ print(out1, 3)
 # ''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 # Random seed and simulation settings
-set.seed(129)    # RNG seed
-nsites <- 200    # number of sites
-nsurv1 <- 3      # number of occasions with Type 1 data
-nsurv2 <- 4      # number of occasions with Type 3 data
-psi <- 0.6       # expected proportion of are occupied
-p <- c(0.7, 0.5) # detection prob of method 1 and method 2
-fp <- 0.05       # false-positive error probability (p_10)
-b <- 0.2         # probability y is recorded as certain
+set.seed(129)       # RNG seed
+nsites <- 200       # number of sites
+nsurv1 <- 3         # number of occasions with Type 1 data
+nsurv2 <- 4         # number of occasions with Type 3 data
+psi <- 0.6          # expected proportion of are occupied
+p <- c(0.7, 0.5)    # detection prob of method 1 and method 2
+fp <- 0.05          # false-positive error probability (p_10)
+b <- 0.2            # probability y is recorded as certain
 
 # Simulate the latent states and the data
 z <- rbinom(nsites, 1, psi)
@@ -97,11 +98,11 @@ for(i in 1:nsites){
   pr.certain <- z[i] * y[i,4:7] * b
   y[i, 4:7] <- y[i, 4:7] + rbinom(4, 1, pr.certain)
 }
-head(y) # Look at data to understand them !
+head(y)                             # Look at data to understand them !
 
 # Define a covariate for method
-Method <- matrix(c(rep("1", 3), rep("2", 4)), nrow = nsites, ncol = nsurv1 + nsurv2,
-    byrow = TRUE)
+Method <- matrix(c(rep("1", 3), rep("2", 4)), nrow = nsites,
+    ncol = nsurv1 + nsurv2, byrow = TRUE)
 head(Method)
 
 # Make data categorical so non-detection = 1, certain detection = 3
@@ -113,12 +114,14 @@ str(bdata <- list(y = y, nsites = nrow(y), nsurv1 = nsurv1, nsurv2 = nsurv2))
 # Specify model in BUGS language
 cat(file = "occufp2.txt","
 model {
+
   # Priors
   psi ~ dunif(0, 1)
   fp ~ dunif(0, 1)
   b ~ dunif(0, 1)
   alpha0 ~ dnorm(0,0.01)
   alpha1 ~ dnorm(0,0.01) # Method effect
+
   # Likelihood and process model
   for (i in 1:nsites) { # Loop over sites
     z[i] ~ dbern(psi) # State model

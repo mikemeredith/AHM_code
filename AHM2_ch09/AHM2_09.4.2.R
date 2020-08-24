@@ -5,7 +5,7 @@
 #
 # Chapter 9 : SPATIAL MODELS OF DISTRIBUTION AND ABUNDANCE
 # ========================================================
-# Code from proofs dated 2020-07-15
+# Code from proofs dated 2020-08-19
 
 # Approximate execution time for this code: 7 mins
 # Run time with the full number of iterations: 30 mins
@@ -34,7 +34,7 @@ head(sitelocs <- coordgrid[dat$surveyed.sites,])        # 500 surveyed cells
 
 library(fields)
 system.time( knots <- cover.design(R = coordgrid, nd = 125, nruns = 10,
-    num.nn = 200, max.loop=20) ) # takes about 4 min
+    num.nn = 200, max.loop=20) )                        # takes about 4 min
 
 # Define the Z matrix for the random effects/knot coefficients
 knotlocs <- knots$design
@@ -51,11 +51,13 @@ devAskNewPage(ask = dev.interactive(orNone=TRUE))  # ~~~ better for testing
 op <- par(mfrow = c(3, 3), mar = c(2,2,4,11), "ask")
 # for(i in 1:125){
 for(i in 1:9){  # ~~~ for testing
-  r <- rasterFromXYZ(data.frame(x = coordgrid[,1], y = coordgrid[,2], z = Zmat[,i]))
+  r <- rasterFromXYZ(data.frame(x = coordgrid[,1], y = coordgrid[,2],
+      z = Zmat[,i]))
   plot(r, col = topo.colors(20), axes = FALSE, box = FALSE,
       main = paste("Basis vector", i), legend = TRUE,
       axis.args = list(cex.axis = 2), legend.width = 2)
-  points(knots$design[i,1], knots$design[i,2], col = 'black', pch = 16, cex = 1.5)
+  points(knots$design[i,1], knots$design[i,2], col = 'black',
+      pch = 16, cex = 1.5)
 }
 par(op)
 
@@ -79,6 +81,7 @@ str(bdata <- list(y = y, nsites = dim(y)[1], sample.size = dat$sample.size,
 # Specify model in BUGS language
 cat(file = "2dSplines.Nmix.txt", "
 model {
+
   # Specify priors: intercepts and slopes of lambda and p
   beta0 <- log(mean.lam)
   mean.lam ~ dunif(0, 30)
@@ -88,6 +91,7 @@ model {
     alpha[v] ~ dnorm(0, 0.1)
     beta[v] ~ dnorm(0, 0.1)
   }
+
   # Priors on random effects parameters representing the splines
   for (k in 1:n.knots){
     b[k] ~ dnorm(0, tau.b)
@@ -95,6 +99,7 @@ model {
   # Prior on random effects dispersion
   tau.b ~ dgamma(0.1, 0.1)
   sd.b <- pow(tau.b, -2)
+
   # Model for abundance
   for (i in 1:nsites){
     N[i] ~ dpois(lam[i])
@@ -102,6 +107,7 @@ model {
     smooth[i] <- smooth2[i] - mean(smooth2[])
     smooth2[i] <- inprod(Zmat[i,], b[])
   }
+
   # Measurement error model
   for (i in 1:nsites){
     for (j in 1:nrep){
@@ -109,6 +115,7 @@ model {
       logit(p[i,j]) <- alpha0 + alpha[1] * forest[i] + alpha[2] * wind[i,j]
     }
   }
+
   # Derived parameters: Total population size on grid
   Ntotal <- sum(N[])
 }

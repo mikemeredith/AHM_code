@@ -5,7 +5,7 @@
 #
 # Chapter 9 : SPATIAL MODELS OF DISTRIBUTION AND ABUNDANCE
 # ========================================================
-# Code from proofs dated 2020-07-15
+# Code from proofs dated 2020-08-19
 
 
 library(AHMbook)
@@ -107,8 +107,8 @@ summary(c(y))
 # 0.000   0.000  0.000 1.174   1.000 49.000
 
 # Compare true and observed total abundance
-(true <- totalN) # True
-(obs <- sum(apply(y, 1, max))) # Observed
+(true <- totalN)                  # True
+(obs <- sum(apply(y, 1, max)))    # Observed
 cat("Underestimation of total abundance:", round(100*(1-obs/true)), "%\n")
 # [1] 7192
 # [1] 4371
@@ -134,9 +134,9 @@ plot(r, col = topo.colors(20), axes = FALSE, box = FALSE,
 par(op)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-yobs <- y # Make a copy
-yobs[-sample.sites,] <- NA # Turn counts of unsurveyed sites into NAs
-head(sample.sites) # Look at the simulated data set
+yobs <- y                    # Make a copy
+yobs[-sample.sites,] <- NA   # Turn counts of unsurveyed sites into NAs
+head(sample.sites)           # Look at the simulated data set
 head(yobs)
 
 simNmixSpatial(nsurveys = 3, mean.lambda = exp(2), beta = c(2, -2),

@@ -5,7 +5,7 @@
 #
 # Chapter 8 : MODELING INTERACTIONS AMONG SPECIES
 # ===============================================
-# Code from proofs dated 2020-07-13
+# Code from proofs dated 2020-08-19
 
 # Approximate execution time for this code: 9 mins
 # Run time with the full number of iterations: 9 hrs
@@ -49,7 +49,7 @@ maxC[maxC == -Inf] <- NA
 #       symmetric interactions
 # -----------------------------------------------------------
 
-Rmat <- diag(nspec) # Identity matrix
+Rmat <- diag(nspec)      # Identity matrix
 df <- nspec + 1
 
 # Bundle and summarize data set
@@ -84,6 +84,7 @@ model {
     alpha2[k] ~ dnorm(0, 0.1)
     alpha3[k] ~ dnorm(0, 0.1)
   }
+
   # Specify MVN prior for random site effects in lambda for each species
   for (i in 1:nsites){
     eta.lam[i,1:nspec] ~ dmnorm(mu.eta[], Omega[,])
@@ -91,33 +92,38 @@ model {
   for (k in 1:nspec){
     mu.eta[k] <- 0
   }
+
   # Vague inverse Wishart prior for variance-covariance matrix
   Omega[1:nspec,1:nspec] ~ dwish(R[,], df)
   Sigma2[1:nspec,1:nspec] <- inverse(Omega[,])
+
   # Scale var/covar matrix to become the correlation matrix
   for (i in 1:nspec){
     for (k in 1:nspec){
       rho[i,k] <- Sigma2[i,k] / (sqrt(Sigma2[i,i]) * sqrt(Sigma2[k,k]))
     }
   }
+
   # Likelihood
   # Ecological model for true abundance
   for (i in 1:nsites){
     for(k in 1:nspec){
       N[i,k] ~ dpois(lambda[i,k])
       log(lambda[i,k]) <- beta0[k] + beta1[k] * elev[i] +
-      beta2[k] * north[i] + eta.lam[i,k]
+          beta2[k] * north[i] + eta.lam[i,k]
+
       # Observation model for replicated counts
       for (j in 1:nreps){
         C[i,j,k] ~ dbin(p[i,j,k], N[i,k])
         logit(p[i,j,k]) <- alpha0[k] + alpha1[k] * DATES[i,j] +
-        alpha2[k] * pow(DATES[i,j],2) + alpha3[k] * HOURS[i,j]
+            alpha2[k] * pow(DATES[i,j],2) + alpha3[k] * HOURS[i,j]
       }
     }
   }
+
   # Derived quantities
   for(k in 1:nspec){
-  Ntot[k] <- sum(N[,k]) # Total abundance per species
+    Ntot[k] <- sum(N[,k])         # Total abundance per species
   }
 }
 ")
@@ -146,7 +152,7 @@ print(out1, 2)
 # Get residual correlations
 tmp2 <- round(out1$mean$rho, 2)
 dimnames(tmp2) <- list(speclist, speclist)
-tmp2 # This is with adjustment for two environmental covariates
+tmp2             # This is with adjustment for two environmental covariates
 
 # ~~~ extra code for figure 8.17 ~~~~~~~~~~~
 op <- par(mar = c(10, 4, 4, 3))
@@ -160,8 +166,8 @@ mns1 <- c(out1$mean$rho[1, 2:6], out1$mean$rho[2, 3:6], out1$mean$rho[3, 4:6],
     out1$mean$rho[4, 5:6], out1$mean$rho[5, 6])
 lcl1 <- c(out1$q2.5$rho[1, 2:6], out1$q2.5$rho[2, 3:6], out1$q2.5$rho[3, 4:6],
     out1$q2.5$rho[4, 5:6], out1$q2.5$rho[5, 6])
-ucl1 <- c(out1$q97.5$rho[1, 2:6], out1$q97.5$rho[2, 3:6], out1$q97.5$rho[3, 4:6],
-    out1$q97.5$rho[4, 5:6], out1$q97.5$rho[5, 6])
+ucl1 <- c(out1$q97.5$rho[1, 2:6], out1$q97.5$rho[2, 3:6],
+    out1$q97.5$rho[3, 4:6], out1$q97.5$rho[4, 5:6], out1$q97.5$rho[5, 6])
 plot(1:15, mns1, xlab = '', ylab = 'Residual correlation', ylim = c(-1,1),
     pch = 16, cex = 2, frame = FALSE, axes = FALSE)
 axis(1, at = 1:15, labels = xlabnames, las = 2)
@@ -179,6 +185,7 @@ par(op)
 # Select REVI and BTNW data from 2016
 str(CR <- counts[, , '2016', 'REVI'])
 str(CB <- counts[, , '2016', 'BTNW'])
+
 # Bundle and summarize data set
 str(bdata <- list(CR = CR, CB = CB, nsites = nsites, nreps = nreps, elev = elev,
     north = north, DATES = DATES[,,'2016'], HOURS = HOURS[,,'2016']) )
@@ -195,6 +202,7 @@ str(bdata <- list(CR = CR, CB = CB, nsites = nsites, nreps = nreps, elev = elev,
 # Specify model in BUGS language
 cat(file = "Nmix2.txt", "
 model {
+
   # Model for Red-eyed Vireo (REVI): the 'dominant' species
   # Priors for intercepts and coefficients
   # mean.lambdar ~ dunif(0, 5)
@@ -207,6 +215,7 @@ model {
   alpha1R ~ dnorm(0, 0.1)
   alpha2R ~ dnorm(0, 0.1)
   alpha3R ~ dnorm(0, 0.1)
+
   # Likelihood for REVI ('dominant')
   # Ecological model
   for (i in 1:nsites){
@@ -219,6 +228,7 @@ model {
       alpha2R * pow(DATES[i,j],2) + alpha3R * HOURS[i,j]
     }
   }
+
   # Model for Black-throated Green Warbler (BTNW): the 'subordinate' sp.
   # Priors for intercepts and coefficients
   mean.lambdaB ~ dunif(0, 5)
@@ -233,6 +243,7 @@ model {
   gamma0 ~ dnorm(0, 0.1) # These are the 'interaction coefficients' !
   gamma1 ~ dnorm(0, 0.1)
   gamma2 ~ dnorm(0, 0.1)
+
   # Likelihood for BTNW ('subordinate')
   # Ecological model
   for (i in 1:nsites){
@@ -257,6 +268,7 @@ inits <- function() list(NR = Nst, NB = Nst)
 params <- c('mean.lambdaR', 'beta1R', 'beta2R', 'mean.pR', 'alpha1R',
     'alpha2R', 'alpha3R', 'mean.lambdaB', 'beta1B', 'beta2B', 'mean.pB',
     'alpha1B', 'alpha2B', 'alpha3B', 'gamma0', 'gamma1', 'gamma2')
+
 # MCMC settings
 # na <- 5000 ; nc <- 3 ; ni <- 100000 ; nb <- 50000 ; nt <- 50
 na <- 500 ; nc <- 3 ; ni <- 10000 ; nb <- 5000 ; nt <- 5  # ~~~ for testing, 3 mins
@@ -300,6 +312,7 @@ str(bdata <- list(CR = CR, CB = CB, nsites = nsites, nyears = nyears,
 # Specify model in BUGS language
 cat(file = "Nmix3.txt", "
 model {
+
   # Model for Red-eyed Vireo (REVI): the 'dominant' species
   # Priors for intercepts and coefficients
   for(t in 1:nyears){
@@ -313,6 +326,7 @@ model {
   alpha1R ~ dnorm(0, 0.1)
   alpha2R ~ dnorm(0, 0.1)
   alpha3R ~ dnorm(0, 0.1)
+
   # Likelihood for REVI ('dominant')
   # Ecological model
   for(t in 1:nyears){
@@ -327,6 +341,7 @@ model {
       }
     }
   }
+
   # Model for Black-throated Green Warbler (BTNW): the 'subordinate' sp.
   # Priors for intercepts and coefficients
   for(t in 1:nyears){
@@ -340,7 +355,8 @@ model {
   alpha1B ~ dnorm(0, 0.1)
   alpha2B ~ dnorm(0, 0.1)
   alpha3B ~ dnorm(0, 0.1)
-  gamma ~ dnorm(0, 0.1) # This is the 'interaction coefficient'
+  gamma ~ dnorm(0, 0.1)           # This is the 'interaction coefficient'
+
   # Likelihood for BTNW ('subordinate')
   # For year 1 = 2009: no lagged effect of NR
   for (i in 1:nsites){
@@ -349,17 +365,17 @@ model {
     for (j in 1:nreps){
       CB[i,j,1] ~ dbin(pB[i,j,1], NB[i,1])
       logit(pB[i,j,1]) <- alpha0B[1] + alpha1B * DATES[i,j,1] +
-      alpha2B * pow(DATES[i,j,1],2) + alpha3B * HOURS[i,j,1]
+          alpha2B * pow(DATES[i,j,1],2) + alpha3B * HOURS[i,j,1]
     }
     # For years 2010-2018: including a lagged effect of NR
     for(t in 2:nyears){
       NB[i,t] ~ dpois(lambdaB[i,t])
       lambdaB[i,t] <- exp(beta0B[t] + beta1B * elev[i] +
-      beta2B * north[i] + gamma * NR[i,t-1])
+          beta2B * north[i] + gamma * NR[i,t-1])
       for (j in 1:nreps){
         CB[i,j,t] ~ dbin(pB[i,j,t], NB[i,t])
         logit(pB[i,j,t]) <- alpha0B[t] + alpha1B * DATES[i,j,t] +
-        alpha2B * pow(DATES[i,j,t],2) + alpha3B * HOURS[i,j,t]
+            alpha2B * pow(DATES[i,j,t],2) + alpha3B * HOURS[i,j,t]
       }
     }
   }

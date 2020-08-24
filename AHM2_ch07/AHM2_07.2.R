@@ -5,7 +5,7 @@
 #
 # Chapter 7 : MODELING FALSE POSITIVES
 # ====================================
-# Code from proofs dated 2020-07-08
+# Code from proofs dated 2020-08-19
 
 
 library(AHMbook)
@@ -19,19 +19,19 @@ library(AICcmodavg)
 # --------------------------------------------------------
 
 # Simulation settings
-set.seed(1) # Initialize RNGs
-nsites <- 200 # number of sites (i = 1, ..., nsites=M)
-nsurveys <- 7 # number of visits (j = 1, ..., nsurveys=J)
-psi <- 0.6 # expected occupancy probability
-p <- 0.7 # detection probability (p_11)
-fp <- 0.05 # false-positive error probability (p_10)
+set.seed(1)            # Initialize RNGs
+nsites <- 200          # number of sites (i = 1, ..., nsites=M)
+nsurveys <- 7          # number of visits (j = 1, ..., nsurveys=J)
+psi <- 0.6             # expected occupancy probability
+p <- 0.7               # detection probability (p_11)
+fp <- 0.05             # false-positive error probability (p_10)
 
 # Simulate occupancy states and encounter histories
-z <- rbinom(nsites, 1, psi) # occupancy states
+z <- rbinom(nsites, 1, psi)                     # occupancy states
 y <- matrix(NA, nrow = nsites, ncol = nsurveys) # empty matrix for detections
 for(i in 1:nsites){
-  pr_yequals1 <- p*z[i] + fp*(1 - z[i]) # p11 + p10
-  y[i,] <- rbinom(nsurveys, 1, pr_yequals1) # realized observations
+  pr_yequals1 <- p*z[i] + fp*(1 - z[i])         # p11 + p10
+  y[i,] <- rbinom(nsurveys, 1, pr_yequals1)     # realized observations
 }
 
 # Number of false-positive detections per occasion
@@ -42,38 +42,45 @@ apply(y[z==0,]>0, 2, sum)
 apply(y[z==1,]==0, 2, sum)
 # [1] 39 32 33 39 44 34 42
 
-# Build the unmarkedFrame
 type <- c(0, 7, 0)
+
+# Build the unmarkedFrame
 library(unmarked)
 summary(umf <- unmarkedFrameOccuFP(y = y, type = type)) # not shown
 
 largerp11 <- qlogis(c(0.5, 0.7, 0.1))
 largerp10 <- qlogis(c(0.5, 0.1, 0.7))
 
-(m1 <- occuFP(detformula = ~1, # model for p_11
-    FPformula = ~1, # model for p_10
-    stateformula = ~1, # model for psi
-    data = umf, # umarkedFrameOccuFP object
-    starts = largerp11) ) # add p_10 < p_11 constraint
+(m1 <- occuFP(detformula = ~1,     # model for p_11
+    FPformula = ~1,                # model for p_10
+    stateformula = ~1,             # model for psi
+    data = umf,                    # umarkedFrameOccuFP object
+    starts = largerp11) )          # add p_10 < p_11 constraint
+
 # Occupancy (logit-scale):
-# Estimate SE z P(>|z|)
-# 0.323 0.15 2.15 0.0316
+# Estimate   SE    z P(>|z|)
+#    0.323 0.15 2.15  0.0316
+
 # Detection (logit-scale):
 # Estimate SE z P(>|z|)
 # 0.762 0.083 9.18 4.32e-20
+
 # false positive (logit-scale):
 # Estimate SE z P(>|z|)
 # -2.69 0.199 -13.5 1.2e-41
+
 # AIC: 1550.633
 
-( m2 <- occuFP(detformula = ~1, # model for p_11
-    FPformula = ~1, # model for p_10
-    stateformula = ~1, # model for psi
-    data = umf, # umarkedFrameOccuFP object
-    starts = largerp10) ) # add p_11 < p_10 constraint
+( m2 <- occuFP(detformula = ~1,    # model for p_11
+    FPformula = ~1,                # model for p_10
+    stateformula = ~1,             # model for psi
+    data = umf,                    # umarkedFrameOccuFP object
+    starts = largerp10) )          # add p_11 < p_10 constraint
+
 m1@AIC ; m2@AIC
 # [1] 1550.633
 # [1] 1550.633
+
 cbind("m1" = plogis( coef(m1) ), "m2" = plogis( coef(m2)))
 #                  m1         m2
 # psi(Int) 0.57997672 0.42001094

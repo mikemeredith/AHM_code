@@ -5,7 +5,7 @@
 #
 # Chapter 9 : SPATIAL MODELS OF DISTRIBUTION AND ABUNDANCE
 # ========================================================
-# Code from proofs dated 2020-07-15
+# Code from proofs dated 2020-08-19
 
 # Approximate execution time for this code: 13 mins
 
@@ -112,8 +112,6 @@ save(out1, file="AHM2_09.3_out1.RData")
 # [....]
 
 with(dat, cbind(beta0, beta, alpha0, alpha, Ntotal = sum(N),
-    summaxC = sum(apply(y,1,max)))) # Remember the truth
-with(dat, c(beta0, beta, alpha0, alpha, Ntotal = sum(N),
     summaxC = sum(apply(y,1,max)))) # Remember the truth
 #      beta0 beta1 beta2 alpha0 alpha1 alpha2 Ntotal summaxC
 # [1,]     2     2    -2      0     -1     -1   7192    4371

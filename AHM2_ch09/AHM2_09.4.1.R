@@ -5,7 +5,7 @@
 #
 # Chapter 9 : SPATIAL MODELS OF DISTRIBUTION AND ABUNDANCE
 # ========================================================
-# Code from proofs dated 2020-07-15
+# Code from proofs dated 2020-08-19
 
 # Approximate execution time for this code: 20 mins
 # Run time with the full number of iterations: 3 hrs
@@ -35,12 +35,12 @@ dat <- simNmixSpatial(nsurveys = 3, mean.lambda = exp(2), beta = c(2, -2),
 library(spdep)
 coordgrid <- cbind(bo$x, bo$y)
 neigh <- dnearneigh(coordgrid, d1 = 0, d2 = sqrt(2) * 1000 + 1)
-winnb <- nb2WB(neigh) # Function to get CAR ingredients for BUGS
+winnb <- nb2WB(neigh)      # Function to get CAR ingredients for BUGS
 str(winnb)
 # List of 3
-# $ adj    : int [1:19404] 2 51 52 1 3 51 ... # Index of neighbours
+# $ adj    : int [1:19404] 2 51 52 1 3 51 ...   # Index of neighbours
 # $ weights: num [1:19404] 1 1 1 1 1 1 1 11 ... # Weights
-# $ num    : int [1:2500] 3 5 5 5 5 5 5 5 ... # Size of neighbourhood
+# $ num    : int [1:2500] 3 5 5 5 5 5 5 5 ...   # Size of neighbourhood
 
 # Bundle data
 # str(bdata <- list(y = yobs, nsites = dim(y)[1], nrep = dim(y)[2],
@@ -63,6 +63,7 @@ str(bdata <- with(dat, list(y = yobs, nsites = dim(y)[1], nrep = dim(y)[2],
 # Specify model in BUGS language
 cat(file = "CAR.Nmix.txt", "
 model {
+
   # Specify priors
   beta0 <- log(mean.lam)
   mean.lam ~ dunif(0, 20)
@@ -72,10 +73,12 @@ model {
     alpha[v] ~ dnorm(0, 0.1)
     beta[v] ~ dnorm(0, 0.1)
   }
+
   # CAR prior distribution for spatial random effects
   eta[1:nsites] ~ car.normal(adj[], weights[], num[], tau)
   v.eta ~ dnorm(0, 0.01)I(0,)
   tau <- 1/v.eta
+
   # Model for abundance
   for (i in 1:nsites){
     loglam[i] <- beta0 + beta[1] * elev[i] + beta[2] * pow(elev[i],2) + eta[i]
@@ -83,6 +86,7 @@ model {
     lam[i] <- exp(loglam.lim[i])
     N[i] ~ dpois(lam[i])
   }
+
   # Measurement error model
   for (i in 1:nsites){
     for (j in 1:nrep){
@@ -92,6 +96,7 @@ model {
       lp[i,j] <- alpha0 + alpha[1] * forest[i] + alpha[2] * wind[i,j]
     }
   }
+
   # Derived parameters: Total population size on grid
   Ntotal <- sum(N[])
 }
@@ -111,7 +116,6 @@ params <- c("mean.lam", "beta0", "beta", "mean.p", "alpha0", "alpha", "v.eta",
 # MCMC settings
 # ni <- 200000 ; nt <- 100 ; nb <- 100000 ; nc <- 3
 ni <- 15000 ; nt <- 1 ; nb <- 10000 ; nc <- 3  # ~~~ for testing, 17 mins
-    # nb = 1000 not enough for adaptation to complete
 
 # Call WinBUGS from R (ART longish) and summarize posteriors
 library(R2WinBUGS)
@@ -137,8 +141,8 @@ print(out2$summary[1:10,], 2)
 save(out2, file="AHM2_09.4.1_out2.RData")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-with(dat, cbind(beta0, beta[1], beta[2], alpha0, alpha[1], alpha[2], Ntotal = sum(N),
-    summaxC = sum(apply(y,1,max))))
+with(dat, cbind(beta0, beta[1], beta[2], alpha0, alpha[1], alpha[2],
+    Ntotal = sum(N), summaxC = sum(apply(y,1,max))))
 #      beta0 beta1 beta2 alpha0 alpha1 alpha2 Ntotal summaxC
 # [1,]     2     2    -2      0     -1     -1   7192    4371
 
@@ -176,8 +180,8 @@ par(op)
 # ~~~ extra code for table of results ~~~~
 # needs out1 object from section
 load("AHM2_09.3_out1.RData")
-truth <- with(dat, c(alpha0 = alpha0, alpha1 = alpha[1], alpha2 = alpha[2], beta0 = beta0,
-    beta1 = beta[1], beta2 = beta[2], Ntotal = sum(N)))
+truth <- with(dat, c(alpha0 = alpha0, alpha1 = alpha[1], alpha2 = alpha[2],
+    beta0 = beta0, beta1 = beta[1], beta2 = beta[2], Ntotal = sum(N)))
 Bayes.est.Nmix0 <- rbind(out1$summary[c('alpha0','alpha[1]', 'alpha[2]',
     'beta0', 'beta[1]', 'beta[2]', 'Ntotal'), 1:2])
 Bayes.est.CAR <- rbind(out2$summary[c('alpha0', 'alpha[1]', 'alpha[2]',

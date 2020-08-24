@@ -6,7 +6,7 @@
 # =============================================================
 # Code from MS dated 2018-08-14
 
-# Approximate run time for this script:
+# Approximate run time for this script: 46 mins
 # Run time with the full number of iterations:
 
 # This file has code for models 8, 9, 10a-c and 12 described in

@@ -5,7 +5,7 @@
 #
 # Chapter 8 : MODELING INTERACTIONS AMONG SPECIES
 # ===============================================
-# Code from proofs dated 2020-07-13
+# Code from proofs dated 2020-08-19
 
 # Approximate execution time for this code: 40 mins
 # Run time with the full number of iterations: 5 hrs
@@ -25,16 +25,17 @@ library(AHMbook)
 library(abind)
 data(MesoCarnivores)
 str(data <- MesoCarnivores)
-str(ylist <- list(bobcat = data$bobcat, coyote = data$coyote, redfox = data$redfox))
+str(ylist <- list(bobcat = data$bobcat, coyote = data$coyote,
+    redfox = data$redfox))
 
 # Put species detections in an array (site x rep x species)
 y <- abind(ylist, along = 3)
 
 # Get sample sizes
-nsites <- dim(y)[1]   # 1437 sites
-nsurveys <- dim(y)[2] # 3 surveys
-nspec <- dim(y)[3]    # 3 species
-ncat <- 2^nspec       # 8 possible community states
+nsites <- dim(y)[1]       # 1437 sites
+nsurveys <- dim(y)[2]     # 3 surveys
+nspec <- dim(y)[3]        # 3 species
+ncat <- 2^nspec           # 8 possible community states
 
 # Prepare site covariates for occupancy and look at them
 Dist <- scale(data$sitecovs[,'Dist_5km'])
@@ -42,19 +43,19 @@ HDens <- scale(data$sitecovs[,'HDens_5km'])
 summary(data$sitecovs[,1]) ; summary(data$sitecovs[,2])
 
 # Prepare one site covariate to serve as an observational covariate for detection
-table(Trail <- data$sitecovs[,'Trail']) # summarize
+table(Trail <- data$sitecovs[,'Trail'])    # summarize
 Trail <- matrix(cbind(Trail, Trail, Trail), ncol = 3)
 
 # Condense multi-species detection array to be site x survey
 ycat <- apply(y, c(1,2), paste, collapse = "")
-ycat[ycat == "000"] <- 1 # Unoccupied (abbreviated 'U')
-ycat[ycat == "100"] <- 2 # Only bobcat ('B') detected
-ycat[ycat == "010"] <- 3 # Only coyote ('C') detected
-ycat[ycat == "001"] <- 4 # Only red fox ('F') detected
-ycat[ycat == "110"] <- 5 # Bobcat and coyote ('BC')
-ycat[ycat == "011"] <- 6 # Coyote and fox ('CF')
-ycat[ycat == "101"] <- 7 # Bobcat and fox ('BF')
-ycat[ycat == "111"] <- 8 # All three species ('BCF')
+ycat[ycat == "000"] <- 1    # Unoccupied (abbreviated 'U')
+ycat[ycat == "100"] <- 2    # Only bobcat ('B') detected
+ycat[ycat == "010"] <- 3    # Only coyote ('C') detected
+ycat[ycat == "001"] <- 4    # Only red fox ('F') detected
+ycat[ycat == "110"] <- 5    # Bobcat and coyote ('BC')
+ycat[ycat == "011"] <- 6    # Coyote and fox ('CF')
+ycat[ycat == "101"] <- 7    # Bobcat and fox ('BF')
+ycat[ycat == "111"] <- 8    # All three species ('BCF')
 
 # Convert each column to a numeric: this is our response variable
 ycat <- apply(ycat, 2, as.numeric)
@@ -100,6 +101,7 @@ str(bdata <- list(y = ycat, psi_cov = psi_cov, psi_inxs_cov = psi_inxs_cov,
 # Specify model in BUGS language
 cat(file = 'static_categorical.txt', "
 model{
+
   # --- Priors ---
   # First order psi
   betaB[1] <- logit(mean.psiB) # fo occupancy intercepts
@@ -133,6 +135,7 @@ model{
   }
   # Second order detection priors (rho)
   # none in this model
+
   # --- 'Likelihood' ---
   # (1) Basic hierarchical model: states and observations
   # Latent state model
@@ -145,6 +148,7 @@ model{
       y[i, j] ~ dcat(rdm[i, j, ( 1:ncat ) , z[i] ] )
     }
   }
+
   # (2) Define the latent state vector and the observation matrices
   for( i in 1:nsites ) {
     # Latent state probabilities in latent state vector (lsv)
@@ -233,8 +237,9 @@ model{
       rdm[i, j, 6, 8] <- exp( rhoCBF[i, j] + rhoFBC[i, j] ) #-| OS = CF
       rdm[i, j, 7, 8] <- exp( rhoBCF[i, j] + rhoFBC[i, j] ) #-| OS = BF
       rdm[i, j, 8, 8] <- exp( rhoBCF[i, j] + rhoCBF[i, j] +
-      rhoFBC[i, j] ) #--------------------------------------| OS = BCF
+          rhoFBC[i, j] ) #------------------------------------| OS = BCF
     }
+
     # (3) Specify linear models for the parameters in lsv and rdm
     # Linear models for the occupancy parameters
     # ...for states B, C, and F
@@ -246,8 +251,11 @@ model{
     psiCF[i] <- psiC[i] + psiF[i] + inprod( betaCF, psi_inxs_cov[i, ] )
     psiBF[i] <- psiB[i] + psiF[i] + inprod( betaBF, psi_inxs_cov[i, ] )
     # ...for state BCF
-    psiBCF[i] <- psiB[i] + psiC[i] + psiF[i] + inprod( betaBC, psi_inxs_cov[i, ] ) +
-    inprod( betaCF, psi_inxs_cov[i, ] ) + inprod( betaBF, psi_inxs_cov[i, ] )
+    psiBCF[i] <- psiB[i] + psiC[i] + psiF[i] +
+        inprod( betaBC, psi_inxs_cov[i, ] ) +
+        inprod( betaCF, psi_inxs_cov[i, ] ) +
+        inprod( betaBF, psi_inxs_cov[i, ] )
+
     # Linear models for the detection parameters
     # => Here we could specify detection interactions as well
     for(j in 1:nsurveys){
@@ -345,12 +353,12 @@ print(out1$summary[1:24, -c(4:6)], 3)
 (mnx <- mean(data$sitecovs[,'Dist_5km']))
 (sdx <- sd(data$sitecovs[,'Dist_5km']))
 Dist.pred.orig <- seq(r[1], r[2], length.out = 1000) # Create new data
-Dist.pred <- (Dist.pred.orig-mnx) / sdx # ... and scale as the real data
+Dist.pred <- (Dist.pred.orig-mnx) / sdx      # ... and scale as the real data
 HDens.pred <- rep(0, 1000)
 
 # Create model matrices for the prediction covariates
-head(psi_cov1 <- cbind(1, Dist.pred)) # We vary this covariate ...
-head(psi_cov2 <- cbind(1, HDens.pred)) # .. while this stays constant
+head(psi_cov1 <- cbind(1, Dist.pred))    # We vary this covariate ...
+head(psi_cov2 <- cbind(1, HDens.pred))   # .. while this stays constant
 
 # Assemble the linear predictors
 # ...for states B, C, and F
@@ -371,14 +379,14 @@ lsv <- lsp <- matrix(NA, ncol = ncat, nrow = 1000 )
 colnames(lsv) <- colnames(lsp) <- c('U', 'B', 'C', 'F', 'BC', 'CF', 'BF', 'BCF')
 
 # Compute latent state vector (lsv) and latent state probabilities (lsp)
-lsv[ , 1] <- 1 # none of the three species
-lsv[ , 2] <- exp( psiB ) # only B
-lsv[ , 3] <- exp( psiC ) # only C
-lsv[ , 4] <- exp( psiF ) # only F
-lsv[ , 5] <- exp( psiBC) # both B and C
-lsv[ , 6] <- exp( psiCF) # both C and F
-lsv[ , 7] <- exp( psiBF) # both B and F
-lsv[ , 8] <- exp( psiBCF ) # all three species
+lsv[ , 1] <- 1              # none of the three species
+lsv[ , 2] <- exp( psiB )    # only B
+lsv[ , 3] <- exp( psiC )    # only C
+lsv[ , 4] <- exp( psiF )    # only F
+lsv[ , 5] <- exp( psiBC)    # both B and C
+lsv[ , 6] <- exp( psiCF)    # both C and F
+lsv[ , 7] <- exp( psiBF)    # both B and F
+lsv[ , 8] <- exp( psiBCF )  # all three species
 
 # Probability of each state
 for(i in 1:nrow(lsv)){
@@ -445,7 +453,7 @@ legend('topright', c('alone', 'given Bobcat presence', 'given Coyote presence'),
 
 # ~~~ extra code for figures 8.6 and 8.7 ~~~~~~
 # Create prediction covariates for occupancy as a function of Housing density
-#   (at average Disturbance)
+#   (at average Disturbance) - figure 8.6
 (r <- range(data$sitecovs[,'HDens_5km']))
 mnx <- mean(data$sitecovs[,'HDens_5km'])
 sdx <- sd(data$sitecovs[,'HDens_5km'])
@@ -506,7 +514,7 @@ legend(90, 0.6, c('Bobcat', 'Coyote', 'Red Fox'), lwd = 3, lty = 1:3,
     col = 1:3, bty = 'n')
 par(op)
 
-# Compute conditional occupancy for all species
+# Compute conditional occupancy for all species, now with Housing density
 B.alone <- lsp[, 'B'] / rowSums(lsp[, c('U', 'B')])
 B.given.coyote <- rowSums(lsp[, c('BC', 'BCF')]) /
     rowSums(lsp[, c('C', 'BC', 'CF', 'BCF')])

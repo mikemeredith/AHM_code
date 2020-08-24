@@ -5,7 +5,7 @@
 #
 # Chapter 7 : MODELING FALSE POSITIVES
 # ====================================
-# Code from proofs dated 2020-07-08
+# Code from proofs dated 2020-08-19
 
 # Approximate execution time for this code: 6 mins
 
@@ -63,49 +63,52 @@ str( bdata <- list(y = y, nsites = nrow(y), nsurv1 = nsurv1, nsurv2 = nsurv2,
 # Specify model in BUGS language
 cat(file = "occufp3.txt","
 model {
+
   # Priors
   psi ~ dunif(0, 1)
   fp ~ dunif(0, 1)
   b ~ dunif(0, 1)
   gamma ~ dunif(0, 1)
   phi ~ dunif(0, 1)
-  alpha0 ~ dnorm(0,0.01) # Logit-linear parameters for detection
-  alpha1 ~ dnorm(0,0.01) # M e t hod effect
+  alpha0 ~ dnorm(0,0.01)    # Logit-linear parameters for detection
+  alpha1 ~ dnorm(0,0.01)    # Method effect
+
   # Likelihood, t = 1
   for (i in 1:nsites) {
-    z[i,1] ~ dbern(psi) # State model
+    z[i,1] ~ dbern(psi)                          # State model
     for(j in 1:(nsurv1 + nsurv2)){
-      probs[i,j,1,1,1] <- 1-fp # z = 0 obs probs
+      probs[i,j,1,1,1] <- 1-fp                   # z = 0 obs probs
       probs[i,j,2,1,1] <- fp
       probs[i,j,3,1,1] <- 0
-      probs[i,j,1,1,2] <- 1 - p[i,j,1] # z = 1 obs probs
+      probs[i,j,1,1,2] <- 1 - p[i,j,1]           # z = 1 obs probs
       probs[i,j,2,1,2] <- (1-b)*p[i,j,1]
       probs[i,j,3,1,2] <- p[i,j,1]*b
     }
-    for(j in 1:nsurv1) { # Loop over replicate surveys
+    for(j in 1:nsurv1) {                         # Loop over replicate surveys
       logit(p[i,j,1]) <- alpha0
-      y[i,j,1] ~ dbern(z[i,1]*p[i,j,1] ) # Type 1 data
+      y[i,j,1] ~ dbern(z[i,1]*p[i,j,1] )         # Type 1 data
     }
-    for (j in (nsurv1+1):(nsurv1+nsurv2) ) { # Replicate surveys
+    for (j in (nsurv1+1):(nsurv1+nsurv2) ) {     # Replicate surveys
       logit(p[i,j,1]) <- alpha0 + alpha1
       y[i,j,1] ~ dcat(probs[i,j,1:3,1, z[i,1]+1 ] ) # Type 3 data
     }
+
     # Model components for t = 2, ...
     for(t in 2:nyears) {
       z[i,t] ~ dbern(z[i,t-1]*phi + (1-z[i,t-1])*gamma ) # State model t>1
       for(j in 1:(nsurv1+nsurv2)) {
-        probs[i,j,1,t,1] <- 1-fp # z = 0 obs probs
+        probs[i,j,1,t,1] <- 1-fp                 # z = 0 obs probs
         probs[i,j,2,t,1] <- fp
         probs[i,j,3,t,1] <- 0
-        probs[i,j,1,t,2] <- 1-p[i,j,t] # z = 1 obs probs
+        probs[i,j,1,t,2] <- 1-p[i,j,t]           # z = 1 obs probs
         probs[i,j,2,t,2] <- (1-b)*p[i,j,t]
         probs[i,j,3,t,2] <- p[i,j,t]*b
       }
-      for(j in 1:nsurv1) { # Loop over replicate surveys
+      for(j in 1:nsurv1) {                       # Loop over replicate surveys
         logit(p[i,j,t]) <- alpha0
-        y[i,j,t] ~ dbern(z[i,t]*p[i,j,t] ) # Type 1 data
+        y[i,j,t] ~ dbern(z[i,t]*p[i,j,t] )       # Type 1 data
       }
-      for (j in (nsurv1+1):(nsurv1+nsurv2) ) { # Loop over surveys
+      for (j in (nsurv1+1):(nsurv1+nsurv2) ) {   # Loop over surveys
         logit(p[i,j,t]) <- alpha0 + alpha1
         y[i,j,t] ~ dcat(probs[i,j,1:3,t, z[i,t]+1 ] ) # Type 3 data
       }
@@ -113,6 +116,7 @@ model {
   }
 }
 ")
+
 # Initial values.
 zst <- apply(y[, 1:(nsurv1+nsurv2), ], c(1, 3), max)
 zst[zst>1] <- 1
@@ -128,7 +132,8 @@ na <- 1000 ; ni <- 2000 ; nt <- 1 ; nb <- 1000 ; nc <- 3
 # Call JAGS (ART 4 min), assess convergence and summarize posteriors
 out5 <- jags(bdata, inits, params, "occufp3.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-par(mfrow = c(2, 3)) ; traceplot(out5)
+op <- par(mfrow = c(2, 3)) ; traceplot(out5)
+par(op)
 print(out5, dig = 3)
 #          mean    sd   2.5%    50%  97.5% overlap0 f  Rhat n.eff
 # psi     0.634 0.034  0.567  0.635  0.697    FALSE 1 1.001  1081
@@ -157,9 +162,9 @@ for(i in c(2009, 2010, 2011)){
   y[match(x[,1], usites), 2:4, m] <- as.matrix(x[,2:4])
   m <- m+1
 }
-nsurv1 <- 1 # NA data Type 1
-nsurv2 <- 3 # real data Type 2 data
-nsurv3 <- 1 # NA data Type 3
+nsurv1 <- 1       # NA data Type 1
+nsurv2 <- 3       # real data Type 2 data
+nsurv3 <- 1       # NA data Type 3
 Tsurv <- nsurv1 + nsurv2 + nsurv3
 nyears <- 3
 
@@ -174,6 +179,7 @@ str( bdata <- list(y = y, nsites = nrow(y), nsurv1 = nsurv1, nsurv2 = nsurv2,
 # Specify model in BUGS language
 cat(file = "occufp4.txt","
 model {
+
   # Priors
   psi ~ dunif(0, 1)
   b ~ dunif(0,1)
@@ -186,6 +192,7 @@ model {
     gamma[t] ~ dunif(0, 1)
     phi[t] ~ dunif(0, 1)
   }
+
   # Likelihood
   # Model for t = 1
   for (i in 1:nsites) {
@@ -205,6 +212,7 @@ model {
       probs[i,j,3,1,2] <- p[1]*b # Observation model
       y[i,j,1] ~ dcat(probs[i,j,1:3,1, z[i,1]+1 ] )
     }
+
     # Model for t>1
     for(t in 2:nyears) {
       z[i,t] ~ dbern(z[i,t-1]*phi[t-1] + (1-z[i,t-1])*gamma[t-1])
@@ -231,7 +239,7 @@ model {
 # Initial values
 zst <- apply(y[,,], c(1,3), max, na.rm = TRUE)
 zst[zst>1] <- 1
-zst[zst == '-Inf'] <- 0
+zst[zst == -Inf] <- 0
 inits <- function(){ list(z = zst, p = c(0.8, 0.8, 0.8), phi = c(0.5, 0.9),
     gamma = c(0.1, 0.1), fp = c(0.05, 0.05, 0.05), b = 0.1 ) }
 

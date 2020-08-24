@@ -5,7 +5,7 @@
 #
 # Chapter 8 : MODELING INTERACTIONS AMONG SPECIES
 # ===============================================
-# Code from proofs dated 2020-07-13
+# Code from proofs dated 2020-08-19
 
 # Approximate execution time for this code: 55 mins
 # Run time with the full number of iterations: 4 hrs
@@ -34,14 +34,14 @@ str(hours <- HubbardBrook$times[,,11:20])    # Survey hour (in hours)
 
 # Date of full canopy leaf expansion as a phenological measure
 budburst <- c(138.4, 133.8, 143.6, 133.9, 137.3, 146.6, 142.0, 148.3, 143.3, 141.0)
-plot(year, budburst, xlab = 'Year', ylab = 'Day of budburst', ylim = c(130, 150),
-    type = 'b', pch = 16, cex = 2) # not shown
+plot(year, budburst, xlab = 'Year', ylab = 'Day of budburst',
+    ylim = c(130, 150), type = 'b', pch = 16, cex = 2) # not shown
 
 # Get subset of six of the more common species
-old.speclist <- speclist # Make copy of original
-sel.species <- c(3:4, 6:7, 12:13) # Select those 6 species
-speclist[sel.species] # Check them out
-speclist <- speclist[sel.species] # Update species list
+old.speclist <- speclist               # Make copy of original
+sel.species <- c(3:4, 6:7, 12:13)      # Select those 6 species
+speclist[sel.species]                  # Check them out
+speclist <- speclist[sel.species]      # Update species list
 
 # Restrict count data to the selected six species
 str(counts <- counts[,,,sel.species])
@@ -55,7 +55,7 @@ HOURS[is.na(HOURS)] <- 0
 # Grab and scale elevation and aspect covariates
 hist(elev <- HubbardBrook$sitecov$Elev, col = 'gold')
 hist(aspect <- HubbardBrook$sitecov$Aspect, col = 'gold')
-elev <- (elev - 500) / 100 # center on 500 and scale by 100
+elev <- (elev - 500) / 100                 # center on 500 and scale by 100
 north <- abs(HubbardBrook$sitecov$Aspect-180)/180 * pi
 
 # Get sample sizes
@@ -68,7 +68,7 @@ nspec <- dim(counts)[4]
 maxC <- apply(counts, c(1,3,4), max, na.rm = TRUE)
 maxC[maxC == '-Inf'] <- NA
 obsz <- maxC
-obsz[obsz > 1] <- 1 # Observed p/a array for site, year and species
+obsz[obsz > 1] <- 1           # Observed p/a array for site, year and species
 
 # Number of surveyed plots per year (for last 10 years)
 tmp <- maxC[,,1]
@@ -101,7 +101,8 @@ str(yB <- y[, , '2016', 'BTNW'])
 
 # Bundle and summarize data set
 str(bdata <- list(yR = yR, yB = yB, nsites = nsites, nreps = nreps,
-    elev = elev, north = north, DATES = DATES[,,'2016'], HOURS = HOURS[,,'2016']))
+    elev = elev, north = north, DATES = DATES[,,'2016'],
+    HOURS = HOURS[,,'2016']))
 # List of 8
 # $ yR   : num [1:373, 1:3] 0 1 1 1 1 1 1 1 0 0 ...
 # $ yB   : num [1:373, 1:3] 0 0 0 1 0 0 0 1 0 0 ...
@@ -115,6 +116,7 @@ str(bdata <- list(yR = yR, yB = yB, nsites = nsites, nreps = nreps,
 # Specify model in BUGS language
 cat(file = "staticWaddle.txt", "
 model {
+
   # Model for Red-eyed vireo (REVI): the 'dominant' species
   # Priors for intercepts and coefficients
   mean.psiR <- ilogit(beta0R)
@@ -126,6 +128,7 @@ model {
   alpha1R ~ dnorm(0, 0.1)
   alpha2R ~ dnorm(0, 0.1)
   alpha3R ~ dnorm(0, 0.1)
+
   # Likelihood for REVI ('dominant')
   # Ecological model
   for (i in 1:nsites){
@@ -138,6 +141,7 @@ model {
       pow(DATES[i,j],2) + alpha3R * HOURS[i,j]
     }
   }
+
   # Model for Black-throated Green Warbler (BTNW): the 'subordinate' sp.
   # Priors for intercepts and coefficients
   for(k in 1:2){ # Note all are stratified by presence/absence of REVI !
@@ -151,6 +155,7 @@ model {
     alpha2B[k] ~ dnorm(0, 0.1)
     alpha3B[k] ~ dnorm(0, 0.1)
   }
+
   # Likelihood for BTNW ('subordinate')
   # Ecological model
   for (i in 1:nsites){
@@ -164,6 +169,7 @@ model {
       alpha2B[zR[i]+1] * pow(DATES[i,j],2) + alpha3B[zR[i]+1] * HOURS[i,j]
     }
   }
+
   # Derived quantities
   # Differences in BTNW parameters between REVI presence and absence
   diffbeta0B <- beta0B[2] - beta0B[1] # 'presence of R minus absence ...'
@@ -192,10 +198,10 @@ zst <- rep(1, nsites)
 inits <- function() list(zR = zst, zB = zst)
 
 # Parameters monitored
-params <- c('mean.psiR', 'beta1R', 'beta2R', 'mean.pR', 'alpha1R', 'alpha2R', 'alpha3R',
-    'mean.psiB', 'beta1B', 'beta2B', 'mean.pB', 'alpha1B', 'alpha2B', 'alpha3B', 'diffbeta0B',
-    'diffbeta1B', 'diffbeta2B', 'diffalpha0B', 'diffalpha1B', 'diffalpha2B', 'diffalpha3B',
-    'nRB', 'nRb', 'nrB', 'nrb')
+params <- c('mean.psiR', 'beta1R', 'beta2R', 'mean.pR', 'alpha1R', 'alpha2R',
+    'alpha3R', 'mean.psiB', 'beta1B', 'beta2B', 'mean.pB', 'alpha1B', 'alpha2B',
+    'alpha3B', 'diffbeta0B', 'diffbeta1B', 'diffbeta2B', 'diffalpha0B',
+    'diffalpha1B', 'diffalpha2B', 'diffalpha3B', 'nRB', 'nRb', 'nrB', 'nrb')
 
 # MCMC settings
 # na <- 5000 ; nc <- 3 ; ni <- 30000 ; nb <- 10000 ; nt <- 20
@@ -252,6 +258,7 @@ legend('bottomleft', c('Red-eyed Vireo present', 'Red-eyed Vireo absent'),
 par(op)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
 # 8.3.3 Directional dependence in a dynamic occupancy model
 # ---------------------------------------------------------
 
@@ -279,6 +286,7 @@ str(bdata <- list(yR = yR, yB = yB, nsites = nsites, nyears = nyears,
 # Specify model in BUGS language
 cat(file = "dynamicWaddle.txt", "
 model {
+
   # Dynocc model for Red-eyed Vireo (REVI; 'dominant')
   # Priors for initial occupancy
   mean.psiR ~ dunif(0, 1)
@@ -308,6 +316,7 @@ model {
   alpha1R ~ dnorm(0, 0.1)
   alpha2R ~ dnorm(0, 0.1)
   alpha3R ~ dnorm(0, 0.1)
+
   # Likelihood for 'REVI'
   # Ecological submodel
   for (i in 1:nsites){
@@ -321,6 +330,7 @@ model {
       logit(gammaR[i,t-1]) <- alpha.lgammaR[i, t-1]
     }
   }
+
   # Observation model
   for (i in 1:nsites){
     for (j in 1:nreps){
@@ -331,6 +341,7 @@ model {
       }
     }
   }
+
   # Dynocc model for Black-throated Green Warbler (BTNW; 'subordinate')
   # Priors for initial occupancy
   mean.psiB ~ dunif(0, 1)
@@ -338,11 +349,13 @@ model {
   # Linear models and priors for phi and gamma
   for (i in 1:nsites){
     for(t in 1:(nyears-1)){
-      alpha.lphiB[i,t] <- alpha0.lphiB[zR[i,t]+1] + beta.lphiB1[zR[i,t]+1] * elev[i] +
-      beta.lphiB2[zR[i,t]+1] * north[i] + beta.lphiB3[zR[i,t]+1] * bbcov[t]
+      alpha.lphiB[i,t] <- alpha0.lphiB[zR[i,t]+1] +
+          beta.lphiB1[zR[i,t]+1] * elev[i] +
+          beta.lphiB2[zR[i,t]+1] * north[i] + beta.lphiB3[zR[i,t]+1] * bbcov[t]
       alpha.lgammaB[i,t] <- alpha0.lgammaB[zR[i,t]+1] +
-      beta.lgammaB1[zR[i,t]+1] * elev[i] + beta.lgammaB2[zR[i,t]+1] * north[i] +
-      beta.lgammaB3[zR[i,t]+1] * bbcov[t]
+          beta.lgammaB1[zR[i,t]+1] * elev[i] +
+          beta.lgammaB2[zR[i,t]+1] * north[i] +
+          beta.lgammaB3[zR[i,t]+1] * bbcov[t]
     }
   }
   for(k in 1:2){ # Note here stratification by vireo presence/absence
@@ -357,6 +370,7 @@ model {
     beta.lgammaB2[k] ~ dnorm(0, 0.1)
     beta.lgammaB3[k] ~ dnorm(0, 0.1)
   }
+
   # Priors for model of p
   for(t in 1:nyears){
     alpha.lpB[t] <- mean.pB[t]
@@ -365,6 +379,7 @@ model {
   alpha1B ~ dnorm(0, 0.1)
   alpha2B ~ dnorm(0, 0.1)
   alpha3B ~ dnorm(0, 0.1)
+
   # Likelihood for 'BTNW'
   # Ecological submodel
   for (i in 1:nsites){
@@ -378,6 +393,7 @@ model {
       logit(gammaB[i,t-1]) <- alpha.lgammaB[i,t-1]
     }
   }
+
   # Observation model
   for (i in 1:nsites){
     for (j in 1:nreps){
@@ -388,6 +404,7 @@ model {
       }
     }
   }
+
   # Derived quantities
   # Differences in BTNW parameters between REVI presence and absence
   diffalpha0.lphiB <- alpha0.lphiB[2] - alpha0.lphiB[1]
@@ -398,6 +415,7 @@ model {
   diffbeta.lgammaB1 <- beta.lgammaB1[2] - beta.lgammaB1[1]
   diffbeta.lgammaB2 <- beta.lgammaB2[2] - beta.lgammaB2[1]
   diffbeta.lgammaB3 <- beta.lgammaB3[2] - beta.lgammaB3[1]
+
   # Tally up number of sites in each of 4 states
   for (t in 1:nyears){
     for(i in 1:nsites){
@@ -475,7 +493,8 @@ bpred.orig <- 130:150   # Approximate budburst range in data
 bpred <- (bpred.orig - mean(budburst[-1])) / sd(budburst[-1])
 plot(bpred.orig, plogis(tmp$alpha0.lgammaB[1] + tmp$beta.lgammaB3[1] * bpred),
     type = 'l', lwd = 3, lty = 2, col = 'red', frame = FALSE,
-    xlab = 'Date of full budburst', ylab = 'Predicted colonization prob. of BTNW',
+    xlab = 'Date of full budburst',
+    ylab = 'Predicted colonization prob. of BTNW',
     ylim = c(0.4,1))
 lines(bpred.orig, plogis(tmp$alpha0.lgammaB[2] + tmp$beta.lgammaB3[2] * bpred),
     type = 'l', lwd = 3, col = 'blue')

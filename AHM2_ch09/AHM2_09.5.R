@@ -5,7 +5,7 @@
 #
 # Chapter 9 : SPATIAL MODELS OF DISTRIBUTION AND ABUNDANCE
 # ========================================================
-# Code from proofs dated 2020-07-15
+# Code from proofs dated 2020-08-19
 
 # Approximate execution time for this code: 50 mins
 # Run time with the full number of iterations: 1.5 hrs
@@ -147,6 +147,7 @@ str(bdata <- list(C = C, elev = elev, forest = forest, DATE = DATE, DUR = DUR,
 # Specify model in BUGS language
 cat(file = "SVC.txt","
 model {
+
   # Priors
   for(t in 1:nyear){
     alpha0[t] <- logit(p0[t])
@@ -161,16 +162,19 @@ model {
   }
   beta0 ~ dnorm(0, 0.1)
   lam0 <- exp(beta0)
+
   # Linear model for the trend, with its priors
   for(i in 1:nsite){
     trend[i] <- mean.trend + eta[MHBblockID[i]]
   }
   mean.trend ~ dnorm(0, 1)
+
   # CAR prior distribution for spatial random effects in the trend
   eta[1:n.block] ~ car.normal(adj[], weights[], num[], tau)
   tau <- 1/v.eta
   sd.eta <- sqrt(v.eta)
   v.eta ~ dnorm(0, 0.01)I(0,)
+
   # Likelihood
   for (i in 1:nsite){
     for(t in 1:nyear){
@@ -203,6 +207,7 @@ tmp <- apply(C, c(1,3), max, na.rm = TRUE) + 1
 tmp[tmp == '-Inf'] <- 1
 inits <- function(){list(N = tmp, beta0 = 1, v.eta = abs(rnorm(1)),
     eta = rep(0, n.block))}
+
 # Parameters monitored
 params <- c("lam0", "beta1", "mean.trend", "p0", "alpha1", "Ntotal",
     "meanPopLevel", "trend", "v.eta", "sd.eta", "eta")
@@ -216,6 +221,7 @@ library(R2WinBUGS)
 # out <- bugs(bdata, inits, params, "SVC.txt", n.chains = nc, n.thin = nt,
     # n.iter = ni, n.burnin = nb, debug = TRUE, bugs.directory = bugs.dir,
     # DIC = FALSE, working.directory = getwd()) # Must close program by hand
+# ~~~~ for testing, use the following call:
 out <- bugs(bdata, inits, params, "SVC.txt", n.chains = nc, n.thin = nt,
     n.iter = ni, n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir,
     DIC = FALSE)

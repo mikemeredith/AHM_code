@@ -5,7 +5,7 @@
 #
 # Chapter 7 : MODELING FALSE POSITIVES
 # ====================================
-# Code from proofs dated 2020-07-08
+# Code from proofs dated 2020-08-19
 
 library(unmarked)
 
@@ -13,17 +13,18 @@ library(unmarked)
 #   'multi-state design' of Miller et al. (2011)
 # ================================================
 
-# 7.4.1 Modeling Classified False Positives in unmarked
+# 7.4.1 Modeling classified false positives in unmarked
 # ------------------------------------------------------
 
-set.seed(129)   # RNG seed
-nsites <- 200   # number of sites
-nsurveys1 <- 3  # number of occasions with Type 1 data
-nsurveys2 <- 4  # number of occasions with Type 2 data
-psi <- 0.6      # expected proportion of are occupied
-p <- c(0.7,0.5) # detection prob of method 1 and method 2
-fp <- 0.05      # false-positive error probability (p_10)
-b <- 0.2        # probability y is recorded as certain
+# Set parameter values of the simulation
+set.seed(129)       # RNG seed
+nsites <- 200       # number of sites
+nsurveys1 <- 3      # number of occasions with Type 1 data
+nsurveys2 <- 4      # number of occasions with Type 2 data
+psi <- 0.6          # expected proportion of are occupied
+p <- c(0.7,0.5)     # detection prob of method 1 and method 2
+fp <- 0.05          # false-positive error probability (p_10)
+b <- 0.2            # probability y is recorded as certain
 
 # Simulate the occupancy states and data
 z <- rbinom(nsites, 1, psi)
@@ -48,19 +49,24 @@ summary(umf2 <- unmarkedFrameOccuFP(y = y, obsCovs = list(Method = Method),
     type = type)) # not printed
 (m2 <- occuFP(detformula = ~ -1 + Method, FPformula = ~ 1, Bformula = ~ 1,
     stateformula = ~ 1, data = umf2) )
+
 # Occupancy:
 # Estimate SE z P(>|z|)
 # 0.553 0.148 3.73 0.000192
+
 # Detection:
 # Estimate SE z P(>|z|)
 # Method1 1.1176 0.1225 9.12 7.37e-20
 # Method2 0.0268 0.0891 0.30 7.64e-01
+
 # false positive:
 # Estimate SE z P(>|z|)
 # -3.27 0.331 -9.88 5.26e-23
+
 # Pcertain:
 # Estimate SE z P(>|z|)
 # -1.47 0.16 -9.2 3.75e-20
+
 # AIC: 1734.899
 
 # Coefficients on the link (= "beta") scale
@@ -93,8 +99,8 @@ nsurveys <- 7            # number of occasions
 habitat <- rnorm(nsites) # Some (continuous) habitat descriptor
 
 # Simulate the occupancy states and data
-alpha0 <- 0   # Intercept...
-alpha1 <- 1   # ... and slope of psi-habitat regression
+alpha0 <- 0        # Intercept...
+alpha1 <- 1        # ... and slope of psi-habitat regression
 psi <- plogis(alpha0 + alpha1*habitat) # Occupancy
 z <- rbinom(nsites, 1, psi)            # Latent p/a states
 y <- matrix(0,nsites, nsurveys)
@@ -110,8 +116,8 @@ for(i in 1:nsites){
   y[i, 1:2] <- rbinom(2, 1, p[1]*z[i])
   # False-positives mixed in
   y[i, 3:6] <- rbinom(4, 1, p[2]*z[i] + fp*(1-z[i]))
-  # Type 3 observations are occupancy data contaminated with false positives but then
-  # we identify some of them as true
+  # Type 3 observations are occupancy data contaminated with false
+  # positives but then we identify some of them as true
   y[i, 7] <- rbinom(1, 1, p[2]*z[i] + fp*(1-z[i]))
 }
 
@@ -121,7 +127,8 @@ confirmed <- (rbinom(nsites, 1, b) == 1) & true.positives
 y[confirmed, 7] <- 2
 
 # Make a covariate to distinguish between the two methods
-Method <- matrix(c(rep("1", 2), rep("2", 5)), nrow = nsites, ncol = 7, byrow = TRUE)
+Method <- matrix(c(rep("1", 2), rep("2", 5)), nrow = nsites, ncol = 7,
+    byrow = TRUE)
 
 # Type indicates a mix of all 3 data types
 type <- c(2, 4, 1)
@@ -136,6 +143,7 @@ summary(umf1 <- unmarkedFrameOccuFP(y, siteCovs = siteCovs, obsCovs = obsCovs,
 # Note: last parameter in this model is "Pcertain"
 ( m3 <- occuFP(detformula = ~ -1 + Method, FPformula = ~1, Bformula = ~1,
     stateformula = ~ habitat, data = umf1, starts=c(0, 0, 0, 0, -1, 0)) )
+
 # Occupancy:
 # Estimate SE z P(>|z|)
 # (Intercept) -0.0813 0.160 -0.509 6.11e-01

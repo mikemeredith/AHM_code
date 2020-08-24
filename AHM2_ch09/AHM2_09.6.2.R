@@ -5,7 +5,7 @@
 #
 # Chapter 9 : SPATIAL MODELS OF DISTRIBUTION AND ABUNDANCE
 # ========================================================
-# Code from proofs dated 2020-07-15
+# Code from proofs dated 2020-08-19
 
 # Approximate execution time for this code: 65 mins
 # Run time with the full number of iterations: 7.6 hrs
@@ -25,15 +25,15 @@ data(EurasianLynx)
 str(datfull <- EurasianLynx)
 selection <- datfull$type == 'certain' & datfull$Cntry == 'Switzerland' &
     datfull$xcoord < 4185
-str(dat <- datfull[selection,]) # Swiss, certain and west of x = 4185
+str(dat <- datfull[selection,])      # Swiss, certain and west of x = 4185
 year <- 1994:2016
 
 # Format detection/nondetection data in a 3D array
-( nsites <- length(unique(dat$site.nr)) ) # 160
-( nyears <- length(unique(dat$Year)) ) # 23
+( nsites <- length(unique(dat$site.nr)) )         # 160
+( nyears <- length(unique(dat$Year)) )            # 23
 ( nsurveys <- 3)
 ylong <- as.matrix(dat[,3:5])
-head(dat) # site changes fastest so must be 1st dimension
+head(dat)              # site changes fastest so must be 1st dimension
 tmp <- array(ylong, c(nsites, nyears, nsurveys))
 y <- aperm(tmp, c(1, 3, 2))
 
@@ -48,7 +48,7 @@ oforest <- dat$forest[1:nsites]
 forest <- standardize(oforest)
 
 # Get distance matrix
-d <- e2dist(grid/100, grid/100) # In units of 100 km
+d <- e2dist(grid/100, grid/100)              # In units of 100 km
 hist(d, main = 'Distribution of inter-quadrat distance (in 100 km units)') # not shown
 distSq <- d^2 # Need distance squared in half-normal kernel
 
@@ -66,6 +66,7 @@ str(bdata <- list(y = y, nsites = nsites, nsurveys = nsurveys, nyears = nyears,
 # Specify model in BUGS language
 cat(file = "chandler.txt","
 model {
+
   # Priors
   psi1.int ~ dunif(0, 1) # Initial occupancy
   alpha.lpsi1 <- logit(psi1.int)
@@ -80,6 +81,8 @@ model {
   p.int ~ dunif(0, 1) # Detection
   alpha.lp <- logit(p.int)
   beta.lp.forest ~ dnorm(0, 0.1)
+
+  # Likelihood
   # Ecological submodel
   for (i in 1:nsites){
   z[i,1] ~ dbern(psi1[i])
@@ -99,6 +102,7 @@ model {
       z[i,t] ~ dbern(muz[i,t-1])
     }
   }
+
   # Observation model
   for (i in 1:nsites){
     logit(p[i]) <- alpha.lp + beta.lp.forest * forest[i]

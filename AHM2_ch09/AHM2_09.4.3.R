@@ -5,7 +5,7 @@
 #
 # Chapter 9 : SPATIAL MODELS OF DISTRIBUTION AND ABUNDANCE
 # ========================================================
-# Code from proofs dated 2020-07-15
+# Code from proofs dated 2020-08-19
 
 # Approximate execution time for this code: 6 mins
 # Run time with the full number of iterations: 1 hr
@@ -38,8 +38,8 @@ str(winnb)
 
 # Bundle data
 str(bdata <- list(y = dat$yobs, nsites = dim(dat$y)[1], nrep = dim(dat$y)[2],
-    adj = winnb$adj, weights = winnb$weights, num = winnb$num, elev = dat$elevationS,
-    forest = dat$forestS, wind = dat$wind))
+    adj = winnb$adj, weights = winnb$weights, num = winnb$num,
+    elev = dat$elevationS, forest = dat$forestS, wind = dat$wind))
 # List of 9
 # $ y      : int [1:2500, 1:3] NA NA 0 NA NA NA NA 0 NA NA ...
 # $ nsites : int 2500
@@ -66,6 +66,7 @@ model {
     beta[v] ~ dnorm(0, 0.1)
   }
   # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
   # CAR prior distribution for spatial random effects
   eta[1:nsites] ~ car.normal(adj[], weights[], num[], tau)
 
@@ -125,8 +126,8 @@ ni <- 6000    ;    nt <- 1   ;    nb <- 5000    ;    nc <- 3 # ~~~ for testing, 
 # Call WinBUGS (ART 111 min) and summarize posteriors
 library(R2WinBUGS)
 out4 <- bugs(bdata, inits, params, "CAR.occ.txt", n.chains = nc,
-    n.thin = nt, n.iter = ni, n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
-    # working.directory = getwd())
+    n.thin = nt, n.iter = ni, n.burnin = nb, debug = FALSE,
+    bugs.directory = bugs.dir)
 options(scipen = 10)
 print(out4$summary[1:10,-(4:6)], dig = 3)
 
@@ -147,3 +148,27 @@ print(cbind(truth, estimates), 3)
 # alpha1     -1.000   -0.894  0.1241  -1.142   -0.654
 # alpha2     -1.000   -1.063  0.1214  -1.303   -0.832
 # Nocc     1166.000 1107.278 66.2683 983.000 1235.025
+
+
+# ~~~~ extra code for figure 9.12 ~~~~~~~~~~~~~~~~
+library(raster)
+op <- par(mfrow = c(2, 2))
+r <- rasterFromXYZ(data.frame(x = coordgrid[,1], y = coordgrid[,2],
+    z = c(dat$field)))
+plot(r, col = topo.colors(20), axes = FALSE, box = FALSE,
+    main = "Spatial effect (true)")
+r <- rasterFromXYZ(data.frame(x = coordgrid[,1], y = coordgrid[,2],
+    z = out4$mean$S))
+plot(r, col = topo.colors(20), axes = FALSE, box = FALSE,
+    main = "Spatial effect (estimate)")
+r <- rasterFromXYZ(data.frame(x = coordgrid[,1], y = coordgrid[,2],
+    z = dat$psi))
+plot(r, col = topo.colors(20), axes = FALSE, box = FALSE,
+    main = "Occupancy prob. (true)", zlim = c(0, 1))
+title(main = "", line = -2)
+r <- rasterFromXYZ(data.frame(x = coordgrid[,1], y = coordgrid[,2],
+    z = out4$mean$psi))
+plot(r, col = topo.colors(20), axes = FALSE, box = FALSE,
+    main = "Occupancy prob. (estimate)", zlim = c(0, 1))
+par(op)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

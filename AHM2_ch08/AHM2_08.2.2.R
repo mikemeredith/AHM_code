@@ -5,7 +5,7 @@
 #
 # Chapter 8 : MODELING INTERACTIONS AMONG SPECIES
 # ===============================================
-# Code from proofs dated 2020-07-13
+# Code from proofs dated 2020-08-19
 
 # Approximate execution time for this code: 6 mins
 
@@ -19,6 +19,7 @@ library(abind)
 # 8.2.2 Implementation of the Rota et al. model in unmarked
 # ----------------------------------------------------------
 
+# Load libraries and check out help texts of two main functions
 library(AHMbook)
 library(unmarked)
 ?occuMulti # Check out help text for two main functions
@@ -36,8 +37,8 @@ str(ylist <- list(bobcat = data$bobcat, coyote = data$coyote,
 # $ redfox: int [1:1437, 1:3] 0 0 0 0 0 1 0 0 0 0 ...
 
 # Get sample sizes
-nsites <- 1437 # row dimension of above data
-nsurveys <- 3 # column dimension ...
+nsites <- 1437      # row dimension of above data
+nsurveys <- 3       # column dimension ...
 nspecies <- 3
 
 # Prepare site covariates and look at them
@@ -55,7 +56,9 @@ str(obscovs <- list(date = date))
 # Build unmarked frame and summarize it
 summary(umf <- unmarkedFrameOccuMulti(y = ylist, siteCovs = sitecovs,
     obsCovs = obscovs))
+
 # unmarkedFrame Object
+
 # 1437 sites
 # 3 species: bobcat coyote redfox
 # Maximum number of observations per site: 3
@@ -119,18 +122,22 @@ det_formulae1 <- rep(' ~ 1', 3)
 
 # Fit model 1
 (fm1 <- occuMulti(det_formulae1, occ_formulae1, umf))
+
 # Occupancy:
 # Estimate SE z P(>|z|)
 # [bobcat] (Intercept) -1.171 0.1328 -8.82 1.13e-18
 # [coyote] (Intercept) -0.629 0.0744 -8.46 2.79e-17
 # [redfox] (Intercept) -1.846 0.0944 -19.56 3.58e-85
+
 # Detection:
 # Estimate SE z P(>|z|)
 # [bobcat] (Intercept) -1.104 0.1396 -7.91 2.59e-15
 # [coyote] (Intercept) -0.333 0.0764 -4.36 1.30e-05
 # [redfox] (Intercept) -0.252 0.1182 -2.13 3.29e-02
+
 # AIC: 6710.658
 
+# Specify models for occupancy in terms of natural parameters f
 occ_formulae2 <- c(
     # bobcat, coyote, red fox occupancy, respectively
     # Modeled as a linear function of Dist
@@ -142,7 +149,6 @@ occ_formulae2 <- c(
     # Fix 3-way interaction also at 0
     0
 )
-
 # Detection by species
 det_formulae2 <- rep('~as.factor(Trail)', 3)
 # det_formulae2 <- rep('~as.factor(Trail) + date', 3)
@@ -150,6 +156,7 @@ det_formulae2 <- rep('~as.factor(Trail)', 3)
 # Fit model 2
 (fm2 <- occuMulti(det_formulae2, occ_formulae2, umf,
     control = list(maxit = 500, trace = TRUE, REPORT = 1)))
+
 # Occupancy:
 
 # Estimate SE z P(>|z|)
@@ -172,6 +179,7 @@ det_formulae2 <- rep('~as.factor(Trail)', 3)
 
 # AIC: 6257.525
 
+# Specify models for occupancy in terms of natural parameters f
 occ_formulae3 <- c(
     # bobcat, coyote, red fox occupancy, respectively
     # Modeled as constant
@@ -184,13 +192,13 @@ occ_formulae3 <- c(
     # Still fix 3-way interaction at 0 (for an intercept model would write: '~1')
     0
 )
-
 # Detection by species
 det_formulae3 <- rep('~1', 3)
 
 # Fit model 3
 (fm3 <- occuMulti(det_formulae3, occ_formulae3, umf,
     control = list(maxit = 500, trace = TRUE, REPORT = 1)))
+
 # Occupancy:
 # Estimate SE z P(>|z|)
 # [bobcat] (Intercept) -1.76 0.179 -9.81 1.03e-22
@@ -199,11 +207,13 @@ det_formulae3 <- rep('~1', 3)
 # [bobcat:coyote] (Intercept) 1.72 0.262 6.56 5.48e-11
 # [bobcat:redfox] (Intercept) -1.38 0.377 -3.66 2.57e-04
 # [coyote:redfox] (Intercept) 1.41 0.248 5.69 1.31e-08
+
 # Detection:
 # Estimate SE z P(>|z|)
 # [bobcat] (Intercept) -1.106 0.1398 -7.91 2.59e-15
 # [coyote] (Intercept) -0.331 0.0761 -4.35 1.38e-05
 # [redfox] (Intercept) -0.253 0.1183 -2.13 3.28e-02
+
 # AIC: 6626.111
 
 confint(fm3, type = 'state') # CIs for occupancy parameters
@@ -226,13 +236,13 @@ occ_formulae4 <- c(
   # Still fix 3-way interaction at 0
   0
 )
-
 # Detection by species
 det_formulae4 <- rep('~as.factor(Trail)', 3)
 
 # Fit model 4
 (fm4 <- occuMulti(det_formulae4, occ_formulae4, umf,
     control = list(maxit = 500, trace = TRUE, REPORT = 1)))
+
 # Occupancy:
 # Estimate SE z P(>|z|)
 # [bobcat] (Intercept) -1.010 0.2393 -4.22 2.42e-05
@@ -244,6 +254,7 @@ det_formulae4 <- rep('~as.factor(Trail)', 3)
 # [bobcat:coyote] (Intercept) 1.304 0.3223 4.05 5.20e-05
 # [bobcat:redfox] (Intercept) -1.881 0.3996 -4.71 2.52e-06
 # [coyote:redfox] (Intercept) 1.224 0.3179 3.85 1.18e-04
+
 # Detection:
 # Estimate SE z P(>|z|)
 # [bobcat] (Intercept) -2.59 0.162 -15.97 2.11e-57
@@ -252,6 +263,7 @@ det_formulae4 <- rep('~as.factor(Trail)', 3)
 # [coyote] as.factor(Trail)1 2.15 0.123 17.43 4.63e-68
 # [redfox] (Intercept) -1.38 0.184 -7.50 6.46e-14
 # [redfox] as.factor(Trail)1 1.61 0.219 7.34 2.10e-13
+
 # AIC: 6213.46
 
 # Can look at 95% CIs
@@ -269,13 +281,13 @@ occ_formulae5 <- c(
     # Still fix 3-way interaction at 0
     0
 )
-
 # Detection by species
 det_formulae5 <- rep('~as.factor(Trail)', 3)
 
 # Fit model 5
 (fm5 <- occuMulti(det_formulae5, occ_formulae5, umf,
     control = list(maxit = 500, trace = TRUE, REPORT = 1)))
+
 # Occupancy:
 # Estimate SE z P(>|z|)
 # [bobcat] (Intercept) -1.154 0.261 -4.42 9.81e-06
@@ -290,6 +302,7 @@ det_formulae5 <- rep('~as.factor(Trail)', 3)
 # [bobcat:redfox] HDens 1.284 0.432 2.98 2.93e-03
 # [coyote:redfox] (Intercept) 1.421 0.366 3.89 1.01e-04
 # [coyote:redfox] HDens 1.277 0.386 3.31 9.42e-04
+
 # Detection:
 # Estimate SE z P(>|z|)
 # [bobcat] (Intercept) -2.54 0.1632 -15.57 1.22e-54
@@ -298,6 +311,7 @@ det_formulae5 <- rep('~as.factor(Trail)', 3)
 # [coyote] as.factor(Trail)1 2.16 0.1211 17.86 2.47e-71
 # [redfox] (Intercept) -1.56 0.1621 -9.64 5.51e-22
 # [redfox] as.factor(Trail)1 1.82 0.2044 8.92 4.63e-19
+
 # AIC: 6123.852
 
 modSel(fl <- fitList(fm1, fm2, fm3, fm4, fm5))

@@ -5,7 +5,7 @@
 #
 # Chapter 8 : MODELING INTERACTIONS AMONG SPECIES
 # ===============================================
-# Code from proofs dated 2020-07-13
+# Code from proofs dated 2020-08-19
 
 # Approximate execution time for this code: 20 mins
 # Run time with the full number of iterations: 28 hrs
@@ -82,6 +82,7 @@ model{
     tau.beta[v] <- pow(sd.beta[v], -2)
     sd.beta[v] ~ dunif(0, 3)
   }
+
   # Community priors for detection
   mu.alpha0 <- logit(mean.p) # Intercept
   mean.p ~ dunif(0, 1)
@@ -92,6 +93,7 @@ model{
     tau.alpha[v] <- pow(sd.alpha[v], -2)
     sd.alpha[v] ~ dunif(0, 1)
   }
+
   # Define species random effects for all coefficients
   for (k in 1:nspec) {
     # Random species effects in the abundance model
@@ -105,12 +107,14 @@ model{
       alpha[k, v] ~ dnorm(mu.alpha[v], tau.alpha[v])
     }
   }
+
   # Priors for latent variables: standard Normal rv #
   for(i in 1:nsites) {
     for(l in 1:nlv){
       LV[i,l] ~ dnorm(0, 1)
     }
   }
+
   # Latent variable coefficients with constraints
   # (slightly different from occupancy version of the model)
   # Upper diagonal equal to 0
@@ -119,22 +123,26 @@ model{
       lv.coef[l,l2] <- 0
     }
   }
+
   # Sign constraints on diagonal elements (positive)
   for(l in 1:nlv) {
     lv.coef[l,l] ~ dnorm(0, 0.1)I(0, )
   }
+
   # Lower diagonal free
   for(l in 2:nlv){
     for(l2 in 1:(l-1)){
       lv.coef[l,l2] ~ dnorm(0, 0.1)
     }
   }
+
   # Other elements also free
   for(l in (nlv+1):nspec) {
     for(l2 in 1:nlv){
       lv.coef[l,l2] ~ dnorm(0, 0.1)
     }
   }
+
   # Define the multi-species binomial N-mixture model
   for (i in 1:nsites) { # Loop over sites
     for (k in 1:nspec) { # Loop over species
@@ -164,7 +172,7 @@ inits <- function() { # nsites = nsites; nspec = nspec;
   LV <- matrix(rnorm(bdata$nlv * nsites), nsites, bdata$nlv)
   lv.coef <- matrix(runif(bdata$nlv * nspec, -sqrt(1/(bdata$nlv+1)),
   sqrt(1/(bdata$nlv+1))), nspec, bdata$nlv) * lv.coef
-  beta0 <- rep(0, nspec) # yields lambda = 1
+  beta0 <- rep(0, nspec)                          # yields lambda = 1
   list(N = Nst, LV = LV, lv.coef = lv.coef , beta0 = beta0)
 }
 
@@ -191,7 +199,7 @@ which(out2X$summary[,8] > 1.1)
 # Compute the posterior mean of the correlation matrix
 R <- getLVcorrMat(lv.coef = out2X$sims.list$lv.coef, type= "Nmix")
 colnames(R) <- rownames(R) <- names(sel.species)
-R # plot (unwieldy)
+R                           # unwieldy
 
 # Plot the correlation matrix (Fig. 8.18) and dendrogram (Fig. 8.19)
 library(corrplot)

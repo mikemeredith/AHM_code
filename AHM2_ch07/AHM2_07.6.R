@@ -5,33 +5,28 @@
 #
 # Chapter 7 : MODELING FALSE POSITIVES
 # ====================================
-# Code from proofs dated 2020-07-08
+# Code from proofs dated 2020-08-19
 
 # Approximate execution time for this code: 6 mins
 
 library(jagsUI)
 library(AHMbook)
 
-# ~~~~~~~ changes to RNG defaults ~~~~~~~~~~~~~~~~~~~~~~~~
-# Use the old default random number generator to get the printed numbers
-RNGversion("3.5.0")
+# 7.6 Modeling  false positives from acoustic monitoring data
+# ===========================================================
 
-
-# 7.6 Modeling  false positives from bioacoustics monitoring data
-# ===============================================================
-
-# 7.6.1. A variation of the Chambert et al. (2017) model
-# ------------------------------------------------------
+# 7.6.1 A variation of the Chambert et al. (2017) model
+# -----------------------------------------------------
 
 # Simulation settings
 set.seed(2019, kind = "Mersenne")
-nsites <- 100 # Number of sites
-nsurveys <- 5 # Number of replicates/occasions
-psi <- 0.7    # Occupancy
-p11 <- 0.5    # Detection probability at an occupied site
-p10 <- 0.05   # False detection probability
-lam <- 3      # Rate of true positives from ARU
-ome <- 0.50   # Rate of false positives from ARU
+nsites <- 100     # Number of sites
+nsurveys <- 5     # Number of replicates/occasions
+psi <- 0.7        # Occupancy
+p11 <- 0.5        # Detection probability at an occupied site
+p10 <- 0.05       # False detection probability
+lam <- 3          # Rate of true positives from ARU
+ome <- 0.50       # Rate of false positives from ARU
 
 # Simulate true occupancy states
 z <- rbinom(nsites, 1, psi)
@@ -59,12 +54,14 @@ str( bdata <- list(y = y, yARU = yARU, nsites = nsites, nsurveys = nsurveys ))
 # Specify Model A in BUGS language
 cat(file = "modelA.txt","
 model {
+
   # Priors
   psi ~ dunif(0, 1) # psi = Pr(Occupancy)
   p10 ~ dunif(0, 1) # p10 = Pr(y = 1 | z = 0)
   p11 ~ dunif(0, 1) # p11 = Pr(y = 1 | z = 1)
   lam ~ dunif(0, 1000)
   ome ~ dunif(0, 1000)
+
   # Likelihood:process and observation models
   for (i in 1:nsites) {
     z[i] ~ dbern(psi) # Occupancy status of site i
@@ -102,8 +99,8 @@ print(out1, 3)
 # ome 0.353 0.050 0.264 0.350 0.457    FALSE 1 1.002  1238
 
 
-# 7.6.2. Making use of acoustic validation data
-# ----------------------------------------------
+# 7.6.2 Making use of acoustic validation data
+# --------------------------------------------
 
 k <- n <- matrix(NA, nrow = nsites, ncol = nsurveys)
 for(j in 1:nsurveys){
@@ -119,12 +116,14 @@ str(bdata <- list(y = y, yARU = yARU, nsites = nsites, nsurveys = nsurveys,
 # Specify Model B in BUGS language
 cat(file = "modelB.txt","
 model {
+
   # Priors
   psi ~ dunif(0, 1) # psi = Pr(Occupancy)
   p10 ~ dunif(0, 1) # p10 = Pr(y = 1 | z = 0)
   p11 ~ dunif(0, 1) # p11 = Pr(y = 1 | z = 1)
   lam ~ dunif(0, 1000)
   ome ~ dunif(0, 1000)
+
   # Likelihood and process model
   for (i in 1:nsites){
     z[i] ~ dbern(psi) # Occupancy status of site i
@@ -145,7 +144,8 @@ model {
 zst <- apply(y, 1, max); zst[apply(k,1,sum)>0] <- 1
 Kst <- k
 inits <- function(){list(z = zst, psi = runif(1), p10 = runif(1, 0, 0.05),
-    p11 = runif(1, 0.5, 0.8), lam = runif(1, 1, 2), ome = runif(1, 0, 0.4), K = Kst)}
+    p11 = runif(1, 0.5, 0.8), lam = runif(1, 1, 2), ome = runif(1, 0, 0.4),
+    K = Kst)}
 
 # Parameters monitored
 params <- c("psi", "p10", "p11", "lam", "ome")
@@ -167,9 +167,10 @@ print(out2, 3)
 # ome 0.392 0.043 0.313 0.391 0.480    FALSE 1    1  5412
 
 
-# 7.6.3. A new model for integrating species classification from bioacoustics
-#    data with occupancy models
-# --------------------------------------------------------------------------
+# 7.6.3. The coupled classification model: A new model for integrating
+#        species classification from bioacoustics data with
+#        occupancy models
+# ---------------------------------------------------------------------
 
 # Simulation settings
 set.seed(2019)
@@ -235,17 +236,20 @@ str(bdata <- list(y = y, score = score, yARU = yARU, siteid = siteid,
 # species classification using Gaussian mixtures
 cat(file="modelC.txt","
 model {
+
   # Priors
   psi ~ dunif(0, 1) # psi = Pr(Occupancy)
   p10 ~ dunif(0, 1) # p10 = Pr(y = 1 | z = 0)
   p11 ~ dunif(0, 1) # p11 = Pr(y = 1 | z = 1)
   lam ~ dunif(0, 1000) # lambda: rate of target-species calls detected
   ome ~ dunif(0, 1000) # omega: rate of non-target detections
+
   # Parameters of the observation model for the scores
   mu[1] ~ dnorm(0, 0.01)
   mu[2] ~ dnorm(0, 0.01)
   sigma ~ dunif(0, 10)
   tau <- 1 / (sigma * sigma)
+
   # Likelihood part 1: detection data and ARU counts
   for (i in 1:nsites) { # Loop over sites
     z[i] ~ dbern(psi) # Latent occupancy states
@@ -256,7 +260,8 @@ model {
       yARU[i,j] ~ dpois(lam*z[i] + ome) # Total samples processed
     }
   }
-  # Likelihood part 2: score data
+
+  # Likelihood part 2: feature score data
   for(k in 1:nsamples) {
     # Sample specific covariate
     score[k] ~ dnorm(mu[g[k]], tau) # parameters are group specific
@@ -265,6 +270,7 @@ model {
     g[k] ~ dcat(probs[k,])
     N1[k] <- ifelse(g[k]==1, 1, 0)
   }
+
   # Derived quantities
   Npos <- sum(N1[])
 }
@@ -323,16 +329,20 @@ gbar <- out3g$mean$g
 prob <- apply(g, 2, function(x) mean(x == 1))
 plot(score, prob, ylab = "Posterior class probability", xlab = "Feature score",
     frame = FALSE, pch = 20, cex=2.5) # Produces Fig. 7.4 without the red bits;
+
+# ~~~~ inserted code for the red bits ~~~~~~~~
 look <- (score > -0.20 & prob < 0.046) # trial and error is necessary
 points(score[look], prob[look], pch=20, cex=2.5, col="red")
-
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # 7.6.5  The uncoupled classification model
 # -------------------------------------------
+
 # Model C v2, uncoupled
-# ~~~~ inserted ~~~~~~~~~~
+# ~~~~ inserted from previous model C ~~~~~~~~~~
 cat(file="modelCv2.txt", "
 model{
+
   # Priors
   psi ~ dunif(0,1)	# psi = Pr(Occupancy)
   p10 ~ dunif(0,1)	# p10 = Pr(y = 1 | z = 0)
@@ -344,6 +354,7 @@ model{
   mu[2] ~ dnorm(0, 0.01)
   sigma ~ dunif(0, 10)
   tau <- 1/(sigma*sigma)
+
   # Likelihood
   for (i in 1:nsites){
     z[i] ~ dbern(psi)			# Latent occupancy states
@@ -368,6 +379,7 @@ model{
 }
 ")
 
+# ~~~~ code inserted from MS ~~~~~~~~
 # Initial values
 zst <- apply(y, 1, max)
 zst <- rep(1, nrow(y))
@@ -389,6 +401,7 @@ library(jagsUI)
 fit3b <- jags(bdata, inits, params, "modelCv2.txt", n.chains = nc,
    n.thin = nt, n.iter = ni, n.burnin = nb,parallel=TRUE)
 print(fit3b, dig = 3)
+# ~~~~ end of inserted code ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #          mean    sd    2.5%     50%   97.5% overlap0 f  Rhat n.eff
 # psi     0.688 0.072   0.528   0.694   0.814    FALSE 1 1.009   295
 # p10     0.060 0.033   0.010   0.055   0.138    FALSE 1 1.010   817
@@ -406,21 +419,24 @@ print(fit3b, dig = 3)
 # -------------------------------------------------------------------------------
 
 # anova(out <- lm(aucDIFF ~ beta0 + p0 + beta1 + sigma + beta0*p0 +
-# beta0*beta1 + beta0*sigma + p0*beta1 + p0*sigma + beta1*sigma, data = data))
+#     beta0*beta1 + beta0*sigma + p0*beta1 + p0*sigma + beta1*sigma,
+#     data = data))
+
 # Analysis of Variance Table
+
 # Response: aucDIFF
-# Df Sum Sq Mean Sq F value Pr(>F)
-# beta0 4 118.76 29.689 576.9596 < 2.2e-16 ***
-# p0 1 1.07 1.072 20.8306 1.077e-05 ***
-# beta1 2 1.66 0.832 16.1599 4.752e-07 ***
-# sigma 2 613.46 306.728 5960.8267 < 2.2e-16 ***
-# beta0:p0 4 0.38 0.096 1.8579 0.1211
-# beta0:beta1 8 7.04 0.879 17.0909 < 2.2e-16 ***
-# beta0:sigma 8 2.09 0.261 5.0747 1.458e-05 ***
-# p0:beta1 2 0.02 0.009 0.1845 0.8317
-# p0:sigma 2 0.15 0.077 1.4960 0.2275
-# beta1:sigma 4 0.35 0.088 1.7130 0.1504
-# Residuals 142 7.31 0.051
+#              Df   Sum Sq   Mean Sq    F value     Pr(>F)
+# beta0         4   118.76    29.689   576.9596  < 2.2e-16 ***
+# p0            1     1.07     1.072    20.8306  1.077e-05 ***
+# beta1         2     1.66     0.832    16.1599  4.752e-07 ***
+# sigma         2   613.46   306.728  5960.8267  < 2.2e-16 ***
+# beta0:p0      4     0.38     0.096     1.8579     0.1211
+# beta0:beta1   8     7.04     0.879    17.0909  < 2.2e-16 ***
+# beta0:sigma   8     2.09     0.261     5.0747  1.458e-05 ***
+# p0:beta1      2     0.02     0.009     0.1845     0.8317
+# p0:sigma      2     0.15     0.077     1.4960     0.2275
+# beta1:sigma   4     0.35     0.088     1.7130     0.1504
+# Residuals   142     7.31     0.051
 
 # 7.6.7 Validation and digital archive records
 # --------------------------------------------
@@ -518,3 +534,6 @@ na <- 1000  ;  ni <- 12000  ;  nt <- 2  ;  nb <- 2000  ;  nc <- 3
 round( (unlist(out3$sd)/unlist(out4$sd) ), 3)
 #   psi   p10   p11   lam   ome sigma   mu1   mu2  Npos
 # 0.984 0.996 0.964 0.974 1.011 0.993 0.973 1.010 1.017
+
+
+

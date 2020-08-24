@@ -5,7 +5,7 @@
 #
 # Chapter 8 : MODELING INTERACTIONS AMONG SPECIES
 # ===============================================
-# Code from proofs dated 2020-07-13
+# Code from proofs dated 2020-08-19
 
 # Approximate execution time for this code: 75 mins
 # Run time with the full number of iterations: 4 days
@@ -28,9 +28,9 @@ data(SwissAtlasHa)
 str(dat <- SwissAtlasHa)
 
 # Grab counts and threshold them to become detection/nondetection data
-str(counts <- dat$counts) # Array of counts (2318 x 3 x 78)
+str(counts <- dat$counts)   # Array of counts (2318 x 3 x 78)
 y <- counts
-y[y > 1] <- 1 # Array of detection/nondetection data
+y[y > 1] <- 1               # Array of detection/nondetection data
 str(y)
 
 # Subset sites to a random sample of 1200 (about half)
@@ -39,14 +39,15 @@ sel.sites <- sort(sample(1:2318, 1200, replace = FALSE))
 str(cc <- counts[sel.sites,,])
 str(yy <- y[sel.sites,,])
 
+# Calculate sum of max counts across sites and obs. number of occ. sites
 tmp <- apply(cc, c(1,3), max, na.rm = TRUE)
-summax <- apply(tmp, 2, sum)  # p-ignorant estimate of Ntotal
+summax <- apply(tmp, 2, sum)        # p-ignorant estimate of Ntotal
 tmp <- apply(yy, c(1,3), max, na.rm = TRUE)
-nobs <- apply(tmp, 2, sum)    # p-ignorant estimate of sum(z)
-sort(nobs)                    # Look at species ordered by nobs
+nobs <- apply(tmp, 2, sum)          # p-ignorant estimate of sum(z)
+sort(nobs)                          # Look at species ordered by nobs
 
 # Restrict data set according to number of observed occurrences
-sel.species <- which(nobs > 39) # yields about 30 species left
+sel.species <- which(nobs > 39)     # yields about 30 species left
 cc <- cc[,, sel.species]
 yy <- yy[,,sel.species]
 str(cc) ; str(yy) # Counts and det/nondet. for 1200 sites and approx. 30 spec.
@@ -59,15 +60,15 @@ table(nreps <- dat$sitecovs[sel.sites,'nsurveys']) # 2 or 3 surveys per site
 # Grab, restrict, scale and mean-impute covariates
 library(abind)
 str(xocc <- as.matrix(dat$sitecovs[sel.sites,3:6])) # Occ. covariates
-str(xocc <- cbind(xocc, xocc^2))   # Add squares of covariates
-xocc <- scale(xocc)                # Scale column-wise
-str(xdet <- dat$dates[sel.sites,]) # Detection covariates
-xdettmp <- standardize(xdet)       # Scale matrix-wide
-xdettmp[is.na(xdettmp)] <- 0       # Mean-impute dates of 3rd survey
+str(xocc <- cbind(xocc, xocc^2))      # Add squares of covariates
+xocc <- scale(xocc)                   # Scale column-wise
+str(xdet <- dat$dates[sel.sites,])    # Detection covariates
+xdettmp <- standardize(xdet)          # Scale matrix-wide
+xdettmp[is.na(xdettmp)] <- 0          # Mean-impute dates of 3rd survey
 str(xdet <- abind(xdettmp, xdettmp^2, along = 3) )
 
 # Provide for different numbers of LVs: could try 2, 5, 10, 15
-NLV <- c(2, 5, 10, 15) # Here we will just take 2
+NLV <- c(2, 5, 10, 15)                # Here we will just take 2
 
 # Bundle data (incl. choice of number of LVs)
 str(bdata <- list(y = aperm(yy, c(1,3,2)), Xocc = xocc, Xdet = xdet,
@@ -107,6 +108,7 @@ model{
     tau.alpha[v] <- pow(sd.alpha[v], -2)
     sd.alpha[v] ~ dunif(0, 1)
   }
+
   # Define species random effects for all coefficients
   for (k in 1:nspec) {
     # Random species effects in the occupancy model
@@ -120,12 +122,14 @@ model{
       alpha[k, v] ~ dnorm(mu.alpha[v], tau.alpha[v])
     }
   }
-  # Priors for latent variables: standard Normal rv #
+
+  # Priors for latent variables: standard Normal rv
   for(i in 1:nsites) {
     for(l in 1:nlv){
       LV[i,l] ~ dnorm(0, 1)
     }
   }
+
   # Latent variable coefficients with constraints
   # Diagonal elements positive, upper diagonal equal to 0
   for(l in 1:(nlv-1)){
@@ -149,9 +153,10 @@ model{
       lv.coef[l,l2] ~ dunif(-1, 1)
     }
   }
+
   # Define the multi-species occupancy model
-  for (i in 1:nsites) { # Loop over sites
-    for (k in 1:nspec) { # Loop over species
+  for (i in 1:nsites) {                          # Loop over sites
+    for (k in 1:nspec) {                         # Loop over species
       # Probit link GLM for occupancy via auxiliary variable approach
       eta[i,k] <- beta0[k] + inprod(beta[k, ], Xocc[i, ]) +
       inprod(lv.coef[k,], LV[i, ])
@@ -159,7 +164,7 @@ model{
       mu.psi[i,k] ~ dnorm(eta[i,k], 1/(1-sum(lv.coef[k,1:nlv]^2)))
       z[i,k] <- step(mu.psi[i,k])
       # Bernoulli GLM for detection
-      for (j in 1:nreps[i]) { # Loop over 2 or 3 surveys
+      for (j in 1:nreps[i]) {                    # Loop over 2 or 3 surveys
         logit(p[i,k,j]) <- alpha0[k] + alpha[k, 1] *
         Xdet[i,j,1] + alpha[k, 2] * Xdet[i,j,2]
         y[i,k,j] ~ dbern(p[i,k,j]*z[i,k])
@@ -169,6 +174,7 @@ model{
 }
 ")
 
+# 'Blind' initial values
 inits <- function() { # nsites = nsites; nspec = nspec;
   lv.coef <- matrix(0, nspec, bdata$nlv)
   lv.coef[1:bdata$nlv, 1:bdata$nlv] <- 0
@@ -176,7 +182,7 @@ inits <- function() { # nsites = nsites; nspec = nspec;
   LV <- matrix(rnorm(bdata$nlv * nsites), nsites, bdata$nlv)
   lv.coef <- matrix(runif(bdata$nlv * nspec, -sqrt(1/(bdata$nlv+1)),
   sqrt(1/(bdata$nlv+1))), nspec, bdata$nlv) * lv.coef
-  mu.psi <- array(1, dim = c(nsites, nspec)) # yields psi = 0.84
+  mu.psi <- array(1, dim = c(nsites, nspec))         # yields psi = 0.84
   list(LV = LV, lv.coef = lv.coef , mu.psi = mu.psi)
 }
 
@@ -203,9 +209,9 @@ out1X <- update(out1, n.iter = 500) # Can update additional 50k  # ~~~ for testi
 # Compute the posterior mean of the correlation matrix
 R <- getLVcorrMat(lv.coef = out1$sims.list$lv.coef) # From AHMbook
 colnames(R) <- rownames(R) <- names(sel.species)
-R # plot (unwieldy)
+R                                                   # unwieldy
 
 # Plot the correlation matrix (Fig. 8.16)
 library(corrplot)
 corrplot(R, type = "lower", diag = FALSE, mar = c(1,0.5,5,1), tl.col = 'black',
-tl.pos = 'ld', tl.srt = 45, xpd = TRUE, main = 'Residual correlations')
+    tl.pos = 'ld', tl.srt = 45, xpd = TRUE, main = 'Residual correlations')
