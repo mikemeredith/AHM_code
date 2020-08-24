@@ -5,7 +5,7 @@
 #
 # Chapter 6 : MULTISTATE OCCUPANCY MODELS
 # =======================================
-# Code from proofs dated 2020-06-24
+# Code from proofs dated 2020-08-19
 
 library(jagsUI)
 
@@ -36,10 +36,10 @@ table(dat$obs$y)
 # 2414 1977 635 948
 
 # Convert to three states: yms = 'y multi-state'
-dat$obs$yms <- dat$obs$y # Copy
-dat$obs$yms[dat$obs$yms == 3] <- 2 # Lump pairs: 0,1,2
-dat$obs$yms <- dat$obs$yms + 1 # Renumber observed states: 1,2,3
-table(dat$obs$yms) # Look at new response data
+dat$obs$yms <- dat$obs$y               # Copy
+dat$obs$yms[dat$obs$yms == 3] <- 2     # Lump pairs: 0,1,2
+dat$obs$yms <- dat$obs$yms + 1         # Renumber observed states: 1,2,3
+table(dat$obs$yms)                     # Look at new response data
 #    1    2    3
 # 2414 1977 1583
 
@@ -69,10 +69,11 @@ sum(date, na.rm = TRUE) ; sum(dat$obs$jdate)
 sum(y, na.rm = TRUE) ; sum(dat$obs$dnd)
 
 # Look at parts of these data (first 10 sites, 20 surveys, 3 years)
-yms[1:10,,1:3] # Multi-state detections
-date[1:10,,1:3] # Survey dates: these are NOT ordered !
-y[1:10,,1:3] # Binary detection/nondetections
+yms[1:10,,1:3]                         # Multi-state detections
+date[1:10,,1:3]                        # Survey dates: these are NOT ordered !
+y[1:10,,1:3]                           # Binary detection/nondetections
 
+# Compute number of sites visited at least once per season
 tmp <- apply(y, c(1,3), max, na.rm = TRUE)
 tmp[tmp == '-Inf'] <- NA ; tmp[tmp == 0] <- 1
 nvisit <- apply(tmp, 2, sum, na.rm = TRUE)
@@ -108,16 +109,17 @@ table(nvisit.site.year <- apply(y, c(1,3), function(x) sum(!is.na(x))))
 # 11 12 13 14 15 16 17 18 19 20
 # 19 15 13 10 10 10  7  6  6 54
 
+# Summarize yms by site and year
 tapply(dat$obs$yms, list(dat$obs$site_name, dat$obs$year), max)
 
 # Summarize multi-state detections (yms) by site
 # (example only shown for last year)
 # Table shows number of observations per observation states for each territory
 table(dat$obs$yms[dat$obs$year == 2016], dat$obs$site_name[dat$obs$year == 2016])
-# 1 2 3 6 9 10 11 12 17 18 20 22 23 24 26 27 30 31 33
-# 1 3 0 3 3 1 1 4 4 0 0 3 0 0 1 1 2 4 5 1
-# 2 3 6 0 0 1 0 2 2 1 3 4 3 1 0 3 0 1 2 0
-# 3 2 1 1 0 0 0 1 1 4 1 8 0 0 0 1 0 0 0 4
+#   1 2 3 6 9 10 11 12 17 18 20 22 23 24 26 27 30 31 33
+# 1 3 0 3 3 1  1  4  4  0  0  3  0  0  1  1  2  4  5  1
+# 2 3 6 0 0 1  0  2  2  1  3  4  3  1  0  3  0  1  2  0
+# 3 2 1 1 0 0  0  1  1  4  1  8  0  0  0  1  0  0  0  4
 # [output truncated]
 
 # Compute proportion of missing values in the 3D reponse array

@@ -5,7 +5,7 @@
 #
 # Chapter 6 : MULTISTATE OCCUPANCY MODELS
 # =======================================
-# Code from proofs dated 2020-06-24
+# Code from proofs dated 2020-08-19
 
 # Approximate code execution time for this script: 1 hr
 # With full number of iterations: 12 hrs
@@ -40,7 +40,7 @@ REGION[REGION > 4] <- 0
 REGION[REGION > 0] <- 1
 REGION <- REGION+1 ; table(REGION) # 170 Alps, 104 outside of Alps
 
-year <- (1:10)-5.5 # Create centered year covariate
+year <- (1:10)-5.5                       # Create centered year covariate
 str(bdata <- list(y = yms, nsites = dim(yms)[1], nsurveys = nsurveys,
     nyears = dim(yms)[3], REGION = REGION, year = year, elev = elev.scaled,
     forest = forest.scaled, date = date.scaled, V = V))
@@ -60,13 +60,16 @@ str(bdata <- list(y = yms, nsites = dim(yms)[1], nsurveys = nsurveys,
 # ~~~ missing code inserted from MS dated 2019-03-26 ~~~~~~~~~~~~~~~
 cat(file = "staticMS1.txt", "
 model{
+
   # Priors and linear models
   # (1) State process
   # Linear models for annual psi (prob site occupied) and r (prob occupied by pair, given occupied)
   for (i in 1:nsites){
     for (t in 1:nyears){
-      logit(psi[i,t]) <- alpha.lpsi[REGION[i]] + trend.lpsi[REGION[i]] * year[t] + beta.lpsi[1] * elev[i] + beta.lpsi[2] * forest[i]
-      logit(r[i,t]) <- alpha.lr[REGION[i]] + trend.lr[REGION[i]] * year[t] + beta.lr[1] * elev[i] + beta.lr[2] * forest[i]
+      logit(psi[i,t]) <- alpha.lpsi[REGION[i]] + trend.lpsi[REGION[i]] *
+          year[t] + beta.lpsi[1] * elev[i] + beta.lpsi[2] * forest[i]
+      logit(r[i,t]) <- alpha.lr[REGION[i]] + trend.lr[REGION[i]] * year[t] +
+          beta.lr[1] * elev[i] + beta.lr[2] * forest[i]
     }
   }
 
@@ -93,19 +96,22 @@ model{
     for(t in 1:nyears){
       for(j in 1:nsurveys[i,t]){
         # Observation model for sites in occupied state 1 (= single bird)
-        logit(p2[i,j,t]) <- alpha.lp2[REGION[i]] + beta.lp2[1, REGION[i]] * date[i,j,t] + beta.lp2[2, REGION[i]] * pow(date[i,j,t],2)
+        logit(p2[i,j,t]) <- alpha.lp2[REGION[i]] + beta.lp2[1, REGION[i]] *
+            date[i,j,t] + beta.lp2[2, REGION[i]] * pow(date[i,j,t],2)
 
         # Observation model for sites in occupied state 2 (= pairs)
         # Specify linear models
-        mlogit.p3[2,i,j,t] <- alpha.lp32[REGION[i]] + beta.lp32[1, REGION[i]] * date[i,j,t] + beta.lp32[2, REGION[i]] * pow(date[i,j,t],2)
-        mlogit.p3[3,i,j,t] <- alpha.lp33[REGION[i]] + beta.lp33[1, REGION[i]] * date[i,j,t] + beta.lp33[2, REGION[i]] * pow(date[i,j,t],2)
+        mlogit.p3[2,i,j,t] <- alpha.lp32[REGION[i]] + beta.lp32[1, REGION[i]] *
+            date[i,j,t] + beta.lp32[2, REGION[i]] * pow(date[i,j,t],2)
+        mlogit.p3[3,i,j,t] <- alpha.lp33[REGION[i]] + beta.lp33[1, REGION[i]] *
+            date[i,j,t] + beta.lp33[2, REGION[i]] * pow(date[i,j,t],2)
       }
     }
   }
 
   # Priors for parameters in the linear models of p2, p32 and p33
   # Intercepts
-  for (reg in 1:2){    # Loop over levels of REGION
+  for (reg in 1:2){                      # Loop over levels of REGION
     alpha.lp2[reg] <- logit(mean.alpha.p2[reg])
     mean.alpha.p2[reg] ~ dunif(0, 1)
     alpha.lp32[reg] <- logit(mean.alpha.p32[reg])
@@ -127,8 +133,10 @@ model{
   for (i in 1:nsites){
     for (t in 1:nyears){
       for(j in 1:nsurveys[i,t]){
-        p3[2,i,j,t] <- exp(mlogit.p3[2,i,j,t]) / (1 + exp(mlogit.p3[2,i,j,t]) + exp(mlogit.p3[3,i,j,t]))
-        p3[3,i,j,t] <- exp(mlogit.p3[3,i,j,t]) / (1 + exp(mlogit.p3[2,i,j,t]) + exp(mlogit.p3[3,i,j,t]))
+        p3[2,i,j,t] <- exp(mlogit.p3[2,i,j,t]) / (1 + exp(mlogit.p3[2,i,j,t]) +
+            exp(mlogit.p3[3,i,j,t]))
+        p3[3,i,j,t] <- exp(mlogit.p3[3,i,j,t]) / (1 + exp(mlogit.p3[2,i,j,t]) +
+            exp(mlogit.p3[3,i,j,t]))
       }
     }
   }
@@ -207,7 +215,6 @@ params <- c("mean.psi", "alpha.lpsi", "trend.lpsi", "beta.lpsi", "mean.r",
 # MCMC settings
 # na <- 1000  ;  ni <- 20000   ;   nt <- 10   ;   nb <- 10000   ;   nc <- 3
 na <- 1000  ;  ni <- 2000   ;   nt <- 1   ;   nb <- 1000   ;   nc <- 3  # ~~~ for testing, 16 mins
-# na <- 3  ;  ni <- 6   ;   nt <- 1   ;   nb <- 2   ;   nc <- 2 # Test
 
 # Call JAGS from R, check convergence and summarize posteriors
 out4 <- jags(bdata, inits, params, "staticMS1.txt", n.adapt = na, n.chains = nc,
@@ -410,7 +417,6 @@ params <- c("kappa", "mean.psi", "alpha.lpsi", "trend.lpsi", "beta.lpsi", "mean.
 # MCMC settings
 # na <- 1000  ;  ni <- 60000   ;   nt <- 20   ;   nb <- 40000   ;   nc <- 3
 na <- 1000  ;  ni <- 6000   ;   nt <- 2   ;   nb <- 4000   ;   nc <- 3  # ~~~~ testing, 1 hr
-# na <- 3  ;  ni <- 6   ;   nt <- 1   ;   nb <- 2   ;   nc <- 2 # Test
 
 # Call JAGS from R, check convergence and summarize posteriors
 out5 <- jags(bdata, inits, params, "staticMS2.txt", n.adapt = na, n.chains = nc,
@@ -447,7 +453,8 @@ segments(year, out5$q2.5$n.occ[,3], year, out5$q97.5$n.occ[,3])
 points(year, out5$mean$n.occ.total, type = "b", lwd = 3, pch = 't',
     col = 'black', cex = 1.5, lty = 1)
 segments(year, out5$q2.5$n.occ.total, year, out5$q97.5$n.occ.total)
-points(year, obsnocc, type = "b", lwd = 3, pch = 'o', col = 'black', cex = 1.5, lty = 1)
+points(year, obsnocc, type = "b", lwd = 3, pch = 'o', col = 'black',
+    cex = 1.5, lty = 1)
 par(op)
 
 # Figure 6.11
@@ -500,7 +507,8 @@ out5$summary[c('trend.lr[1]', 'trend.lr[2]'), c(1:3,7)]
 # trend.lr[2] -0.20243689 0.04395900 -0.2921581 -0.11656813
 
 # ~~~~~~~~~~ extra code for figure 6.12 ~~~~~~~~~~~~~~~~
-# Compute regional number of sites occupied by single birds and by pairs for every year under the static model
+# Compute regional number of sites occupied by single birds and by
+#   pairs for every year under the static model
 pm.nsingles <- array(NA, dim = c(6, nyears))
 CRI.nsingles <- array(NA, dim = c(6, nyears, 2))
 pm.npairs <- array(NA, dim = c(6, nyears))

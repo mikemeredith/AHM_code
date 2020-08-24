@@ -5,7 +5,7 @@
 #
 # Chapter 5 : MODELING METACOMMUNITY DYNAMICS USING DYNAMIC COMMUNITY MODELS
 # ==========================================================================
-# Code from proofs dated 2020-06-23
+# Code from proofs dated 2020-08-19
 
 # Approximate run time for this script: 20 mins
 # With the full number of iterations: 52 hrs
@@ -22,33 +22,34 @@ dat <- simDCM(nspec = 100, nsites = 50, nsurveys = 2, nyears = 6,
     range.mean.phi = c(0.6, 0.6), sig.lphi = 1,
     range.mean.gamma = c(0.1, 0.1), sig.lgamma = 1,
     range.mean.p = c(0.1, 0.1), sig.lp = 3)
+
 # ** Number of species ever occurring: 100
 # ** Number of species ever detected: 81
 # ** Average number of years of occurrence: 5.59
 # ** Average number of years with detection: 3.53
 
-(missed <- which(dat$nyears.det == 0)) # species detected in 0 years
+(missed <- which(dat$nyears.det == 0))       # species detected in 0 years
 # Spec2 Spec9 Spec13 Spec20 Spec24 Spec35 Spec38 Spec40 Spec43 Spec48
 #     2     9     13     20     24     35     38     40     43     48
 # Spec50 Spec51 Spec72 Spec74 Spec81 Spec83 Spec88 Spec89 Spec94
 #     50     51     72     74     81     83     88     89     94
 
 # Toss out species never detected
-y <- dat$y # copy 4D array
-y <- y[,,,-missed] # Drop data from 19 missed species
-str(y) # 50 sites x 2 reps x 6 years x 81 species
+y <- dat$y                   # copy 4D array
+y <- y[,,,-missed]           # Drop data from 19 missed species
+str(y)                       # 50 sites x 2 reps x 6 years x 81 species
 
 # Augment the data set with 100 potential species
 # Create zero 4D array for M species
-nz <- 100 # Number of 'zero species'
-M <- dim(y)[4] + nz # Size of augmented data set
+nz <- 100                              # Number of 'zero species'
+M <- dim(y)[4] + nz                    # Size of augmented data set
 yaug <- array(0, dim = c(50, 2, 6, M)) # Prefill with zeroes
-dim(yaug) # Check if it went well: and it did !
+dim(yaug)                              # Check if it went well: and it did !
 
 # Fill in the observed data into this larger array
 yaug[,,,1:dim(y)[4]] <- y
 str(yaug)
-sum(y) ; sum(yaug) # Quick sum check: should give same sum
+sum(y) ; sum(yaug)                     # Quick sum check: should give same sum
 
 # Bundle and summarize data set (M is nspec for augmented data set)
 str(bdata <- list(yaug = yaug, nsite = dim(yaug)[1], nsurvey = dim(yaug)[2],
@@ -67,6 +68,7 @@ str(bdata <- list(yaug = yaug, nsite = dim(yaug)[1], nsurvey = dim(yaug)[2],
 # Specify model in BUGS language
 cat(file = "DCM2A.txt", "
 model {
+
   # Specify hyperpriors: Priors for the hyperparameters
   mu.lpsi1 <- logit(mean.psi1)    # Initial occupancy
   mean.psi1 ~ dunif(0, 1)
@@ -98,30 +100,30 @@ model {
   }
 
   # Data augmentation model
-  omega ~ dunif(0,1)# Royle et al. (JCGS, 2007) prior for data augmentation parameter
+  omega ~ dunif(0,1)  # Royle et al.(JCGS, 2007) prior for data augmentation parameter
   # omega ~ dbeta(0.001, 1)   # Scale prior of Link (Ecology, 2013)
-  for(k in 1:M){ # Loop over all M species, including all-zero species
+  for(k in 1:M){      # Loop over all M species, including all-zero species
     w[k] ~ dbern(omega)
   }
 
   # Ecological submodel: Define state conditional on parameters
   # Note every expression for z has premultiplication with w
-  for (i in 1:nsite){   # Loop over sites
-    for(k in 1:M){      # Loop over species
+  for (i in 1:nsite){                    # Loop over sites
+    for(k in 1:M){                       # Loop over species
       # Initial conditions of system
-      z[i,1, k] ~ dbern(w[k] * psi1[k])# P/A at start of study
+      z[i,1, k] ~ dbern(w[k] * psi1[k])  # P/A at start of study
       # State transitions
-      for (t in 2:nyear){       # Loop over years
+      for (t in 2:nyear){                # Loop over years
         z[i,t,k] ~ dbern(w[k] * (z[i,t-1,k] * phi[k] + (1- z[i,t-1, k]) * gamma[k]) )
       }
     }
   }
 
   # Observation submodel, for augmented data set
-  for (i in 1:nsite){# Loop over sites
-    for(k in 1:M){# Loop over all M species
-      for (j in 1:nsurvey){# Loop over surveys
-        for (t in 1:nyear){# Loop over years
+  for (i in 1:nsite){                    # Loop over sites
+    for(k in 1:M){                       # Loop over all M species
+      for (j in 1:nsurvey){              # Loop over surveys
+        for (t in 1:nyear){              # Loop over years
           yaug[i,j,t,k] ~ dbern(z[i,t,k] * p[k])
         }
       }
@@ -130,8 +132,8 @@ model {
 
   # Derived parameters: Number of occupied sites and population occupancy
   for(k in 1:M){
-    n.occ[1, k] <- sum(z[,1,k])  # Number of occupied sites
-    psi[1, k] <- psi1[k]         # Population occupancy
+    n.occ[1, k] <- sum(z[,1,k])          # Number of occupied sites
+    psi[1, k] <- psi1[k]                 # Population occupancy
     for (t in 2:nyear){# Loop over years
       n.occ[t, k] <- sum(z[,t,k])
       psi[t, k] <- psi[t-1, k] * phi[k] + (1-psi[t-1, k]) * gamma[k]
@@ -139,10 +141,10 @@ model {
   }
 
   # Species richness: total and for each site individually
-  Ntotal <- sum(w[])     # Estimate of community size
+  Ntotal <- sum(w[])                     # Estimate of community size
   for(i in 1:nsite){
     for(t in 1:nyear){
-      Nspec[i,t] <- sum(z[i,t,])  # Site-specific species richness
+      Nspec[i,t] <- sum(z[i,t,])         # Site-specific species richness
     }
   }
 }
@@ -164,8 +166,8 @@ params <- c("omega", "Ntotal", "mu.lpsi1", "sd.lpsi1", "mu.lphi", "sd.lphi",
 na <- 1000 ; ni <- 500 ; nt <- 25 ; nb <- 250 ; nc <- 3 # ~~~ for testing, 9 mins
 
 # Call JAGS from R, check convergence and summarize posteriors
-out2A <- jags(bdata, inits, params, "DCM2A.txt",
-  n.adapt = na, n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+out2A <- jags(bdata, inits, params, "DCM2A.txt", n.adapt = na,
+    n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 op <- par(mfrow = c(3,3))   ;   traceplot(out2A)
 par(op)
 summary(out2A, 3)
@@ -208,20 +210,20 @@ model {
   }
 
   # Data augmentation model
-  omega ~ dunif(0,1)      # Royle et al. (JCGS, 2007) prior for data augmentation parameter
+  omega ~ dunif(0,1)  # Royle et al. (JCGS, 2007) prior for data augmentation parameter
   # omega ~ dbeta(0.001, 1)   # Scale prior of Link (Ecology, 2013)
-  for(k in 1:M){ # Loop over all M species, including all-zero species
+  for(k in 1:M){      # Loop over all M species, including all-zero species
     w[k] ~ dbern(omega)
   }
 
   # Ecological submodel: Define state conditional on parameters
   # No premultiplication with w
-  for (i in 1:nsite){      # Loop over sites
-    for(k in 1:M){         # Loop over species
+  for (i in 1:nsite){             # Loop over sites
+    for(k in 1:M){                # Loop over species
       # Initial conditions of system
       z[i,1, k] ~ dbern(psi1[k])
       # State transitions
-      for (t in 2:nyear){       # Loop over years
+      for (t in 2:nyear){         # Loop over years
         z[i,t,k] ~ dbern(z[i,t-1,k] * phi[k] + (1- z[i,t-1, k]) * gamma[k])
       }
     }
@@ -229,10 +231,10 @@ model {
 
   # Observation model, for augmented data set !
   # Note premultiplication with w comes only here
-  for (i in 1:nsite){# Loop over sites
-    for(k in 1:M){# Loop over all M species
-      for (j in 1:nsurvey){# Loop over surveys
-        for (t in 1:nyear){# Loop over years
+  for (i in 1:nsite){             # Loop over sites
+    for(k in 1:M){                # Loop over all M species
+      for (j in 1:nsurvey){       # Loop over surveys
+        for (t in 1:nyear){       # Loop over years
           yaug[i,j,t,k] ~ dbern(w[k] * z[i,t,k] * p[k])
         }
       }
@@ -243,7 +245,7 @@ model {
   # Note multiplication of z with w here
   for(k in 1:M){
     n.occ[1, k] <- sum(w[k] * z[,1,k])  # Number of occupied sites
-    psi[1, k] <- psi1[k]         # Population occupancy
+    psi[1, k] <- psi1[k]          # Population occupancy
     for (t in 2:nyear){# Loop over years
       n.occ[t, k] <- sum(w[k] * z[,t,k])
       psi[t, k] <- psi[t-1, k] * phi[k] + (1-psi[t-1, k]) * gamma[k]
@@ -251,7 +253,7 @@ model {
   }
 
   # Species richness: total and for each site individually
-  Ntotal <- sum(w[])     # Estimate of community size
+  Ntotal <- sum(w[])              # Estimate of community size
   for(i in 1:nsite){
     for(t in 1:nyear){
       for(k in 1:M){
@@ -264,8 +266,8 @@ model {
 ")
 
 # Call JAGS from R, check convergence and summarize posteriors
-out2B <- jags(bdata, inits, params, "DCM2B.txt",
-  n.adapt = na, n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+out2B <- jags(bdata, inits, params, "DCM2B.txt", n.adapt = na,
+    n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 op <- par(mfrow = c(3,3))   ;   traceplot(out2B)
 par(op)
 # print(out2B, 3)
@@ -300,13 +302,13 @@ summary(P <- c(Nspec.obs) / c(out2B$mean$Nspec))
 
 # ~~~~~~~ extra code for figure 5.3 ~~~~~~~~~~~~
 # Visualize estimates of community size (Ntotal) and site/year specific estimates
-op <- par(mfrow = c(1,2), mar = c(5,5,4,3), cex.main = 1.3, cex.lab = 1.3, cex.axis = 1.3)
+op <- par(mfrow = c(1,2))
 hist(out2B$sims.list$Ntotal, col = 'grey', breaks = 30,
     xlab = 'Total number of species in community', ylab = 'Density',
     main = 'Overall species richness', freq = FALSE, xlim = c(50, 181))
-abline(v = dat$nspec.det, lwd = 3)
+abline(v = dat$nspec.det, lwd = 2)
 matplot(1:6, t(out2B$mean$Nspec), xlab = 'Year', ylab = 'Species richness',
-    main = 'Species richness per site and year', type = 'l',
-    lty = 1, lwd = 3, frame = FALSE, col = 'gray50')
+    main = 'Per site and year', type = 'l',
+    lty = 1, lwd = 2, frame = FALSE, col = 'gray50')
 par(op)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -5,7 +5,7 @@
 #
 # Chapter 5 : MODELING METACOMMUNITY DYNAMICS USING DYNAMIC COMMUNITY MODELS
 # ==========================================================================
-# Code from proofs dated 2020-06-23
+# Code from proofs dated 2020-08-19
 
 # Approximate run time for this script: 5 mins
 # With full number of iterations: 5.4 hrs
@@ -47,8 +47,8 @@ str(dat <- Finnmark) # Be sure to inspect these data
 # ..$ assemblage: Factor w/ 3 levels "OT","WCB","WGB": 2 3 1 1 2 1 1 1 1 3 ...
 
 # Turn counts into detection/nondetection data
-str(y <- dat$counts) # Copy counts
-y[y > 1] <- 1 # Quantize
+str(y <- dat$counts)                     # Copy counts
+y[y > 1] <- 1                            # Quantize
 
 # Look at annual number of sites where each species observed
 tmp <- apply(y, c(1,3,4), max, na.rm = TRUE)
@@ -83,7 +83,7 @@ nspec <- dim(y)[4]
 # Get covariates, plot and standardize them
 area.o <- dat$sites$area
 ragged.o <- dat$sites$edge / area.o
-op <- par(mfrow = c(1,3)) # Describe covariates: plot not shown
+op <- par(mfrow = c(1,3))               # Describe covariates: plot not shown
 hist(area.o, breaks = 30, col = 'grey', main = 'Thicket area')
 hist(ragged.o, breaks = 30, col = 'grey', main = 'Thicket raggedness')
 plot(area.o, ragged.o, pch = 16, frame = FALSE)
@@ -92,14 +92,14 @@ ragged <- standardize(ragged.o)
 par(op)
 
 # Fill the 3D array Time of day covariate
-str(tod <- dat$timeOfDay) # Grab and inspect survey time data
+str(tod <- dat$timeOfDay)                # Grab and inspect survey time data
 tod[is.na(tod)] <- mean(tod, na.rm = TRUE)
 
 # Create zero 4D array for M species
-nz <- 5 # Number of potential 'zero species'
-M <- nspec + nz # M is the new 'nspec'
+nz <- 5                                  # Number of potential 'zero species'
+M <- nspec + nz                          # M is the new 'nspec'
 yaug <- array(0, dim = c(nsites, nsurveys, nyears, M))
-dim(yaug) # Check if it went well
+dim(yaug)                                # Check if it went well
 
 # Fill in the observed data into this larger array
 yaug[,,,1:dim(y)[4]] <- y
@@ -130,6 +130,7 @@ str(bdata <- list(yaug = yaug, nsites = nsites, nsurveys = nsurveys,
 # Specify model in BUGS language
 cat(file = "DCM6.txt", "
 model {
+
   # *** Priors and hyperpriors for model on psi1 ***
   # Priors
   for(k in 1:M){ # Loop over 22 species in augmented list
@@ -138,6 +139,7 @@ model {
       beta.lpsi1[g, k] ~ dnorm(mu.beta.lpsi1[g], tau.beta.lpsi1[g])
     }
   }
+
   # Hyperpriors
   mu.alpha.lpsi1 <- logit(mean.alpha.psi1)
   mean.alpha.psi1 ~ dunif(0, 1)
@@ -149,6 +151,7 @@ model {
     sd.beta.lpsi1[g] ~ dnorm(0, 0.1)I(0,) # Half-Normal prior
     # curve(dnorm(x, 0, sqrt(1 / 0.1)), 0, 20) # howsit look like ?
   }
+
   # *** Priors and hyperpriors for model on phi ***
   # Priors
   for(k in 1:M){ # Loop over all 22 species
@@ -160,6 +163,7 @@ model {
       beta.lphi[g, k] ~ dnorm(mu.beta.lphi[g], tau.beta.lphi[g])
     }
   }
+
   # Hyperpriors
   for(t in 1:(nyears-1)){ # Loop over 3 intervals
     mu.alpha.lphi[t] <- logit(mean.alpha.phi[t])
@@ -172,6 +176,7 @@ model {
     tau.beta.lphi[g] <- pow(sd.beta.lphi[g], -2)
     sd.beta.lphi[g] ~ dnorm(0, 0.1)I(0,)
   }
+
   # *** Priors and hyperpriors for model on gamma ***
   # Priors
   for(k in 1:M){ # Loop over all 22 species
@@ -183,6 +188,7 @@ model {
       beta.lgamma[g, k] ~ dnorm(mu.beta.lgamma[g], tau.beta.lgamma[g])
     }
   }
+
   # Hyperpriors
   for(t in 1:(nyears-1)){ # Loop over 3 intervals
     mu.alpha.lgamma[t] <- logit(mean.alpha.gamma[t])
@@ -195,6 +201,7 @@ model {
     tau.beta.lgamma[g] <- pow(sd.beta.lgamma[g], -2)
     sd.beta.lgamma[g] ~ dnorm(0, 0.1)I(0,)
   }
+
   # *** Priors and hyperpriors for model on p ***
   # Priors
   for(k in 1:M){ # Loop over all 22 species
@@ -206,6 +213,7 @@ model {
       beta.lp[g, k] ~ dnorm(mu.beta.lp[g], tau.beta.lp[g]) # coefficients
     }
   }
+
   # Hyperpriors
   for(t in 1:nyears){ # Loop over 4 years
     mu.alpha.lp[t] <- logit(mean.alpha.p[t])
@@ -218,6 +226,7 @@ model {
     tau.beta.lp[g] <- pow(sd.beta.lp[g], -2)
     sd.beta.lp[g] ~ dnorm(0, 0.1)I(0,)
   }
+
   # Likelihood of the model
   # Data augmentation submodel
   omega ~ dunif(0, 1) # Prior for data augmentation parameter
@@ -225,6 +234,7 @@ model {
   for(k in 1:M){ # Loop over all 22 species, including 5 all-zero species
     w[k] ~ dbern(omega)
   }
+
   # Ecological submodel: Define state conditional on parameters
   for (i in 1:nsites){ # Loop over 37 sites
     for(k in 1:M){ # Loop over 22 species
@@ -233,6 +243,7 @@ model {
       logit(psi1[i,k]) <- alpha.lpsi1[k] +
       beta.lpsi1[1,k] * covs[i,1] + beta.lpsi1[2,k] * covs[i,2] +
       beta.lpsi1[3,k] * covs[i,3] + beta.lpsi1[4,k] * covs[i,4]
+
       # State transitions (incl. covariate effects)
       for (t in 2:nyears){ # Loop over years
         z[i,t,k] ~ dbern(z[i,t-1,k]*phi[i,t-1,k] + (1-z[i,t-1, k])*gamma[i,t-1,k])
@@ -245,6 +256,7 @@ model {
       }
     }
   }
+
   # Observation model (incl. covariate effects)
   # Multiplication with w is now here (see Section 5.5)
   # Also note the cosinor function for cyclic timeOfDay (= tod) covariate
@@ -262,6 +274,7 @@ model {
       }
     }
   }
+
   # Derived parameters (note multiplication with w)
   # Number of occupied sites
   for(k in 1:M){
@@ -294,7 +307,7 @@ params <- c("omega", "mu.alpha.lpsi1", "sd.alpha.lpsi1", "mu.beta.lpsi1",
     "sd.beta.lgamma", "mu.alpha.lp", "sd.alpha.lp", "mu.beta.lp",
     "sd.beta.lp", "alpha.lpsi1", "beta.lpsi1", "alpha.lphi", "beta.lphi",
     "alpha.lgamma", "beta.lgamma", "alpha.lp", "beta.lp", "Ntotal", "Nspec",
-    "n.occ") # Could add "z"
+    "n.occ")                             # Could add "z"
 
 # MCMC settings
 # na <- 1000 ; ni <- 150000 ; nt <- 50 ; nb <- 100000 ; nc <- 3
@@ -312,11 +325,9 @@ jags.View(out6) ; print(out6, 2) # not shown
 tmp <- apply(y, c(1,3,4), max, na.rm = TRUE)
 tmp[tmp == '-Inf'] <- NA
 Nobs <- apply(tmp, 1:2, sum)
-op <- par(mar = c(5,5,3,2), cex.axis = 1.5, cex.lab = 1.5)
 plot(Nobs, out6$mean$Nspec, xlab = 'Observed N', ylab = 'Estimated true N',
     xlim = c(0, 12), ylim = c(0, 16), pch = 16, cex = 1.5, col = 'gray30', frame = FALSE)
 abline(0, 1)
-par(op)
 (mean.P <- 100*mean(Nobs/out6$mean$Nspec, na.rm = TRUE)) # % detected
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -333,34 +344,137 @@ head(pred.covs <- cbind(area = area.pred, area2 = area.pred^2,
     ragged = ragged.pred, ragged2 = ragged.pred^2))
 
 # Generate arrays to hold the predictions
-comm.pred <- array(NA, dim = c(length(area.pred), 3)) # Community
-spec.pred <- array(NA, dim = c(length(area.pred), 3, 17)) # Species
-str(tmp <- out6$mean) # Grab the posterior means
-lin <- c(1,3) # Index variable for linears
-quad <- c(2,4) # Index variable for quadratics
+comm.pred <- array(NA, dim = c(length(area.pred), 3))       # Community
+spec.pred <- array(NA, dim = c(length(area.pred), 3, 17))   # Species
+str(tmp <- out6$mean)                    # Grab the posterior means
+lin <- c(1,3)                            # Index variable for linears
+quad <- c(2,4)                           # Index variable for quadratics
 
 # Compute predictions for initial occupancy
-for(g in 1:2){ # For the community mean first ...
+for(g in 1:2){                           # For the community mean first ...
   comm.pred[,g] <- plogis(tmp$mu.alpha.lpsi +
   tmp$mu.beta.lpsi1[lin[g]] * pred.covs[,lin[g]] +
   tmp$mu.beta.lpsi1[quad[g]] * pred.covs[,quad[g]])
-  for(s in 1:17){ # ... and then for each species
+  for(s in 1:17){                        # ... and then for each species
     spec.pred[,g,s] <- plogis(tmp$alpha.lpsi1[s] +
     tmp$beta.lpsi1[lin[g],s] * pred.covs[,lin[g]] + tmp$beta.lpsi1[quad[g],s] *
     pred.covs[,quad[g]])
   }
 }
 
-# Plot predictions for initial occupancy
+# Spagetti-plot predictions for initial occupancy
 # ( Code shown here only for top row of 4x2 matrix in Fig. 5.10)
 cx <- 1.3
-op <- par(mfrow = c(1, 2), mar = c(5,5,2,1), cex.lab = cx, cex.axis = cx, cex.main = cx)
+op <- par(mfrow = c(1, 2), mar = c(5,5,2,1), cex.lab = cx, cex.axis = cx,
+    cex.main = cx)
 matplot(area.predo, spec.pred[,1,], xlab = 'Willow thicket area',
-    ylab = "Occupancy (psi1)", ylim = c(0, 1), frame = FALSE, las = 1, lty = 1, type = 'l',
-    lwd = 3, col = rgb(0,0,0,0.4))
+    ylab = "Occupancy (psi1)", ylim = c(0, 1), frame = FALSE, las = 1, lty = 1,
+    type = 'l', lwd = 3, col = rgb(0,0,0,0.4))
 lines(area.predo, comm.pred[,1], lwd = 5)
 matplot(ragged.predo, spec.pred[,2,], xlab = ' Willow thicket raggedness',
-    ylab = "Occupancy (psi1)", ylim = c(0, 1), frame = FALSE, las = 1, lty = 1, type = 'l',
-    lwd = 3, col = rgb(0,0,0,0.4))
+    ylab = "Occupancy (psi1)", ylim = c(0, 1), frame = FALSE, las = 1, lty = 1,
+    type = 'l', lwd = 3, col = rgb(0,0,0,0.4))
 lines(ragged.predo, comm.pred[,2], lwd = 5)
 par(op)
+
+# ~~~ Extra code for all the plots in figure 5.10 ~~~~~~~~~~~
+# Generate arrays to hold the predictions
+comm.pred <- array(NA, dim = c(length(area.pred), 2))     # Community
+spec.pred <- array(NA, dim = c(length(area.pred), 2, 17)) # Species
+str(tmp <- out6$mean)    # Grab the posterior means
+lin <- c(1,3)            # To pull out linears
+quad <- c(2,4)           # To pull out quads
+
+op <- par(mfrow = c(4,2))
+
+# Predictions for initial occupancy
+for(g in 1:2){       # For the community mean first ...
+  comm.pred[,g] <- plogis(tmp$mu.alpha.lpsi + tmp$mu.beta.lpsi1[lin[g]] *
+      pred.covs[,lin[g]] + tmp$mu.beta.lpsi1[quad[g]] * pred.covs[,quad[g]])
+  for(s in 1:17){    # ... and then for each species
+    spec.pred[,g,s] <- plogis(tmp$alpha.lpsi1[s] + tmp$beta.lpsi1[lin[g],s] *
+        pred.covs[,lin[g]] + tmp$beta.lpsi1[quad[g], s] * pred.covs[,quad[g]])
+  }
+}
+plot(area.predo, comm.pred[,1], xlab = '', ylab = 'Initial occupancy',
+    type = 'l', col = 'black', ylim = c(0, 1), frame = FALSE, las = 1)
+matlines(area.predo, spec.pred[,1,], lty = 1, type = 'l', col = rgb(0,0,0,0.4))
+lines(area.predo, comm.pred[,1], lwd = 2)
+plot(ragged.predo, comm.pred[,2], xlab = '', ylab = '', type = 'l',
+    col = 'black', ylim = c(0, 1), frame = FALSE, las = 1)
+matlines(ragged.predo, spec.pred[,2,], lty = 1, type = 'l',
+    col = rgb(0,0,0,0.4))
+lines(ragged.predo, comm.pred[,2], lwd = 2)
+
+# Predictions for persistence
+for(g in 1:2){     # For the community mean first ...
+  comm.pred[,g] <- plogis(mean(tmp$mu.alpha.lphi) + tmp$mu.beta.lphi[lin[g]] *
+      pred.covs[,lin[g]] + tmp$mu.beta.lphi[quad[g]] * pred.covs[,quad[g]])
+  for(s in 1:17){  # ... and then for each species
+    spec.pred[,g,s] <- plogis(mean(tmp$alpha.lphi[,s]) +
+        tmp$beta.lphi[lin[g],s] * pred.covs[,lin[g]] +
+        tmp$beta.lphi[quad[g], s] * pred.covs[,quad[g]])
+  }
+}
+plot(area.predo, comm.pred[,1], xlab = '', ylab = 'Persistence',
+    type = 'l', col = 'black', ylim = c(0.4, 1), frame = FALSE, las = 1)
+matlines(area.predo, spec.pred[,1,], lty = 1, type = 'l', col = rgb(0,0,0,0.4))
+lines(area.predo, comm.pred[,1], lwd = 2)
+plot(ragged.predo, comm.pred[,2], xlab = '', ylab = '', main = '', type = 'l',
+    col = 'black', ylim = c(0.4, 1), frame = FALSE, las = 1)
+matlines(ragged.predo, spec.pred[,2,], lty = 1, type = 'l',
+    col = rgb(0,0,0,0.4))
+lines(ragged.predo, comm.pred[,2], lwd = 2)
+
+# Predictions for colonization
+for(g in 1:2){     # For the community mean first ...
+  comm.pred[,g] <- plogis(mean(tmp$mu.alpha.lgamma) +
+      tmp$mu.beta.lgamma[lin[g]] * pred.covs[,lin[g]] +
+      tmp$mu.beta.lgamma[quad[g]] * pred.covs[,quad[g]])
+  for(s in 1:17){  # ... and then for each species
+    spec.pred[,g,s] <- plogis(mean(tmp$alpha.lgamma[,s]) +
+        tmp$beta.lgamma[lin[g],s] * pred.covs[,lin[g]] +
+        tmp$beta.lgamma[quad[g], s] * pred.covs[,quad[g]])
+  }
+}
+# Plot predictions for colonization
+plot(area.predo, comm.pred[,1], xlab = '', ylab = 'Colonization',
+    type = 'l', col = 'black', ylim = c(0, 1), frame = FALSE, las = 1)
+matlines(area.predo, spec.pred[,1,], lty = 1, type = 'l', col = rgb(0,0,0,0.4))
+lines(area.predo, comm.pred[,1], lwd = 2)
+plot(ragged.predo, comm.pred[,2], xlab = '', ylab = '', type = 'l',
+    col = 'black', ylim = c(0, 1), frame = FALSE, las = 1)
+matlines(ragged.predo, spec.pred[,2,], lty = 1, type = 'l',
+    col = rgb(0,0,0,0.4))
+lines(ragged.predo, comm.pred[,2], lwd = 2)
+
+# Predictions for detection
+for(g in 1:2){       # For the community mean first ...
+  comm.pred[,g] <- plogis(mean(tmp$mu.alpha.lp) + tmp$mu.beta.lp[lin[g]] *
+      pred.covs[,lin[g]] + tmp$mu.beta.lp[quad[g]] * pred.covs[,quad[g]] +
+      tmp$mu.beta.lp[5] * cos(2*pi*720/1440) +
+      tmp$mu.beta.lp[6] * sin(2*pi*720/1440) )
+  for(s in 1:17){    # ... and then for each species
+    spec.pred[,g,s] <- plogis(mean(tmp$alpha.lp[,s]) +
+        tmp$beta.lp[lin[g],s] * pred.covs[,lin[g]] +
+        tmp$beta.lp[quad[g], s] * pred.covs[,quad[g]] +
+        tmp$beta.lp[5, s] * cos(2*pi*720/1440) +
+        tmp$beta.lp[6, s] * sin(2*pi*720/1440))
+  }
+}
+# Plot predictions for detection
+plot(area.predo, comm.pred[,1], xlab = 'Willow patch area',
+    ylab = 'Detection', type = 'l', col = 'black', ylim = c(0, 1),
+    frame = FALSE, las = 1)
+matlines(area.predo, spec.pred[,1,], lty = 1, type = 'l', col = rgb(0,0,0,0.4))
+lines(area.predo, comm.pred[,1], lwd = 2)
+plot(ragged.predo, comm.pred[,2], xlab = 'Willow patch raggedness',
+    ylab = '', type = 'l', col = 'black', ylim = c(0, 1),
+    frame = FALSE, las = 1)
+matlines(ragged.predo, spec.pred[,2,], lty = 1, type = 'l',
+    col = rgb(0,0,0,0.4))
+lines(ragged.predo, comm.pred[,2], lwd = 2)
+par(op)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+

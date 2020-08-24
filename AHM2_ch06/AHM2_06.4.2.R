@@ -5,7 +5,7 @@
 #
 # Chapter 6 : MULTISTATE OCCUPANCY MODELS
 # =======================================
-# Code from proofs dated 2020-06-24
+# Code from proofs dated 2020-08-19
 
 # Approximate time with full number of iterations: 14 mins
 
@@ -33,27 +33,32 @@ str(bdata <- list(y = yms, nsites = dim(yms)[1], nsurveys = nsurveys,
 # Specify model in BUGS language
 cat(file = "dynMS1.txt", "
 model {
+
   ### (1) Priors for parameters
   # State process priors
   # Priors for parameters in initial state vector (Omega)
   psi ~ dunif(0, 1)
   r ~ dunif(0, 1)
+
   # Priors for parameters in state transition matrix (PhiMat)
   for(s in 1:3){
     phi[s] ~ dunif(0, 1)
     rho[s] ~ dunif(0, 1)
   }
+
   # Priors for parameters in observation process (Theta)
-  p2 ~ dunif(0, 1) # Detection prob. when in state 2
-  for (s in 1:3) { # Detection prob. when in state 3
-    beta[s] ~ dgamma(1, 1) # Induce Dirichlet prior
+  p2 ~ dunif(0, 1)                 # Detection prob. when in state 2
+  for (s in 1:3) {                 # Detection prob. when in state 3
+    beta[s] ~ dgamma(1, 1)         # Induce Dirichlet prior
     p3[s] <- beta[s] / sum(beta[])
   }
+
   ### (2) Define relationships between basic model structure and parameters
   # Define initial state vector: Year 1
-  Omega[1] <- 1 - psi # Prob. of non-occupation
-  Omega[2] <- psi * (1-r) # Prob. of occ. by single bird
-  Omega[3] <- psi * r # Prob. of occ. by pair
+  Omega[1] <- 1 - psi              # Prob. of non-occupation
+  Omega[2] <- psi * (1-r)          # Prob. of occ. by single bird
+  Omega[3] <- psi * r              # Prob. of occ. by pair
+
   # Define state transition probability matrix (PhiMat): years 2:nyears
   # Define probabilities of state S(t+1) given S(t)
   # For now, constant over sites and years
@@ -68,6 +73,7 @@ model {
   PhiMat[3,1] <- 1 - phi[3]
   PhiMat[3,2] <- phi[3] * (1 - rho[3])
   PhiMat[3,3] <- phi[3] * rho[3]
+
   # Define observation probability matrix (Theta)
   # Order of indices: true state, observed state
   Theta[1,1] <- 1
@@ -79,17 +85,20 @@ model {
   Theta[3,1] <- p3[1]
   Theta[3,2] <- p3[2]
   Theta[3,3] <- p3[3]
+
   ### (3) Likelihood
   # Initial state: year 1
   for (i in 1:nsites){
     z[i,1] ~ dcat(Omega[])
   }
+
   # State transitions from yearly interval 1:(nyears-1)
   for (i in 1:nsites){
     for(t in 1:(nyears-1)){
       z[i,t+1] ~ dcat(PhiMat[z[i,t],])
     }
   }
+
   # Observation equation
   for (i in 1:nsites){
     for (t in 1:nyears){
@@ -98,17 +107,18 @@ model {
       }
     }
   }
+
   ### (4) Derived quantities
   # Number of sites in each state per year
   for (t in 1:nyears){
     for (i in 1:nsites){
-      state1[i,t] <- equals(z[i,t], 1) # Indicator for site in state 1
-      state2[i,t] <- equals(z[i,t], 2) # ... state 2
-      state3[i,t] <- equals(z[i,t], 3) # ... state 3
+      state1[i,t] <- equals(z[i,t], 1)   # Indicator for site in state 1
+      state2[i,t] <- equals(z[i,t], 2)   # ... state 2
+      state3[i,t] <- equals(z[i,t], 3)   # ... state 3
     }
-    n.occ[t,1] <- sum(state1[,t]) # Number of unoccupied sites
-    n.occ[t,2] <- sum(state2[,t]) # Number of sites with single birds
-    n.occ[t,3] <- sum(state3[,t]) # Number of sites with pairs
+    n.occ[t,1] <- sum(state1[,t])        # Number of unoccupied sites
+    n.occ[t,2] <- sum(state2[,t])        # Number of sites with single birds
+    n.occ[t,3] <- sum(state3[,t])        # Number of sites with pairs
     n.occ.total[t] <- n.occ[t,2] + n.occ[t, 3] # All occupied
   }
 }

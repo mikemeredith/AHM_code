@@ -5,7 +5,7 @@
 #
 # Chapter 6 : MULTISTATE OCCUPANCY MODELS
 # =======================================
-# Code from proofs dated 2020-06-24
+# Code from proofs dated 2020-08-19
 
 # Approximate code execution time for this script: 2 hrs
 # With full number of iterations: 19 hrs
@@ -19,8 +19,9 @@ source("AHM2_06.4.1.R")
 # 6.4 Case study: Swiss eagle owls
 # ================================
 
-# 6.4.3 Fitting a big dynamic multiseason model with covariates and random effects
-# --------------------------------------------------------------------------------
+# 6.4.3 Fitting a big dynamic multiseason model with covariates and
+#       random effects
+# ------------------------------------------------------------------
 
 # This makes for much easier interpretation than use of scale()
 date.scaled <- (date - 90) / 30.5
@@ -56,6 +57,7 @@ str(bdata <- list(y = yms, nsites = dim(yms)[1], nsurveys = nsurveys,
 # Specify model in BUGS language
 cat(file = "dynMS2.txt", "
 model {
+
   ### (1) Linear models and priors
   # ------------------------------
   ## (a) State process
@@ -63,10 +65,11 @@ model {
   # Linear models
   for (i in 1:nsites){
     logit(psi[i]) <- alpha.lpsi[region[i]] + beta.lpsi[1] * elev[i] +
-    beta.lpsi[2] * forest[i]
+        beta.lpsi[2] * forest[i]
     logit(r[i]) <- alpha.lr[region[i]] + beta.lr[1] * elev[i] +
-    beta.lr[2] * forest[i]
+        beta.lr[2] * forest[i]
   }
+
   # Priors for parameters in the linear models of psi and r (Omega)
   # Region-specific intercepts (fixed effects)
   for(k in 1:6){
@@ -80,6 +83,7 @@ model {
     beta.lpsi[k] ~ dnorm(0, 0.1)
     beta.lr[k] ~ dnorm(0, 0.1)
   }
+
   # Transition probability matrix (PhiMat)
   # Linear models
   for (i in 1:nsites){
@@ -108,6 +112,7 @@ model {
     alpha.lphi3[t] ~ dnorm(mu.alpha.lphi3, tau.alpha.lphi3)
     alpha.lrho3[t] ~ dnorm(mu.alpha.lrho3, tau.alpha.lrho3)
   }
+
   # Hyperpriors for hyperparameters governing the random year effects
   mu.alpha.lphi1 <- logit(mean.phi1)
   mean.phi1 ~ dunif(0, 1)
@@ -135,6 +140,7 @@ model {
   mean.rho3 ~ dunif(0, 1)
   tau.alpha.lrho3 <- pow(sd.alpha.lrho3, -2)
   sd.alpha.lrho3 ~ dnorm(0, 0.5)I(0,)
+
   # Fixed effects of region on the parameters in PhiMat
   beta.region.lphi1[1] <- 0 # Avoid overparameterization
   beta.region.lrho1[1] <- 0
@@ -159,6 +165,7 @@ model {
     beta.lrho2[k] ~ dnorm(0, 0.1)
     beta.lrho3[k] ~ dnorm(0, 0.1)
   }
+
   # (b) Observation process
   # Observation matrix (Theta)
   # Linear models
@@ -167,23 +174,24 @@ model {
       for(j in 1:nsurveys[i,t]){ # nsurveys is function of site and year
         # Observation model for sites in occupied state 1 (= single bird)
         logit(p2[i,j,t]) <- alpha.lp2 + beta.region.lp2[region[i]] +
-        beta.lp2[1] * date[i,j,t] + beta.lp2[2] * pow(date[i,j,t],2)
+            beta.lp2[1] * date[i,j,t] + beta.lp2[2] * pow(date[i,j,t],2)
         # Observation model for sites in occupied state 2 (= pairs)
         mlogit.p3[2,i,j,t] <- alpha.lp32 + beta.region.lp32[region[i]] +
-        beta.lp32[1] * date[i,j,t] + beta.lp32[2] * pow(date[i,j,t],2)
+            beta.lp32[1] * date[i,j,t] + beta.lp32[2] * pow(date[i,j,t],2)
         mlogit.p3[3,i,j,t] <- alpha.lp33 + beta.region.lp33[region[i]] +
-        beta.lp33[1] * date[i,j,t] + beta.lp33[2] * pow(date[i,j,t],2)
+            beta.lp33[1] * date[i,j,t] + beta.lp33[2] * pow(date[i,j,t],2)
       }
     }
   }
+
   # Priors for parameters in the linear models in Theta
   # Intercepts
   alpha.lp2 <- logit(mean.alpha.p2)
   mean.alpha.p2 ~ dunif(0, 1)
-  alpha.lp32 ~ dnorm(0, 0.01) # Must be normal for multinomial logit
+  alpha.lp32 ~ dnorm(0, 0.01)        # Must be normal for multinomial logit
   alpha.lp33 ~ dnorm(0, 0.01)
   # Fixed effects of region in parameters in Theta
-  beta.region.lp2[1] <- 0 # Avoid overparameterization
+  beta.region.lp2[1] <- 0            # Avoid overparameterization
   beta.region.lp32[1] <- 0
   beta.region.lp33[1] <- 0
   for(k in 2:6){
@@ -197,17 +205,19 @@ model {
     beta.lp32[k] ~ dnorm(0, 0.1)
     beta.lp33[k] ~ dnorm(0, 0.1)
   }
+
   # Implement Multinomial logit link for p3[2:3] in Theta
   for (i in 1:nsites){
     for (t in 1:nyears){
       for(j in 1:nsurveys[i,t]){
         p3[2,i,j,t] <- exp(mlogit.p3[2,i,j,t]) / (1 + exp(mlogit.p3[2,i,j,t]) +
-        exp(mlogit.p3[3,i,j,t]))
+            exp(mlogit.p3[3,i,j,t]))
         p3[3,i,j,t] <- exp(mlogit.p3[3,i,j,t]) / (1 + exp(mlogit.p3[2,i,j,t]) +
-        exp(mlogit.p3[3,i,j,t]))
+            exp(mlogit.p3[3,i,j,t]))
       }
     }
   }
+
   ### (2) Define Initial state vector (Omega), state transition matrix
   #(PhiMat) and observation matrix (Theta)
   # Initial state vector (Omega): Year 1
@@ -216,6 +226,7 @@ model {
     Omega[i,2] <- psi[i] * (1-r[i]) # Prob. of occ. by single bird
     Omega[i,3] <- psi[i] * r[i] # Prob. of occ. by pair
   }
+
   # State transition probability matrix (PhiMat): years 2:nyears
   # Note conditional Bernoulli parameterization of multinomial
   # Order of indices: Departing state, arrival state, site, year
@@ -232,6 +243,7 @@ model {
       PhiMat[3,3,i,t] <- phi3[i,t] * rho3[i,t]
     }
   }
+
   # Observation probability matrix (Theta): years 1:nyears
   # Order of indices: true state, observed state, site, occasion, year
   # (No conditional Bernoulli reparameterization here)
@@ -250,17 +262,20 @@ model {
       }
     }
   }
+
   ### (3) Likelihood
   # Initial state: year 1
   for (i in 1:nsites){
     z[i,1] ~ dcat(Omega[i,])
   }
+
   # State transitions from yearly interval 1:(nyears-1)
   for (i in 1:nsites){
     for(t in 1:(nyears-1)){
       z[i,t+1] ~ dcat(PhiMat[z[i,t],,i,t])
     }
   }
+
   # Observation equation
   for (i in 1:nsites){
     for (t in 1:nyears){
@@ -269,6 +284,7 @@ model {
       }
     }
   }
+
   ### (4) Derived quantities
   # Annual average PhiMat (averaged over sites)
   for(t in 1:(nyears-1)){
@@ -282,6 +298,7 @@ model {
     PhiMat.annual[3,2,t] <- mean(PhiMat[3,2,,t])
     PhiMat.annual[3,3,t] <- mean(PhiMat[3,3,,t])
   }
+
   # Grand average PhiMat (averaged over sites and years)
   PhiMat.avg[1,1] <- mean(PhiMat.annual[1,1,])
   PhiMat.avg[1,2] <- mean(PhiMat.annual[1,2,])
@@ -292,6 +309,7 @@ model {
   PhiMat.avg[3,1] <- mean(PhiMat.annual[3,1,])
   PhiMat.avg[3,2] <- mean(PhiMat.annual[3,2,])
   PhiMat.avg[3,3] <- mean(PhiMat.annual[3,3,])
+
   # Number of sites in each state and occupied by single or pair
   for (t in 1:nyears){
     for (i in 1:nsites){
@@ -329,7 +347,7 @@ params <- c("alpha.lpsi", "mean.psi", "beta.lpsi", "alpha.lr", "mean.r",
 
 # MCMC settings
 # na <- 1000 ; ni <- 60000 ; nt <- 20 ; nb <- 40000 ; nc <- 3
-na <- 1000 ; ni <- 6000 ; nt <- 2 ; nb <- 4000 ; nc <- 3  # ~~~~~~~ for testing, 2 hrs
+na <- 1000 ; ni <- 6000 ; nt <- 2 ; nb <- 4000 ; nc <- 3  # ~~~ for testing, 2 hrs
 
 # Call JAGS (ART 22 h), check convergence and summarize posteriors
 odms2 <- jags(bdata, inits, params, "dynMS2.txt", n.adapt = na,

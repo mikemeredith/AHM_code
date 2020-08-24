@@ -5,7 +5,7 @@
 #
 # Chapter 6 : MULTISTATE OCCUPANCY MODELS
 # =======================================
-# Code from proofs dated 2020-06-24
+# Code from proofs dated 2020-08-19
 
 library(jagsUI)
 library(unmarked)
@@ -15,17 +15,17 @@ library(unmarked)
 
 # Pick values for 11 parameters
 # Parameters for initial conditions (Omega)
-psi <- 0.8 # Expected proportion of occupied sites
-r <- 0.5   # Exp. proportion of sites (among occupied) with a pair
+psi <- 0.8                # Expected proportion of occupied sites
+r <- 0.5                  # Exp. proportion of sites (among occupied) with a pair
 
 # Parameters for state transition matrix (Phi)
 phi <- c(0.2, 0.8, 0.9)   # Prob. to become occupied
 rho <- c(0.5, 0.25, 0.89) # Prob. to get a pair if become occupied
 
 # Parameters for observation matrix (Theta)
-p2 <- 0.5  # Detection probability of site with single bird
-p32 <- 0.2 # Classification probability of site with pair as single bird
-p33 <- 0.6 # Classification probability of site with pair as pair
+p2 <- 0.5                 # Detection probability of site with single bird
+p32 <- 0.2                # Classification probability of site with pair as single bird
+p33 <- 0.6                # Classification probability of site with pair as pair
 
 # Assemble initial state vector and the two matrices
 # Populate initial state probability vector (Omega)
@@ -35,42 +35,42 @@ Omega <- c(1-psi, psi*(1-r), psi*r)
 Phi <- matrix(
     c(1-phi[1], phi[1]*(1-rho[1]), phi[1]*rho[1],
       1-phi[2], phi[2]*(1-rho[2]), phi[2]*rho[2],
-      1-phi[3], phi[3]*(1-rho[3]), phi[3]*rho[3]), ncol = 3, byrow = T)
+      1-phi[3], phi[3]*(1-rho[3]), phi[3]*rho[3]), ncol = 3, byrow = TRUE)
 
 # Populate observation probability matrix (Theta)
 Theta <- matrix(
   c(1, 0, 0,
     1-p2, p2, 0,
-    1-p32- p33, p32, p33), ncol = 3, byrow = T)
+    1-p32- p33, p32, p33), ncol = 3, byrow = TRUE)
 
 # Inspect the three arrays
 Omega # Initial state vector
 Phi   # State transition matrix
 Theta # Observation matrix
-# > Omega # Initial state vector
+# > Omega                     # Initial state vector
 # [1] 0.2 0.4 0.4
-# > Phi # State transition matrix
+# > Phi                       # State transition matrix
 #      [,1]  [,2]  [,3]
 # [1,]  0.8 0.100 0.100
 # [2,]  0.2 0.600 0.200
 # [3,]  0.1 0.099 0.801
-# > Theta # Observation matrix
+# > Theta                     # Observation matrix
 #      [,1] [,2] [,3]
 # [1,]  1.0  0.0  0.0
 # [2,]  0.5  0.5  0.0
 # [3,]  0.2  0.2  0.6
 
 # Pick sample sizes (note use of names instead of letters)
-nsites <- 100 # denoted "M" above
-nsurveys <- 3 # ... "J" ...
-nyears <- 5   # ... "T" ...
+nsites <- 100                 # denoted "M" above
+nsurveys <- 3                 # ... "J" ...
+nyears <- 5                   # ... "T" ...
 
 # Generate structures for latent states (z) and for observations (y)
 z <- array(NA, dim = c(nsites, nyears))
 y <- array(NA, dim = c(nsites, nsurveys, nyears))
 
 # Draw initial states in year 1 using initial state vector Omega
-get1 <- function(x) which(x==1) # Get positition of the sole one (1)
+get1 <- function(x) which(x==1)   # Get positition of the sole one (1)
 set.seed(1)
 z[,1] <- apply(rmultinom(nsites, 1, Omega), 2, get1)
 
@@ -141,25 +141,30 @@ str(bdata <- list(y = y1, nsites = nrow(y1), nsurveys = ncol(y1)))
 # Specify model in BUGS language
 cat(file = "static1.txt", "
 model {
+
   # Priors
   psi ~ dunif(0, 1)
   r ~ dunif(0, 1)
   p2 ~ dunif(0, 1)
+
   # Multinomial logit link for observation model for state 3 (= pair)
   lp32 ~ dnorm(0, 0.001)
   lp33 ~ dnorm(0, 0.001)
   p32 <- exp(lp32) / (1 + exp(lp32) + exp(lp33))
   p33 <- exp(lp33) / (1 + exp(lp32) + exp(lp33))
-  p31 <- 1-p32-p33 # Nondetection prob for pairs by difference
+  p31 <- 1-p32-p33                     # Nondetection prob for pairs by difference
+
   # Alternative: induce Dirichlet prior for p3
   # for (s in 1:3) {
   #   beta[s] ~ dgamma(1, 1)
   #   p3[s] <- beta[s] / sum(beta[])
   # }
+
   # Define initial state vector (Omega)
-  Omega[1] <- 1 - psi # Prob. of non-occupation
-  Omega[2] <- psi * (1-r) # Prob. of occupancy (w/ single bird)
-  Omega[3] <- psi * r # Prob. of occupancy (with pair)
+  Omega[1] <- 1 - psi                  # Prob. of non-occupation
+  Omega[2] <- psi * (1-r)              # Prob. of occupancy (w/ single bird)
+  Omega[3] <- psi * r                  # Prob. of occupancy (with pair)
+
   # Define observation matrix (Theta)
   # Order of indices: true state, observed state
   Theta[1,1] <- 1
@@ -168,20 +173,23 @@ model {
   Theta[2,1] <- 1-p2
   Theta[2,2] <- p2
   Theta[2,3] <- 0
-  Theta[3,1] <- p31 # = 1-p32-p33 as per prior section
+  Theta[3,1] <- p31                    # = 1-p32-p33 as per prior section
   Theta[3,2] <- p32
   Theta[3,3] <- p33
+
   # State-space likelihood
   # State equation: model of true states (z)
   for (i in 1:nsites){
     z[i] ~ dcat(Omega[])
   }
+
   # Observation equation
   for (i in 1:nsites){
     for (j in 1:nsurveys){
       y[i,j] ~ dcat(Theta[z[i],])
     }
   }
+
   # Derived quantities
   for (i in 1:nsites){
     occ1[i] <- equals(z[i], 1)
@@ -244,6 +252,7 @@ str(bdata <- list(y = y, nsites = dim(y)[1], nsurveys = dim(y)[2],
 # Specify model in BUGS language
 cat(file = "static2.txt", "
 model {
+
   # Priors for each year
   for (t in 1:nyears){
     psi[t] ~ dunif(0, 1)
@@ -254,8 +263,9 @@ model {
     lp33[t] ~ dnorm(0, 0.001)
     p32[t] <- exp(lp32[t]) / (1 + exp(lp32[t]) + exp(lp33[t]))
     p33[t] <- exp(lp33[t]) / (1 + exp(lp32[t]) + exp(lp33[t]))
-    p31[t] <- 1-p32[t]-p33[t] # Nondetection prob for pairs by difference
+    p31[t] <- 1-p32[t]-p33[t]             # Nondetection prob for pairs by difference
   }
+
   # Alternative: Dirichlet prior for p3
   # for (t in 1:nyears){
   #   for (s in 1:3) {
@@ -267,10 +277,11 @@ model {
   # Define state vector for each year
   # Called Omega here; has different meaning in dynamic model
   for (t in 1:nyears){
-    Omega[t,1] <- 1 - psi[t] # Prob. of non-occupation
-    Omega[t,2] <- psi[t] * (1-r[t]) # Prob. of occupancy (w/ single bird)
-    Omega[t,3] <- psi[t] * r[t] # Prob. of occupancy (with pair)
+    Omega[t,1] <- 1 - psi[t]              # Prob. of non-occupation
+    Omega[t,2] <- psi[t] * (1-r[t])       # Prob. of occupancy (w/ single bird)
+    Omega[t,3] <- psi[t] * r[t]           # Prob. of occupancy (with pair)
   }
+
   # Define observation matrix for each year
   # Order of indices: true state, year, observed state
   for (t in 1:nyears){
@@ -280,20 +291,22 @@ model {
     Theta[2,t,1] <- 1-p2[t]
     Theta[2,t,2] <- p2[t]
     Theta[2,t,3] <- 0
-    Theta[3,t,1] <- p31[t] # = 1-p32[t]-p33[t]
+    Theta[3,t,1] <- p31[t]                # = 1-p32[t]-p33[t]
     Theta[3,t,2] <- p32[t]
     Theta[3,t,3] <- p33[t]
   }
+
   # State-space likelihood
   # Define separate params of state and observation equation for each year
   for (t in 1:nyears){
     for (i in 1:nsites){
-      z[i,t] ~ dcat(Omega[t,]) # State equation
+      z[i,t] ~ dcat(Omega[t,])            # State equation
       for (j in 1:nsurveys){
         y[i,j,t] ~ dcat(Theta[z[i,t],t,]) # Observation equation
       }
     }
   }
+
   # Derived quantities
   for (t in 1:nyears){
     for (i in 1:nsites){
@@ -301,9 +314,9 @@ model {
       occ2[i,t] <- equals(z[i,t], 2)
       occ3[i,t] <- equals(z[i,t], 3)
     }
-    n.occ[t,1] <- sum(occ1[,t]) # Sites in state 1
-    n.occ[t,2] <- sum(occ2[,t]) # Sites in state 2
-    n.occ[t,3] <- sum(occ3[,t]) # Sites in state 3
+    n.occ[t,1] <- sum(occ1[,t])           # Sites in state 1
+    n.occ[t,2] <- sum(occ2[,t])           # Sites in state 2
+    n.occ[t,3] <- sum(occ3[,t])           # Sites in state 3
   }
 }
 ")
@@ -330,38 +343,44 @@ true.sumZ <- array(NA, dim = c(3, 5), dimnames = list(c('unocc',
 for(t in 1:5){ # Compute true sum of sites in each state
   true.sumZ[,t] <- table(z[,t])
 }
-true.sumZ # True
-t(out2$mean$n.occ) # Estimated (posterior means)
+true.sumZ                                # True
+t(out2$mean$n.occ)                       # Estimated (posterior means)
 
 
 # 6.3.3 The dynamic multiseason model
 # -----------------------------------
 
+# Same data bundle as in last section
 str(bdata <- list(y = y, nsites = dim(y)[1], nsurveys = dim(y)[2],
     nyears = dim(y)[3]))
 
 # Specify model in BUGS language
 cat(file = "dynamic1.txt", "
 model {
+
   # Priors
   # Priors for parameters in initial state vector Omega
   psi ~ dunif(0,1)
   r ~ dunif(0,1)
+
   # Priors for params. of state transition mat. PhiMat (called Phi in text)
   for(s in 1:3){
     phi[s] ~ dunif(0,1)
     rho[s] ~ dunif(0,1)
   }
+
   # Priors for parameters in the observation matrix Theta
   p2 ~ dunif(0, 1)
-  for (s in 1:3) { # # Dirichlet prior for p3
+  for (s in 1:3) {                       # # Dirichlet prior for p3
     beta[s] ~ dgamma(1, 1)
     p3[s] <- beta[s] / sum(beta[])
   }
+
   # Define initial state vector Omega (this is only for year 1)
-  Omega[1] <- 1 - psi # Prob. of non-occupation
-  Omega[2] <- psi * (1-r) # Prob. of single bird
-  Omega[3] <- psi * r # Prob. of pair
+  Omega[1] <- 1 - psi                    # Prob. of non-occupation
+  Omega[2] <- psi * (1-r)                # Prob. of single bird
+  Omega[3] <- psi * r                    # Prob. of pair
+
   # Define state transition matrix PhiMat (years 2:nyears)
   # Order of indices: state at t, state at t+1
   PhiMat[1, 1] <- 1 - phi[1]
@@ -373,6 +392,7 @@ model {
   PhiMat[3, 1] <- 1 - phi[3]
   PhiMat[3, 2] <- phi[3] * (1 - rho[3])
   PhiMat[3, 3] <- phi[3] * rho[3]
+
   # Define observation matrix Theta
   # Order of indices: true state, observed state
   Theta[1, 1] <- 1
@@ -384,17 +404,20 @@ model {
   Theta[3, 1] <- p3[1]
   Theta[3, 2] <- p3[2]
   Theta[3, 3] <- p3[3]
+
   # State-space likelihood
   # Initial state governed by vector Omega
   for (i in 1:nsites){
     z[i,1] ~ dcat(Omega[])
   }
+
   # State transitions governed by transition matrix PhiMat
   for (i in 1:nsites){
     for(t in 1:(nyears-1)){
       z[i,t+1] ~ dcat(PhiMat[z[i,t],])
     }
   }
+
   # Observation equation with observation matrix Theta
   for(t in 1:nyears){
     for (i in 1:nsites){
@@ -403,6 +426,7 @@ model {
       }
     }
   }
+
   # Derived quantities
   for (t in 1:nyears){
     for (i in 1:nsites){
@@ -410,9 +434,9 @@ model {
       occ2[i,t] <- equals(z[i,t], 2)
       occ3[i,t] <- equals(z[i,t], 3)
     }
-    n.occ[t,1] <- sum(occ1[,t]) # Sites in state 1
-    n.occ[t,2] <- sum(occ2[,t]) # Sites in state 2
-    n.occ[t,3] <- sum(occ3[,t]) # Sites in state 3
+    n.occ[t,1] <- sum(occ1[,t])          # Sites in state 1
+    n.occ[t,2] <- sum(occ2[,t])          # Sites in state 2
+    n.occ[t,3] <- sum(occ3[,t])          # Sites in state 3
   }
 }
 ")
@@ -444,7 +468,7 @@ op <- par(mfrow=1:2)
 image(x = 1:nyears, y = 1:25, z = t(z[1:25,]), xlab = 'Year',
     ylab = 'Site', col = mapPalette(10), las = 1)
 # right panel, estimates from the dynamic model
-image(x = 1:5, y = 1:25, z = round(t(out3$mean$z[1:25,])), col = mapPalette(10), axes = TRUE,
+image(x = 1:5, y = 1:25, z = round(t(out3$mean$z[1:25,])), col = mapPalette(10),
     xlab = "Year", ylab = "Site")
 par(op)
 
@@ -476,15 +500,18 @@ par(op)
 # 6.3.4 Doing it in unmarked
 # --------------------------
 summary(umf <- unmarkedFrameOccuMS(y = y1 - 1))
+
 # unmarkedFrame Object
+
 # 100 sites
 # Maximum number of observations per site: 3
 # Mean number of observations per site: 3
 # Number of primary survey periods: 1
 # Number of secondary survey periods: 3
 # Sites with at least one detection: 80
+
 # Tabulation of y observations:
-# 0 1 2
+#   0  1  2
 # 139 92 69
 
 # Check unmarked has recognized correct number of states
@@ -500,13 +527,16 @@ detformulas <- c("~1", "~1", "~1")
 # Fit static model with conditional binomial parameterization
 fm1 <- occuMS(detformulas, psiformulas, data = umf, parameterization = "condbinom")
 summary(fm1)
+
 # Call:
 # occuMS(detformulas = detformulas, psiformulas = psiformulas, data = umf,
 # parameterization = "condbinom")
+
 # Occupancy (logit-scale):
 # Estimate SE z P(>|z|)
 # psi (Intercept) 1.903 0.450 4.23 2.32e-05
 # R (Intercept) -0.301 0.244 -1.24 2.16e-01
+
 # Detection (logit-scale):
 # Estimate SE z P(>|z|)
 # p[1] (Intercept) -0.0447 0.224 -0.20 8.42e-01
@@ -542,16 +572,20 @@ obs_covs <- data.frame(date = rnorm(length(y1)))
 # Create unmarked frame (remember to subtract 1 from y1)
 summary(umf2 <- unmarkedFrameOccuMS(y = y1-1, siteCovs = site_covs,
     obsCovs = obs_covs))
+
 # unmarkedFrame Object
+
 # 100 sites
 # Maximum number of observations per site: 3
 # Mean number of observations per site: 3
 # Number of primary survey periods: 1
 # Number of secondary survey periods: 3
 # Sites with at least one detection: 80
+
 # Tabulation of y observations:
-# 0 1 2
+#   0  1  2
 # 139 92 69
+
 # Site-level covariates:
 # elevation
 # Min. :-2.3449
@@ -560,6 +594,7 @@ summary(umf2 <- unmarkedFrameOccuMS(y = y1-1, siteCovs = site_covs,
 # Mean :-0.1822
 # 3rd Qu.: 0.3572
 # Max. : 2.3678
+
 # Observation-level covariates:
 # date
 # Min. :-2.744085
@@ -578,14 +613,17 @@ detformulas <- c("~1", "~1", "~date")
 # Fit model
 fm2 <- occuMS(detformulas, psiformulas, data = umf2, parameterization = "condbinom")
 summary(fm2)
+
 # Call:
 # occuMS(detformulas = detformulas, psiformulas = psiformulas, data = umf2,
 # parameterization = "condbinom")
+
 # Occupancy (logit-scale):
 # Estimate SE z P(>|z|)
 # psi (Intercept) 1.940 0.473 4.106 4.02e-05
 # psi elevation 0.160 0.387 0.413 6.79e-01
 # R (Intercept) -0.301 0.243 -1.238 2.16e-01
+
 # Detection (logit-scale):
 # Estimate SE z P(>|z|)
 # p[1] (Intercept) -0.0441 0.224 -0.197 8.44e-01
@@ -599,15 +637,18 @@ summary(fm2)
 # Construct unmarked frame
 ywide <- matrix(y, nrow = dim(y)[1], ncol = dim(y)[2]*dim(y)[3])
 summary(umf3 <- unmarkedFrameOccuMS(y = ywide - 1, numPrimary = dim(y)[3]) )
+
 # unmarkedFrame Object
+
 # 100 sites
 # Maximum number of observations per site: 15
 # Mean number of observations per site: 15
 # Number of primary survey periods: 5
 # Number of secondary survey periods: 3
 # Sites with at least one detection: 93
+
 # Tabulation of y observations:
-# 0 1 2
+#   0   1   2
 # 826 318 356
 
 psiformulas <- c("~1", "~1")
@@ -626,13 +667,16 @@ phiformulas <- rep("~1", 6)
 fm3 <- occuMS(detformulas, psiformulas, phiformulas, data = umf3,
     parameterization = "condbinom")
 summary(fm3)
+
 # Call:
 # occuMS(detformulas = detformulas, psiformulas = psiformulas,
 # phiformulas = phiformulas, data = umf3, parameterization = "condbinom")
+
 # Initial Occupancy (logit-scale):
 # Estimate SE z P(>|z|)
 # psi (Intercept) 1.66 0.306 5.42 5.91e-08
 # R (Intercept) -0.24 0.234 -1.02 3.06e-01
+
 # Transition Probabilities (logit-scale):
 # Estimate SE z P(>|z|)
 # phi[0] (Intercept) -1.730 0.285 -6.060 1.36e-09
@@ -641,6 +685,7 @@ summary(fm3)
 # R[0] (Intercept) -0.322 0.578 -0.557 5.78e-01
 # R[1] (Intercept) -0.939 0.252 -3.731 1.91e-04
 # R[2] (Intercept) 1.735 0.283 6.132 8.65e-10
+
 # Detection (logit-scale):
 # Estimate SE z P(>|z|)
 # p[1] (Intercept) 0.0481 0.115 0.418 6.76e-01
@@ -670,16 +715,20 @@ obs_covs <- data.frame(date = rnorm(length(ywide)))
 summary(
 umf4 <- unmarkedFrameOccuMS(ywide - 1, siteCovs = site_covs,
     yearlySiteCovs = ysite_covs, obsCovs = obs_covs, numPrimary = dim(y)[3]) )
+
 # unmarkedFrame Object
+
 # 100 sites
 # Maximum number of observations per site: 15
 # Mean number of observations per site: 15
 # Number of primary survey periods: 5
 # Number of secondary survey periods: 3
 # Sites with at least one detection: 93
+
 # Tabulation of y observations:
 # 0 1 2
 # 826 318 356
+
 # Site-level covariates:
 # elevation
 # Min. :-2.32145
@@ -688,6 +737,7 @@ umf4 <- unmarkedFrameOccuMS(ywide - 1, siteCovs = site_covs,
 # Mean : 0.05228
 # 3rd Qu.: 0.86542
 # Max. : 2.28150
+
 # Observation-level covariates:
 # date
 # Min. :-3.19225
@@ -696,6 +746,7 @@ umf4 <- unmarkedFrameOccuMS(ywide - 1, siteCovs = site_covs,
 # Mean : 0.02240
 # 3rd Qu.: 0.68832
 # Max. : 3.12377
+
 # Yearly-site-level covariates:
 # snow
 # Min. :-2.55590
@@ -721,14 +772,17 @@ phiformulas <- c("~snow", rep("~1", 5))
 fm4 <- occuMS(detformulas, psiformulas, phiformulas, data = umf4,
     parameterization = "condbinom")
 summary(fm4)
+
 # Call:
 # occuMS(detformulas = detformulas, psiformulas = psiformulas,
 # phiformulas = phiformulas, data = umf4, parameterization = "condbinom")
+
 # Initial Occupancy (logit-scale):
 # Estimate SE z P(>|z|)
 # psi (Intercept) 1.697 0.319 5.33 1.00e-07
 # psi elevation -0.270 0.318 -0.85 3.95e-01
 # R (Intercept) -0.247 0.234 -1.06 2.90e-01
+
 # Transition Probabilities (logit-scale):
 # Estimate SE z P(>|z|)
 # phi[0] (Intercept) -1.750 0.293 -5.979 2.24e-09
@@ -738,6 +792,7 @@ summary(fm4)
 # R[0] (Intercept) -0.341 0.585 -0.583 5.60e-01
 # R[1] (Intercept) -0.927 0.250 -3.711 2.07e-04
 # R[2] (Intercept) 1.721 0.280 6.138 8.38e-10
+
 # Detection (logit-scale):
 # Estimate SE z P(>|z|)
 # p[1] (Intercept) 0.0448 0.115 0.391 6.96e-01

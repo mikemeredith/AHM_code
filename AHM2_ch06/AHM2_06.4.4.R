@@ -5,7 +5,7 @@
 #
 # Chapter 6 : MULTISTATE OCCUPANCY MODELS
 # =======================================
-# Code from proofs dated 2020-06-24
+# Code from proofs dated 2020-08-19
 
 # Approximate time to execute code in this script: 1.8 hrs
 # With full number of iterations: 19 hrs
@@ -300,7 +300,7 @@ model {
   PhiMat.avg[3,1] <- mean(PhiMat.annual[3,1,])
   PhiMat.avg[3,2] <- mean(PhiMat.annual[3,2,])
   PhiMat.avg[3,3] <- mean(PhiMat.annual[3,3,])
-  # ~~~~ end of inserted code ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # ~~~~ end of inserted code ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Number of sites in each state and occupied by single or pair
   for (t in 1:nyears){
     for (i in 1:nsites){
@@ -314,6 +314,7 @@ model {
     n.occ[t,3] <- sum(state3[,t]) # Sites in state 3
     n.occ.total[t] <- sum(stateOcc[,t]) # All occupied
   }
+
   ### (B) Model for site visitation
   # -------------------------------
   # Priors
@@ -321,6 +322,7 @@ model {
   mean.pv ~ dunif(0, 1)
   beta.pv ~ dnorm(0, 0.1)
   kappa ~ dnorm(0, 0.1)
+
   # Observation equation
   # First year: no direct modeling of PS possible, average over PS effect
   # using estimated proportion occupied as weight
@@ -331,6 +333,7 @@ model {
       n.occ.total[1]/274 * kappa
     }
   }
+
   # Later years: use of occupancy at t-1 as predictor of Pvisit
   for (i in 1:nsites){
     for (t in 2:nyears){
@@ -351,16 +354,17 @@ inits <- function(){list(z = zst)}
 # ~~~~~ Full list of parameters monitored inserted from MS ~~~~~~~~~~~~
 params <- c("kappa", "alpha.lpsi", "mean.psi", "beta.lpsi", "alpha.lr", "mean.r",
     "beta.lr", "alpha.lphi1", "alpha.lphi2", "alpha.lphi3", "alpha.lrho1",
-    "alpha.lrho2", "alpha.lrho3", "mu.alpha.lphi1", "mean.phi1", "sd.alpha.lphi1",
-    "mu.alpha.lphi2", "mean.phi2", "sd.alpha.lphi2", "mu.alpha.lphi3",
-    "mean.phi3", "sd.alpha.lphi3", "mu.alpha.lrho1", "mean.rho1", "sd.alpha.lrho1",
-    "mu.alpha.lrho2", "mean.rho2", "sd.alpha.lrho2", "mu.alpha.lrho3", "mean.rho3",
-    "sd.alpha.lrho3", "beta.region.lphi1", "beta.region.lphi2", "beta.region.lphi3",
-    "beta.region.lrho1", "beta.region.lrho2", "beta.region.lrho3", "beta.lphi1",
-    "beta.lphi2", "beta.lphi3", "beta.lrho1", "beta.lrho2", "beta.lrho3",
-    "alpha.lp2", "mean.alpha.p2", "alpha.lp32", "alpha.lp33", "beta.region.lp2",
-    "beta.region.lp32", "beta.region.lp33", "beta.lp2", "beta.lp32", "beta.lp33",
-    "PhiMat.avg", "n.occ", "n.occ.total", "alpha.pv", "mean.pv", "beta.pv", "z")
+    "alpha.lrho2", "alpha.lrho3", "mu.alpha.lphi1", "mean.phi1",
+    "sd.alpha.lphi1", "mu.alpha.lphi2", "mean.phi2", "sd.alpha.lphi2",
+    "mu.alpha.lphi3", "mean.phi3", "sd.alpha.lphi3", "mu.alpha.lrho1",
+    "mean.rho1", "sd.alpha.lrho1", "mu.alpha.lrho2", "mean.rho2",
+    "sd.alpha.lrho2", "mu.alpha.lrho3", "mean.rho3", "sd.alpha.lrho3",
+    "beta.region.lphi1", "beta.region.lphi2", "beta.region.lphi3",
+    "beta.region.lrho1", "beta.region.lrho2", "beta.region.lrho3",
+    "beta.lphi1", "beta.lphi2", "beta.lphi3", "beta.lrho1", "beta.lrho2",
+    "beta.lrho3", "alpha.lp2", "mean.alpha.p2", "alpha.lp32", "alpha.lp33",
+    "beta.region.lp2", "beta.region.lp32", "beta.region.lp33", "beta.lp2", "beta.lp32", "beta.lp33", "PhiMat.avg", "n.occ", "n.occ.total",
+    "alpha.pv", "mean.pv", "beta.pv", "z")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # MCMC settings
@@ -409,7 +413,8 @@ segments(year, odms3$q2.5$n.occ[,3], year, odms3$q97.5$n.occ[,3])
 points(year, odms3$mean$n.occ.total, type = "b", lwd = 3, pch = 't',
     col = 'black', cex = 1.5, lty = 1)
 segments(year, odms3$q2.5$n.occ.total, year, odms3$q97.5$n.occ.total)
-points(year, obsnocc, type = "b", lwd = 3, pch = 'o', col = 'black', cex = 1.3, lty = 1)
+points(year, obsnocc, type = "b", lwd = 3, pch = 'o', col = 'black',
+    cex = 1.3, lty = 1)
 par(op)
 
 # Figure 6.6
@@ -475,7 +480,8 @@ round(100*odms3$mean$PhiMat.avg, 0)    # Transition probabilities in %
 # Predictions of psi and r for region, elevation and forest cover
 tmp <- odms3$mean    # Grab posterior means
 npred <- 500
-pred.psi.elev <- pred.r.elev <- pred.psi.forest <- pred.r.forest <- array(NA, dim = c(npred, 6))
+pred.psi.elev <- pred.r.elev <- pred.psi.forest <- pred.r.forest <-
+    array(NA, dim = c(npred, 6))
 elevO <- seq(min(elev), max(elev), length.out = npred)
 forestO <- seq(0, 1, length.out = npred)
 elevP <- standardize2match(elevO, elev)  # require(AHMbook)
@@ -496,11 +502,11 @@ matplot(elevO, pred.psi.elev, type = 'l', lty = 1, lwd = 3, ylim = c(0, 1),
 matplot(elevO, pred.r.elev, type = 'l', lty = 1, lwd = 3, ylim = c(0, 1),
     xlab = "Elevation (m a.s.l)", ylab = "r",
     main = "Elevation effect on r in Omega", frame = FALSE)
-matplot(100*forestO, pred.psi.forest, type = 'l', lty = 1, lwd = 3, ylim = c(0, 1),
-    xlab = "Forest (%)", ylab = "psi",
+matplot(100*forestO, pred.psi.forest, type = 'l', lty = 1, lwd = 3,
+    ylim = c(0, 1), xlab = "Forest (%)", ylab = "psi",
     main = "Forest effect on psi in Omega", frame = FALSE)
-matplot(100*forestO, pred.r.forest, type = 'l', lty = 1, lwd = 3, ylim = c(0, 1),
-    xlab = "Forest (%)", ylab = "r",
+matplot(100*forestO, pred.r.forest, type = 'l', lty = 1, lwd = 3,
+    ylim = c(0, 1), xlab = "Forest (%)", ylab = "r",
     main = "Forest effect on r in Omega", frame = FALSE)
 par(op)
 
@@ -521,8 +527,10 @@ for(r in 1:6){
       tmp$beta.lp32[1] * dateP + tmp$beta.lp32[2] * dateP^2)
   mlogit.p33[,r] <- plogis(tmp$alpha.lp33 + tmp$beta.region.lp33[r] +
       tmp$beta.lp33[1] * dateP + tmp$beta.lp33[2] * dateP^2)
-  pred.p32[,r] <- exp(mlogit.p32[,r]) / (1 + exp(mlogit.p32[,r]) + exp(mlogit.p33[,r]))
-  pred.p33[,r] <- exp(mlogit.p33[,r]) / (1 + exp(mlogit.p32[,r]) + exp(mlogit.p33[,r]))
+  pred.p32[,r] <- exp(mlogit.p32[,r]) / (1 + exp(mlogit.p32[,r]) +
+      exp(mlogit.p33[,r]))
+  pred.p33[,r] <- exp(mlogit.p33[,r]) / (1 + exp(mlogit.p32[,r]) +
+      exp(mlogit.p33[,r]))
   pred.p31[,r] <- 1 - pred.p32[,r] - pred.p33[,r]
 }
 

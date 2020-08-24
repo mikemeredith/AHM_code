@@ -5,7 +5,7 @@
 #
 # Chapter 5 : MODELING METACOMMUNITY DYNAMICS USING DYNAMIC COMMUNITY MODELS
 # ==========================================================================
-# Code from proofs dated 2020-06-23
+# Code from proofs dated 2020-08-19
 
 # Approximate run time for this script: 15 mins
 
@@ -22,6 +22,7 @@ str(dat <- simDCM(nspec = 50, nsites = 100, nsurveys = 3, nyears = 10,
     range.mean.phi = c(0.6, 0.6), sig.lphi = 1,
     range.mean.gamma = c(0.1, 0.1), sig.lgamma = 1,
     range.mean.p = c(0.3, 0.3), sig.lp = 2) ) # Not all output shown
+
 # ** Number of species ever occurring: 50
 # ** Number of species ever detected: 50
 # ** Average number of years of occurrence: 9.96
@@ -58,39 +59,43 @@ str(bdata <- list(y = y, nsite = dim(y)[1], nsurvey = dim(y)[2],
 # Specify model in BUGS language
 cat(file = "DCM1.txt", "
 model {
+
   # Specify priors
   for(k in 1:nspec){ # Loop over species
-    psi1[k] ~ dunif(0, 1) # Initial occupancy
-    phi[k] ~ dunif(0, 1) # Persistence
-    gamma[k] ~ dunif(0, 1) # Colonization
-    p[k] ~ dunif(0, 1) # Detection
+    psi1[k] ~ dunif(0, 1)          # Initial occupancy
+    phi[k] ~ dunif(0, 1)           # Persistence
+    gamma[k] ~ dunif(0, 1)         # Colonization
+    p[k] ~ dunif(0, 1)             # Detection
   }
+
   # Ecological submodel: Define state conditional on parameters
   for (i in 1:nsite){ # Loop over sites
     for(k in 1:nspec){ # Loop over species
       # Initial conditions of system
-      z[i,1, k] ~ dbern(psi1[k]) # Presence/absence at start of study
+      z[i,1, k] ~ dbern(psi1[k])   # Presence/absence at start of study
       # State transitions
-      for (t in 2:nyear){ # Loop over years
+      for (t in 2:nyear){          # Loop over years
         z[i,t,k] ~ dbern(z[i,t-1,k] * phi[k] + (1-z[i,t-1, k]) * gamma[k])
       }
     }
   }
+
   # Observation model
-  for (i in 1:nsite){ # Loop over sites
-    for(k in 1:nspec){ # Loop over species
-      for (j in 1:nsurvey){ # Loop over surveys
-        for (t in 1:nyear){ # Loop over years
+  for (i in 1:nsite){              # Loop over sites
+    for(k in 1:nspec){             # Loop over species
+      for (j in 1:nsurvey){        # Loop over surveys
+        for (t in 1:nyear){        # Loop over years
           y[i,j,t,k] ~ dbern(z[i,t,k] * p[k])
         }
       }
     }
   }
+
   # Derived parameters: Number of occupied sites and population occupancy
   for(k in 1:nspec){ # Loop over species
-    n.occ[1, k] <- sum(z[,1,k]) # Number of occupied sites
-    psi[1, k] <- psi1[k] # Population occupancy
-    for (t in 2:nyear){ # Loop over years
+    n.occ[1, k] <- sum(z[,1,k])    # Number of occupied sites
+    psi[1, k] <- psi1[k]           # Population occupancy
+    for (t in 2:nyear){            # Loop over years
       n.occ[t, k] <- sum(z[,t,k])
       psi[t, k] <- psi[t-1, k] * phi[k] + (1-psi[t-1, k]) * gamma[k]
     }
@@ -123,60 +128,65 @@ summary(out1) ; jags.View(out1) ; print(out1, 3) # not shown
 # Specify model in BUGS language
 cat(file = "DCM2.txt", "
 model {
+
   # Specify priors: Declare species-level effects as random
-  for(k in 1:nspec){ # Loop over species
-    logit(psi1[k]) <- lpsi1[k] # Initial occupancy
+  for(k in 1:nspec){               # Loop over species
+    logit(psi1[k]) <- lpsi1[k]     # Initial occupancy
     lpsi1[k] ~ dnorm(mu.lpsi1, tau.lpsi1)
-    logit(phi[k]) <- lphi[k] # Persistence
+    logit(phi[k]) <- lphi[k]       # Persistence
     lphi[k] ~ dnorm(mu.lphi, tau.lphi)
-    logit(gamma[k]) <- lgamma[k] # Colonization
+    logit(gamma[k]) <- lgamma[k]   # Colonization
     lgamma[k] ~ dnorm(mu.lgamma, tau.lgamma)
-    logit(p[k]) <- lp[k] # Detection
+    logit(p[k]) <- lp[k]           # Detection
     lp[k] ~ dnorm(mu.lp, tau.lp)
   }
+
   # Specify hyperpriors: Priors for the hyperparameters
-  mu.lpsi1 <- logit(mean.psi1) # Initial occupancy
+  mu.lpsi1 <- logit(mean.psi1)     # Initial occupancy
   mean.psi1 ~ dunif(0, 1)
   tau.lpsi1 <- pow(sd.lpsi1, -2)
   sd.lpsi1 ~ dunif(0, 10)
-  mu.lphi <- logit(mean.phi) # Persistence
+  mu.lphi <- logit(mean.phi)       # Persistence
   mean.phi ~ dunif(0, 1)
   tau.lphi <- pow(sd.lphi, -2)
   sd.lphi ~ dunif(0, 10)
-  mu.lgamma <- logit(mean.gamma) # Colonization
+  mu.lgamma <- logit(mean.gamma)   # Colonization
   mean.gamma ~ dunif(0, 1)
   tau.lgamma <- pow(sd.lgamma, -2)
   sd.lgamma ~ dunif(0, 10)
-  mu.lp <- logit(mean.p) # Detection
+  mu.lp <- logit(mean.p)           # Detection
   mean.p ~ dunif(0, 1)
   tau.lp <- pow(sd.lp, -2)
   sd.lp ~ dunif(0, 10)
+
   # Ecological submodel: Define state conditional on parameters
-  for (i in 1:nsite){ # Loop over sites
-    for(k in 1:nspec){ # Loop over species
+  for (i in 1:nsite){              # Loop over sites
+    for(k in 1:nspec){             # Loop over species
       # Initial conditions of system
-      z[i,1, k] ~ dbern(psi1[k]) # Presence/absence at start of study
+      z[i,1, k] ~ dbern(psi1[k])   # Presence/absence at start of study
       # State transitions
-      for (t in 2:nyear){ # Loop over years
+      for (t in 2:nyear){          # Loop over years
         z[i,t,k] ~ dbern(z[i,t-1,k] * phi[k] + (1-z[i,t-1, k]) * gamma[k])
       }
     }
   }
+
   # Observation model
-  for (i in 1:nsite){ # Loop over sites
-    for(k in 1:nspec){ # Loop over species
-      for (j in 1:nsurvey){ # Loop over surveys
-        for (t in 1:nyear){ # Loop over years
+  for (i in 1:nsite){              # Loop over sites
+    for(k in 1:nspec){             # Loop over species
+      for (j in 1:nsurvey){        # Loop over surveys
+        for (t in 1:nyear){        # Loop over years
           y[i,j,t,k] ~ dbern(z[i,t,k] * p[k])
         }
       }
     }
   }
+
   # Derived parameters: Number of occupied sites and population occupancy
-  for(k in 1:nspec){ # Loop over species
-    n.occ[1, k] <- sum(z[,1,k]) # Number of occupied sites
-    psi[1, k] <- psi1[k] # Population occupancy
-    for (t in 2:nyear){ # Loop over years
+  for(k in 1:nspec){               # Loop over species
+    n.occ[1, k] <- sum(z[,1,k])    # Number of occupied sites
+    psi[1, k] <- psi1[k]           # Population occupancy
+    for (t in 2:nyear){            # Loop over years
       n.occ[t, k] <- sum(z[,t,k])
       psi[t, k] <- psi[t-1, k] * phi[k] + (1-psi[t-1, k]) * gamma[k]
     }
@@ -196,47 +206,47 @@ par(op)
 summary(out2) ; jags.View(out2) ; print(out2, 3) # not shown
 
 
-# ~~~~~~~~~ Additional plotting code from MS dated 2019-01-01 ~~~~~~~~~~~
+# ~~~~~~~~~ Additional plotting code for figures 5.1 and 5.2 ~~~~~~~~~~~
 
 # Figure 5.1
 # ''''''''''
 # Compare estimates of hyperparameters with truth
-op <- par(mfrow = c(4,2), mar = c(5,5,3,2), cex.lab = 1.2)
-hist(plogis(out2$sims.list$mu.lpsi1), breaks=30, col = 'grey',
-    main = 'Community mean of lpsi1', xlab = 'mu.lpsi1',
-    freq = FALSE, xlim = c(0, 0.4))
-abline(v = dat$mean.psi1, col = 'red', lwd = 2)
-hist(out2$sims.list$sd.lpsi1, breaks=30, col = 'grey',
-    main = 'Community SD of lpsi1', xlab = 'sd.lpsi1',
-    freq = FALSE, xlim = c(0, 5))
-abline(v = dat$sig.lpsi1, col = 'red', lwd = 2)
+op <- par(mfrow = c(4,2))
+plot(density(plogis(out2$sims.list$mu.lpsi1)), lwd = 2, col = 'gray',
+    main = 'Community mean of lpsi1', xlab = 'mu.lpsi1', ylab = 'Density',
+    xlim = c(0, 0.5), frame = F)
+abline(v = dat$mean.psi1, col = 'black', lwd = 2)
+plot(density(out2$sims.list$sd.lpsi1), lwd = 2, col = 'gray',
+    main = 'Community SD of lpsi1', xlab = 'sd.lpsi1', ylab = 'Density',
+    xlim = c(0, 4), frame = F)
+abline(v = dat$sig.lpsi1, col = 'black', lwd = 2)
 
-hist(plogis(out2$sims.list$mu.lphi), breaks=30, col = 'grey',
-    main = 'Community mean of lphi', xlab = 'mu.lphi',
-    freq = FALSE, xlim = c(0, 1))
-abline(v = dat$range.mean.phi[1], col = 'red', lwd = 2)
-hist(out2$sims.list$sd.lphi, breaks=30, col = 'grey',
-    main = 'Community SD of lphi', xlab = 'sd.lphi',
-    freq = FALSE, xlim = c(0, 3))
-abline(v = dat$sig.lphi, col = 'red', lwd = 2)
+plot(density(plogis(out2$sims.list$mu.lphi)), lwd = 2, col = 'gray',
+    main = 'Community mean of lpsi1', xlab = 'mu.lphi', ylab = 'Density',
+    xlim = c(0.4, 1), frame = F)
+abline(v = dat$range.mean.phi[1], col = 'black', lwd = 2)
+plot(density(out2$sims.list$sd.lphi), lwd = 2, col = 'gray',
+    main = 'Community SD of lphi', xlab = 'sd.lphi', ylab = 'Density',
+    xlim = c(0, 2), frame = F)
+abline(v = dat$sig.lphi, col = 'black', lwd = 2)
 
-hist(plogis(out2$sims.list$mu.lgamma), breaks=30, col = 'grey',
-    main = 'Community mean of lgamma', xlab = 'mu.lgamma',
-    freq = FALSE, xlim = c(0, 0.3))
-abline(v = dat$range.mean.gamma[1], col = 'red', lwd = 2)
-hist(out2$sims.list$sd.lgamma, breaks=30, col = 'grey',
-    main = 'Community SD of lgamma', xlab = 'sd.lgamma',
-    freq = FALSE, xlim = c(0, 2))
-abline(v = dat$sig.lgamma, col = 'red', lwd = 2)
+plot(density(plogis(out2$sims.list$mu.lgamma)), lwd = 2, col = 'gray',
+    main = 'Community mean of lgamma', xlab = 'mu.lgamma', ylab = 'Density',
+    xlim = c(0, 0.3), frame = F)
+abline(v = dat$range.mean.gamma[1], col = 'black', lwd = 2)
+plot(density(out2$sims.list$sd.lgamma), lwd = 2, col = 'gray',
+    main = 'Community SD of lgamma', xlab = 'sd.lgamma', ylab = 'Density',
+    xlim = c(0, 2), frame = F)
+abline(v = dat$sig.lgamma, col = 'black', lwd = 2)
 
-hist(plogis(out2$sims.list$mu.lp), breaks=30, col = 'grey',
-    main = 'Community mean of lp', xlab = 'mu.lp',
-    freq = FALSE, xlim = c(0, 1))
-abline(v = dat$range.mean.p[1], col = 'red', lwd = 2)
-hist(out2$sims.list$sd.lp, breaks=30, col = 'grey',
-    main = 'Community SD of lp', xlab = 'sd.lp',
-    freq = FALSE, xlim = c(0, 4))
-abline(v = dat$sig.lp, col = 'red', lwd = 2)
+plot(density(plogis(out2$sims.list$mu.lp)), lwd = 2, col = 'gray',
+    main = 'Community mean of lp', xlab = 'mu.lp', ylab = 'Density',
+    xlim = c(0, 1), frame = F)
+abline(v = dat$range.mean.p[1], col = 'black', lwd = 2)
+plot(density(out2$sims.list$sd.lp), lwd = 2, col = 'gray',
+    main = 'Community SD of lp', xlab = 'sd.lp', ylab = 'Density',
+    xlim = c(0, 4), frame = F)
+abline(v = dat$sig.lp, col = 'black', lwd = 2)
 par(op)
 
 # Figure 5.2
@@ -247,7 +257,7 @@ gamma.true <- plogis(dat$beta0.lgamma)[,1]
 p.true <- plogis(dat$beta0.lp)[,1]
 nocc.true <- dat$n.occ
 
-par(mfrow = c(4, 2), mar = c(5,5,4,3), cex.lab = 1.2)
+op <- par(mfrow = c(4, 2))
 lim <- c(0,1)
 # Initial occupancy (psi1)
 plot(psi1.true, out1$mean$psi1, main = 'psi1 (fixed effects)', xlim = lim,
@@ -301,6 +311,7 @@ plot(nocc.true, out2$mean$n.occ, main = 'n.occ (random effects)', xlim = lim,
 segments(nocc.true, out2$q2.5$n.occ, nocc.true, out2$q97.5$n.occ)
 abline(0,1, lwd = 2, col = 'red')
 abline(lm(c(out2$mean$n.occ) ~ c(nocc.true)), col = 'blue', lwd = 2, lty = 2)
+par(op)
 # ~~~~~~~~~~~~~~~~~~~~~~~
 
 # ~~~~~ code to produce the table shown ~~~~~~~

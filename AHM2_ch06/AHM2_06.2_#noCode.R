@@ -4,7 +4,7 @@
 #   Marc Kéry & J. Andy Royle
 # Chapter 6 : MULTISTATE OCCUPANCY MODELS
 # =======================================
-# Code from proofs dated 2020-06-24
+# Code from proofs dated 2020-08-19
 
 # 6.2 Derivation of multistate occupancy models
 # =============================================

@@ -5,7 +5,7 @@
 #
 # Chapter 5 : MODELING METACOMMUNITY DYNAMICS USING DYNAMIC COMMUNITY MODELS
 # ==========================================================================
-# Code from proofs dated 2020-06-23
+# Code from proofs dated 2020-08-19
 
 library(AHMbook)
 
@@ -54,6 +54,7 @@ dat <- simDCM(nspec = 200, nsites = 20, nsurveys = 2, nyears = 10,
     range.mean.phi = c(0.3, 0.3), sig.lphi = 5,
     range.mean.gamma = c(0.1, 0.1), sig.lgamma = 5,
     range.mean.p = c(0.1, 0.1), sig.lp = 5)
+
 # ** Number of species ever occurring: 177
 # ** Number of species ever detected: 121
 # ** Average number of years of occurrence: 6.87
