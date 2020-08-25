@@ -2,7 +2,7 @@
 # Volume 2 - 2020
 # Chapter 11 : SPATIALLY EXPLICIT DISTANCE SAMPLING ALONG TRANSECTS
 # =================================================================
-# Code from proofs dated 2020-07-30
+# Code from proofs dated 2020-08-19
 
 # Approximate execution time for this code: 60 mins
 # Run time with the full number of iterations: 2.8 hrs
@@ -14,8 +14,7 @@ library(jagsUI)
 # =================================================================
 
 library(AHMbook)
-if(getRversion() >= "3.6.0")
-    RNGkind(sample.kind="Round")
+RNGversion("3.5.3")
 set.seed(1234, kind = "Mersenne-Twister")
 
 # Have to know the value of nPix and ntraps. Be careful!
@@ -78,39 +77,42 @@ str(data <- list (obs.pos = obs.pos, ntraps = ntraps, ntran = ntran,
 # Write BUGS model
 cat(file = "spatialDSmulti.txt", "
 model{
+
   # Prior distributions
   sigma ~ dunif(0,10)
   alpha0 ~ dnorm(0,0.01)
   beta1 ~ dnorm(0,0.01)
   psi[1] ~ dunif(0,1)
   psi[2] ~ dunif(0,1)
+
   # Note that probabilities are computed for each transect now
   for(tran in 1:ntran){
-    for(g in 1:nPix){ # g is the pixel index
+    for(g in 1:nPix){                           # g is the pixel index
       lam[g,tran] <- exp(beta1*Habitat[g,tran])
       probs[g,tran] <- lam[g,tran]/sum(lam[,tran])
     }
   }
+
   # Likelihood and spatial model for each transect
   for(tran in 1:ntran){
     for(i in 1:M){
       z[i,tran] ~ dbern(psi[tran])
       pixel[i,tran] ~ dcat(probs[,tran])
-      s[i,1:2,tran] <- Habgrid[pixel[i,tran],] # location = derived quantity
+      s[i,1:2,tran] <- Habgrid[pixel[i,tran],]  # location = derived quantity
       # compute distance = derived quantity
       for(j in 1:obs.pos[i,tran]){
         d[i,j,tran] <- pow(pow(s[i,1,tran] - traplocs[j,1],2) +
         pow(s[i,2,tran] - traplocs[j,2],2), 0.5)
         haz[i,j,tran] <- exp(alpha0)*exp(-d[i,j,
-        tran]*d[i,j,tran]/(2*sigma*sigma)) # Half-normal hazard det. fctn.
+        tran]*d[i,j,tran]/(2*sigma*sigma))      # Half-normal hazard det. fctn.
         p[i,j,tran] <- 1 - exp(-haz[i,j,tran])
         mu[i,j,tran] <- p[i,j,tran]*z[i,tran]
-        y[i,j,tran] ~ dbern(mu[i,j,tran]) # Observation model
+        y[i,j,tran] ~ dbern(mu[i,j,tran])       # Observation model
       }
     }
     # Derived parameters
-    N[tran] <- sum(z[,tran]) # N is a derived parameter
-    D[tran] <- N[tran]/4 # area = 4 units
+    N[tran] <- sum(z[,tran])                    # N is a derived parameter
+    D[tran] <- N[tran]/4                        # area = 4 units
   }
 }
 ")
@@ -125,8 +127,8 @@ inits <- function(){ list (sigma = runif(1,0.2,1), beta1 = rnorm(1, 1, 0.4),
 params <- c("sigma", "N", "psi", "beta1", "D", "alpha0")
 
 # Run JAGS (ART 160 min), check convergence and summarize posteriors
-out5 <- jags (data, inits, params, "spatialDSmulti.txt", n.adapt = na, n.thin = nt,
-    n.chains = nc, n.burnin = nb, n.iter = ni, parallel = TRUE,
+out5 <- jags (data, inits, params, "spatialDSmulti.txt", n.adapt = na,
+    n.thin = nt, n.chains = nc, n.burnin = nb, n.iter = ni, parallel = TRUE,
     factories = "base::Finite sampler FALSE")
 op <- par(mfrow = c(3,2)) ; traceplot(out5)
 par(op)

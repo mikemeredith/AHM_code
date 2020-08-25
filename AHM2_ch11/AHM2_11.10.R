@@ -2,7 +2,7 @@
 # Volume 2 - 2020
 # Chapter 11 : SPATIALLY EXPLICIT DISTANCE SAMPLING ALONG TRANSECTS
 # =================================================================
-# Code from proofs dated 2020-07-30
+# Code from proofs dated 2020-08-19
 
 # Approximate execution time for this code: 7 mins
 
@@ -16,12 +16,12 @@ library(jagsUI)
 # -----------------------
 
 library(raster)
-library(sp)
 library(AHMbook)
 data(wigglyLine)
-if(getRversion() >= "3.6.0") # Important if you want to get same data as we do
-  RNGkind(sample.kind = "Round")
+
+RNGversion("3.5.0")
 set.seed(123, kind = "Mersenne-Twister" )
+
 plot(wigglyLine[,1], wigglyLine[,2], type = "l", pch = " ", lwd = 2,
     cex.axis = 1.5, cex = 2, cex.lab = 1.5, asp = 1, frame = FALSE) # not shown
 points <- SpatialPoints(wigglyLine)
@@ -66,7 +66,6 @@ mind <- apply(dist, 1 ,min)
 yg <- matrix(NA, nrow = nPix, ncol = 2)
 yg[,1] <- tabulate(pixel[,1], nbins = nPix)
 yg[,2] <- tabulate(pixel[,2], nbins = nPix)
-# hist(mind) # not shown
 
 
 # 11.10.2 The DSM model (no code)
@@ -85,11 +84,13 @@ str(bdata <- list(y = yg, nsites = nPix, dist = mind ))
 # Write BUGS model
 cat(file = "M0.txt","
 model {
+
   # Prior distributions
   sigma ~ dunif(0,10)
   beta0 ~ dnorm(0,0.01)
   alpha0 ~ dnorm(0,0.01)
   logit(p0) <- alpha0
+
   # Define the likelihood
   for (g in 1:nsites){
     # Detection probability model
@@ -100,6 +101,7 @@ model {
     }
     N[g] ~ dpois(lam[g])
   }
+
   # Derived parameters: abundance and GoF calculations
   Ntot <- sum(N[])
   for(k in 1:2){
@@ -153,12 +155,14 @@ str(bdata <- list(y = yg, nsites = nPix, dist = mind, Habitat = Habitat))
 # Specify model in BUGS language
 cat(file = "M1.txt","
 model {
+
   # Prior distributions
   sigma ~ dunif(0,10)
   beta0 ~ dnorm(0,0.01)
   beta1 ~ dnorm(0,0.01)
   alpha0 ~ dnorm(0,0.01)
   logit(p0) <- alpha0
+
   # Define the likelihood
   for (g in 1:nsites){
     # Linear model for site-level effects: add covariates
@@ -169,6 +173,7 @@ model {
     }
     N[g] ~ dpois(lam[g])
   }
+
   # Derived parameters: abundance and GoF calculations
   Ntot <- sum(N[])
   for(k in 1:2){
@@ -188,8 +193,8 @@ na <- 1000 ; ni <- 12000 ; nb <- 2000 ; nt <- 3 ; nc <- 3
 
 # Inits
 Nst1 <- apply(yg, 1, max) + 1
-inits <- function(){ list (sigma = runif(1, 0.2, 0.7), alpha0 = runif(1, -5, -2),
-    beta0 = 0, beta1 = 1, N = Nst1 ) }
+inits <- function(){ list (sigma = runif(1, 0.2, 0.7),
+    alpha0 = runif(1, -5, -2), beta0 = 0, beta1 = 1, N = Nst1 ) }
 
 # Parameters to monitor
 params1 <- c("sigma", "Ntot", "beta0", "beta1", "Fit", "Fitnew" )
@@ -215,8 +220,10 @@ log(tmp$Ntotal / nrow(Habgrid))
 beta0 <- mean(out1$sims.list$beta0)
 beta1 <- mean(out1$sims.list$beta1)
 lamhat1 <- exp( beta0 + beta1*Habitat )
+
 (RMSE1 <- sqrt(mean( (tmp$N - lamhat1)^2 )) )
 # [1] 1.002903
+
 (pval1 <- mean( out1$sims.list$Fit < out1$sims.list$Fitnew ) )
 # [1] 0.3846385
 
@@ -230,20 +237,20 @@ knotlocs <- as.matrix(knotlocs)
 library(fields)
 # Define knot locations using cover.design (do once)
 x86 <- cover.design(Habgrid, nd = nk, nruns = 10, num.nn = 200,
-    max.loop = 40) # runtime < 1 min
+    max.loop = 40)                    # runtime < 1 min
 
 # Define the Z matrix for the random effects
 Z.k <- (e2dist(Habgrid, knotlocs)/10 )^3
 omega.all <- (dist(knotlocs)/10 )^3
 svd.omega.all <- svd(omega.all)
 sqrt.omega.all <- t(svd.omega.all$v %*%
-(t(svd.omega.all$u)*sqrt(svd.omega.all$d)))
+    (t(svd.omega.all$u)*sqrt(svd.omega.all$d)))
 Z.mat <- t(solve(sqrt.omega.all, t(Z.k)))
 
 # Browse through those basis functions (not shown)
 for(i in 1:nk){
   plot(rasterFromXYZ(cbind(Habgrid,Z.mat[,i])))
-  # browser() # unhash if you want to have a better look at each
+  # browser()           # unhash if you want to have a better look at each
 }
 
 # Bundle and summarize data set
@@ -259,17 +266,20 @@ str(bdata <- list(y = yg, nsites = nPix, n.knots = nk, Z.mat = Z.mat,
 # Specify model in BUGS language.
 cat(file = "DSM1.txt","
 model {
+
   # Prior distributions
   sigma ~ dunif(0,10)
   beta0 ~ dnorm(0,0.01)
   alpha0 ~ dnorm(0,0.01)
   logit(p0) <- alpha0
+
   # Prior on random effects
   tau.b ~ dgamma(0.01,0.01)
   sigma.b <- sqrt(1/tau.b)
   for (k in 1:n.knots){
     b[k] ~ dnorm(0, tau.b)
   }
+
   # Define the likelihood
   for (g in 1:nsites){
     # Detection probability model
@@ -283,6 +293,7 @@ model {
     lam[g] <- exp(beta0 + smooth[g] )
     smooth[g] <- inprod(Z.mat[g,], b[])
   }
+
   # Derived parameters: abundance and fit statistics
   Ntot <- sum(N[])
   for(k in 1:2){
@@ -304,7 +315,8 @@ inits <- function(){ list (b = rep(0, nk), sigma = runif(1, 0.2, 0.7),
     alpha0 = runif(1, -5, -2), beta0 = 0, N = Nst1 ) }
 
 # Parameters to monitor
-params1 <- c("sigma", "Ntot", "EN", "beta0", "b", "tau.b", "sigma.b", "Fit", "Fitnew")
+params1 <- c("sigma", "Ntot", "EN", "beta0", "b", "tau.b", "sigma.b",
+    "Fit", "Fitnew")
 
 # MCMC settings
 na <- 5000 ; ni <- 22000 ; nb <- 2000 ; nt <- 10 ; nc <- 3
@@ -323,8 +335,7 @@ print(outdsm1, 3)
 # b[2]     -7.709 13.803 -36.722  -6.715  18.249     TRUE 0.718 1.001  6000
 # b[3]      6.471 14.902 -22.540   6.154  37.049     TRUE 0.673 1.000  6000
 # b[4]     -5.363 15.152 -35.726  -5.192  24.440     TRUE 0.653 1.000  4208
-# . . .
-# . . .
+# ... Output trunacated ...
 # b[82]    -6.761 15.347 -38.737  -6.282  22.858     TRUE 0.675 1.001  2441
 # b[83]     5.927 14.723 -22.065   5.322  36.974     TRUE 0.650 1.001  2117
 # b[84]    -2.512 15.258 -33.394  -2.290  27.253     TRUE 0.563 1.001  6000
@@ -349,6 +360,7 @@ par(op)
 # RMSE and Bayesian p-value
 (RMSE <- sqrt(mean( (tmp$N - pred)^2 ) ) )
 # [1] 1.053792
+
 (pval <- mean( outdsm1$sims.list$Fit < outdsm1$sims.list$Fitnew ))
 # [1] 0.32
 

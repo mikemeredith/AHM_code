@@ -5,10 +5,9 @@
 #
 # Chapter 10 : INTEGRATED MODELS FOR MULTIPLE TYPES OF DATA
 # =========================================================
-# Code from proofs dated 2020-07-23
+# Code from proofs dated 2020-08-19
 
 # Approximate execution time for this code: 1 min
-
 
 library(AHMbook)
 library(jagsUI)
@@ -16,27 +15,29 @@ library(jagsUI)
 # 10.3 Example 1: Combination of “raw” and aggregated occupancy data
 # ==================================================================
 
-nsites1 <- 267  # Sample size in full data set
-nsites2 <- 2000 # Sample size in aggregated data set
-nsurveys <- 3   # Number of surveys (= occasions)
-mean.occ <- 0.4 # Average occupancy at mean covariate value
-beta1 <- -3     # Coefficient of 'elevation' on occupancy
-mean.det <- 0.4 # Average per-survey detection probability
-alpha2 <- -3    # Effect of 'wind speed' on detection
+nsites1 <- 267        # Sample size in full data set
+nsites2 <- 2000       # Sample size in aggregated data set
+nsurveys <- 3         # Number of surveys (= occasions)
+mean.occ <- 0.4       # Average occupancy at mean covariate value
+beta1 <- -3           # Coefficient of 'elevation' on occupancy
+mean.det <- 0.4       # Average per-survey detection probability
+alpha2 <- -3          # Effect of 'wind speed' on detection
 
 # Create and summarize data set 1
 library(AHMbook)
 set.seed(1)
 str(data1 <- simOcc(M = nsites1, J = nsurveys, mean.occ = mean.occ,
-    beta1 = beta1, beta2 = 0, beta3 = 0, mean.det = mean.det, time.effects = c(0, 0),
-    alpha1 = 0, alpha2 = alpha2, alpha3 = 0, sd.lp = 0, b = 0) )
+    beta1 = beta1, beta2 = 0, beta3 = 0, mean.det = mean.det,
+    time.effects = c(0, 0), alpha1 = 0, alpha2 = alpha2, alpha3 = 0,
+    sd.lp = 0, b = 0) )
 
 # Create and summarize data set 2
 # Note: assume everything as in data set 1 except for sample size
 set.seed(24)
 str(data2 <- simOcc(M = nsites2, J = nsurveys, mean.occ = mean.occ,
-    beta1 = beta1, beta2 = 0, beta3 = 0, mean.det = mean.det, time.effects = c(0, 0),
-    alpha1 = 0, alpha2 = alpha2, alpha3 = 0, sd.lp = 0, b = 0) )
+    beta1 = beta1, beta2 = 0, beta3 = 0, mean.det = mean.det,
+    time.effects = c(0, 0), alpha1 = 0, alpha2 = alpha2, alpha3 = 0,
+    sd.lp = 0, b = 0) )
 
 # Pull out and inspect top rows of data set 1
 head(y1 <- data1$y)
@@ -59,13 +60,15 @@ str(bdata <- list(y1 = y1, nsite1 = nrow(y1), nrep1 = ncol(y1), elev1 = elev1,
 # Specify model in BUGS language
 cat(file = "model1.txt", "
 model {
+
   # Priors
-  alpha.lpsi <- logit(mean.psi) # Occupancy intercept
+  alpha.lpsi <- logit(mean.psi)         # Occupancy intercept
   mean.psi ~ dunif(0, 1)
-  beta.lpsi ~ dnorm(0, 0.01) # Coefficient occ. covariate
-  alpha.lp <- logit(mean.p) # Detection intercept
+  beta.lpsi ~ dnorm(0, 0.01)            # Coefficient occ. covariate
+  alpha.lp <- logit(mean.p)             # Detection intercept
   mean.p ~ dunif(0, 1)
-  beta.lp ~ dnorm(0, 0.01) # Coefficient det. covariate
+  beta.lp ~ dnorm(0, 0.01)              # Coefficient det. covariate
+
   # Likelihood data set 1
   for (i in 1:nsite1) {
     z1[i] ~ dbern(psi1[i])
@@ -75,6 +78,7 @@ model {
       logit(p1[i,j]) <- alpha.lp + beta.lp * wind1[i,j]
     }
   }
+
   # Derived quantity data set 1
   Nocc1 <- sum(z1[]) # Number of occupied sites in Data set 1
 }
@@ -118,13 +122,15 @@ str(bdata <- list(y1 = y1, nsite1 = nrow(y1), nrep1 = ncol(y1), elev1 = elev1,
 # Specify model in BUGS language
 cat(file = "model2.txt", "
 model {
+
   # Priors
-  alpha.lpsi <- logit(mean.psi) # Occupancy intercept
+  alpha.lpsi <- logit(mean.psi)           # Occupancy intercept
   mean.psi ~ dunif(0, 1)
-  beta.lpsi ~ dnorm(0, 0.01) # Coefficient occ. covariate
-  alpha.lp <- logit(mean.p) # Detection intercept
+  beta.lpsi ~ dnorm(0, 0.01)              # Coefficient occ. covariate
+  alpha.lp <- logit(mean.p)               # Detection intercept
   mean.p ~ dunif(0, 1)
-  beta.lp ~ dnorm(0, 0.01) # Coefficient det. covariate
+  beta.lp ~ dnorm(0, 0.01)                # Coefficient det. covariate
+
   # Likelihood data set 1 (raw data)
   for (i in 1:nsite1) {
     z1[i] ~ dbern(psi1[i])
@@ -135,6 +141,7 @@ model {
       logit(p1[i,j]) <- alpha.lp + beta.lp * wind1[i,j]
     }
   }
+
   # Likelihood data set 2 (aggregated data)
   for (i in 1:nsite2) {
     z2[i] ~ dbern(psi2[i])
@@ -142,15 +149,16 @@ model {
     logit(psi2[i]) <- alpha.lpsi + beta.lpsi * elev2[i]
     y2agg[i] ~ dbern(z2[i] * Pstar2)
   }
-  Pstar2 <- 1 - pow((1 - mean.p), 3) # = Prob detected at least once
+  Pstar2 <- 1 - pow((1 - mean.p), 3)      # = Prob detected at least once
+
   # Derived quantities
-  Nocc1 <- sum(z1[]) # Number of occupied sites (data set 1)
-  Nocc2 <- sum(z2[]) # Number of occupied sites (data set 2)
+  Nocc1 <- sum(z1[])              # Number of occupied sites (data set 1)
+  Nocc2 <- sum(z2[])              # Number of occupied sites (data set 2)
 }
 ")
 
 # Initial values
-zst1 <- apply(y1, 1, max) # Avoid data/model/inits conflict
+zst1 <- apply(y1, 1, max)         # Avoid data/model/inits conflict
 zst2 <- rep(1, length(y2agg))
 inits <- function(){list(z1 = zst1, z2 = zst2)}
 
@@ -168,25 +176,26 @@ op <- par(mfrow = c(2,2)) ; traceplot(out2)
 par(op)
 print(out2, 2) # not shown
 
-# ~~~ extra code to produce table ~~~
-nocc.table <- rbind(c('truth' = data1$sumZ, 'observed' = data1$sumZ.obs,
-    out2$summary[8,c(1,3,7)]), c('true data set 2' = data2$sumZ,
-    'observed' = data2$sumZ.obs, out2$summary[9,c(1,3,7)]))
+# ~~~  code to produce the first table ~~~
+nocc.table <- rbind(c('truth' = data1$sumZ,
+    'observed' = data1$sumZ.obs, out2$summary[8,c(1,3,7)]),
+    c('true data set 2' = data2$sumZ, 'observed' = data2$sumZ.obs,
+    out2$summary[9,c(1,3,7)]))
 rownames(nocc.table) <- c('Data set 1', 'Data set 2')
 nocc.table
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #            truth observed    mean 2.5%   97.5%
 # Data set 1   118       99 115.061  108 123.000
 # Data set 2   892      732 869.712  819 923.025
 
 # Comparison of truth and estimates from simple model and IM
-# ~~~ extra code to produce table ~~~
+# ~~~ code for second table ~~~~~~~~~~~~~~~~~~~~
 truth <- c('Occupancy intercept' = mean.occ, 'Occupancy slope' = beta1,
     'Detection intercept' = mean.det, 'Detection slope' = alpha2)
 esti.simple <- out1$summary[c(1,3,4,6), c(1,3,7)]
 esti.IM <- out2$summary[c(1,3,4,6), c(1,3,7)]
 print(cbind(truth, esti.simple, esti.IM), 3)
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #                     truth   mean   2.5%  97.5%   mean   2.5%  97.5%
 # Occupancy intercept   0.4  0.415  0.335  0.499  0.394  0.352  0.438
 # Occupancy slope      -3.0 -2.617 -3.425 -1.892 -2.966 -3.340 -2.639

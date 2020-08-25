@@ -2,7 +2,7 @@
 # Volume 2 - 2020
 # Chapter 11 : SPATIALLY EXPLICIT DISTANCE SAMPLING ALONG TRANSECTS
 # =================================================================
-# Code from proofs dated 2020-07-30
+# Code from proofs dated 2020-08-19
 
 # Approximate execution time for this code: 80 mins
 # Run time with the full number of iterations: 11.2 hrs
@@ -15,11 +15,10 @@ library(jagsUI)
 
 # Simulate a data set and harvest the output
 library(AHMbook)
-if(getRversion() >= "3.6.0")
-  RNGkind(sample.kind = "Round")
+RNGversion("3.5.0")
 set.seed(1234 , kind = "Mersenne-Twister")
 str(tmp <- simSpatialDSline(N = 200, beta = 1, sigma = 0.25,
-    alpha0 = -3)) # produces a figure like 11.1
+    alpha0 = -3))               # produces a figure like 11.1
 
 # 11.5.1 Analyzing the spatial transect model in JAGS
 # ---------------------------------------------------
@@ -37,8 +36,8 @@ nPix <- nrow(Habgrid)
 # Do data augmentation, including for pixel ID
 M <- 500
 nz <- M - nind
-obs.pos <- data[,1]  # Location on line where detection was made
-dist.obs <- data[,2] # Distance from observer to object
+obs.pos <- data[,1]             # Location on line where detection was made
+dist.obs <- data[,2]            # Distance from observer to object
 
 # Create the encounter matrix: 0 up to 1st capture, then 1
 Ymat <- matrix(0, nrow = M, ncol = ntraps)
@@ -58,6 +57,7 @@ str(bdata <- list(obs.pos = obs.pos, ntraps = ntraps, traplocs = traplocs,
 # Write model in BUGS language
 cat(file = "spatialDS.txt", "
 model{
+
   # Prior distributions
   sigma ~ dunif(0,10)
   psi ~ dunif(0,1)
@@ -71,7 +71,7 @@ model{
   for(i in 1:(nind+nz)){
     z[i] ~ dbern(psi)
     pixel[i] ~ dcat(probs[])
-    s[i,1:2] <- Habgrid[pixel[i],] # location = look-up in table
+    s[i,1:2] <- Habgrid[pixel[i],]            # location = look-up in table
     for(j in 1:obs.pos[i]){
       # compute distance == a derived quantity
       d[i,j] <- pow( pow( s[i,1] - traplocs[j,1],2) +
@@ -79,7 +79,7 @@ model{
       haz[i,j] <- exp(alpha0)*exp(-d[i,j]*d[i,j]/(2*sigma*sigma))
       p[i,j] <- 1 - exp(-haz[i,j])
       mu[i,j] <- p[i,j]*z[i]
-      y[i,j] ~ dbern(mu[i,j]) # Observation model
+      y[i,j] ~ dbern(mu[i,j])                  # Observation model
     }
   }
   # Derived parameters
@@ -158,7 +158,6 @@ nind <- nrow(u)
 library(raster)
 tmpmat <- as.matrix(tmp$Habraster)
 Habmat <- t(tmpmat[nrow(tmpmat):1, ]) # flip and transpose as per Fig. 11.5.
-
 # Centre (no need to scale)
 Habmat <- Habmat - mean(Habmat)
 str(Habmat)
@@ -168,6 +167,7 @@ str(Habmat)
 # perpendicular distance and with habitat as a raster
 cat(file = "spatialDSfast_perp.txt","
 model{
+
   # Prior distributions
   sigma ~ dunif(0,10)
   beta1 ~ dnorm(0,0.01)
@@ -179,6 +179,7 @@ model{
     }
   }
   probs <- lam/sum(lam)
+
   # Models for DA variables and location (pixel)
   for(i in 1:M){
     z[i] ~ dbern(psi)
@@ -242,6 +243,7 @@ print(out1perp, 3)
 set.seed(1234, kind = "Mersenne-Twister")
 str(tmp <- simSpatialDSline(N = 200, beta = 1, sigma = 0.25, alpha0 = -3,
     perp = FALSE))
+
 # Harvest data
 xlim <- c(0, tmp$L)
 ylim <- c(0, tmp$W*2)
@@ -286,6 +288,7 @@ model{
     }
   }
   probs <- lam/sum(lam)
+
   # Models for DA variables and location
   for(i in 1:M){
     z[i] ~ dbern(psi)
@@ -293,8 +296,8 @@ model{
     u[i,2] ~ dunif(ylim[1], ylim[2])
     xindex[i] <- round(u[i,1]/delta+0.5)
     yindex[i] <- round(u[i,2]/delta+0.5)
-    negLogDen[i] <- -log(probs[xindex[i], yindex[i]]) # neg.log-density
-    zeros[i] ~ dpois(negLogDen[i]) # zeros trick
+    negLogDen[i] <- -log(probs[xindex[i], yindex[i]])     # neg.log-density
+    zeros[i] ~ dpois(negLogDen[i])                        # zeros trick
     # Evaluate likelihood
     for(j in 1:obs.pos[i]){
       d[i,j] <- pow( pow( u[i,1] - traplocs[j,1],2) +
@@ -302,7 +305,7 @@ model{
       haz[i,j] <- exp(alpha0)*exp(-d[i,j]*d[i,j]/(2*sigma*sigma))
       p[i,j] <- 1 - exp(-haz[i,j])
       mu[i,j] <- p[i,j]*z[i]
-      y[i,j] ~ dbern(mu[i,j]) # Observation model
+      y[i,j] ~ dbern(mu[i,j])                             # Observation model
     }
   }
   # Derived parameters
@@ -312,8 +315,8 @@ model{
 ")
 
 # MCMC settings
-# ni <- 12000 ; nb <- 2000 ; nt <- 2 ; nc <- 4
-ni <- 1200 ; nb <- 200 ; nt <- 2 ; nc <- 3  # ~~~~ for testing
+# na <- 1000 ; ni <- 12000 ; nb <- 2000 ; nt <- 2 ; nc <- 4
+na <- 1000 ; ni <- 1200 ; nb <- 200 ; nt <- 2 ; nc <- 3  # ~~~~ for testing
 
 # Bundle up the data. Include vector of 0s for the zeros trick.
 str(data_haz <- list (y = Ymat, M = M, Habmat = Habmat, Dim = dim(Habmat),
@@ -323,7 +326,7 @@ str(data_haz <- list (y = Ymat, M = M, Habmat = Habmat, Dim = dim(Habmat),
 # Create inits and define parameters to monitor
 inits <- function(){ list (sigma = runif(1, 0.2, 1), beta1 = rnorm(1, 1, 0.4),
     alpha0 = runif(1, -5, -2), z = c(rep(1, nind), rep(0, nz)) ) }
-    params <- c("sigma", "N", "psi", "beta1", "D", "alpha0")
+params <- c("sigma", "N", "psi", "beta1", "D", "alpha0")
 
 # Run JAGS (ART 342 min) and summarize. Note: factories setting not required.
 out1haz <- jags (data_haz, inits, params, "spatialDSfast_haz.txt",

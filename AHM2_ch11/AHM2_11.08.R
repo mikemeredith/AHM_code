@@ -2,7 +2,7 @@
 # Volume 2 - 2020
 # Chapter 11 : SPATIALLY EXPLICIT DISTANCE SAMPLING ALONG TRANSECTS
 # =================================================================
-# Code from proofs dated 2020-07-30
+# Code from proofs dated 2020-08-19
 
 # Approximate execution time for this code: 30 mins
 # Run time with the full number of iterations: 75 mins
@@ -20,7 +20,7 @@ library(jagsUI)
 
 set.seed(12345, kind = "Mersenne-Twister" )
 str(tmp <- simSpatialDSte(nsites = 33, lam0 = 0.3, beta = 2, phi = 0.6,
-    nsurveys = 4)) # Produces (in part) Fig. 11.8.
+    nsurveys = 4))                        # Produces (in part) Fig. 11.8.
 # output omitted
 
 # Harvest the data objects
@@ -35,7 +35,7 @@ M <- tmp$M
 nsites <- tmp$nsites
 nsurveys <- tmp$nsurveys
 npixels <- tmp$npixels
-nind <- sum(M) # Total superpopulation size
+nind <- sum(M)                            # Total superpopulation size
 
 # 11.8.3 Fitting the TEDS/TPP model in JAGS
 # -----------------------------------------
@@ -70,7 +70,7 @@ model {
       # conditional cell probabilities:
       # Pr( detected|pixel ) Pr(pixel | N)
       # Basic rule: [sum_{pix} Pr(det | pix)*Pr(pix | N)] = Pr(det | N)
-      cellprobs[j, i] <- g[j] * pix.probs[j, i] # pi in algebra above
+      cellprobs[j, i] <- g[j] * pix.probs[j, i]         # pi in algebra above
       # Following line normalizes the probabilities but dmulti does this
       # cellprobs.cond[j,i] <-
       # cellprobs[j,i]/sum(cellprobs[1:npixels,i] )
@@ -83,11 +83,11 @@ model {
     # Part 1 of the hierarchical model: Plot level abundance model
     M.lam[i] <- sum(lam[, i])
     M[i] ~ dpois(M.lam[i])
-    pdet[i] <- sum(cellprobs[1:npixels, i]) # Pr(detected | N)
-    pmarg[i] <- pdet[i] * phi # Marginal probability
+    pdet[i] <- sum(cellprobs[1:npixels, i])         # Pr(detected | N)
+    pmarg[i] <- pdet[i] * phi                       # Marginal probability
     for (k in 1:nsurveys) {
       # 2-part model
-      # nobs[i,k] ~ dbin(pdet[i,k],N[i,k])# same as model just below
+      # nobs[i,k] ~ dbin(pdet[i,k],N[i,k])          # same as model just below
       # N[i,k] ~ dbin(phi, M[i])
       # combined together produce:
       # Part 2 of the hierarchical model
@@ -136,12 +136,14 @@ library(AHMbook)
 library(raster)
 data("treeSparrow")
 str(ts <- treeSparrow)
-maxVisit <- 5 # Max number of surveys
-nsites <- 150 # Plots with a transect running through them
+maxVisit <- 5                 # Max number of surveys
+nsites <- 150                 # Plots with a transect running through them
 totsurvs <- 466
+
 ndvi <- ts$pixels[,c("X", "Y", "NDVI")]
 plot(rasterFromXYZ(ndvi))
-summary(ts$pixels) # not shown
+
+summary(ts$pixels)                # not shown
 summary(ts$obs)
 summary(ts$surveyData)
 site <- ts$pixels$Site            # site id
@@ -156,7 +158,7 @@ elev2 <- elev*elev
 elev2 <- round(elev2,5)
 NDVI <- round(standardize(ts$pixels$NDVI),5)
 NDVI2 <- NDVI*NDVI
-( npixels <- length(NDVI) ) #total number of pixels in study area: 49250
+( npixels <- length(NDVI) )       #total number of pixels in study area: 49250
 
 # Take a look at the NDVI landscape (cool plot !)
 op <- par(mfrow = c(1,2))
@@ -166,25 +168,26 @@ ndvi.sub <- ndvi[site==83,]
 xbar <- mean(ndvi.sub[,1])
 ybar <- mean(ndvi.sub[,2])
 library(plotrix)
-draw.circle(xbar, ybar, 600, nv = 1000, border = NULL, col = NA, lty = 1, lwd = 1)
+draw.circle(xbar, ybar, 600, nv = 1000, border = NULL, col = NA,
+    lty = 1, lwd = 1)
 plot(rasterFromXYZ(ndvi.sub), frame = FALSE, axes = FALSE) # Fig. 11.10
 par(op)
 
 # Survey covariates, scale, square if necessary
 sc <- as.data.frame( scale(ts$surveyData[, 5:7]) )
-julian <- sc$juldate  # integer day
+julian <- sc$juldate            # integer day
 julian2 <- julian^2
-time <- sc$reltime    # time of day
-effort <- sc$effort   # length of transect through plot
+time <- sc$reltime              # time of day
+effort <- sc$effort             # length of transect through plot
 site2 <- ts$surveyData$Site
 nobs <- ts$surveyData$count
 
 # Individual bird observations (325 total detections)
-ind.site <- ts$obs$Site   # site id for ATSP observations
-pixel.cap <- ts$obs$Pixel # pixel id for ATSP observations
-ind.visit <- ts$obs$Visit # visit id for ATSP observations
-ind <- ts$obs$ind         # id of bird detection within the survey
-( Mind <- max(ind) )      # max number of birds observed in a survey
+ind.site <- ts$obs$Site         # site id for ATSP observations
+pixel.cap <- ts$obs$Pixel       # pixel id for ATSP observations
+ind.visit <- ts$obs$Visit       # visit id for ATSP observations
+ind <- ts$obs$ind               # id of bird detection within the survey
+( Mind <- max(ind) )            # max number of birds observed in a survey
 survey <- ts$obs$SurveyID
 
 # Encounter frequency array
@@ -205,9 +208,10 @@ M <- tapply(ts$surveyData$count, ts$surveyData$Site, max) + 1
 
 # Bundle and summarize data (data courtesy of Mizel et al. 2018)
 str(bdata <- list(y = y, d = d, nsites = nsites, NDVI = NDVI, nobs = nobs,
-    npixels = npixels, site = site, pixID = pixID, julian = julian, NDVI2 = NDVI2,
-    julian2 = julian2, time = time, effort = effort, site2 = site2,
-    totsurvs = totsurvs, sitepix = sitepix, elev = elev, elev2 = elev2) ) # Not shown
+    npixels = npixels, site = site, pixID = pixID, julian = julian,
+    NDVI2 = NDVI2, julian2 = julian2, time = time, effort = effort,
+    site2 = site2, totsurvs = totsurvs, sitepix = sitepix, elev = elev,
+    elev2 = elev2) )         # Not shown
 
 # Specify TEDS/TPP model in BUGS language
 cat(file="TEDS.txt","
@@ -224,6 +228,7 @@ model {
   beta2 ~ dnorm(0, 0.01)
   beta3 ~ dnorm(0, 0.01)
   beta4 ~ dnorm(0, 0.01)
+
   # Define the pixel frequency probabilities
   for (i in 1:npixels){
     # Detection model

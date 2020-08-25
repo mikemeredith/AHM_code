@@ -14,21 +14,20 @@ library(jagsUI)
 # =================================================
 
 library(AHMbook)
-if(getRversion() >= "3.6.0")
-  RNGkind(sample.kind = "Round")
+RNGversion("3.5.0")
 set.seed(1234, kind = "Mersenne-Twister")
 # Simulation settings
 N <- 200
-M <- 500 # Data augmentation
+M <- 500                # Data augmentation
 sigma <- 0.20
 alpha0 <- -2
-W <- 1/2 # Transect dimension: half-width
-L <- 4 # ... length
+W <- 1/2                # Transect dimension: half-width
+L <- 4                  # ... length
 
 # Locations of individuals
 u1 <- runif(N, 0, 4)
 u2 <- runif(N, 0, 2*W)
-plot(u1, u2, pch = 20, col = 'black', cex = 1) # Start building up Fig. 11.2
+plot(u1, u2, pch = 20, col = 'black', cex = 1)  # Start building up Fig. 11.2
 abline(0.5, 0, lwd = 2, col = 'grey')
 title("Transect population subject to detection")
 
@@ -47,14 +46,14 @@ dmat <- e2dist(cbind(u1, u2), traplocs)
 for(i in 1:nrow(dmat)){
   haz <- exp(alpha0)*exp( -(dmat[i,]^2)/(2*sigma*sigma))
   probs <- 1 - exp(-haz)
-  captured <- rbinom(nrow(traplocs), 1, probs) # Bernoulli trials
+  captured <- rbinom(nrow(traplocs), 1, probs)      # Bernoulli trials
   pbar[i] <- 1 - exp(-sum(haz))
   if(sum(captured)==0)
     next
   obs.pos[i] <- which(captured == 1)[1]
   d.to.trap[i] <- dmat[i,][obs.pos[i]]
   lines(c(u1[i], traplocs[obs.pos[i],1]), c(u2[i],
-      traplocs[obs.pos[i],2]) ) # Finish Fig. 11.2
+      traplocs[obs.pos[i],2]) )                     # Finish Fig. 11.2
 }
 
 # Subset to encountered individuals only
@@ -95,10 +94,12 @@ str(data <- list (obs.pos = obs.pos, ntraps = ntraps, traplocs = traplocs,
 # Write the BUGS model
 cat(file = "transectDS.txt", "
 model{
+
   # Prior distributions
   sigma ~ dunif(0, 10)
   psi ~ dunif(0, 1)
   alpha0 ~ dnorm(0, 0.01)
+
   for(i in 1:(nind+nz)){
     # Models for DA variables, location and observed data
     z[i] ~ dbern(psi)
@@ -113,6 +114,7 @@ model{
       y[i,j] ~ dbern(mu[i,j]) # Observation model
     }
   }
+
   # Derived parameters
   N <- sum(z[]) # N is a derived parameter
   D <- N/4 # area = 4 ha
@@ -133,8 +135,8 @@ params <- c("sigma", "N", "psi", "D", "alpha0")
 
 # Run JAGS (ART 71 min), check convergence and summarize posteriors
 library(jagsUI)
-(out1a <- jags (data, inits, params, "transectDS.txt", n.thin = nt, n.chains = nc,
-    n.burnin = nb, n.iter = ni, n.adapt = na, parallel = TRUE))
+(out1a <- jags (data, inits, params, "transectDS.txt", n.thin = nt,
+    n.chains = nc, n.burnin = nb, n.iter = ni, n.adapt = na, parallel = TRUE))
 #           mean     sd    2.5%     50%   97.5% overlap0 f  Rhat n.eff
 # sigma    0.208  0.011   0.189   0.207   0.231    FALSE 1 1.014   207
 # N      217.331 18.977 186.000 215.000 262.000    FALSE 1 1.009   363
@@ -146,7 +148,8 @@ library(jagsUI)
 # ''''''''''''''''''''''''''''''''''''''''''''
 
 # Create the data list for JAGS
-str(data <- list ( nind = nind, y = c(rep(1,nind), rep(0,nz)), nz = nz, u = uaug))
+str(data <- list ( nind = nind, y = c(rep(1,nind), rep(0,nz)), nz = nz,
+    u = uaug))
 # List of 4
 # $ nind: int 141
 # $ y   : num [1:500] 1 1 1 1 1 1 1 1 1 1 ...
@@ -156,9 +159,11 @@ str(data <- list ( nind = nind, y = c(rep(1,nind), rep(0,nz)), nz = nz, u = uaug
 # Write BUGS model
 cat(file = "transectDSb.txt", "
 model{
+
   # Prior distributions
   sigma ~ dunif(0,10)
   psi ~ dunif(0,1)
+
   # Models for DA variables, location and observed data
   for(i in 1:(nind+nz)){
     z[i] ~ dbern(psi)
@@ -169,6 +174,7 @@ model{
     p[i] <- exp(-d[i]*d[i]/(2*sigma*sigma))
     y[i] ~ dbern(p[i]*z[i])
   }
+
   # Derived parameters
   N <- sum(z[]) # N is a derived parameter
   D <- N/4 # area = 4 ha

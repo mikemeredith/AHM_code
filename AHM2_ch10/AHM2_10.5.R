@@ -5,53 +5,56 @@
 #
 # Chapter 10 : INTEGRATED MODELS FOR MULTIPLE TYPES OF DATA
 # =========================================================
-# Code from proofs dated 2020-07-23
+# Code from proofs dated 2020-08-19
 
 # Approximate execution time for this code: 4 mins
 # Run time with full number of iterations: 25 mins
 
 library(AHMbook)
 library(jagsUI)
+library(berryFunctions)
 
 # 10.5 Example 3: Combination of counts plus abundance-class data
 # ======================================================================
 
 library(AHMbook)
-?simNmix # Use the sim Nmix data function from Chap 6 in AHM1
 
 # Simulate two data sets from same process
 # Constants for simulation function
-M1 <- 500       # Number of sites with abundance-class surveys
-J1 <- 5         # Number of surveys in abundance-class survey
-M2 <- 100       # Number of sites with full-count surveys
-J2 <- 2         # Number of surveys in full-count surveys
-mean.lam <- 50  # Abundance intercept
-beta.lam <- 0.5 # Coefficients of a site covariate in abundance
-mean.p1 <- 0.4  # Detection intercept in abundance-class survey
-mean.p2 <- 0.5  # Detection intercept in full-count survey
-beta.p <- -1    # Coefficients of a site covariate in detection
+M1 <- 500           # Number of sites with abundance-class surveys
+J1 <- 5             # Number of surveys in abundance-class survey
+M2 <- 100           # Number of sites with full-count surveys
+J2 <- 2             # Number of surveys in full-count surveys
+mean.lam <- 50      # Abundance intercept
+beta.lam <- 0.5     # Coefficients of a site covariate in abundance
+mean.p1 <- 0.4      # Detection intercept in abundance-class survey
+mean.p2 <- 0.5      # Detection intercept in full-count survey
+beta.p <- -1        # Coefficients of a site covariate in detection
 
 # Simulate data set 1 for abundance-class surveys
 set.seed(1)
 str(data1 <- simNmix(nsite = M1, nvisit = J1, mean.lam = mean.lam,
-    mean.p = mean.p1, beta2.lam = beta.lam, beta3.p = beta.p, show.plot = FALSE))
+    mean.p = mean.p1, beta2.lam = beta.lam, beta3.p = beta.p,
+    show.plot = FALSE))
 
 # Simulate data set 2 for full-count surveys
 str(data2 <- simNmix(nsite = M2, nvisit = J2, mean.lam = mean.lam,
-    mean.p = mean.p2, beta2.lam = beta.lam, beta3.p = beta.p, show.plot = FALSE))
+    mean.p = mean.p2, beta2.lam = beta.lam, beta3.p = beta.p,
+    show.plot = FALSE))
 
 library(berryFunctions) # Load package berryFunctions
 breaks <- c(0, 10, 25, 50, 100, 200) # Up to and including
 Cclass <- classify(c(data1$C), method = 'custom', breaks = breaks)$index
 Aclass <- matrix(Cclass, byrow = FALSE, ncol = data1$nvisit)
-head(data1$C) # Look at the relationship between the raw data..
-head(Aclass) # ... and the abundance-class data
+head(data1$C)           # Look at the relationship between the raw data..
+head(Aclass)            # ... and the abundance-class data
 
-table(Aclass) # Summary of the class data
+table(Aclass)           # Summary of the class data
 # Aclass
 #   1   2   3   4  5
 # 687 897 543 348 25
-breaks # Remember the class boundaries
+
+breaks                  # Remember the class boundaries
 # [1] 0 10 25 50 100 200
 
 # ~~~ extra code for figure 10.3 ~~~~~~~~~~
@@ -86,8 +89,9 @@ head(cbind('True count' = c(data1$C), 'Abundance class' = c(Aclass), limits))
 X3vec <- rep(data1$site.cov[,3], 5)
 sitevec <- rep(1:500, 5) # 500 sites with 5 reps each
 
-# 10.5.1 Fitting a binomial N-mixture model with interval-censoring to abundance-class data
-# -----------------------------------------------------------------------------------------
+# 10.5.1 Fitting a binomial N-mixture model with interval-censoring
+#        to abundance-class data
+# ------------------------------------------------------------------
 
 # Response is simply a vector of ones !
 y <- rep(1, 2500)
@@ -112,21 +116,23 @@ cat(file = "model1.txt", "
 model {
   # Priors
   alpha.p <- logit(mean.p)
-  mean.p ~ dunif(0, 1) # Detection intercept
-  beta.p ~ dnorm(0, 0.1) # Detection slope on X3
-  alpha.lam ~ dnorm(0, 0.01) # Abundance intercept
+  mean.p ~ dunif(0, 1)            # Detection intercept
+  beta.p ~ dnorm(0, 0.1)          # Detection slope on X3
+  alpha.lam ~ dnorm(0, 0.01)      # Abundance intercept
   mean.lam <- exp(alpha.lam)
-  beta.lam ~ dnorm(0, 0.1) # Abundance slope on X2
+  beta.lam ~ dnorm(0, 0.1)        # Abundance slope on X2
+
   # Likelihood
   # Model for latent abundance
   for (i in 1:M){
     N[i] ~ dpois(lambda[i])
     log(lambda[i]) <- alpha.lam + beta.lam * X2[i]
   }
+
   # Observation model for observed counts and for detection
   for (i in 1:n){
     y[i] ~ dinterval(C[i], limits[i,]) # specify interval censoring !
-    C[i] ~ dbin(p[i], N[sitevec[i]]) # Count becomes estimated quantity
+    C[i] ~ dbin(p[i], N[sitevec[i]])   # Count becomes estimated quantity
     logit(p[i]) <- alpha.p + beta.p * X3vec[i]
   }
   # Derived quantities
@@ -139,14 +145,15 @@ model {
 tmp <- matrix(limits[,2], ncol = 5)
 Nst <- round(apply(tmp, 1, mean))+20
 Cst <- limits[,1]+1
-inits <- function() list(N = Nst, C = Cst, mean.p = 0.5, alpha.lam = log(mean(Nst)))
+inits <- function() list(N = Nst, C = Cst, mean.p = 0.5,
+    alpha.lam = log(mean(Nst)))
 
 # Parameters monitored
 params <- c("alpha.lam", "beta.lam", "mean.lam", "alpha.p", "beta.p",
     "mean.p", "Ntotal", "N", "C")
 
 # MCMC settings
-# na <- 1000 ; nc <- 3 ; ni <- 20000 ; nb <- 10000 ; nt <- 10  # 6 mins
+# na <- 1000 ; nc <- 3 ; ni <- 20000 ; nb <- 10000 ; nt <- 10
 na <- 1000 ; nc <- 3 ; ni <- 2000 ; nb <- 1000 ; nt <- 1  # ~~~ for testing, 1 min
 
 # Call JAGS (ART 13 min), gauge convergence and summarize posteriors
@@ -183,7 +190,7 @@ UCI <- c(out1$q97.5$mean.p, out1$q97.5$beta.p, out1$q97.5$mean.lam,
     out1$q97.5$beta.lam, out1$q97.5$Ntotal)
 cbind(truth, pm, LCI, UCI)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#               truth            pm           LCI           UCI
+#               truth           pm            LCI           UCI
 # mean.p          0.4     0.4377538     0.4031205     0.4749968
 # alpha1         -1.0    -1.0433506    -1.1099861    -0.9804712
 # mean.lambda    50.0    46.9308778    43.6895419    50.2425595
@@ -197,8 +204,8 @@ cbind(truth, pm, LCI, UCI)
 # Bundle data
 str(bdata <- list(y = y, M1 = nrow(Aclass), X21 = data1$site.cov[,2],
     X3vec1 = X3vec, sitevec = sitevec, n = length(Cclass), limits = limits,
-    C2 = data2$C, M2 = nrow(data2$C), J2 = ncol(data2$C), X22 = data2$site.cov[,2],
-    X32 = data2$site.cov[,3]))
+    C2 = data2$C, M2 = nrow(data2$C), J2 = ncol(data2$C),
+    X22 = data2$site.cov[,2], X32 = data2$site.cov[,3]))
 
 # Specify model in BUGS language
 cat(file = "model2.txt", "
@@ -206,30 +213,32 @@ model {
   # Priors
   # For data set 1 (binned counts)
   alpha.p1 <- logit(mean.p1)
-  mean.p1 ~ dunif(0, 1) # Detection intercept
+  mean.p1 ~ dunif(0, 1)           # Detection intercept
   # For data set 2 (full counts)
   alpha.p2 <- logit(mean.p2)
-  mean.p2 ~ dunif(0, 1) # Detection intercept
+  mean.p2 ~ dunif(0, 1)           # Detection intercept
   # Priors for the parameters shared in both data sets
-  alpha.lam ~ dnorm(0, 0.01) # Abundance intercept
+  alpha.lam ~ dnorm(0, 0.01)      # Abundance intercept
   mean.lam <- exp(alpha.lam)
-  beta.lam ~ dnorm(0, 0.1) # Abundance slope on X2
-  beta.p ~ dnorm(0, 0.1) # Detection slope on X3
+  beta.lam ~ dnorm(0, 0.1)        # Abundance slope on X2
+  beta.p ~ dnorm(0, 0.1)          # Detection slope on X3
+
   # Likelihood
   # Model for latent abundance in both data sets
   # Note same parameter names means parameters are identical
-  for (i in 1:M1){ # Data set 1
+  for (i in 1:M1){                # Data set 1
     N1[i] ~ dpois(lambda1[i])
     log(lambda1[i]) <- alpha.lam + beta.lam * X21[i]
   }
-  for (i in 1:M2){ # Data set 2
+  for (i in 1:M2){                # Data set 2
     N2[i] ~ dpois(lambda2[i])
     log(lambda2[i]) <- alpha.lam + beta.lam * X22[i]
   }
+
   # Observation model for observed counts and for detection
   # Observation model for data set 1 (binned counts)
   for (i in 1:n){
-    y[i] ~ dinterval(C1[i], limits[i,]) # interval censoring
+    y[i] ~ dinterval(C1[i], limits[i,])       # interval censoring
     C1[i] ~ dbin(p1[i], N1[sitevec[i]])
     logit(p1[i]) <- alpha.p1 + beta.p * X3vec1[i]
   }
@@ -240,10 +249,11 @@ model {
       C2[i,j] ~ dbin(p2[i], N2[i])
     }
   }
+
   # Derived quantities
-  Ntotal1 <- sum(N1[]) # Total abundance in data set 1
-  Ntotal2 <- sum(N2[]) # Total abundance in data set 2
-  GTotalN <- Ntotal1 + Ntotal2 # Grand total at all 600 sites
+  Ntotal1 <- sum(N1[])            # Total abundance in data set 1
+  Ntotal2 <- sum(N2[])            # Total abundance in data set 2
+  GTotalN <- Ntotal1 + Ntotal2    # Grand total at all 600 sites
 }
 ")
 
@@ -259,7 +269,7 @@ params <- c("mean.lam", "beta.lam", "mean.p1", "mean.p2", "beta.p",
     "Ntotal1", "Ntotal2", "GTotalN", "N1", "C1", "N2")
 
 # MCMC settings
-# na <- 1000 ; nc <- 3 ; ni <- 50000 ; nb <- 10000 ; nt <- 40  # 16 mins
+# na <- 1000 ; nc <- 3 ; ni <- 50000 ; nb <- 10000 ; nt <- 40
 na <- 1000 ; nc <- 3 ; ni <- 5000 ; nb <- 1000 ; nt <- 4  # ~~~~ for testing, 2 mins
 
 # Call JAGS (ART 22 min), gauge convergence and summarize posteriors

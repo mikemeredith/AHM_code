@@ -2,7 +2,7 @@
 # Volume 2 - 2020
 # Chapter 11 : SPATIALLY EXPLICIT DISTANCE SAMPLING ALONG TRANSECTS
 # =================================================================
-# Code from proofs dated 2020-07-30
+# Code from proofs dated 2020-08-19
 
 # Approximate execution time for this code: 40 mins
 # Run time with the full number of iterations: 60 mins
@@ -14,15 +14,14 @@ library(jagsUI)
 # =================================
 
 library(raster)
-# library(sp)
 library(AHMbook)
 data(wigglyLine)
-if(getRversion() >= "3.6.0")
-  RNGkind(sample.kind = "Round")
+
+RNGversion("3.5.0")
 set.seed(123, kind = "Mersenne-Twister") # This is important!
 plot(wigglyLine[,1], wigglyLine[,2], type = "l", xlab = "Easting",
-    ylab = "Northing", pch = " ", lwd = 2, cex.axis = 1.5, cex = 2, cex.lab = 1.5,
-    asp = 1, frame = FALSE)
+    ylab = "Northing", pch = " ", lwd = 2, cex.axis = 1.5, cex = 2,
+    cex.lab = 1.5, asp = 1, frame = FALSE)
 points <- SpatialPoints(wigglyLine)
 sLine <- Line(points)
 regpoints <- spsample(sLine, 100, type = "regular")
@@ -42,13 +41,12 @@ N <- 120
 sx <- runif(N, xlim[1], xlim[2])
 sy <- runif(N, ylim[1], ylim[2])
 plot(cbind(sx, sy), pch = " ", xlim = xlim, ylim = ylim, asp = 1, xlab = " ",
-    ylab = " ", frame = FALSE) # begin Fig. 11.12
+    ylab = " ", frame = FALSE)                # begin Fig. 11.12
 lines(regpoints@coords, col = "black", lwd = 4)
 points(sx, sy, pch = 3, col = "black", lwd = 1)
-sigma.move <- 0.35 # This is either ind's moving around or measurement error
+sigma.move <- 0.35    # This is either ind's moving around or measurement error
 sigma <- 0.4
 alpha0 <- 0.8
-
 # Line chopped up into points -- "traps"
 X <- regpoints@coords
 J <- nrow(X)
@@ -73,17 +71,14 @@ for (i in 1:N) {
     y[i, k] <- rbinom(1, 1, pmat[i, k])
   }
 }
-
 # For data organization we separate the x- and y- coordinates
 Ux <- U[, , 1]
 Uy <- U[, , 2]
-points(Ux, Uy, pch = 1, col = "black") # Add them to plot (fig 11.12)
-
+points(Ux, Uy, pch = 1, col = "black")        # Add them to plot
 # If the individual was not detected, its location is missing
 Ux[y == 0] <- NA
 Uy[y == 0] <- NA
-points(Ux, Uy, pch = 20, col = "black") # Add detections to plot -> Fig 11.12
-
+points(Ux, Uy, pch = 20, col = "black")       # Add detections to plot
 # Retain individuals detected at least once
 ncap <- apply(y, 1, sum)
 y <- y[ncap > 0, ]
@@ -119,8 +114,8 @@ for (i in 1:M) {
 }
 
 # Bundle the data
-str(bdata <- list(y = y, u = Ux, v = Uy, X = X, nsurveys = nsurveys, M = M, J = J,
-    xlim = xlim, ylim = ylim) )
+str(bdata <- list(y = y, u = Ux, v = Uy, X = X, nsurveys = nsurveys, M = M,
+    J = J, xlim = xlim, ylim = ylim) )
 # List of 9
 # $ y       : num [1:400, 1:2] 0 1 1 0 1 1 1 1 1 1 ...
 # $ u       : num [1:400, 1:2] NA 2.3487 -0.0551 NA 1.525 ...
@@ -135,12 +130,14 @@ str(bdata <- list(y = y, u = Ux, v = Uy, X = X, nsurveys = nsurveys, M = M, J = 
 # Define in BUGS the SCR model with total hazard detection probability
 cat(file = "wiggly1.txt","
 model {
+
   # Priors
   alpha0 ~ dnorm(0, 0.01)
   sigma ~ dunif(0, 10)
   sigma.move ~ dunif(0, 10)
   tau <- 1/(sigma.move*sigma.move)
   psi ~ dunif(0, 1)
+
   # Likelihood
   for(i in 1:M){ # Loop over individuals in augmented list
     z[i] ~ dbern(psi)
@@ -158,14 +155,16 @@ model {
       y[i,k] ~ dbern(p[i,k])
     }
   }
+
   # Population size is a derived quantity
   N <- sum(z[])
 }
 ")
 
 # Define inits and parameters to monitor
-inits <- function() { list(alpha0 = rnorm(1,-1,0.5), sigma = 0.5, sigma.move = 0.5,
-    s = S, z = c(rep(1, nind), rep(0, M - nind)), u = Ux.st, v = Uy.st) }
+inits <- function() { list(alpha0 = rnorm(1,-1,0.5), sigma = 0.5,
+    sigma.move = 0.5, s = S, z = c(rep(1, nind), rep(0, M - nind)),
+    u = Ux.st, v = Uy.st) }
 params <- c("alpha0", "N", "psi", "sigma.move", "sigma")
 
 # MCMC settings
@@ -189,12 +188,14 @@ print(wiggly.Thaz.2reps, 3)
 # Define in BUGS the SCR model with minimum distance detection model
 cat(file = "wiggly2.txt","
 model {
+
   # Priors
   p0 ~ dunif(0, 1)
   sigma ~ dunif(0, 10)
   sigma.move ~ dunif(0, 10)
   tau <- 1/(sigma.move*sigma.move)
   psi ~ dunif(0, 1)
+
   # Likelihood
   for(i in 1:M){ # Loop over individuals
     z[i] ~ dbern(psi)
@@ -212,16 +213,17 @@ model {
       y[i,k] ~ dbern(p[i,k])
     }
   }
+
   # Derived quantity
   N <- sum(z[])
 }
 ")
 
 # Data, inits and parameters to save
-str(bdata <- list(y = y, u = Ux, v = Uy, X = X, nsurveys = nsurveys, M = M, J = J,
-    xlim = xlim, ylim = ylim) ) # Output omitted
-inits <- function() { list(p0 = runif(1,0,1), sigma = 0.5, sigma.move = 0.5, s = S,
-    z = c(rep(1, nind), rep(0, M - nind)), u = Ux.st, v = Uy.st)}
+str(bdata <- list(y = y, u = Ux, v = Uy, X = X, nsurveys = nsurveys, M = M,
+    J = J, xlim = xlim, ylim = ylim) ) # Output omitted
+inits <- function() { list(p0 = runif(1,0,1), sigma = 0.5, sigma.move = 0.5,
+    s = S, z = c(rep(1, nind), rep(0, M - nind)), u = Ux.st, v = Uy.st)}
 params <- c("p0", "N", "psi", "sigma.move", "sigma")
 
 # MCMC settings
@@ -251,7 +253,7 @@ N <- 120
 sx <- runif(N, xlim[1], xlim[2])
 sy <- runif(N, ylim[1], ylim[2])
 
-sigma.move <- 0 # <---- changed this
+sigma.move <- 0                 # <---- changed this
 alpha0 <- 0.8
 # Line chopped up into points -- "traps"
 X <- regpoints@coords
@@ -315,12 +317,14 @@ Uy.st[i, is.na(Uy[i, ])] <- S[i, 2]
 # Define in BUGS the MRDS model using minimum distance to the line
 cat(file = "wiggly3.txt","
 model {
+
   # Priors
   sigma ~ dunif(0, 10)
   p0 ~ dunif(0, 1)
   psi ~ dunif(0, 1)
+
   # Likelihood
-  for(i in 1:M){ # Loop over individuals
+  for(i in 1:M){                          # Loop over individuals
     z[i] ~ dbern(psi)
     # s = observed location here
     s[i,1] ~ dunif(xlim[1], xlim[2])
@@ -335,20 +339,22 @@ model {
       y[i,k] ~ dbern(p[i,k])
     }
   }
+
   # Derived quantity
   N <- sum(z[])
 }
 ")
 
 # Compute average observed location
-sbar <- cbind(apply(Ux, 1, mean, na.rm = TRUE), apply(Uy, 1, mean, na.rm = TRUE))
+sbar <- cbind(apply(Ux, 1, mean, na.rm = TRUE), apply(Uy, 1, mean,
+    na.rm = TRUE))
 sbar[is.nan(sbar)] <- NA
 
 # Data, inits and parameters
 str(bdata <- list(y = y, s = sbar, X = X, nsurveys = nsurveys, M = M, J = J,
     xlim = xlim, ylim = ylim)) # Output not shown
-inits <- function() { list( p0 = runif(1, 0, 1), sigma = 0.5, z = c(rep(1, nind),
-    rep(0, M - nind)) )}
+inits <- function() { list( p0 = runif(1, 0, 1), sigma = 0.5,
+    z = c(rep(1, nind), rep(0, M - nind)) )}
 params <- c("p0", "N", "psi", "sigma")
 
 # MCMC settings
@@ -372,10 +378,12 @@ print(wiggly.MRDS, 3)
 # Define in BUGS the single replicate model
 cat(file = "wiggly4.txt","
 model {
+
   # Priors
   alpha0 ~ dnorm(0, 0.01)
   sigma ~ dunif(0, 10)
   psi ~ dunif(0,1)
+
   # Likelihood
   for(i in 1:M){ # Loop over individuals
     z[i] ~ dbern(psi)
@@ -394,6 +402,7 @@ model {
       y[i,k] ~ dbern(p[i,k])
     }
   }
+
   # Derived quantity
   N <- sum(z[])
 }

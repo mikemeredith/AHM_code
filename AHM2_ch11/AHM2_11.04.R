@@ -2,7 +2,7 @@
 # Volume 2 - 2020
 # Chapter 11 : SPATIALLY EXPLICIT DISTANCE SAMPLING ALONG TRANSECTS
 # =================================================================
-# Code from proofs dated 2020-07-30
+# Code from proofs dated 2020-08-19
 
 # Approximate execution time for this code: 25 mins
 # Run time with the full number of iterations: 75 mins
@@ -19,14 +19,14 @@ N <- 200
 M <- 500
 sigma <- 0.20
 alpha0 <- -3
-W <- 1/2 # Transect half-width
+W <- 1/2                                  # Transect half-width
 L <- 4
-K <- 2 # Replicates
+K <- 2                                    # Replicates
 
 # Locations of individuals
 u1 <- runif(N, 0, L)
 u2 <- runif(N, 0, 2*W)
-plot(u1, u2, pch = 20, cex = 1) # plot points (not shown)
+plot(u1, u2, pch = 20, cex = 1)           # plot points (not shown)
 abline(0.5, 0, lwd = 2, col = 'grey')
 title("Transect population subject to detection")
 
@@ -45,8 +45,8 @@ for(k in 1:K){
   for(i in 1:nrow(dmat)){
     haz <- exp(alpha0)*exp( -(dmat[i,]^2)/(2*sigma*sigma))
     probs <- 1 - exp(-haz)
-    captured <- rbinom(nrow(traplocs), 1, probs) # Seq. of Bern trials
-    pbar[i,k] <- 1 - exp(-sum(haz)) # Average prob. of capture
+    captured <- rbinom(nrow(traplocs), 1, probs)    # Seq. of Bern trials
+    pbar[i,k] <- 1 - exp(-sum(haz))                 # Average prob. of capture
     if(sum(captured)==0)
       next
     obs.pos[i,k] <- (1:length(captured))[captured==1][1]
@@ -60,7 +60,7 @@ for(k in 1:K){
 ncap <- apply(!is.na(d.to.trap), 1, sum)
 nind <- sum(ncap > 0)
 data <- cbind(obs.pos, u1, u2)[ncap>0, ]
-obs.pos <- data[, 1:2] # K = 2 vectors here, one for each survey
+obs.pos <- data[, 1:2]              # K = 2 vectors here, one for each survey
 
 ntraps <- nrow(traplocs)
 Yarr <- array(0, dim = c(M, ntraps, K) )
@@ -87,10 +87,12 @@ str(data_haz <- list (obs.pos = obs.pos, ntraps = ntraps, traplocs = traplocs,
 # Model 2a: MRDS with hazard detection model
 cat(file="MRDS.txt", "
 model {
+
   # Prior distributions
   sigma ~ dunif(0,10)
   psi ~ dunif(0,1)
   alpha0 ~ dnorm(0,0.01)
+
   # Models for DA variables and location (pixel)
   for(i in 1:(nind+nz)){
     z[i] ~ dbern(psi)
@@ -103,7 +105,7 @@ model {
         haz[i,j,k] <- exp(alpha0)*exp(-d[i,j,k]*d[i,j,k]/ (2*sigma*sigma))
         p[i,j,k] <- 1 - exp(-haz[i,j,k])
         mu[i,j,k] <- p[i,j,k]*z[i]
-        y[i,j,k] ~ dbern(mu[i,j,k]) # Observation model
+        y[i,j,k] ~ dbern(mu[i,j,k])               # Observation model
       }
     }
   }

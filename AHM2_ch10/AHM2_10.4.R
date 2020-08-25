@@ -5,7 +5,7 @@
 #
 # Chapter 10 : INTEGRATED MODELS FOR MULTIPLE TYPES OF DATA
 # =========================================================
-# Code from proofs dated 2020-07-23
+# Code from proofs dated 2020-08-19
 
 # Approximate execution time for this code: 4 mins
 
@@ -18,14 +18,14 @@ library(jagsUI)
 library(AHMbook)
 
 # Choose sample size and parameter values for both data sets
-nsites1 <- 267      # Sample size for count data
-nsites2 <- 520      # Sample size for detection/nondetection data
-nsurveys <- 3       # Number of surveys in both data sets
-mean.lam <- 3       # Average expected abundance (lambda) per site
-beta3.lam <- -1     # Coefficient of site covariate on lambda
-mean.p <- 0.4       # Average per-individual detection probability (p)
-beta5.p <- 1        # Effect of a site covariate on p
-beta.p.survey <- -2 # Effect of observational covariate on p
+nsites1 <- 267        # Sample size for count data
+nsites2 <- 520        # Sample size for detection/nondetection data
+nsurveys <- 3         # Number of surveys in both data sets
+mean.lam <- 3         # Average expected abundance (lambda) per site
+beta3.lam <- -1       # Coefficient of site covariate on lambda
+mean.p <- 0.4         # Average per-individual detection probability (p)
+beta5.p <- 1          # Effect of a site covariate on p
+beta.p.survey <- -2   # Effect of observational covariate on p
 
 # Create and summarize data set 1
 set.seed(1)
@@ -44,15 +44,15 @@ head(y1 <- data1$C)
 
 # Turn count data set 2 into detection/nondetection data
 head(y2 <- data2$C)
-y2[y2 > 1] <- 1 # Reduce counts >1 to 1
+y2[y2 > 1] <- 1               # Reduce counts >1 to 1
 head(y2)
 
 # Pull out covariates
-elev1 <- data1$site.cov[,3] # Imagine site cov 3 to be site elevation
+elev1 <- data1$site.cov[,3]   # Imagine site cov 3 to be site elevation
 elev2 <- data2$site.cov[,3]
-hcov1 <- data1$site.cov[,5] # Imagine site cov 5 to be habitat cover
+hcov1 <- data1$site.cov[,5]   # Imagine site cov 5 to be habitat cover
 hcov2 <- data2$site.cov[,5]
-wind1 <- data1$survey.cov # Imagine this to be wind speed
+wind1 <- data1$survey.cov     # Imagine this to be wind speed
 wind2 <- data2$survey.cov
 
 # 10.4.1 Fitting the binomial N-mixture model to the count data alone
@@ -100,7 +100,7 @@ model {
     }
   }
   # Derived quantities
-  Ntotal1 <- sum(N1[])       # Total population size in sample 1
+  Ntotal1 <- sum(N1[])            # Total population size in sample 1
 }
 ")
 
@@ -130,7 +130,7 @@ print(out1, dig = 2)
 # beta.lp1     1.03  0.06    0.91    1.02    1.15    FALSE 1 1.02    87
 # beta.lp2    -1.98  0.07   -2.11   -1.98   -1.85    FALSE 1 1.09    26
 # Ntotal1   1436.64 33.88 1370.98 1436.00 1504.00    FALSE 1 1.01   382
-
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # 10.4.2 Fitting the integrated model
 # -----------------------------------
@@ -138,14 +138,16 @@ print(out1, dig = 2)
 # Specify model in BUGS language
 cat(file = "model2.txt", "
 model {
+
   # Priors
-  alpha.lam ~ dunif(-10, 10) # Abundance intercept
+  alpha.lam ~ dunif(-10, 10)        # Abundance intercept
   mean.lam <- exp(alpha.lam)
   beta.lam ~ dnorm(0, 0.01)
   alpha.lp <- logit(mean.p)
-  mean.p ~ dunif(0, 1) # Detection intercept
+  mean.p ~ dunif(0, 1)              # Detection intercept
   beta.lp1 ~ dnorm(0, 0.01)
   beta.lp2 ~ dnorm(0, 0.01)
+
   # Process model with shared parameters for data sets 1 and 2
   # Note identical alpha.lam and beta.lam for both data sets
   for (i in 1:nsites1){
@@ -156,6 +158,7 @@ model {
     N2[i] ~ dpois(lambda2[i])
     lambda2[i] <- exp(alpha.lam + beta.lam * elev2[i])
   }
+
   # Observation process in data set 1: binomial of an Nmix model
   for (i in 1:nsites1){
     for (j in 1:nsurveys){
@@ -171,9 +174,10 @@ model {
       logit(p2[i,j]) <- alpha.lp + beta.lp1 * hcov2[i] + beta.lp2 * wind2[i,j]
     }
   }
+
   # Derived quantities
-  Ntotal1 <- sum(N1[]) # Total population size in data set 1
-  Ntotal2 <- sum(N2[]) # Total population size in data set 2
+  Ntotal1 <- sum(N1[])          # Total population size in data set 1
+  Ntotal2 <- sum(N2[])          # Total population size in data set 2
 }
 ")
 

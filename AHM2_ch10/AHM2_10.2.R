@@ -5,10 +5,11 @@
 #
 # Chapter 10 : INTEGRATED MODELS FOR MULTIPLE TYPES OF DATA
 # =========================================================
-# Code from proofs dated 2020-07-23
+# Code from proofs dated 2020-08-19
 
 
 library(AHMbook)
+# library(unmarked)
 
 # 10.2 A simulation game to improve your intuition about point, abundance,
 #      and occurrence patterns
@@ -48,12 +49,12 @@ str(dat <- simPPe(lscape.size = 24, buffer.width = 2, variance.X = 1,
 str(dat <- simPPe(lscape.size = 1000, buffer.width = 20, variance.X = 1,
     theta.X = 0.001, M = 250, beta = 1, quads.along.side = 6))
 
-str(simPPe(M = 1)) # This often produces no point at all
+str(simPPe(M = 1))         # This often produces no point at all
 str(simPPe(M = 10))
 str(simPPe(M = 100))
 str(simPPe(M = 1000))
 
-str(simPPe(M = 20, quads.along.side = 50)) # Lots of small sites
+str(simPPe(M = 20, quads.along.side = 50))    # Lots of small sites
 str(simPPe(M = 20, quads.along.side = 10))
 str(simPPe(M = 20, quads.along.side = 5))
-str(simPPe(M = 20, quads.along.side = 1)) # study area is one single site
+str(simPPe(M = 20, quads.along.side = 1))     # study area is one single site

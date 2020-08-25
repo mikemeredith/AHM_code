@@ -5,7 +5,7 @@
 #
 # Chapter 10 : INTEGRATED MODELS FOR MULTIPLE TYPES OF DATA
 # =========================================================
-# Code from proofs dated 2020-07-23
+# Code from proofs dated 2020-08-19
 
 # Approximate execution time for this code: 25 mins
 # Run time with the full number of iterations: 2.6 hrs
@@ -14,40 +14,42 @@ library(AHMbook)
 library(jagsUI)
 
 # 10.8 Example 6: A spatial integrated model combining spatial
-# capture-recapture data and counts or occupancy data
-# from unmarked individuals
+#      capture-recapture data and counts or occupancy data
+#      from unmarked individuals
 # ====================================================
 
 # 10.8.1 A brief introduction to spatial capture-recapture (no code)
 
 # 10.8.2 Simulating spatial capture-recapture data, and counts of
-# unmarked individuals as a sort of “degraded” SCR data
+#        unmarked individuals as a sort of “degraded” SCR data
 # ----------------------------------------------------------------
+
+library(AHMbook)
 
 # Make a trapping grid of 64 hair snags
 traplocs <- expand.grid(1:10, 1:10)
 ntraps <- nrow(traplocs)
 
 # Define state-space of point process by buffering traps
-delta <- 2 # Buffer width
-Xl <- min(traplocs[,1] - delta) # Lower x
-Xu <- max(traplocs[,1] + delta) # Upper x
-Yl <- min(traplocs[,2] - delta) # Lower y
-Yu <- max(traplocs[,2] + delta) # Upper y
+delta <- 2                          # Buffer width
+Xl <- min(traplocs[,1] - delta)     # Lower x
+Xu <- max(traplocs[,1] + delta)     # Upper x
+Yl <- min(traplocs[,2] - delta)     # Lower y
+Yu <- max(traplocs[,2] + delta)     # Upper y
 
 # Distribute population of size N = 50 in the state space
 N <- 50
-K <- 4 # K = number of weeks of hair collection ("effort")
+K <- 4            # K = number of weeks of hair collection ("effort")
 
 # Simulate activity centers
-set.seed(121, kind = "Mersenne-Twister")# Initialize RNGs
-sx <- runif(N, Xl, Xu) # x coordinate
-sy <- runif(N, Yl, Yu) # y coordinate
-smat <- cbind(sx, sy) # Activity center x,y coordinates
+set.seed(121, kind = "Mersenne-Twister")    # Initialize RNGs
+sx <- runif(N, Xl, Xu)                      # x coordinate
+sy <- runif(N, Yl, Yu)                      # y coordinate
+smat <- cbind(sx, sy)                       # Activity center x,y coordinates
 
 # Only some traps collect SCR data ...
 inner36 <- traplocs[,1] >= 3 & traplocs[,1] <= 8 & traplocs[,2] >= 3 &
-traplocs[,2] <= 8
+    traplocs[,2] <= 8
 # ... while others only collect count data
 outer64 <- 1:ntraps
 outer64 <- outer64[!inner36]
@@ -59,11 +61,11 @@ points(traplocs, pch = 0)
 points(traplocs[inner36,], pch=15)
 
 # Parameters for the SCR model simulation
-lam0 <- 0.6 # Baseline encounter rate
-sigma <- 0.6 # Half-normal detection scale
+lam0 <- 0.6                       # Baseline encounter rate
+sigma <- 0.6                      # Half-normal detection scale
 
 # Generate the encounters of every individual in every trap
-D <- e2dist(smat, traplocs) # Ind/trap distance matrix
+D <- e2dist(smat, traplocs)       # Ind/trap distance matrix
 muy <- lam0 * exp(-(D*D) / (2 * sigma^2))
 Y <- matrix(NA, nrow = N, ncol = ntraps)
 for(i in 1:N){
@@ -72,14 +74,11 @@ for(i in 1:N){
 
 # Now take the SCR data from the inner 16 traps
 Yscr <- Y[, inner36]
-
 # Captured individuals appear in the data set
 totalcaps <- apply(Yscr, 1, sum)
 Yscr <- Yscr[totalcaps > 0,]
-
 # Only count (i.e., 'degraded') data appear in the other data set
 Yocc <- Y[, outer64]
-
 # Total number of detections observed in outer traps
 n <- apply(Yocc, 2, sum)
 
@@ -87,8 +86,9 @@ n <- apply(Yocc, 2, sum)
 scrtraps <- traplocs[inner36,]
 occtraps <- traplocs[outer64,]
 
-# 10.8.3 Analysis of SCR data using an SCR model: the basic SCR0 model (model 1)
-# ------------------------------------------------------------------------------
+# 10.8.3 Analysis of SCR data using an SCR model: the basic SCR0 model
+#        (model 1)
+# ---------------------------------------------------------------------
 
 # Set up data augmentation for the encounter histories
 M <- 150
@@ -116,6 +116,7 @@ model {
   lam0 ~ dunif(0,5)
   sigma ~ dunif(0, 10)
   psi ~ dunif(0,1)
+
   # 'Likelihood'
   for(i in 1:M){
     # Process model
@@ -149,7 +150,7 @@ inits <- function() {list(z = c(rep(1, dim(Y)[1]), rbinom(M-dim(Y)[1], 1, 0.5)),
 params <- c('psi', 'lam0', 'sigma', 'N')
 
 # MCMC settings
-# na <- 1000 ; ni <- 30000; nt <- 20 ; nb <- 10000 ; nc <- 3  # 22 mins
+# na <- 1000 ; ni <- 30000; nt <- 20 ; nb <- 10000 ; nc <- 3
 na <- 1000 ; ni <- 3000; nt <- 2 ; nb <- 1000 ; nc <- 3  # ~~~ for testing, 3 mins
 
 # Call JAGS (ART 15 min), assess convergence and summarize posteriors
@@ -166,7 +167,7 @@ print(out1, 3)
 
 
 # 10.8.4 Analysis of counts of unmarked individuals using an SCR
-# model: the Chandler-Royle model (model 2)
+#        model: the Chandler-Royle model (model 2)
 # ---------------------------------------------------------------
 
 # Bundle and summarize data set
@@ -190,6 +191,7 @@ model{
   lam0 ~ dunif(0,5)
   sigma ~ dunif(0, 10)
   psi ~ dunif(0,1)
+
   # 'Likelihood'
   for(i in 1:M) {
     # Process model
@@ -203,15 +205,15 @@ model{
       d2[i,j] <- pow(s[i,1] - X[j,1],2) + pow(s[i,2] - X[j,2],2)
       lam[i,j] <- lam0*exp(-(d2[i,j])/(2*sigma*sigma))*z[i]
     }
-    lambda[j] <- sum(lam[,j]) # Expected captures/occasion at trap j
+    lambda[j] <- sum(lam[,j])     # Expected captures/occasion at trap j
     n[j] ~ dpois(nsurveys * lambda[j])
   }
-  N <- sum(z[]) # Population size as derived quantity
+  N <- sum(z[])                   # Population size as derived quantity
 }
 ")
 
 # Initial values
-Sx <- runif(M, Xl, Xu) # Inits for activity centers
+Sx <- runif(M, Xl, Xu)            # Inits for activity centers
 Sy <- runif(M, Yl, Yu)
 inits <- function() {list(z = as.vector(rep(1, M)), psi = runif(1),
     s = cbind(Sx, Sy), lam0 = runif(1, 0.5, 1.5), sigma = runif(1, 0.5, 3))
@@ -221,8 +223,8 @@ inits <- function() {list(z = as.vector(rep(1, M)), psi = runif(1),
 params <- c('psi', 'lam0', 'sigma', 'N')
 
 # MCMC settings
-# na <- 1000 ; ni <- 20000; nt <- 3 ; nb <- 5000 ; nc <- 4  # 36 mins
-na <- 1000 ; ni <- 2000; nt <- 3 ; nb <- 500 ; nc <- 3  # ~~~ for testing
+# na <- 1000 ; ni <- 20000; nt <- 3 ; nb <- 5000 ; nc <- 4
+na <- 1000 ; ni <- 2000; nt <- 3 ; nb <- 500 ; nc <- 3  # ~~~ for testing, 5 mins
 
 # Call JAGS (ART 49 min), assess convergence and summarize posteriors
 out2 <- jags(bdata, inits, params, "CRmodel.txt", n.adapt = na,
@@ -237,6 +239,19 @@ print(out2, 3)
 # N     93.634 35.409 17.000 97.000 148.000    FALSE 1 1.003   996
 
 
+# ~~~ Extra code to run the model with M = 300 ~~~~~~~~
+bdata300 <- list(n = n, M = 300, nsurveys = K, ntraps = nrow(occtraps), Xl = Xl,
+    Yl = Yl, Xu = Xu, Yu = Yu, X = as.matrix(occtraps))
+# Initial values
+Sx <- runif(300, Xl, Xu) # Inits for activity centers
+Sy <- runif(300, Yl, Yu)
+inits <- function() {list(z = as.vector(rep(1, 300)), psi = runif(1),
+    s = cbind(Sx, Sy), lam0 = runif(1, 0.5, 1.5), sigma = runif(1, 0.5, 3))
+}
+out2.300 <- jags(bdata300, inits, params, "CRmodel.txt", n.adapt = na,
+    n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
+print(out2.300, 3)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Results for M = 300:
 #          mean     sd   2.5%     50%   97.5% overlap0 f  Rhat n.eff
 # psi     0.495  0.233  0.086   0.466   0.955    FALSE 1 1.013   197
@@ -255,8 +270,9 @@ print(out2, 3)
 
 # Bundle and summarize data set
 str(bdata <- list(yscr = Yaug, n = n, M = M, nsurveys = K,
-    n.scrtraps = nrow(scrtraps), n.occtraps = length(n), Xl = Xl, Yl = Yl, Xu = Xu,
-    Yu = Yu, scrtraps = as.matrix(scrtraps), occtraps = as.matrix(occtraps)))
+    n.scrtraps = nrow(scrtraps), n.occtraps = length(n),
+    Xl = Xl, Yl = Yl, Xu = Xu, Yu = Yu,
+    scrtraps = as.matrix(scrtraps), occtraps = as.matrix(occtraps)))
 # List of 12
 # $ yscr : int [1:150, 1:36] 0 0 1 0 0 0 0 0 0 0 ...
 # $ n         : int [1:64] 2 0 0 5 2 7 3 1 0 0 ...
@@ -278,6 +294,7 @@ model {
   psi ~ dunif(0, 1)
   lam0 ~ dunif(0, 5)
   sigma ~ dunif(0, 10)
+
   # 'Likelihood'
   for(i in 1:M){
     # Shared process model for both data sets
@@ -287,9 +304,9 @@ model {
     # Observation model for SCR data
     for(j in 1:n.scrtraps){
       d[i,j] <- pow(pow(s[i,1] - scrtraps[j,1],2) +
-      pow(s[i,2] - scrtraps[j,2],2),0.5)
+          pow(s[i,2] - scrtraps[j,2],2),0.5)
       lambda1[i,j] <- z[i]*lam0*exp(-(d[i,j]*d[i,j])/(2*sigma*sigma))
-      yscr[i,j] ~ dpois(nsurveys * lambda1[i,j]) # Response 1: SCR data
+      yscr[i,j] ~ dpois(nsurveys * lambda1[i,j])  # Response 1: SCR data
     }
   }
   # Observation model for unmarked counts
@@ -298,10 +315,10 @@ model {
       d2[i,j] <- pow(s[i,1] - occtraps[j,1],2) + pow(s[i,2] - occtraps[j,2],2)
       lam[i,j] <- z[i]*lam0*exp(-(d2[i,j])/(2*sigma*sigma))
     }
-    lambda2[j] <- sum(lam[,j]) # Expected captures/occasion at trap t
+    lambda2[j] <- sum(lam[,j])          # Expected captures/occasion at trap t
     n[j] ~ dpois(nsurveys * lambda2[j]) # Response 2: unmarked counts
   }
-  N <- sum(z[]) # Population size as a derived quantity
+  N <- sum(z[])                   # Population size as a derived quantity
 }
 ")
 
@@ -311,14 +328,15 @@ for(i in 1:dim(Yscr)[1]){
   SinX[i] <- sum(Yscr[i,]*scrtraps[,1])/(sum(Yscr[i,]))
   SinY[i] <- sum(Yscr[i,]*scrtraps[,2])/(sum(Yscr[i,]))
 }
-inits <- function() {list(z = c(rep(1, dim(Y)[1]), rbinom(M - dim(Y)[1], 1, 0.5)),
+inits <- function() {list(z = c(rep(1, dim(Y)[1]),
+    rbinom(M - dim(Y)[1], 1, 0.5)),
     psi = runif(1), s = cbind(SinX, SinY), sigma = runif(1, 0.5, 3)) }
 
 # Parameters monitored
 params <- c('psi', 'lam0', 'sigma', 'N')
 
 # MCMC settings
-# na <- 1000 ; ni <- 10000; nt <- 5 ; nb <- 5000 ; nc <- 3  # 32 mins
+# na <- 1000 ; ni <- 10000; nt <- 5 ; nb <- 5000 ; nc <- 3
 na <- 1000 ; ni <- 1000; nt <- 1 ; nb <- 500 ; nc <- 3  # ~~~ for testing, 6 mins
 
 # Call JAGS (ART 36 min), assess convergence and summarize posteriors
@@ -333,9 +351,28 @@ print(out3, 3)
 # sigma  0.580  0.060  0.480  0.574  0.717    FALSE 1 1.002   888
 # N     58.856 10.582 40.000 58.000 81.000    FALSE 1 1.001  1795
 
+# ~~~ extra code for figure 10.10 ~~~~~~~~~~~
+op <- par(mfrow = c(1, 3))
+hist(out2$sims.list$N, col = 'grey', xlab = 'N', ylab = 'Density',
+    main = 'CR model, M = 150',
+    freq = FALSE, axes = FALSE)
+axis(1) ; axis(2)
 
-# 10.8.6 Model 4: The integrated model for joint analysis of SCR and occupancy data
-# ---------------------------------------------------------------------------------
+hist(out2.300$sims.list$N, col = 'grey', xlab = 'N', ylab = 'Density',
+    main = 'CR model, M = 300', freq = FALSE, axes = FALSE)
+axis(1) ; axis(2)
+
+hist(out3$sims.list$N, col = 'grey', xlab = 'N', ylab = 'Densiry',
+    main = 'Integrated model, M = 150', freq = FALSE, axes = FALSE,
+    xlim = c(0, 150))
+axis(1) ; axis(2)
+par(op)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+# 10.8.6 Model 4: The integrated model for joint analysis of SCR and
+#        occupancy data
+# -------------------------------------------------------------------
 
 # Generate the encounters of every individual in every trap
 set.seed(121, kind = "Mersenne-Twister") # Initialize RNGs
@@ -350,7 +387,6 @@ for(i in 1:N){
 
 # Now take the SCR data from the inner 36 traps
 Yscr <- Y[, inner36, ]
-
 # Captured individuals appear in the data set
 totalcaps <- apply(Yscr, 1, sum)
 nind <- sum(totalcaps>0)
@@ -358,7 +394,6 @@ Yscr <- Yscr[totalcaps > 0,,]
 
 # Only count (i.e., 'degraded') data appear in the other data set
 Yocc <- Y[, outer64, ]
-
 # Total number of detections observed in outer traps
 Yocc <- apply(Yocc, c(2,3), sum)
 
@@ -454,7 +489,7 @@ inits <- function() {list(z = c(rep(1, dim(Y)[1]), rbinom(M-dim(Y)[1], 1, 0.5)),
 params <- c('psi', 'lam0', 'lam0occ', 'sigma', 'N')
 
 # MCMC settings
-# na <- 1000 ; ni <- 12000; nt <- 2 ; nb <- 2000 ; nc <- 3  # 68 mins
+# na <- 1000 ; ni <- 12000; nt <- 2 ; nb <- 2000 ; nc <- 3
 na <- 1000 ; ni <- 1200; nt <- 1 ; nb <- 200 ; nc <- 3  # ~~~ for testing
 
 # Call JAGS (ART 63 min), assess convergence and summarize posteriors

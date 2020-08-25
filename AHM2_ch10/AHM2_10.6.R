@@ -5,7 +5,7 @@
 #
 # Chapter 10 : INTEGRATED MODELS FOR MULTIPLE TYPES OF DATA
 # =========================================================
-# Code from proofs dated 2020-07-23
+# Code from proofs dated 2020-08-19
 
 # Approximate execution time for this code: 68 mins
 # Run time with the full number of iterations: 19 hrs
@@ -19,7 +19,7 @@ library(jagsUI)
 # 10.6.1 Data simulation under the model of Dorazio (2014)
 # --------------------------------------------------------
 
-# Call function with default values for arguments (produces figure 10.5)
+# Call function with default values for arguments
 str(dat <- simDataDK(sqrt.npix = 100, alpha = c(-1,-1), beta = c(6,0.5),
     drop.out.prop.pb = 0.7, quadrat.size = 4, gamma = c(0,-1.5),
     nquadrats = 250, nsurveys = 3, show.plot = TRUE), 1)
@@ -79,9 +79,9 @@ head(dat$countData)
 # [6,]     17 -0.4987504 -0.62829456 2 1 1 1
 
 
-# 10.6.2 Fitting a poisson point pattern (PPP) model to the opportunistic data alone:
-#        the point process variant of a relative-abundance model
-# ------------------------------------------------------------------------------------
+# 10.6.2 Fitting a poisson point pattern (PPP) model to the opportunistic
+#        data alone: the point process variant of a relative-abundance model
+# --------------------------------------------------------------------------
 
 # Get point indicators: turn presence-only data into 0/1 data
 y <- numeric(dat$npix)
@@ -101,10 +101,13 @@ str(bdata <- list(y = y, logarea = logarea, npix = dat$npix, xcov = dat$xcov))
 # Specify model in BUGS language
 cat(file = "ipp.txt", "
 model {
+
   # Priors
-  beta0 ~ dnorm(0, 0.01) # Regression params for intensity
+  beta0 ~ dnorm(0, 0.01)              # Regression params for intensity
   beta1 ~ dnorm(0, 0.1)
-  # curve(dnorm(x, mean=0, sd=sqrt(1/0.01)), -20, 20) # Howsit look like (execute in R)?
+  # Howsit look like (execute in R)?
+  # curve(dnorm(x, mean=0, sd=sqrt(1/0.01)), -20, 20)
+
   # Likelihood: binary regression with cloglog link and area offset
   # as an approximation to the Poisson point process (PPP) model
   for(i in 1:npix){
@@ -113,7 +116,7 @@ model {
     log(lambda[i]) <- beta0 + beta1 * xcov[i]
   }
   # Derived quantity
-  N <- sum(lambda[]* exp(logarea)) # Population size
+  N <- sum(lambda[]* exp(logarea))     # Population size
 }
 ")
 
@@ -124,7 +127,7 @@ inits <- function() {list(beta0 = runif(1), beta1 = runif(1)) }
 params <- c("beta0", "beta1", "N")
 
 # MCMC settings
-# na <- 1000 ; ni <- 5000 ; nt <- 2 ; nb <- 3000 ; nc <- 3  # 12 mins
+# na <- 1000 ; ni <- 5000 ; nt <- 2 ; nb <- 3000 ; nc <- 3
 na <- 1000 ; ni <- 500 ; nt <- 1 ; nb <- 300 ; nc <- 3  # ~~~~ for testing, 3 mins
 
 # Call JAGS (ART 8 min), assess convergence and summarize posteriors
@@ -156,11 +159,13 @@ str(bdata <- list(y = y, logarea = logarea, npix = dat$npix, xcov = dat$xcov,
 # Specify model in BUGS language
 cat(file = "thinned.ipp.txt", "
 model {
+
   # Priors
-  beta0 ~ dnorm(0, 0.01) # Regression params for intensity
+  beta0 ~ dnorm(0, 0.01)      # Regression params for intensity
   beta1 ~ dnorm(0, 0.1)
-  alpha0 ~ dnorm(0, 0.01) # Regression parameters for thinning
+  alpha0 ~ dnorm(0, 0.01)     # Regression parameters for thinning
   alpha1 ~ dnorm(0, 0.1)
+
   # Likelihood: binary regression with cloglog link, area offset
   # and thinning parameter as an approximation to a thinned PPP model
   for(i in 1:npix){
@@ -176,21 +181,22 @@ model {
     logit(p[i]) <- alpha0 + alpha1 * wcov[i] # model for thinning
   }
   # Derived quantity
-  mean.p <- ilogit(alpha0) # Intercept thinning probability
-  N <- sum(lambda[]* exp(logarea)) # Population size
+  mean.p <- ilogit(alpha0)          # Intercept thinning probability
+  N <- sum(lambda[]* exp(logarea))  # Population size
 }
 ")
 
 # Initial values
 inits <- function() {
-    list(alpha0 = runif(1), alpha1 = runif(1), beta0 = runif(1), beta1 = runif(1))
+  list(alpha0 = runif(1), alpha1 = runif(1), beta0 = runif(1),
+        beta1 = runif(1))
 }
 
 # Parameters monitored
 params <- c("mean.p", "alpha0", "alpha1", "beta0", "beta1", "N")
 
 # MCMC settings
-# na <- 5000 ; ni <- 200000 ; nt <- 100 ; nb <- 100000 ; nc <- 3  # 15 hrs
+# na <- 5000 ; ni <- 200000 ; nt <- 100 ; nb <- 100000 ; nc <- 3
 na <- 5000 ; ni <- 2000 ; nt <- 1 ; nb <- 1000 ; nc <- 3  # ~~~ for testing, 30 mins
 
 # Call JAGS (ART 892 min), assess convergence and summarize posteriors
@@ -209,6 +215,11 @@ print(out2, 3)
 
 
 # Compare estimates of thinned PPM with truth in data simulation
+# ~~~ code to produce the table ~~~~~~~~~~
+truth <- c(dat$alpha, dat$beta, dat$N.ipp)
+esti <- out2$summary[2:6, c(1,3,7)]
+print(cbind(truth, esti), 3)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #         truth       mean    2.5%       97.5%
 # alpha0   -2.0     -2.640  -8.233     -0.0714
 # alpha1   -1.0     -0.973  -1.588     -0.6596
@@ -217,15 +228,17 @@ print(out2, 3)
 # N      1831.0 120506.472 581.071 911248.4629
 
 
-# 10.6.4 Fitting the integrated model: a bugs implementation of the model of Dorazio (2014)
-# -----------------------------------------------------------------------------------------
+# 10.6.4 Fitting the integrated model: a bugs implementation of the
+#        model of Dorazio (2014)
+# ------------------------------------------------------------------
 
 # Bundle and summarize data set
 str(bdata <- list(
     # Data for thinned point process submodel:
     y = y, logarea = logarea, npix = dat$npix, xcov = dat$xcov, wcov = dat$wcov,
     # Data for replicated counts (Nmix) submodel:
-    C = dat$countData[,5:7], covarX = dat$countData[,'x'], covarW = dat$countData[,'w'],
+    C = dat$countData[,5:7], covarX = dat$countData[,'x'],
+        covarW = dat$countData[,'w'],
     nsite = dat$nquadrats, nsurveys = dat$nsurveys,
     area = dat$s.area * (dat$quadrat.size^2 / dat$npix) ) )
 # List of 11
@@ -244,36 +257,40 @@ str(bdata <- list(
 # Specify model in BUGS language
 cat(file = "JointPPPNmix.txt", "
 model {
+
   # Priors for shared intensity parameters: this is the SDM
   beta0 ~ dnorm(0, 0.01) # intensity intercept
   beta1 ~ dnorm(0, 0.1) # slope of intensity on X
+
   # Submodel 1 for presence-only data (thinned PPP)
   # -----------------------------------------------
   # Priors
-  alpha0 ~ dnorm(0,0.01) # thinning intercept
-  alpha1 ~ dnorm(0, 0.1) # slope of thinning on W
+  alpha0 ~ dnorm(0,0.01)                # thinning intercept
+  alpha1 ~ dnorm(0, 0.1)                # slope of thinning on W
+
   # Likelihood
   # logistic regression with cloglog link models intensity of underlying Poisson PP
   for(i in 1:npix){
     y[i] ~ dbern(psi[i])
     # cloglog link with offset logarea
-    cloglog(psi[i]) <- logarea + log(lambda[i]) + log(p1[i]) #
+    cloglog(psi[i]) <- logarea + log(lambda[i]) + log(p1[i])
     # linear model for intensity
     log(lambda[i]) <- beta0 + beta1 * xcov[i] # Note same beta as below
     # linear model for thinning probability: we call detection differently,
     # b/c it is different from the p in the Nmix part of the model below
     logit(p1[i]) <- alpha0 + alpha1 * wcov[i]
   }
+
   # Submodel 2 for replicated counts
   # --------------------------------
   # Priors
   gamma0 <- logit(mean.p)
-  mean.p ~ dunif(0, 1) # Detection intercepts
-  gamma1 ~ dnorm(0, 0.1) # Slope of detection on quadrat average of W
+  mean.p ~ dunif(0, 1)           # Detection intercepts
+  gamma1 ~ dnorm(0, 0.1)         # Slope of detection on quadrat average of W
   # Likelihood
   # Ecological model for true abundance
   for (i in 1:nsite){
-    N[i] ~ dpois(area * lam[i]) # Here's the area scaling
+    N[i] ~ dpois(area * lam[i])   # Here's the area scaling
     log(lam[i]) <- beta0 + beta1 * covarX[i] # note same beta's as above
     # Observation model for replicated counts
     for (j in 1:nsurveys){
@@ -281,9 +298,10 @@ model {
   }
   logit(p2[i]) <- gamma0 + gamma1 * covarW[i]
   }
+
   # Derived quantity: can estimate abundance in two ways
-  Nppm <- sum(lambda[]* exp(logarea)) # from the IPP
-  Nnmix <- (sum(N) / 250) * 625 # from the Nmix
+  Nppm <- sum(lambda[]* exp(logarea))     # from the IPP
+  Nnmix <- (sum(N) / 250) * 625           # from the Nmix
 }
 ")
 
@@ -296,7 +314,7 @@ params <- c("alpha0", "alpha1", "beta0", "beta1", "gamma0", "gamma1",
     "mean.p", "Nppm", "Nnmix")
 
 # MCMC settings
-# na <- 1000 ; ni <- 50000 ; nt <- 40 ; nb <- 10000 ; nc <- 3  # 4 hrs
+# na <- 1000 ; ni <- 50000 ; nt <- 40 ; nb <- 10000 ; nc <- 3
 na <- 1000 ; ni <- 5000 ; nt <- 4 ; nb <- 1000 ; nc <- 3  # ~~~~ for testing, 27 mins
 
 # Call JAGS (ART 282 min), assess convergence and summarize posteriors
@@ -345,7 +363,8 @@ pred.lam.pm <- apply(pred.lam, 2, mean)
 pred.lam.psd <- apply(pred.lam, 2, sd)
 
 # Define a raster object to be filled with data
-pred <- raster(ncol=dat$sqrt.npix, nrow=dat$sqrt.npix, xmn=-1, xmx=1, ymn=-1, ymx=1)
+pred <- raster(ncol=dat$sqrt.npix, nrow=dat$sqrt.npix, xmn=-1, xmx=1,
+    ymn=-1, ymx=1)
 pred.loc <- xyFromCell(pred, 1:ncell(pred)) # Coordinates of every cell
 
 # Fill raster with values of posterior mean and sd
@@ -358,11 +377,14 @@ values(pred.sd) <- pred.lam.psd
 names(pred.sd) <- 'posterior_standardDeviation'
 pred <- addLayer(pred, pred.sd)
 plot(pred, asp = 1)
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-# 10.6.5 Assumptions and implications of the thinned PPP-based SDM model (no code)
+# 10.6.5 Assumptions and implications of the thinned PPP-based SDM model
+# (no code)
+
 # 10.6.6 Relationship between the thinned PPP-SDM and the single-visit
 #   occupancy model of Lele et al. (2012) (no code)
-# 10.6.7 Concluding remarks on the analysis of citizen science data using (no code)
-#   integrated models
+
+# 10.6.7 Concluding remarks on the analysis of citizen science data using
+#   integrated models (no code)

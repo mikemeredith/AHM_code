@@ -2,7 +2,7 @@
 # Volume 2 - 2020
 # Chapter 11 : SPATIALLY EXPLICIT DISTANCE SAMPLING ALONG TRANSECTS
 # =================================================================
-# Code from proofs dated 2020-07-30
+# Code from proofs dated 2020-08-19
 
 library(AHMbook)
 library(jagsUI)
@@ -14,11 +14,11 @@ library(jagsUI)
 # ------------------------------------------------------------------
 
 # Simulate a data set
-library(AHMbook)
-RNGversion("3.5.0")
+library(AHMbook) ; RNGversion("3.5.0")
 set.seed(1234, kind = "Mersenne-Twister")
 tmp <- simSpatialDSline(N = 200, beta = 1, sigma = 0.25, alpha0 = -3,
-    perp = TRUE ) # perp = TRUE forces p(0) = 1
+    perp = TRUE )                 # perp = TRUE forces p(0) = 1
+
 # Harvest data objects
 Habitat <- as.vector(tmp$Habitat)
 Habitat <- as.numeric(scale(Habitat))
@@ -43,21 +43,23 @@ str(bdata <- list(y = yg, Habitat = Habitat, npixels = npixels, dist = dist))
 # Specify model in BUGS language, here we set p0 = 1.
 cat(file = "spatialDSpixel.txt", "
 model{
+
   # Prior distributions
   sigma ~ dunif(0,10)
   beta0 ~ dnorm(0,0.01)
   beta1 ~ dnorm(0,0.01)
-  p0 <- 1 # Fix p0 to 1 to honor the CDS assumption
+
+  p0 <- 1                           # Fix p0 to 1 to honor the CDS assumption
   for(g in 1:npixels){ # Point process intensity
     lam[g] <- exp(beta0 + beta1*Habitat[g])
     p[g] <- p0*exp(- (1/(2*sigma*sigma))*dist[g]*dist[g])
-    # y[g] ~ dpois(p[g]*lam[g]) # equivalent to next two lines
+    # y[g] ~ dpois(p[g]*lam[g])     # equivalent to next two lines
     N[g] ~ dpois(lam[g])
     y[g] ~ dbinom(p[g], N[g])
   }
   # Derived parameters
-  Ntot <- sum(N[]) # N is a derived parameter
-  D <- Ntot/4 # Density, with area = 4 units
+  Ntot <- sum(N[])                  # N is a derived parameter
+  D <- Ntot/4                       # Density, with area = 4 units
 }
 ")
 
@@ -66,7 +68,8 @@ na <- 1000 ; ni <- 20000 ; nb <- 10000 ; nt <- 10 ; nc <- 3
 
 # Inits
 Nst <- yg + 1
-inits <- function(){ list (sigma = runif(1, 0.2, 1), beta0 = -1, beta1 = 1, N = Nst) }
+inits <- function(){ list (sigma = runif(1, 0.2, 1), beta0 = -1, beta1 = 1,
+    N = Nst) }
 
 # Parameters to monitor
 params <- c("sigma", "Ntot", "beta0", "beta1", "D")
@@ -93,6 +96,7 @@ print(out6, 3)
 library(unmarked)
 summary(umf <- unmarkedFramePCount(y = matrix(yg, ncol = 1),
     siteCovs = data.frame(dist = dist, Habitat = Habitat)) )
+
 # unmarkedFrame Object
 
 # 400 sites
@@ -136,7 +140,7 @@ M1 <- matrix(pred[,1], nrow = 10, byrow = T)
 M2 <- M1[nrow(M1):1, ]
 op <- par( mar = c(3, 3, 3, 6) )
 graphics::image(x = 1:40, y = 1:10, t(M2), col = topo.colors(12))
-image_scale(t(M2), col = topo.colors(12)) # scrbook package
+image_scale(t(M2), col = topo.colors(12))           # AHMbook package
 par(op)
 
 # Estimated total population size in the landscape
