@@ -478,3 +478,24 @@ par(op)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
+# ~~~~~ code for figure 5.11 ~~~~~~~~~~~~~~~~
+# Generate arrays to hold the predictions
+comm.pred <- array(NA, dim = c(length(tod.pred)))     # Community
+spec.pred <- array(NA, dim = c(length(tod.pred), 17)) # Species
+
+# Compute predictions for p (averaging over 4 years
+comm.pred <- plogis(mean(tmp$mu.alpha.lp) + tmp$mu.beta.lp[5] *
+    cos(2*pi*tod.pred/1440) + tmp$mu.beta.lp[6] * sin(2*pi*tod.pred/1440))
+for(s in 1:17){      # Make predictions for every species
+  spec.pred[,s] <- plogis(mean(tmp$alpha.lp[,s]) + tmp$beta.lp[5,s] *
+      cos(2*pi*tod.pred/1440) + tmp$beta.lp[6,s] * sin(2*pi*tod.pred/1440))
+}
+
+# Plot prediction for detection ~ time of day for all 17 species
+matplot(tod.pred, spec.pred, xlab = 'Time of Day',
+    ylab = "Detection probability (p)", type = 'l', lty = 1,
+    col = 'blue', ylim = c(0, 1), frame = FALSE, las = 1, xaxt='n')
+lines(tod.pred, comm.pred, lwd = 2)
+axis(1, at=c(0,6,12,18,24)*60,
+    labels=c("00:00", "06:00", "12:00", "18:00", "24:00"))
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
