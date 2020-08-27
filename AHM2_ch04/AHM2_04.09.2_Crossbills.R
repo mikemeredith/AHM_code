@@ -656,11 +656,10 @@ mb.chisq(fm38X, print.table = TRUE)
 # Generate reference distribution of test statistic under H0 (takes 7h)
 # system.time( gof <- mb.gof.test(fm38X, print.table = FALSE, nsim = 1000,
 #    plot.hist = TRUE, plot.seasons = TRUE, report = 1) )
-# ~~~~ for testing ~~~~~~ 15 mins
-# also version 2.3-0 of AICcmodavg has a bug in the plotting code,
-#   so set plot.seasons=FALSE
+# ~~~~ for testing ~~~~~~ 15 mins ~~~~
 system.time( gof <- mb.gof.test(fm38X, print.table = FALSE, nsim = 10,
-    plot.hist = TRUE, plot.seasons = FALSE, report = 1, parallel=FALSE) ) # parallel fails
+    plot.hist = TRUE, plot.seasons = TRUE, report = 1) )
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 (c.hat <- gof$c.hat.est)
 # [1] 2.102584  # ~~~ from the full run of 1000
 

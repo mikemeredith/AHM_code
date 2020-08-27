@@ -43,10 +43,8 @@ summary(fm <- colext(~1, ~ 1, ~ 1, ~ 1, data = umf))
 # ~~~ reduce for testing ~~~~~~
 # system.time(gof <- mb.gof.test(fm, print.table = FALSE, nsim = 1000,
 #     plot.hist = TRUE, plot.seasons = TRUE, report = 1) ) # load(AICcmodavg)
-# also version 2.3-0 of AICcmodavg has a bug in the plotting code,
-#   so set plot.seasons=FALSE
 system.time(gof <- mb.gof.test(fm, print.table = FALSE, nsim = 10,
-    plot.hist = TRUE, plot.seasons = FALSE, report = 1, parallel = FALSE) )
+    plot.hist = TRUE, plot.seasons = TRUE, report = 1, ncores = 3) )
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gof
 # Goodness-of-fit for dynamic occupancy model
