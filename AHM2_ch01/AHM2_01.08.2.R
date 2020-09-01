@@ -194,7 +194,7 @@ na <- 1000 ; ni <- 15000 ; nt <- 5 ; nb <- 10000 ; nc <- 3 # ~~~~ for testing
 # Call JAGS (ART 33 hours)
 out13 <- jags(bdata, inits, params, "modelPH.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-summary(out13) ; View(out13)
+summary(out13) ; jags.View(out13)
 
 # Convergence check
 op <- par(mfrow = c(3,3), mar = c(3,3,3,2)) ; traceplot(out13) # All params
