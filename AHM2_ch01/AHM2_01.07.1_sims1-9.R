@@ -1,11 +1,10 @@
-#   Applied hierarchical modeling in ecology
-#   Modeling distribution, abundance and species richness using R and BUGS
-#   Volume 2: Dynamic and Advanced models
-#   Marc Kéry & J. Andy Royle
+# Applied hierarchical modeling in ecology - Vol 2 - Marc Kéry & Andy Royle
+
 # Chapter 1 : RELATIVE ABUNDANCE MODELS FOR POPULATION DYNAMICS
 # =============================================================
+
 # Code based on MS "Report on 2nd set of sims: focused comparisons just for the
-#  DM model", Marc Kery, 1 August 2018 and later, largely refactored by Mike.
+#  DM model", Marc Kery, 1 August 2018 and later, largely reorganised by Mike.
 
 # 1.7 “Demographic” state-space models for inference about relative abundance
 # 1.7.1 Simulation assessment of a demographic state-space model
@@ -351,7 +350,7 @@ params5 <- c("mean.lambda", "mean.gamma", "mean.p", "alpha.lam", "alpha.gam",
 
 # simrep <- 100
 simrep <- 3  # ~~~ for testing
-# Each rep takes about 45 mins
+# Each rep takes about 1 hr
 
 # For truth, we need the N's, sumN's and gammaX's for each of the
 #  5 scenarios and each simrep
@@ -369,7 +368,7 @@ estiEtc <- array(NA, dim=c(5, 9, simrep))
 dimnames(estiEtc)[[1]] <- c("beta.lam", "beta.gam", "beta.p",
     "sd.eps", "sd.alpha.x")
 
-seeds <- c(2,4,5)  # ~~~ for testing, usually converge, which we need for the plots
+seeds <- c(24, 26, 104)  # ~~~ for testing, these converge, which we need for the plots
 # Other seeds are possible, provided
 length(seeds) >= simrep
 
@@ -404,19 +403,19 @@ for(i in 1:simrep){
   inits <- function(){list(N = Nst)}
 
   # MCMC settings
-  na <- 1000  ;  ni <- 10000  ;  nt <- 5   ;  nb <- 5000  ;  nc <- 3 # 1.5 mins
+  na <- 1000  ;  ni <- 5000  ;  nt <- 5   ;  nb <- 0  ;  nc <- 3 # 2.2 mins
 
   # Call JAGS from R, check convergence and summarize marginal posteriors
-  out <- try(jags(bdata, inits, params1, "simModel1.txt", n.adapt = na,
+  out1 <- try(jags(bdata, inits, params1, "simModel1.txt", n.adapt = na,
       n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, DIC=FALSE,
       parallel = TRUE, verbose = FALSE), silent=TRUE)
   # Check for errors and convergence (of first 20 nodes), save results
-  if(!inherits(out, "try-error") &&
-      !any(out$summary[1:20, 'Rhat'] > 1.1)) {
-    estiN[, , 1, i] <- out$mean$N
-    estisumN[, 1, i] <- out$mean$sumN
-    estigammaX[, 1, i] <- out$mean$gammaX
-    estiEtc[, 1, i] <- with(out$mean, c(beta.lam, beta.gam, beta.p, NA, NA))
+  if(!inherits(out1, "try-error") &&
+      !any(out1$summary[1:20, 'Rhat'] > 1.1)) {
+    estiN[, , 1, i] <- out1$mean$N
+    estisumN[, 1, i] <- out1$mean$sumN
+    estigammaX[, 1, i] <- out1$mean$gammaX
+    estiEtc[, 1, i] <- with(out1$mean, c(beta.lam, beta.gam, beta.p, NA, NA))
   }
 
   # Scenario 2: Extended Markov simulation model, but no heterogeneity
@@ -443,37 +442,37 @@ for(i in 1:simrep){
   # Case 2 : Model 1 (Markov)
   cat(" - 2") ; flush.console()
   # MCMC settings
-  na <- 1000  ;  ni <- 20000  ;  nt <- 10   ;  nb <- 10000  ;  nc <- 3 # 3.5 mins
+  na <- 5000  ;  ni <- 10000  ;  nt <- 10   ;  nb <- 0  ;  nc <- 3 # 5 mins
 
   # Call JAGS from R, check convergence and summarize marginal posteriors
-  out <- try(jags(bdata, inits, params1, "simModel1.txt", n.adapt = na,
+  out2 <- try(jags(bdata, inits, params1, "simModel1.txt", n.adapt = na,
       n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, DIC=FALSE,
       parallel = TRUE, verbose = FALSE), silent=TRUE)
   # Check for errors and convergence, save results
-  if(!inherits(out, "try-error") &&
-      !any(out$summary[1:20, 'Rhat'] > 1.1)) {
-    estiN[, , 2, i] <- out$mean$N
-    estisumN[, 2, i] <- out$mean$sumN
-    estigammaX[, 2, i] <- out$mean$gammaX
-    estiEtc[, 2, i] <- with(out$mean, c(beta.lam, beta.gam, beta.p, NA, NA))
+  if(!inherits(out2, "try-error") &&
+      !any(out2$summary[1:20, 'Rhat'] > 1.1)) {
+    estiN[, , 2, i] <- out2$mean$N
+    estisumN[, 2, i] <- out2$mean$sumN
+    estigammaX[, 2, i] <- out2$mean$gammaX
+    estiEtc[, 2, i] <- with(out2$mean, c(beta.lam, beta.gam, beta.p, NA, NA))
   }
 
   # Case 3 : Model 2 (extended Markov)
   cat(" - 3") ; flush.console()
   # MCMC settings
-  na <- 1000  ;  ni <- 20000  ;  nt <- 10   ;  nb <- 10000  ;  nc <- 3 # 3.5 mins
+  na <- 1000  ;  ni <- 10000  ;  nt <- 10   ;  nb <- 0  ;  nc <- 3 # 5 mins
 
   # Call JAGS from R, check convergence and summarize marginal posteriors
-  out <- try(jags(bdata, inits, params2, "simModel2.txt", n.adapt = na,
+  out3 <- try(jags(bdata, inits, params2, "simModel2.txt", n.adapt = na,
       n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, DIC=FALSE,
       parallel = TRUE, verbose = FALSE), silent=TRUE)
   # Check for errors and convergence, save results
-  if(!inherits(out, "try-error") &&
-      !any(out$summary[1:20, 'Rhat'] > 1.1)) {
-    estiN[, , 3, i] <- out$mean$N
-    estisumN[, 3, i] <- out$mean$sumN
-    estigammaX[, 3, i] <- out$mean$gammaX
-    estiEtc[, 3, i] <- with(out$mean, c(beta.lam, beta.gam, beta.p, sd.eps, NA))
+  if(!inherits(out3, "try-error") &&
+      !any(out3$summary[1:20, 'Rhat'] > 1.1)) {
+    estiN[, , 3, i] <- out3$mean$N
+    estisumN[, 3, i] <- out3$mean$sumN
+    estigammaX[, 3, i] <- out3$mean$gammaX
+    estiEtc[, 3, i] <- with(out3$mean, c(beta.lam, beta.gam, beta.p, sd.eps, NA))
   }
 
   # Scenario 3: Extended Markov simulation model with heterogeneity in lambda
@@ -503,37 +502,37 @@ for(i in 1:simrep){
   # Case 4 = Model 2 (extended Markov without heterogeneity)
   cat(" - 4") ; flush.console()
   # MCMC settings
-  na <- 1000  ;  ni <- 20000  ;  nt <- 10   ;  nb <- 10000  ;  nc <- 3
+  na <- 1000  ;  ni <- 10000  ;  nt <- 10   ;  nb <- 0  ;  nc <- 3  # 5 mins
 
   # Call JAGS from R, check convergence and summarize marginal posteriors
-  out <- try(jags(bdata, inits, params2, "simModel2.txt", n.adapt = na,
+  out4 <- try(jags(bdata, inits, params2, "simModel2.txt", n.adapt = na,
       n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, DIC=FALSE,
       parallel = TRUE, verbose = FALSE), silent=TRUE)
   # Check for errors and convergence, save results
-  if(!inherits(out, "try-error") &&
-      !any(out$summary[1:20, 'Rhat'] > 1.1)) {
-    estiN[, , 4, i] <- out$mean$N
-    estisumN[, 4, i] <- out$mean$sumN
-    estigammaX[, 4, i] <- out$mean$gammaX
-    estiEtc[, 4, i] <- with(out$mean, c(beta.lam, beta.gam, beta.p, sd.eps, NA))
+  if(!inherits(out4, "try-error") &&
+      !any(out4$summary[1:20, 'Rhat'] > 1.1)) {
+    estiN[, , 4, i] <- out4$mean$N
+    estisumN[, 4, i] <- out4$mean$sumN
+    estigammaX[, 4, i] <- out4$mean$gammaX
+    estiEtc[, 4, i] <- with(out4$mean, c(beta.lam, beta.gam, beta.p, sd.eps, NA))
   }
 
   # Case 5 = Model 3 (extended Markov with heterogeneity in lambda)
   cat(" - 5") ; flush.console()
   # MCMC settings
-  na <- 1000  ;  ni <- 30000  ;  nt <- 15   ;  nb <- 15000  ;  nc <- 3 # 5.5 mins
+  na <- 5000  ;  ni <- 15000  ;  nt <- 15   ;  nb <- 0  ;  nc <- 3 # 7.5 mins
 
   # Call JAGS from R, check convergence and summarize marginal posteriors
-  out <- try(jags(bdata, inits, params3, "simModel3.txt", n.adapt = na,
+  out5 <- try(jags(bdata, inits, params3, "simModel3.txt", n.adapt = na,
       n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, DIC=FALSE,
       parallel = TRUE, verbose = FALSE), silent=TRUE)
   # Check for errors and convergence, save results
-  if(!inherits(out, "try-error") &&
-      !any(out$summary[1:20, 'Rhat'] > 1.1)) {
-    estiN[, , 5, i] <- out$mean$N
-    estisumN[, 5, i] <- out$mean$sumN
-    estigammaX[, 5, i] <- out$mean$gammaX
-    estiEtc[, 5, i] <- with(out$mean, c(beta.lam, beta.gam, beta.p,
+  if(!inherits(out5, "try-error") &&
+      !any(out5$summary[1:20, 'Rhat'] > 1.1)) {
+    estiN[, , 5, i] <- out5$mean$N
+    estisumN[, 5, i] <- out5$mean$sumN
+    estigammaX[, 5, i] <- out5$mean$gammaX
+    estiEtc[, 5, i] <- with(out5$mean, c(beta.lam, beta.gam, beta.p,
         sd.eps, sd.alpha.lam))
   }
 
@@ -561,37 +560,37 @@ for(i in 1:simrep){
   # Case 6 : Model 2 (extended Markov without heterogeneity)
   cat(" - 6") ; flush.console()
   # MCMC settings
-  na <- 1000  ;  ni <- 20000  ;  nt <- 10   ;  nb <- 10000  ;  nc <- 3 # 5 mins
+  na <- 1000  ;  ni <- 10000  ;  nt <- 10   ;  nb <- 0  ;  nc <- 3 # 5 mins
 
   # Call JAGS from R, check convergence and summarize marginal posteriors
-  out <- try(jags(bdata, inits, params2, "simModel2.txt", n.adapt = na,
+  out6 <- try(jags(bdata, inits, params2, "simModel2.txt", n.adapt = na,
       n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, DIC=FALSE,
       parallel = TRUE, verbose = FALSE), silent=TRUE)
   # Check for errors and convergence, save results
-  if(!inherits(out, "try-error") &&
-      !any(out$summary[1:20, 'Rhat'] > 1.1)) {
-    estiN[, , 6, i] <- out$mean$N
-    estisumN[, 6, i] <- out$mean$sumN
-    estigammaX[, 6, i] <- out$mean$gammaX
-    estiEtc[, 6, i] <- with(out$mean, c(beta.lam, beta.gam, beta.p, sd.eps, NA))
+  if(!inherits(out6, "try-error") &&
+      !any(out6$summary[1:20, 'Rhat'] > 1.1)) {
+    estiN[, , 6, i] <- out6$mean$N
+    estisumN[, 6, i] <- out6$mean$sumN
+    estigammaX[, 6, i] <- out6$mean$gammaX
+    estiEtc[, 6, i] <- with(out6$mean, c(beta.lam, beta.gam, beta.p, sd.eps, NA))
   }
 
   # Case 7 : Model 4 (extended Markov with heterogeneity in gamma)
   cat(" - 7") ; flush.console()
   # MCMC settings
-  na <- 1000  ;  ni <- 30000  ;  nt <- 15   ;  nb <- 15000  ;  nc <- 3 # 6.5 mins
+  na <- 5000  ;  ni <- 30000  ;  nt <- 15   ;  nb <- 0  ;  nc <- 3 # 9 mins
 
   # Call JAGS from R, check convergence and summarize marginal posteriors
-  out <- try(jags(bdata, inits, params4, "simModel4.txt", n.adapt = na,
+  out7 <- try(jags(bdata, inits, params4, "simModel4.txt", n.adapt = na,
       n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, DIC=FALSE,
       parallel = TRUE, verbose = FALSE), silent=TRUE)
   # Check for errors and convergence, save results
-  if(!inherits(out, "try-error") &&
-      !any(out$summary[1:20, 'Rhat'] > 1.1)) {
-    estiN[, , 7, i] <- out$mean$N
-    estisumN[, 7, i] <- out$mean$sumN
-    estigammaX[, 7, i] <- out$mean$gammaX
-    estiEtc[, 7, i] <- with(out$mean, c(beta.lam, beta.gam, beta.p,
+  if(!inherits(out7, "try-error") &&
+      !any(out7$summary[1:20, 'Rhat'] > 1.1)) {
+    estiN[, , 7, i] <- out7$mean$N
+    estisumN[, 7, i] <- out7$mean$sumN
+    estigammaX[, 7, i] <- out7$mean$gammaX
+    estiEtc[, 7, i] <- with(out7$mean, c(beta.lam, beta.gam, beta.p,
         sd.eps, sd.alpha.gam))
   }
 
@@ -620,49 +619,52 @@ for(i in 1:simrep){
   # Case 8 : Model 2 (extended Markov without heterogeneity)
   cat(" - 8") ; flush.console()
   # MCMC settings
-  na <- 5000  ;  ni <- 30000  ;  nt <- 10   ;  nb <- 20000  ;  nc <- 3
+  na <- 15000  ;  ni <- 40000  ;  nt <- 10   ;  nb <- 0  ;  nc <- 3  # 13 mins
 
   # Call JAGS from R, check convergence and summarize marginal posteriors
-  out <- try(jags(bdata, inits, params2, "simModel2.txt", n.adapt = na,
+  out8 <- try(jags(bdata, inits, params2, "simModel2.txt", n.adapt = na,
       n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, DIC=FALSE,
       parallel = TRUE, verbose = FALSE), silent=TRUE)
   # Check for errors and convergence, save results
-  if(!inherits(out, "try-error") &&
-      !any(out$summary[1:20, 'Rhat'] > 1.1)) {
-    estiN[, , 8, i] <- out$mean$N
-    estisumN[, 8, i] <- out$mean$sumN
-    estigammaX[, 8, i] <- out$mean$gammaX
-    estiEtc[, 8, i] <- with(out$mean, c(beta.lam, beta.gam, beta.p, sd.eps, NA))
+  if(!inherits(out8, "try-error") &&
+      !any(out8$summary[1:20, 'Rhat'] > 1.1)) {
+    estiN[, , 8, i] <- out8$mean$N
+    estisumN[, 8, i] <- out8$mean$sumN
+    estigammaX[, 8, i] <- out8$mean$gammaX
+    estiEtc[, 8, i] <- with(out8$mean, c(beta.lam, beta.gam, beta.p, sd.eps, NA))
   }
 
   # Case 9 : Model 5 (extended Markov with heterogeneity in p)
   cat(" - 9\n") ; flush.console()
   # MCMC settings
-  na <- 10000  ;  ni <- 60000  ;  nt <- 30   ;  nb <- 30000  ;  nc <- 3 # 11 mins
+  na <- 10000  ;  ni <- 60000  ;  nt <- 10   ;  nb <- 0  ;  nc <- 3 # 15 mins
 
   # Call JAGS from R, check convergence and summarize marginal posteriors
-  out <- try(jags(bdata, inits, params5, "simModel5.txt", n.adapt = na,
+  out9 <- try(jags(bdata, inits, params5, "simModel5.txt", n.adapt = na,
       n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, DIC=FALSE,
       parallel = TRUE, verbose = FALSE), silent=TRUE)
   # Check for errors and convergence, save results
-  if(!inherits(out, "try-error") &&
-      !any(out$summary[1:20, 'Rhat'] > 1.1)) {
-    estiN[, , 9, i] <- out$mean$N
-    estisumN[, 9, i] <- out$mean$sumN
-    estigammaX[, 9, i] <- out$mean$gammaX
-    estiEtc[, 9, i] <- with(out$mean, c(beta.lam, beta.gam, beta.p,
+  if(!inherits(out9, "try-error") &&
+      !any(out9$summary[1:20, 'Rhat'] > 1.1)) {
+    estiN[, , 9, i] <- out9$mean$N
+    estisumN[, 9, i] <- out9$mean$sumN
+    estigammaX[, 9, i] <- out9$mean$gammaX
+    estiEtc[, 9, i] <- with(out9$mean, c(beta.lam, beta.gam, beta.p,
         sd.eps, sd.alpha.p))
   }
-} )  # 3 took 2 hrs; 20 reps took 14 hrs
+} )  # 3 took 2.7 hrs; 20 reps took 22 hrs
 
-# save(trueN, truesumN, truegammaX, estiN, estisumN, estigammaX, estiEtc,
-    # file="sims_cases1-9.RData")
-#####################################
+save(seeds, trueN, truesumN, truegammaX, estiN, estisumN, estigammaX, estiEtc,
+    file="sims_cases1-9_test.RData")
 
 # Check for NAs
 # =============
-apply(is.na(estisumN), 2, mean)
-# Cases 7 and 9 have a high proportion of NAs due to non-convergence.
+rbind(seeds, badRhat=round(colSums(is.na(estiEtc[1,,])), 2))
+  # number of cases with NAs by seed
+
+rbind(case=1:9, badRhat=round(rowSums(is.na(estiEtc[1,,])), 2))
+  # number of simulations with poor convergence by case
+# Cases 2, 7 and 9 have a high proportion of NAs due to non-convergence.
 
 # Prepare arrays for plotting
 # ===========================
@@ -677,7 +679,7 @@ truegammaXp <- truegammaX[, c(1,2,2,3,3,4,4,5,5), ]
 # Figure 1.8
 # ==========
 
-op <- par(mfrow=c(3,5), ask=TRUE)
+op <- par(mfrow=c(3,5), ask=dev.interactive(orNone=TRUE))
 for(case in 1:9) {
   plot(trueNp[,1,case,], estiN[,1,case,], pch=16,
       ylab=paste("Case", case), xlab="Truth", main="N in Year 1")
@@ -719,7 +721,7 @@ par(op)
 # Figure 1.9
 # ==========
 
-op <- par(mfrow=c(3,4), ask=TRUE)
+op <- par(mfrow=c(3,4), ask=dev.interactive(orNone=TRUE))
 for(case in 1:9) {
   plot(density(estiEtc['beta.lam', case, ], na.rm=TRUE), col = 'black',
       main = "lambda covariate", xlim=c(0,1),
