@@ -124,20 +124,21 @@ dimnames(MLEs) <- list(c("Occ_Int", "Occ_A", "Det_Int"), c("MLE", "SE"), NULL)
 # Set timer and launch simulation
 system.time(
 for(i in 1:simreps){
-   cat("\n\n*** Simrep Number:", i, "***\n\n")
-   # Generate data set
-   data <- sim3Occ(nunit = 500, nsubunit = 5, nrep = 1, mean.psi = 0.8,
+  cat("\n\n*** Simrep Number:", i, "***\n\n")
+  # Generate data set
+  data <- sim3Occ(nunit = 500, nsubunit = 5, nrep = 1, mean.psi = 0.8,
       beta.Xpsi = 1, sd.logit.psi = 0.4, mean.theta = 0.6,
       theta.time.range = c(-1, 1), beta.Xtheta = 0, sd.logit.theta = 0.6,
       mean.p = 0.4, p.time.range = c(0,0), beta.Xp = 0, sd.logit.p = 0.8)
-   # Save stats
-   obs.stats[i,] <- unlist(data[23:25])
-   # Get MLEs of occupancy model and save them
-   UMmle <- try(occUM.fn(data = data, inits = c(1,1,-1)))
-   if (class(UMmle) == "try-error") {v<-1} else {
+  # Save stats
+  obs.stats[i,] <- unlist(data[23:25])
+  # Get MLEs of occupancy model and save them
+  UMmle <- try(occUM.fn(data = data, inits = c(1,1,-1)))
+  # if (class(UMmle) == "try-error") {v<-1} else {  # ~~~ better to use 'inherits'
+  if (!inherits(UMmle, "try-error")) {
     MLEs[,,i] <- UMmle
-   }
-   rm(data, UMmle)
+  }
+  rm(data, UMmle)
 }
 )
 

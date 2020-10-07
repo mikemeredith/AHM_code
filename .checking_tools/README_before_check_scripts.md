@@ -15,7 +15,7 @@ Before running the scripts, you may want to check that the necessary packages ar
 ```
 needed <- c("AHMbook", "unmarked", "AICcmodavg", "sp", "rgdal", "plotrix", "raster",
   "lme4", "R2WinBUGS", "R2OpenBUGS", "jagsUI", "denstrip", "rjags", "coda",
-  "devtools", "corrplot", "berryFunctions")
+  "devtools", "corrplot", "berryFunctions", "fields")
 got <- rownames(installed.packages())
 
 ( notgot <- needed[!needed %in% got] )
@@ -23,15 +23,13 @@ got <- rownames(installed.packages())
 install.packages(notgot)
 ```
 
-If you want to install latest devel versions of packages from Github, use or adapt the following code:
+If you want to install latest devel/patched versions of packages from Github, use or adapt the following code:
 ```
 remotes::install_github("mikemeredith/AHMbook")
 packageVersion("AHMbook")
 remotes::install_github("rbchan/unmarked")
 packageVersion("unmarked")
-```
-
-Pending release of a new version of `jagsUI`, I use a hacked version which only "ask"s for new pages with a screen device (and not with a PDF)
-```
-packageVersion("jagsUI") # should be hacked version
+remotes::install_github("kenkellner/jagsUI")
+# remotes::install_github("mikemeredith/jagsUI") # fork, may be more up to date
+packageVersion("jagsUI")
 ```

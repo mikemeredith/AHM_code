@@ -34,7 +34,7 @@ library(rgdal)
 # Set up log file
 .logFile <- paste0("#check_log_", format(Sys.time(), "%Y-%m-%d_%H%M"), ".log")
 cat("\nCheck log file for", getwd(), "\n", file = .logFile)
-cat(format(Sys.time()), file = .logFile, append = TRUE)
+cat("started", format(Sys.time()), file = .logFile, append = TRUE)
 cat("\n\n################################################################\n",
     file = .logFile, append = TRUE)
 
@@ -72,9 +72,13 @@ otime <- Sys.time() - .startTime  # overall time
 # Add overall time and sessionInfo to the end of the log file.
 sink(.logFile, append=TRUE)
 cat("\n\n#############################################\n")
-cat(format(Sys.time()), file = .logFile, append = TRUE)
+cat("Completed", format(Sys.time()), file = .logFile, append = TRUE)
 cat("\nOverall time taken", round(otime, 2), attr(otime, "units"), "\n")
 cat("\nSessionInfo:\n\n")
 print(sessionInfo())
 sink(NULL)
 
+# Display info in the Console (important if running multiple instances of R)
+cat("\n\nChecks completed for .R files in\n", getwd(), "\n")
+cat("at", format(Sys.time()), "\n")
+cat("For details see", dQuote(.logFile), "\n\n")
