@@ -8,8 +8,8 @@
 
 # Approximate run time for this script: 2 hrs
 
-library(jagsUI)
 library(unmarked)
+library(jagsUI)
 library(AHMbook)
 
 # ~~~ need to prepare data ~~~~
@@ -202,6 +202,31 @@ print(out6, digits=2)
 # ~~~ save the work so far ~~~~
 save.image("AHM2_02.05.6.RData")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# ~~~ extra code for figure 2.10 ~~~~~~~~~~~~~~~~~
+x.date <- seq(min(DATE,na.rm=TRUE), max(DATE,na.rm=TRUE),,100)
+
+elev.grid <- seq(min(peckers$elev),max(peckers$elev),,100)
+x.elev <- standardize2match(elev.grid, peckers$elev)
+
+len <- peckers$route
+len.grid <- seq(min(len),max(len),,100)
+
+forest.grid <- seq(min(peckers$forest),max(peckers$forest),,100)
+x.fore <- standardize2match(forest.grid, peckers$forest)
+
+op <- par(mfrow=c(1, 3), mar=c(5,5,3,3),cex.lab = 1.6, cex.main = 1.2)
+parms <- out6$summary[,"mean"]
+lam.fit <- exp(cbind(rep(1,100), x.elev,x.elev^2, 0)%*%parms[c("alpha.lam","beta.elev","beta.elev2","beta.for")])
+plot(elev.grid, lam.fit, xlab="Elevation (m)", ylab="E(N)", type="l",
+    ylim=c(0,3), main="(A)", frame=FALSE, lwd=3)
+lam.fit <- cbind(rep(1,100), 0, 0, x.fore)%*%parms[c("alpha.lam","beta.elev","beta.elev2","beta.for")]
+plot(forest.grid, lam.fit, xlab="Forest cover (%)", ylab="E(N)", type="l",
+    ylim=c(0,3), main="(B)", frame=FALSE,lwd=3)
+plot(len.grid, exp(parms["beta.ilen"]*(1/len.grid)), type="l", xlab="Route length (km)",
+    ylab="Quadrat saturation", lwd=3, main="(C)", frame=FALSE)
+par(op)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 # 2.5.7 Likelihood analysis of the Swiss woodpecker data in unmarked

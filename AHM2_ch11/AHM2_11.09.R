@@ -27,6 +27,30 @@ sLine <- Line(points)
 regpoints <- spsample(sLine, 100, type = "regular")
 points(regpoints, col = "black", pch = 20, lwd = 2)  # produces Fig. 11.11
 
+# ~~~ extra code for figure 11.13 ~~~~~~~~~~~~~~~~
+# Set up grid of pixels
+xlim <- c(-1, 4)
+ylim <- c(-1, 5)
+U <- expand.grid(seq(xlim[1],xlim[2],0.1), seq(ylim[1],ylim[2],0.1))
+# Calculate total hazard of detection for each pixel
+sigma <- 0.4
+alpha0 <- -2
+pmat <- rep(NA,nrow(U))
+for (i in 1:nrow(U)) {
+  dvec <- sqrt((U[i, 1] - wigglyLine[, 1])^2 + (U[i,  2] - wigglyLine[, 2])^2)
+  loghaz <- alpha0 - (1/(2*sigma*sigma)) * dvec * dvec
+  H <- sum(exp(loghaz))
+  pmat[i] <- 1 - exp(-H)
+}
+# Do the plot
+library(raster)
+r <- rasterFromXYZ(cbind(U, pmat))
+plot(r,  frame=FALSE, box=FALSE, col=topo.colors(20))
+lines(wigglyLine, lwd=2)
+# Add the 'equidetectable' points
+points(c(2.508281, 3.211953), c(1.946258, 1.959366), pch=20)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 # 11.9.1 Data simulation
 # ----------------------
 
@@ -74,11 +98,11 @@ for (i in 1:N) {
 # For data organization we separate the x- and y- coordinates
 Ux <- U[, , 1]
 Uy <- U[, , 2]
-points(Ux, Uy, pch = 1, col = "black")        # Add them to plot
+points(Ux, Uy, pch = 1, col = "black")        # Add them to plot Fig. 11.12
 # If the individual was not detected, its location is missing
 Ux[y == 0] <- NA
 Uy[y == 0] <- NA
-points(Ux, Uy, pch = 20, col = "black")       # Add detections to plot
+points(Ux, Uy, pch = 20, col = "black")       # Add detections to plot Fig. 11.12
 # Retain individuals detected at least once
 ncap <- apply(y, 1, sum)
 y <- y[ncap > 0, ]

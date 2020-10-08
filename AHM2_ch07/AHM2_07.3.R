@@ -180,4 +180,49 @@ cand.mods <- list(
 # sYear -0.978 0.200 -4.885 1.04e-06
 
 
-# ~~~ TODO insert code for figure 7.3 ~~~~~~~
+# ~~~ extra code for figure 7.3 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#Select the AIC-top model
+( topmod <- cand.mods$`p(c+t)fp(c+t)psi(c*t)`)
+
+# Data frame with values for prediction
+pred.df <- data.frame(Year = rep(1995:2016,2),
+                      sYear = rep(((1995:2016) - 2005)/11,2),
+                      fYear = rep(factor(1995:2016),2),
+                      Cntry = rep(c("Italy","Switzerland"), each = 22) )
+# Indicator for parameter type
+pp <- c("Detection","False Positive", "Occupancy")
+
+# Prediction data frame with all the additional information
+pred <- rbind(
+  cbind(predict(topmod, "det",   pred.df), pred.df,par=rep(pp[2],44)),
+  cbind(predict(topmod, "fp", pred.df),    pred.df,par=rep(pp[1],44)),
+  cbind(predict(topmod, "state", pred.df), pred.df,par=rep(pp[3],44)))
+
+#generate a plot for each parameter
+p1 <- cbind(predict(topmod, "det",   pred.df), pred.df,par=rep(pp[2],44))
+p2 <- cbind(predict(topmod, "fp", pred.df),    pred.df,par=rep(pp[1],44))
+p3 <- cbind(predict(topmod, "state", pred.df), pred.df,par=rep(pp[3],44))
+
+years <- 1995:2016
+Italy <- p1[,"Cntry"]=="Italy"
+Switzerland <- p1[,"Cntry"]=="Switzerland"
+
+op <- par(mfrow=c(1,2), mar = c(6,7,5,4))
+plot(years, p1[Italy,1], xlab="Year", ylab="p", type="b", pch=16,
+   main="Detection probability", ylim = c(0.12,0.30), frame=FALSE)
+segments(x0 = years, y0 = p1[Italy,1]-1.96*p1[Italy,2], x1 = years, y1 = p1[Italy,1]+1.96*p1[Italy,2])
+# Jitter the years here
+points(years+0.2, p1[Switzerland,1], type="b", pch=1)
+segments(x0 = years+0.2, y0 = p1[Switzerland,1]-1.96*p1[Switzerland,2], x1 = years+0.2,
+ y1 = p1[Switzerland,1]+1.96*p1[Switzerland,2])
+legend(1995, 0.29, legend = c( "Switzerland", "Italy"), pch=c(1,16), bty="n")
+
+plot(years, p3[Italy,1], xlab="Year",ylab="psi",type="b",pch=16,ylim=c(-0.02,0.32),
+    main="Occupancy probability", frame=FALSE)
+segments(x0=years,y0=p3[Italy,1]-1.96*p3[Italy,2],x1=years,y1=p3[Italy,1]+1.96*p3[Italy,2], lwd = 4)
+points(years, p3[Switzerland,1], type="b", pch=1)
+segments(x0 = years, y0 = p3[Switzerland,1]-1.96*p3[Switzerland,2], x1 = years,
+    y1 = p3[Switzerland,1]+1.96*p3[Switzerland,2])
+legend(2006, 0.12, legend = c("Switzerland","Italy"), pch=c(1, 16), bty="n")
+par(op)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

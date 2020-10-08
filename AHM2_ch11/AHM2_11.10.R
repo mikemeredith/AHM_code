@@ -32,13 +32,23 @@ points(regpoints, col = "black", pch = 20, lwd = 2)
 # Simulation settings
 set.seed(2027, kind = "Mersenne-Twister")
 tmp <- simDSM(X = regpoints@coords, Ntotal = 400, sigma = 0.65, beta1 = 1.0,
-    nsurveys = 2, xlim = c(-0.5, 3.5), ylim = c(-0.5, 4.5))
+    nsurveys = 2, xlim = c(-0.5, 3.5), ylim = c(-0.5, 4.5)) # Produces figure 11.15
 str(tmp)
 Habitat <- tmp$Habitat
 Habgrid <- tmp$Habgrid
 nind <- tmp$nind
 pixel <- tmp$pixel
 N <- tmp$N
+
+# ~~~ extra code for figure 11.14 ~~~~~~~~~~~~~
+library(raster)
+op <- par(mar = c(3,3,3,6))
+image(r <- rasterFromXYZ(cbind(Habgrid, Habitat)), col = topo.colors(10))
+image_scale(Habitat, col = topo.colors(10))
+lines(wigglyLine, col = "black", pch = 20, lwd = 3)
+points(tmp$U, pch = 16)
+par(op)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Harvest data objects
 Habitat <- (Habitat - mean(Habitat))/sqrt(var(Habitat))
@@ -238,6 +248,23 @@ library(fields)
 # Define knot locations using cover.design (do once)
 x86 <- cover.design(Habgrid, nd = nk, nruns = 10, num.nn = 200,
     max.loop = 40)                    # runtime < 1 min
+# ~~~ use the new knotlocs for subsequent code ~~~~
+knotlocs <- x86$design
+
+# ~~~ extra code for figure 11.17 ~~~~~~~~~~~~~~~~~~~~~~
+op <- par(mar = c(3,3,3,6))
+image(r <- rasterFromXYZ(cbind(Habgrid, Habitat)), col = topo.colors(10))
+image_scale(Habitat, col = topo.colors(10))
+lines(wigglyLine, col = "black", pch = 20, lwd = 3)
+points(tmp$Ucap, pch = 16) # ACs of individuals detected
+# Add lines from ACs to nearest point on transect
+dd <- e2dist(wigglyLine, tmp$Ucap)
+closest <- wigglyLine[apply(dd, 2, which.min), ]
+segments(x0=tmp$Ucap[,1], y0=tmp$Ucap[,2], x1=closest[,1], y1=closest[,2])
+# Add node locations
+points(knotlocs, pch = 3, col = "black", lwd=3)
+par(op)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Define the Z matrix for the random effects
 Z.k <- (e2dist(Habgrid, knotlocs)/10 )^3

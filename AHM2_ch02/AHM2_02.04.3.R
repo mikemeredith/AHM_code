@@ -6,8 +6,9 @@
 # ========================================================
 # Code from proofs dated 2020-08-18
 
-library(jagsUI)
 library(AHMbook)
+library(unmarked)
+library(jagsUI)
 
 # 2.4 Modeling Temporary Emigration (TE) with a three-level N-mixture model
 # =========================================================================
@@ -313,6 +314,8 @@ cswapc.Dhat
 
 
 # Removal models fit to each time period (ART quick)
+# ''''''''''''''''''''''''''''''''''''''''''''''''''
+# ~~~ See below for a loop to run all three occasions ~~~
 # Occasion 1
 o2y1 <- diag(3)
 o2y1[upper.tri(o2y1)] <- 1
@@ -390,5 +393,75 @@ Dhat.rem1
 # 0% 2.5% 25% 50% 75% 97.5% 100%
 # [1,] 0.26 0.33 0.43 0.5 0.56 1.4 3937
 
-# t0 = Original statistic compuated from data
+# t0 = Original statistic computed from data
 # t_B = Vector of bootstrap samples
+
+# ~~~ extra code to do all 3 occasions ~~~~~~~~~~~~~~~~~~~~~~~~
+# Objects to hold output
+bestfit <- density <- Dhat.rem1 <- vector("list", 3)
+best <- character(3)
+
+o2y1 <- diag(3)
+o2y1[upper.tri(o2y1)] <- 1
+getDr1 <- function(fit, spotMaps) {
+  D <- sum( predict(fit, type = "state")$Predicted)/(sum(spotMaps$parea) -0.62)
+  return(D)
+}
+
+for(k in 1:3) {
+  umfcs1 <- unmarkedFrameMPois(y = cswa$count[,,k],
+      siteCovs = covs[,c("plotArea", "patchArea", "woodHt", "woodCov",
+          "time1", "date1", "obs1")],
+      piFun = "instRemPiFun", obsToY = o2y1)
+  sc1 <- siteCovs(umfcs1)
+  colnames(sc1)[5:7] <- c("time", "date", "obs")
+  sc1[, 5:6] <- scale(sc1[, 5:6])
+  siteCovs(umfcs1) <- sc1
+
+  cswamods1 <- list()
+  cswamods1$Null <- multinomPois(~1 ~offset(log(plotArea)), umfcs1)
+  cswamods1$Wh. <- multinomPois(~1 ~offset(log(plotArea)) + woodHt, umfcs1)
+  cswamods1$Wh2. <- multinomPois(~1 ~offset(log(plotArea)) + woodHt +
+  I(woodHt^2), umfcs1)
+  cswamods1$Wc. <- multinomPois(~1 ~offset(log(plotArea)) + woodCov, umfcs1)
+  cswamods1$A. <- multinomPois(~1 ~offset(log(plotArea)) + patchArea, umfcs1)
+  cswamods1$.T <- multinomPois(~time ~offset(log(plotArea)), umfcs1)
+  cswamods1$.D <- multinomPois(~date ~offset(log(plotArea)), umfcs1)
+  cswamods1$.O <- multinomPois(~obs ~offset(log(plotArea)), umfcs1)
+  cswamods1$.TxD <- multinomPois(~time*date ~    offset(log(plotArea)), umfcs1)
+  cswamods1$Wh2Wc. <- multinomPois(~1 ~offset(log(plotArea)) + woodHt +
+      I(woodHt^2) + woodCov, umfcs1)
+  cswamods1$Wh2WcA. <- multinomPois(~1 ~offset(log(plotArea)) + woodHt +
+      I(woodHt^2) + woodCov + patchArea, umfcs1)
+  cswamods1$Wh2Wc.T <- multinomPois(~time ~offset(log(plotArea)) + woodHt +
+      I(woodHt^2) + woodCov, umfcs1)
+  cswamods1$Wh2Wc.D <- multinomPois(~date ~offset(log(plotArea)) + woodHt +
+      I(woodHt^2) + woodCov, umfcs1)
+  cswamods1$Wh2Wc.Wh <- multinomPois(~woodHt ~offset(log(plotArea)) + woodHt +
+      I(woodHt^2) + woodCov, umfcs1)
+
+  cswafits1 <- fitList(fits = cswamods1)
+  (ms.cswa1 <- modSel(cswafits1))
+
+  # pull out AIC-best model
+  ( best[k] <- ms.cswa1@Full$model[1] )
+  bestfit[[k]] <- cswamods1[[best[k]]]
+
+  # Run a parametric bootstrap on density
+  sum(predict(bestfit[[k]] , type = "state")$Predicted) /
+      (sum(cswa$spotMaps$parea) - 0.62) # darty had no point count data
+
+  # Compute the density for replicate 1
+  density[[k]] <- getDr1(bestfit[[k]] , cswa$spotMaps)
+
+  # Bootstrap the density estimate (ART 20 sec)
+  Dhat.rem1[[k]] <- parboot(bestfit[[k]] , statistic = getDr1, nsim = 1000,
+    spotMaps = cswa$spotMaps, ncores=3)
+}
+
+# Look at results
+best
+density
+
+Dhat.rem1
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
