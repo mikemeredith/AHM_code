@@ -25,4 +25,4 @@ The code for the first volume (AHM1), with updates up to 2017, is available as a
 
 ## Volume 2 (AHM2)
 
-The book is scheduled to appear in mid-October. The code here is based on the final proofs.
+The book appeared in October 2020 (with copyright dated 2021). The code here is based on the final proofs.
