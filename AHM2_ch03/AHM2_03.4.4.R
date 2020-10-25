@@ -224,6 +224,10 @@ View(summary(mco8))
 library(raster)
 phi.block <- array(NA, dim = c(nblock, out8$n.sims))
 sims <- out8$sims.list        # Grab the simulations first
+# ~~~ after the foreach run do this ~~~~~~~~~~~~
+phi.block <- array(NA, dim = c(nblock, nrow(mco8)))
+sims <- mco8
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 for (b in 1:nblock){
   phi.block[b,] <- plogis(sims$mu.lphi + sims$eta[,b])
 }
@@ -231,7 +235,7 @@ post.mean <- apply(phi.block, 1, mean)    # Posterior mean
 post.sd <- apply(phi.block, 1, sd)        # Posterior standard deviation
 mapPalette <- colorRampPalette(c("grey", "yellow", "orange", "red"))
 
-par(mfrow = c(1, 2))
+op <- par(mfrow = c(1, 2))
 # Plot posterior mean of predicted apparent survival
 r1 <- rasterFromXYZ(data.frame(x = willowWarbler$blocks$blockX,
     y = willowWarbler$blocks$blockY, z = post.mean))
@@ -241,4 +245,5 @@ plot(r1, col = mapPalette(100), axes = FALSE, box = FALSE)
 r2 <- rasterFromXYZ(data.frame(x = willowWarbler$blocks$blockX,
     y = willowWarbler$blocks$blockY, z = post.sd))
 plot(r2, col = mapPalette(100), axes = FALSE, box = FALSE, zlim = c(0, 0.08))
+par(op)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

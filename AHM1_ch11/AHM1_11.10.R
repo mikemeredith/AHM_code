@@ -188,7 +188,7 @@ out11 <- jags(win.data, inits, params, "model11.txt", n.chains = nc,
   # n.thin = nt, n.iter = ni, n.burnin = nb, parallel = FALSE)
   n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 op <- par(mfrow = c(3,3))
-traceplot(out11, c("mu.beta0", "sd.beta0", "mu.beta", "sd.beta", "mu.alpha0",
+jagsUI::traceplot(out11, c("mu.beta0", "sd.beta0", "mu.beta", "sd.beta", "mu.alpha0",
     "sd.alpha0", "mu.alpha", "sd.alpha") )
 par(op)
 print(out11, 2)

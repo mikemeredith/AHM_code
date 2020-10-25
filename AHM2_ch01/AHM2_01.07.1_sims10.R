@@ -13,8 +13,6 @@
 
 # This file has code to run the simulations for case 10 described on
 #    p.34 and to plot figure 1.10.
-# See the file "AHM2_01.07.1_sims10#parallel" for code to run in parallel
-#    using 'foreach'.
 
 
 library(AHMbook)
@@ -128,7 +126,7 @@ estiEtc <- array(NA, dim=c(7, simrep))
 dimnames(estiEtc)[[1]] <- c("beta.lam", "beta.gam", "beta.p",
     "sd.alpha.lam", "sd.alpha.gam", "sd.alpha.p", "sd.eps")
 
-seeds <- c(64,  86,  98)  # ~~~ usually converge, which we need for the plot.
+seeds <- c(37, 42, 54)  # ~~~ known to converge, which we need for the plot.
 # Other seeds are possible, provided
 length(seeds) >= simrep
 

@@ -132,7 +132,7 @@ ni <- 2200   ;   nt <- 2   ;   nb <- 200   ;   nc <- 3  # ~~~ for testing
 # Call JAGS from R (ART 62 min), check convergence and summarize posteriors
 out9 <- jags(win.data, inits, params, "model9.txt", n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2,2)) ; traceplot(out9, c('mu.lpsi', 'sd.lpsi', 'mu.lp', 'sd.lp'))
+op <- par(mfrow = c(2,2)) ; jagsUI::traceplot(out9, c('mu.lpsi', 'sd.lpsi', 'mu.lp', 'sd.lp'))
 par(op)
 print(out9, dig = 3)
 # ~~~~~ suggest saving for use later ~~~~~~~~~~~~~
@@ -315,7 +315,7 @@ ni <- 1500   ;   nt <- 1   ;   nb <- 500   ;   nc <- 3  # ~~~~~ use for testing
 out101 <- jags(win.data, inits, params1, "model10.txt", n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 op <- par(mfrow = c(2, 2))
-traceplot(out101, c(c("omega", "mu.lpsi", "sd.lpsi", "mu.betalpsi1",
+jagsUI::traceplot(out101, c(c("omega", "mu.lpsi", "sd.lpsi", "mu.betalpsi1",
     "sd.betalpsi1", "mu.betalpsi2", "sd.betalpsi2", "mu.betalpsi3",
     "sd.betalpsi3", "mu.lp", "sd.lp", "mu.betalp1", "sd.betalp1",
     "mu.betalp2", "sd.betalp2", "mu.betalp3", "sd.betalp3", "Ntotal")) )
