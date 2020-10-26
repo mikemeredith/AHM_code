@@ -91,7 +91,7 @@ library(jagsUI)
 out1J <- jags(win.data, inits, params, "model1.txt",
   # n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel=TRUE)  # ~~~~~ for testing
-jagsUI::traceplot(out1J)    ;    print(out1J, dig = 3)
+traceplot(out1J)    ;    print(out1J, dig = 3)
 
 
 # Plot posterior distributions for potentially 'ecological' parameters
@@ -201,7 +201,7 @@ out2 <- bugs(win.data, inits, params, "model2.txt",
 # Call JAGS from R (ART 0.6 min)
 out2J <- jags(win.data, inits, params, "model2.txt",
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
-jagsUI::traceplot(out2J)   ;   print(out2J, dig = 2)
+traceplot(out2J)   ;   print(out2J, dig = 2)
 
 
 # 11.5.2 Poisson random effects model for the observed community size
@@ -256,7 +256,7 @@ out3 <- bugs(win.data, inits, params, "model3.txt",
 out3J <- jags(win.data, inits, params, "model3.txt",
   # n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel=TRUE)  # ~~~~~ for testing
-jagsUI::traceplot(out3J, c('mugamma0', 'sd.gamma0', 'gamma'))   ;    print(out3J, dig = 2)
+traceplot(out3J, c('mugamma0', 'sd.gamma0', 'gamma'))   ;    print(out3J, dig = 2)
 
 
 # 11.5.3 N-mixture model for the observed community size
@@ -314,7 +314,7 @@ ni <- 6000   ;   nt <- 4   ;   nb <- 2000   ;   nc <- 3
 #   and summarize posteriors
 out4 <- jags(win.data, inits, params, "model4.txt",
    n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-jagsUI::traceplot(out4, c('alpha0', 'alpha', 'beta0', 'beta'))  ;  print(out4, 3)
+traceplot(out4, c('alpha0', 'alpha', 'beta0', 'beta'))  ;  print(out4, 3)
 
 print(tmp <- cbind(out3$summary[c(1, 270:272),c(1:3,7)], out4$summary[5:8, c(1:3, 7)]), 3)
 
