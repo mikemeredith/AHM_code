@@ -28,9 +28,11 @@ nsite <- 267
 nspec <- 215
 nsamp <- dim(all10)[1]        # 1200 MCMC samples
 # ~~~~~ the order of the columns in all10 is different ~~~~~~~~~~~~~~~~~~~~~
-# Use parameter names and grep instead of column numbers.
+# The elements of the Z matrix are now in columns 1945 to 59349
+# Safer to use parameter names and grep instead of column numbers.
 nms <- colnames(all10)
 is.z <- grep("^z", nms)
+range(is.z)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 z <- array(NA, dim = c(nsite, nspec, nsamp))
 Jacc <- array(NA, dim = c(nsite, nspec, nsamp))
@@ -77,7 +79,7 @@ cbind('post. mean' = pm, 'post. sd' = psd, '2.5%' = cri[1,], '97.5%' = cri[2,])
 
 
 # Make a map of Jaccard site indices (Fig. 11-26)
-x <- 3        # poportional size of plotting symbol
+x <- 3        # proportional size of plotting symbol
 plot(MHB2014$sites$coordx, MHB2014$sites$coordy, xlab = "x coordinate",
     ylab = "y coordinate", cex = x*pm, asp = 1, pch = 16)
 points(MHB2014$sites$coordx[which(pm == 1)], MHB2014$sites$coordy[which(pm == 1)],

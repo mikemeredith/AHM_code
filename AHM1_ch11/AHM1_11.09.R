@@ -47,7 +47,7 @@ str( zCH <- array(NA, dim = c(nkm2, 215, nsamp)) ) # BIG array !
 # ~~~~~ the order of the columns in all10 is different ~~~~~~~~~~~~~~~~~~~~~
 # jagsUI::jags.basic returns the parameters in alphabetical order, not the order
 #   in 'params', unlike jagsUI::jags.
-# Use parameter names and grep instead
+# Safer to use parameter names and grep instead of numerical indices
 nms <- colnames(all10)
 
 # W <- all10[,1722:1936]          # Grab MCMC samples from w
@@ -108,7 +108,7 @@ elev <- rasterFromXYZ(cbind(ch$x, ch$y,ch$elevation))
 elev[elev > 2250] <- NA         # Mask areas > 2250 m a.s.l.
 r1 <- mask(r1, elev)
 mapPalette <- colorRampPalette(c("grey", "yellow", "orange", "red"))
-plot(r1, col = mapPalette(100), axes = F, box = FALSE, main ="")
+plot(r1, col = mapPalette(100), axes = FALSE, box = FALSE, main ="")
 # ~~~~ these shape files not available ~~~~~~~~~~~~~~~~~~~~~~
 # lakes <- readOGR(".", "lakes")
 # rivers <- readOGR(".", "rivers")
@@ -124,7 +124,7 @@ elev <- rasterFromXYZ(cbind(ch$x, ch$y,ch$elevation))
 elev[elev > 2250] <- NA         # Mask areas > 2250 m a.s.l.
 r1 <- mask(r1, elev)
 mapPalette <- colorRampPalette(c("grey", "yellow", "orange", "red"))
-plot(r1, col = mapPalette(100), axes = F, box = FALSE, main ="")
+plot(r1, col = mapPalette(100), axes = FALSE, box = FALSE, main ="")
 # ~~~~ these shape files not available ~~~~~~~~~~~~~~~~~~~~~~
 # lakes <- readOGR(".", "lakes")
 # rivers <- readOGR(".", "rivers")

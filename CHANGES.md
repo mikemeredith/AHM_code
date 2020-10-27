@@ -2,6 +2,13 @@
 
 # CHANGES
 
+## 2020-10-08 to 27
+
+* Added code for AHM2 Figures in chapters 2, 7, 11
+* Added simulation code for AHM2 1.7.1
+* Removed unnecessary call to `library(coda)` in AHM1 11.7 to avoid clashes with `jagsUI::traceplot`.
+* Tidied up plotting code in AHM1 11.7.
+
 ## 2020-07-14 to 31
 
 * Added AHM2 chapters 7 to 11.
