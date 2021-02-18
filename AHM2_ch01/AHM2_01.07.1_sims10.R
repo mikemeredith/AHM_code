@@ -109,6 +109,7 @@ params6 <- c("mean.lambda", "mean.gamma", "mean.p", "mu.alpha.lam",
 # =====================
 # simrep <- 100
 simrep <- 3 # ~~~ for testing
+# simrep <- 30 # ~~~ for testing
 # Each rep takes about 20 mins
 
 # For truth, we need the N's, sumN's and gammaX's for each simrep
@@ -126,7 +127,7 @@ estiEtc <- array(NA, dim=c(7, simrep))
 dimnames(estiEtc)[[1]] <- c("beta.lam", "beta.gam", "beta.p",
     "sd.alpha.lam", "sd.alpha.gam", "sd.alpha.p", "sd.eps")
 
-seeds <- c(37, 42, 54)  # ~~~ known to converge, which we need for the plot.
+seeds <- c(10, 13, 18) #, 19, 29) # ~~~ known to converge, which we need for the plot.
 # Other seeds are possible, provided
 length(seeds) >= simrep
 

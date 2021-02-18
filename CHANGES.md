@@ -2,6 +2,12 @@
 
 # CHANGES
 
+## 2021-02-18
+
+* Fixed number of cores used by `AICcmodavg::Nmix.gof.test` and `unmarked::parboot` when `parallel=TRUE`; the default is to use all-but-one of the cores on the machine, and can crash when other applications are running.
+
+Tested: Windows 10, R 4.0.4, GitHub versions of `AHMbook` (0.2.2.9001), `jagUI` (1.5.1.9101) and `unmarked` (1.0.1.9011), up-to-date CRAN versions of other packages.
+
 ## 2021-02-13
 
 * Added bonus script to run the simulation in AHM1 10.7 in JAGS

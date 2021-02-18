@@ -1,5 +1,6 @@
-# Applied hierarchical modeling in ecology - Marc Kéry & J. Andy Royle
-# Volume 2 - 2020
+# Applied hierarchical modeling in ecology - vol.2 - 2021
+# Marc Kéry & J. Andy Royle
+#
 # Chapter 11 : SPATIALLY EXPLICIT DISTANCE SAMPLING ALONG TRANSECTS
 # =================================================================
 # Code from proofs dated 2020-08-19

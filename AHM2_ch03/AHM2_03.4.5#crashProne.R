@@ -1,7 +1,6 @@
-#   Applied hierarchical modeling in ecology
-#   Modeling distribution, abundance and species richness using R and BUGS
-#   Volume 2: Dynamic and Advanced models
+#   Applied hierarchical modeling in ecology - vol.2 - 2021
 #   Marc Kéry & J. Andy Royle
+#
 # Chapter 3 : HIERARCHICAL MODELS OF SURVIVAL
 # ===========================================
 # Code from proofs dated 2020-08-18
@@ -174,8 +173,8 @@ params <- c("mean.phi", "mean.p", "mu.lphi", "mu.lp", "sd.lp.site", "sd.lphi.tim
 # ni <- 200000 ; nt <- 100 ; nb <- 100000 ; nc <- 3  # 5 days
 ni <- 2000 ; nt <- 1 ; nb <- 1000 ; nc <- 3 # ~~~ for testing
 
-# You may have to launchWinBUGS a couple of times until you don’t get an
-# “undefined real result” crash (or alternatively, you could “stabilize”
+# You may have to launchWinBUGS a couple of times until you don't get an
+# "undefined real result" crash (or alternatively, you could "stabilize"
 # the logit, see Trick 15 in Appendix 1 in Kery and Schaub, 2012).
 
 # Call WinBUGS from R (ART [ loooong) and summarize posteriors (for a subset of parameters only)
@@ -209,7 +208,7 @@ library(parallel)
 library(doParallel)
 
 detectCores()  # number of cores on your machine
-ncore <- 7     # <-- adjust this for your machine
+ncore <- 3     # <-- adjust this for your machine (3 used for testing)
 
 cl <- makeCluster(ncore)
 registerDoParallel(cl)
@@ -224,6 +223,7 @@ seeds <- 1:ncore
 system.time(
 res9 <- foreach(x = seeds, .combine=rbind, .packages="R2WinBUGS",
   .errorhandling='remove', .inorder=FALSE) %dopar% {
+  # .errorhandling='remove', .inorder=FALSE) %do% {
   set.seed(x)
   outx <- bugs(bdata, inits, params, "cjs9.txt",
       n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb,
@@ -252,34 +252,41 @@ mean(mco9$beta3 > 0)
 
 
 # ~~~~~~~~ code for figure 3.15 ~~~~~~~~~~~
+if(exists("out9")) {
+  sims <- out9$sims.list  # Serial run output
+  n.sims <- out9$n.sims
+} else {
+  sims <- mco9            # Parallel output
+  n.sims <- nrow(mco9)
+}
+
 # Figure 3.15
 op <- par(mfrow = c(1, 3))#, mar = c(5,6,5,4), cex.main = 2, cex.axis = 2, cex.lab = 2)
-plot(density(out9$sims.list$beta1), main = 'gdd (linear)', col = 'gray', frame = F, xlab = 'beta1')
+plot(density(sims$beta1), main = 'gdd (linear)', col = 'gray', frame = FALSE, xlab = 'beta1')
 abline(v = 0)
-plot(density(out9$sims.list$beta2), main = 'gdd (squared)', col = 'gray', frame = F, xlab = 'beta2')
+plot(density(sims$beta2), main = 'gdd (squared)', col = 'gray', frame = FALSE, xlab = 'beta2')
 abline(v = 0)
-plot(density(out9$sims.list$beta3), main = 'Latitude', col = 'gray', frame = F, xlab = 'beta3')
+plot(density(sims$beta3), main = 'Latitude', col = 'gray', frame = FALSE, xlab = 'beta3')
 abline(v = 0)
 par(op)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # ~~~~ code for figures 3.16 and 3.17 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-sims <- out9$sims.list        # Grab the simulations first
 ncell <- nrow(willowWarbler$cells)
 
 # Predictions 1: effects of covariates only
-phi.pred1<- array(NA, dim = c(ncell, out9$n.sims))
+phi.pred1<- array(NA, dim = c(ncell, n.sims))
 for (s in 1:ncell){
   phi.pred1[s,] <- plogis(sims$mu.lphi + sims$beta1 * scaled.gdd1[s] +
       sims$beta2 * scaled.gdd2[s] + sims$beta3 * scaled.lat[s])
 }
 # Predictions 2: effects of spatial autocorrelation only
-phi.pred2<- array(NA, dim = c(nblock, out9$n.sims))
+phi.pred2<- array(NA, dim = c(nblock, n.sims))
 for (b in 1:nblock){
   phi.pred2[b,] <- plogis(sims$mu.lphi + sims$eta[,b])
 }
 # Predictions 3: effects of both covariates and neighbourhood relations
-phi.pred3<- array(NA, dim = c(ncell, out9$n.sims))
+phi.pred3<- array(NA, dim = c(ncell, n.sims))
 for (s in 1:ncell){
   phi.pred3[s,] <- plogis(sims$mu.lphi + sims$beta1 * scaled.gdd1[s] +
       sims$beta2 * scaled.gdd2[s] + sims$beta3 * scaled.lat[s] +

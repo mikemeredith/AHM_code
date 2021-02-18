@@ -7,8 +7,6 @@
 # =========================================================================
 
 library(AHMbook)
-library(R2WinBUGS)
-bugs.dir <- "C:/WinBUGS14/"          # Place where your WinBUGS installed
 library(jagsUI)
 
 # ~~~~~ this section requires the following code from section 5.3 ~~~~~~~~~~

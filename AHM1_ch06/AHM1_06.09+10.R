@@ -7,7 +7,7 @@
 #    in closed populations: binomial N-mixture models
 # =========================================================================
 
-# Approximate execution time for this code: 70 mins
+# Approximate execution time for this code: 2.25 hrs
 # Run time with the full number of iterations: 31 hrs
 
 library(AHMbook)
@@ -125,7 +125,11 @@ cbind(rbind("Poisson" = exp(coef(fm5)[1]), "NegBin" = exp(coef(fm5NB)[1]), "ZIP"
 # 6.9.3 Model criticism and goodness of fit
 # ------------------------------------------------------------------------
 library(AICcmodavg)
-system.time(gof.P <- Nmix.gof.test(fm5, nsim=100))      # 12 mins in parallel << 65 min
+# ~~~ need to limit the cores used by Nmix.gof.test if other software is running
+# ncores <- parallel::detectCores() - 1 # the default, ok if nothing else is running
+ncores <- 3 # ~~~ for testing
+
+system.time(gof.P <- Nmix.gof.test(fm5, nsim=100, ncores=ncores))      # 18 mins with 3 cores << 65 min
 # ~~~~~~~~~~ changes in AICcmodavg::Nmix.gof.test wef 2.2-0 (25 February 2019) ~~~~~~~
 # Nmix.gof.test now has a 'parallel' argument with default TRUE. The fm5NB and fm5ZIP models
 #  using formula=fm5@formula will not work in parallel. With parallel=FALSE they work:
@@ -134,27 +138,27 @@ system.time(gof.P <- Nmix.gof.test(fm5, nsim=100))      # 12 mins in parallel <<
 # system.time(gof.ZIP <- Nmix.gof.test(fm5ZIP, nsim=100, parallel=FALSE)) # 69 min
 
 # Alternatively, rerun fm5NB and fm5ZIP with the formula specified in full:
-fm5NB <- pcount(~(elev+I(elev^2)) * (date+I(date^2)) * (dur+I(dur^2)) + time-1
-      - elev:date:dur - elev:date:I(dur^2) - elev:I(date^2):dur
-      - elev:I(date^2):I(dur^2) - I(elev^2):date:dur - I(elev^2):date:I(dur^2)
-      - I(elev^2):I(date^2):dur - I(elev^2):I(date^2):I(dur^2)
-      - I(elev^2):I(date^2) - I(elev^2):I(dur^2) - I(date^2):I(dur^2)
-      - elev:I(date^2) - I(date^2):dur
-      ~ (elev+I(elev^2)) * (forest+I(forest^2))+ iLength
-      - I(elev^2):forest - I(elev^2):I(forest^2), starts = c(coef(fm5),0),
+fm5NB <- pcount(~(elev+I(elev^2)) * (date+I(date^2)) * (dur+I(dur^2)) + time-1 -
+      elev:date:dur - elev:date:I(dur^2) - elev:I(date^2):dur -
+      elev:I(date^2):I(dur^2) - I(elev^2):date:dur - I(elev^2):date:I(dur^2) -
+      I(elev^2):I(date^2):dur - I(elev^2):I(date^2):I(dur^2) -
+      I(elev^2):I(date^2) - I(elev^2):I(dur^2) - I(date^2):I(dur^2) -
+      elev:I(date^2) - I(date^2):dur
+      ~ (elev+I(elev^2)) * (forest+I(forest^2))+ iLength -
+      I(elev^2):forest - I(elev^2):I(forest^2), starts = c(coef(fm5),0),
       umf, control=list(trace=TRUE, REPORT=5), mixture = "NB")
 
-fm5ZIP <- pcount(~(elev+I(elev^2)) * (date+I(date^2)) * (dur+I(dur^2)) + time-1
-      - elev:date:dur - elev:date:I(dur^2) - elev:I(date^2):dur
-      - elev:I(date^2):I(dur^2) - I(elev^2):date:dur - I(elev^2):date:I(dur^2)
-      - I(elev^2):I(date^2):dur - I(elev^2):I(date^2):I(dur^2)
-      - I(elev^2):I(date^2) - I(elev^2):I(dur^2) - I(date^2):I(dur^2)
-      - elev:I(date^2) - I(date^2):dur
-      ~ (elev+I(elev^2)) * (forest+I(forest^2))+ iLength
-      - I(elev^2):forest - I(elev^2):I(forest^2), starts = c(coef(fm5),0),
+fm5ZIP <- pcount(~(elev+I(elev^2)) * (date+I(date^2)) * (dur+I(dur^2)) + time-1 -
+      elev:date:dur - elev:date:I(dur^2) - elev:I(date^2):dur -
+      elev:I(date^2):I(dur^2) - I(elev^2):date:dur - I(elev^2):date:I(dur^2) -
+      I(elev^2):I(date^2):dur - I(elev^2):I(date^2):I(dur^2) -
+      I(elev^2):I(date^2) - I(elev^2):I(dur^2) - I(date^2):I(dur^2) -
+      elev:I(date^2) - I(date^2):dur
+      ~ (elev+I(elev^2)) * (forest+I(forest^2))+ iLength -
+      I(elev^2):forest - I(elev^2):I(forest^2), starts = c(coef(fm5),0),
       umf, control=list(trace=TRUE, REPORT=5), mixture = "ZIP")
-system.time(gof.NB <- Nmix.gof.test(fm5NB, nsim=100, parallel=TRUE))   # 25 min << 131 min
-system.time(gof.ZIP <- Nmix.gof.test(fm5ZIP, nsim=100, parallel=TRUE)) # 14 min << 69 min
+system.time(gof.NB <- Nmix.gof.test(fm5NB, nsim=100, parallel=TRUE, ncores=ncores))   # 38 min << 131 min
+system.time(gof.ZIP <- Nmix.gof.test(fm5ZIP, nsim=100, parallel=TRUE, ncores=ncores)) # 21 min << 69 min
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 gof.P   ;   gof.NB   ;   gof.ZIP                        # print results
@@ -572,7 +576,7 @@ Nhat <- function(fm = fm5ZIP, iLength = 0, area = 1) {
 #  defined above won't work  in parallel, so need to specify parallel = FALSE.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # system.time(pb.N <- parboot(fm5ZIP, Nhat, nsim = 2500, report=5, parallel=FALSE))
-system.time(pb.N <- parboot(fm5ZIP, Nhat, nsim = 25, report=5, parallel=FALSE)) # ~~~ use for testing
+system.time(pb.N <- parboot(fm5ZIP, Nhat, nsim = 25, report=5, parallel=FALSE)) # ~~~ use for testing, 15 mins
 
 bs <- pb.N@t.star[,3]             # Extract the bootstrapped vals of N3
 

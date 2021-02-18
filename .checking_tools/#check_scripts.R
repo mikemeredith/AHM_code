@@ -1,7 +1,7 @@
 
 # Source this script to check all the scripts in the current working directory
 #   and its subdirectories.
-# Files checked, errors, and times > 20 secs are listed in "#check_log_<date>.log".
+# Files checked, errors, and times > 20 secs are listed in "#check_<date>.log".
 
 # Objects with initial '.' are not removed by rm(list = ls()), so persist during
 #   running of individual scripts.
@@ -32,7 +32,7 @@ library(rgdal)
 # .ow <- options(warn=1)
 
 # Set up log file
-.logFile <- paste0("#check_log_", format(Sys.time(), "%Y-%m-%d_%H%M"), ".log")
+.logFile <- paste0("#check_", format(Sys.time(), "%Y-%m-%d_%H%M"), ".log")
 cat("\nCheck log file for", getwd(), "\n", file = .logFile)
 cat("started", format(Sys.time()), file = .logFile, append = TRUE)
 cat("\n\n################################################################\n",

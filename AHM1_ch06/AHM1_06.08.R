@@ -15,7 +15,11 @@ library(jagsUI)
 
 # 6.8 Goodness of fit
 # ===================
-
+# ~~~~~~~~~~~ specify number of cores for Nmix.gof.test ~~~~~~~~~~
+# Default is to use all-but-one available cores, but that leads to
+# a crash is other applications are using multiple cores
+ncores <- 3
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Case 1: Test GoF of correct model
 library(AICcmodavg)
@@ -23,7 +27,7 @@ op <- par(mfrow = c(3,3))
 for(i in 1:9){
   data <- simNmix(show.plot = FALSE)          # Create data set
   fm <- pcount(~1 ~1, unmarkedFramePCount(y = data$C)) # Fit model
-  pb.gof <- Nmix.gof.test(fm, nsim = 100) # 100 bootstrap reps
+  pb.gof <- Nmix.gof.test(fm, nsim = 100, ncores = ncores) # 100 bootstrap reps
 }
 
 # Case 2: Simulate data with zero inflation and analyse without
@@ -31,7 +35,7 @@ val.range <- seq(0.1, 1,,9)            # Much to no zero-inflation
 for(i in 1:9){
   data <- simNmix(mean.theta = val.range[i], show.plot = FALSE)
   fm <- pcount(~1 ~1, unmarkedFramePCount(y = data$C)) # Fit model
-  pb.gof <- Nmix.gof.test(fm, nsim = 100)
+  pb.gof <- Nmix.gof.test(fm, nsim = 100, ncores = ncores)
 }
 
 # Case 3: Extra-Poisson dispersion in lambda
@@ -39,7 +43,7 @@ val.range <- seq(1, 0,,9)            # Some to no extra-Poisson dispersion
 for(i in 1:9){
    data <- simNmix(sigma.lam = val.range[i], show.plot = FALSE)
    fm <- pcount(~1 ~1, unmarkedFramePCount(y = data$C)) # Fit model
-   pb.gof <- Nmix.gof.test(fm, nsim = 100)
+   pb.gof <- Nmix.gof.test(fm, nsim = 100, ncores = ncores)
 }
 
 # Case 4: Site covariate in lambda
@@ -47,7 +51,7 @@ val.range <- seq(3, 0,,9)            # Strong to no effect of covariate
 for(i in 1:9){
    data <- simNmix(beta3.lam = val.range[i], show.plot = FALSE)
    fm <- pcount(~1 ~1, unmarkedFramePCount(y = data$C)) # Fit model
-   pb.gof <- Nmix.gof.test(fm, nsim = 100)
+   pb.gof <- Nmix.gof.test(fm, nsim = 100, ncores = ncores)
 }
 
 # Case 5: Extra-binomial dispersion in p (survey random effect)
@@ -55,7 +59,7 @@ val.range <- seq(1, 0,,9)            # Strong to no effect extra-dispersion
 for(i in 1:9){
    data <- simNmix(sigma.p.survey = val.range[i], show.plot = FALSE)
    fm <- pcount(~1 ~1, unmarkedFramePCount(y = data$C)) # Fit model
-   pb.gof <- Nmix.gof.test(fm, nsim = 100)
+   pb.gof <- Nmix.gof.test(fm, nsim = 100, ncores = ncores)
 }
 
 # Case 6: Site covariate in p
@@ -63,7 +67,7 @@ val.range <- seq(3, 0,,9)            # Strong to no covariate effect
 for(i in 1:9){
    data <- simNmix(beta3.p = val.range[i], show.plot = FALSE)
    fm <- pcount(~1 ~1, unmarkedFramePCount(y = data$C)) # Fit model
-   pb.gof <- Nmix.gof.test(fm, nsim = 100)
+   pb.gof <- Nmix.gof.test(fm, nsim = 100, ncores = ncores)
 }
 
 # Case 7: Observational covariate in p
@@ -71,7 +75,7 @@ val.range <- seq(3, 0,,9)            # Strong to no covariate effect
 for(i in 1:9){
    data <- simNmix(beta.p.survey = val.range[i], show.plot = FALSE)
    fm <- pcount(~1 ~1, unmarkedFramePCount(y = data$C)) # Fit model
-   pb.gof <- Nmix.gof.test(fm, nsim = 100)
+   pb.gof <- Nmix.gof.test(fm, nsim = 100, ncores = ncores)
 }
 par(op)
 

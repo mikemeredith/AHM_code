@@ -1,10 +1,11 @@
-# Applied hierarchical modeling in ecology - Marc Kéry & J. Andy Royle
-# Volume 2 - 2020
+# Applied hierarchical modeling in ecology - vol.2 - 2021
+# Marc Kéry & J. Andy Royle
+#
 # Chapter 11 : SPATIALLY EXPLICIT DISTANCE SAMPLING ALONG TRANSECTS
 # =================================================================
 # Code from proofs dated 2020-08-19
 
-# Approximate execution time for this code: 40 mins
+print("Approximate execution time for this code: 40 mins")
 # Run time with the full number of iterations: 60 mins
 
 library(AHMbook)

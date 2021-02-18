@@ -1,13 +1,11 @@
-#   Applied hierarchical modeling in ecology
-#   Modeling distribution, abundance and species richness using R and BUGS
-#   Volume 2: Dynamic and Advanced models
+#   Applied hierarchical modeling in ecology - vol.2 - 2021
 #   Marc Kéry & J. Andy Royle
 #
 # Chapter 3 : HIERARCHICAL MODELS OF SURVIVAL
 # ===========================================
 # Code from proofs dated 2020-08-18
 
-# Approximate run time for this script: 40 mins
+cat("Approximate run time for this script: 55 mins \n")
 # Run time with the full number of iterations: 59 hrs
 
 library(AHMbook)
@@ -163,7 +161,7 @@ params <- c("mean.phi", "mean.p", "mu.lphi", "mu.lp", "sd.lp.site", "sd.lphi.tim
 
 # MCMC settings
 # ni <- 100000 ; nt <- 50 ; nb <- 50000 ; nc <- 3 # 52 hours
-ni <- 1000 ; nt <- 5 ; nb <- 500 ; nc <- 3 # ~~~~~~~ for testing
+ni <- 1000 ; nt <- 5 ; nb <- 500 ; nc <- 3 # ~~~ for testing, 40 mins
 
 # Call WinBUGS from R (ART 52 h!) and summarize posteriors
 # bugs.dir must be set to WinBUGS location, e.g., "c:/WinBUGS14/"
@@ -187,16 +185,16 @@ library(parallel)
 library(doParallel)
 
 detectCores()  # number of cores on your machine
-ncore <- 7     # <-- adjust this for your machine
+ncore <- 3     # <-- adjust this for your machine (3 used for testing)
 
 cl <- makeCluster(ncore)
 registerDoParallel(cl)
 
-ni <- 1000  ;  nt <- 1  ;  nb <- 500  ;  nc <- 1  # took 10 mins
+ni <- 1000  ;  nt <- 1  ;  nb <- 500  ;  nc <- 1  # took 15 mins
 # ni <- 30000  ;  nt <- 30  ;  nb <- 15000  ;  nc <- 1  # took 9.25 hrs
 seeds <- 1:ncore
 
-# The call to foreach will open ncore WinBUGS windows. These will close on successful completion, but if one throws an error you will need to close if manually. The results from trouble-free instances will be retained.
+# The call to foreach will open ncore WinBUGS windows. These will close on successful completion, but if one throws an error you will need to close it manually. The results from trouble-free instances will be retained.
 
 system.time(
 res3 <- foreach(x = seeds, .combine=rbind, .packages="R2WinBUGS",

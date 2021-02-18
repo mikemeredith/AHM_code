@@ -11,7 +11,6 @@
 
 library(AHMbook)
 library(jagsUI)
-bugs.dir <- "C:/WinBUGS14" # the location of the WinBUGS14.exe file on your machine
 
 # 3.4 Spatial hierarchical CJS models
 # ===================================
