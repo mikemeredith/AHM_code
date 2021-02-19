@@ -57,7 +57,7 @@ model {
   tau.alpha.lam <- pow(sd.alpha.lam, -2)
   sd.alpha.lam ~ dnorm(0, 2) I(0.001,)    # Site-level OD
 
-  # Model for ’immigration-free’ population growth rate
+  # Model for 'immigration-free' population growth rate
   for(i in 1:M){
     for(t in 1:(T-1)){
       alpha.gam[i,t] ~ dnorm(mu.alpha.gam, tau.alpha.gam)
@@ -88,7 +88,7 @@ model {
   tau.rho <- pow(sd.rho, -2)
   sd.rho ~ dnorm(0, 0.5)I(0.001,)          # Half-normal prior for sd
 
-  # ’Likelihood’
+  # 'Likelihood'
   # State process
   for(i in 1:M){
     # Initial conditions
@@ -175,7 +175,7 @@ model {
     beta.lam[v] ~ dnorm(0, 1)
   }
 
-  # Model for ’immigration-free’ population growth rate
+  # Model for 'immigration-free' population growth rate
   alpha.gam <- log(mean.gamma)
   mean.gamma ~ dunif(0.9, 1.1)           # Mean of gamma
   for(v in 1:3){                         # Covariate coefficients
@@ -197,7 +197,7 @@ model {
   tau.rho <- pow(sd.rho, -2)
   sd.rho ~ dnorm(0, 0.5)I(0.001,)        # Half-normal prior for sd
 
-  # ’Likelihood’
+  # 'Likelihood'
   # State process
   for(i in 1:M){
     # Initial conditions

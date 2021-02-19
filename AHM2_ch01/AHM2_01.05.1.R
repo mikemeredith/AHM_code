@@ -30,7 +30,7 @@ str(bdata <- list(C = C, M = M, T = T))
 # Specify model in BUGS language
 cat(file = "model2.txt","
 model {
-  # ’Priors’
+  # 'Priors'
   mu ~ dnorm(0, 0.001) # Intercept
   for(i in 1:M){
     site[i] ~ dnorm(0, tau.site) # Random site effects
@@ -45,7 +45,7 @@ model {
   tau <- pow(sd, -2)
   sd ~ dunif(0, 3)
 
-  # ’Likelihood’
+  # 'Likelihood'
   for (i in 1:M){
     for(t in 1:T){
       C[i,t] ~ dpois(lambda[i,t])

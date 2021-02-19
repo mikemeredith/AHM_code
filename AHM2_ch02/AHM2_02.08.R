@@ -71,7 +71,7 @@ model{
   phi ~ dunif(0,1)
   gamma ~ dunif(0,5)
 
-  # ’Likelihood’
+  # 'Likelihood'
   for (i in 1:nsites){
     for (t in 1:nseasons){
       # Linear model for detection function scale

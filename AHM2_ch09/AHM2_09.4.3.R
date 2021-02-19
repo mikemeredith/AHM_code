@@ -99,7 +99,7 @@ model {
       y[i,j] ~ dbern(mup[i,j])
       mup[i,j] <- z[i] * p[i,j]
       p[i,j] <- 1 / (1 + exp(-lp.lim[i,j]))
-      lp.lim[i,j] <- min(1000, max(-1000, lp[i,j]))  # ‘Stabilize’ logit
+      lp.lim[i,j] <- min(1000, max(-1000, lp[i,j]))  # 'Stabilize' logit
       lp[i,j] <- alpha0 + alpha[1] * forest[i] + alpha[2] * wind[i,j]
     }
   }

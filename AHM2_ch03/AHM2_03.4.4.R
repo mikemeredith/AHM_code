@@ -116,7 +116,7 @@ model {
   veta <- 1/tau
   sdeta <- sqrt(veta)
   # Multinomial likelihood for the m-array data (WinBUGS style)
-  # Note ’open index’ in pr[t,s,] comes last
+  # Note 'open index' in pr[t,s,] comes last
   for (s in 1:n.site){
     for (t in 1:(n.occ-1)){
       MARRWB[s, t,1:n.occ] ~ dmulti(pr[t,s, ], R[t,s])

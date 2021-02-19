@@ -36,7 +36,7 @@ str(bdata <- list(C = C, yr = year - mean(year), M = M, T = T) )
 cat(file = "model3.txt","
 model {
 
-  # ’Priors’
+  # 'Priors'
   mu ~ dnorm(0, 0.1) # Grand mean (intercept)
   for(i in 1:M){
     gamma[i] ~ dnorm(mu.gamma, tau.gamma) # Random site-level trends
@@ -56,7 +56,7 @@ model {
   tau <- pow(sd, -2)
   sd ~ dunif(0, 1)
 
-  # ’Likelihood’
+  # 'Likelihood'
   for (i in 1:M){
     for(t in 1:T){
       C[i,t] ~ dpois(lambda[i,t])

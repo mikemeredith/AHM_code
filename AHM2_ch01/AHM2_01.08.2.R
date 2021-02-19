@@ -152,7 +152,7 @@ model {
   tau.lsig.time <- pow(sd.lsig.time, -2)
   sd.lsig.time ~ dunif(0.001, 1)
 
-  # ’Likelihood’
+  # 'Likelihood'
   # Model for between-year dynamics
   for(i in 1:npop){
     # Initial year

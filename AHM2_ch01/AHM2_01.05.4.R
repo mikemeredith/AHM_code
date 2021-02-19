@@ -44,7 +44,7 @@ model {
   sd ~ dunif(0, 3)
   rho ~ dunif(-1,1)           # Autoregressive param. for temp. autocorrelation
 
-  # ’Likelihood’
+  # 'Likelihood'
   # First year
   for (i in 1:M){
     eps[i,1] ~ dnorm(0, tau) # unstructured random variation (= OD)

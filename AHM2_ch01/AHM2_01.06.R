@@ -55,7 +55,7 @@ model {
     tau.obs[i] <- pow(sigma.obs[i], -2)
   }
 
-  # ’Likelihood’
+  # 'Likelihood'
   # State process
   for (i in 1:M){
     for (t in 1:(T-1)){

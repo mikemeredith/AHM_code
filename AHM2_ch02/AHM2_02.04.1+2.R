@@ -119,7 +119,7 @@ model {
   for (i in 1:nsites){                    # Loop over sites
     M[i] ~ dpois(lambda)                  # Super-population size M
     for(t in 1:nyears){                   # Loop over years
-      N[i,t] ~ dbin(theta[t], M[i])       # 'Current’ population size N
+      N[i,t] ~ dbin(theta[t], M[i])       # 'Current' population size N
       for (j in 1:nsurveys){              # Loop over reps
         C[i,j,t] ~ dbin(p[i,j,t], N[i,t]) # Actual counts
         logit(p[i,j,t]) <- alpha0[t] + alpha[1] * DATE[i,j,t] + alpha[2] *

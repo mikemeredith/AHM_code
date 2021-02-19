@@ -51,7 +51,7 @@ str(bdata <- list(C = C, yr = year - mean(year), elev = elev.sc,
 cat(file = "model4.txt","
 model {
 
-  # ’Priors’ and linear models
+  # 'Priors' and linear models
   mu ~ dnorm(0, 0.1)               # Grand mean (intercept)
   for(i in 1:M){
     site[i] ~ dnorm(0, tau.site)   # Random site effects
@@ -83,7 +83,7 @@ model {
   tau <- pow(sd, -2)
   sd ~ dunif(0, 1)
 
-  # ’Likelihood’
+  # 'Likelihood'
   for (i in 1:M){
     for(t in 1:T){
       C[i,t] ~ dpois(lambda[i,t])

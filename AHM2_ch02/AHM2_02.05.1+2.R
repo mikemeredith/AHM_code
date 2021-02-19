@@ -89,7 +89,7 @@ model {
     for(t in 1:(nyears-1)){
       S[i,t+1] ~ dbin(phi, N[i,t])     # Survival process
       # R[i,t+1] ~ dpois(gamma)        # 'absolute' recruitment = 'constant'
-      R[i,t+1] ~ dpois(N[i,t] * gamma) # per-capita recruitment = 'autoreg’
+      R[i,t+1] ~ dpois(N[i,t] * gamma) # per-capita recruitment = 'autoreg'
       N[i,t+1] <- S[i,t+1] + R[i,t+1]
     }
     # Observation process
@@ -132,8 +132,8 @@ print(out1, 3)
 # p      0.696 0.018 0.659 0.696 0.729    FALSE 1 1.001  5292
 
 # To choose the absolute recruitment parameterization, we edit the BUGS code above to fit the
-# absolute (or “constant”) recruitment parameterization simply by commenting out the recruitment line
-# for “per capita” and then uncommenting the line previous to that.
+# absolute (or "constant") recruitment parameterization simply by commenting out the recruitment line
+# for "per capita" and then uncommenting the line previous to that.
 # ~~~~~~~~~~~~~~~~~~ here's the new JAGS code ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cat(file = "DM1b.txt","
 model {
@@ -150,8 +150,8 @@ model {
     # State process: transition model
     for(t in 1:(nyears-1)){
       S[i,t+1] ~ dbin(phi, N[i,t])       # Survival process
-      R[i,t+1] ~ dpois(gamma)            # 'absolute’ recruitment = 'constant’
-      # R[i,t+1] ~ dpois(N[i,t] * gamma) # per-capita recruitment = 'autoreg’
+      R[i,t+1] ~ dpois(gamma)            # 'absolute' recruitment = 'constant'
+      # R[i,t+1] ~ dpois(N[i,t] * gamma) # per-capita recruitment = 'autoreg'
       N[i,t+1] <- S[i,t+1] + R[i,t+1]
     } # end t
     # Observation process

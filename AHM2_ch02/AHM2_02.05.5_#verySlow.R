@@ -257,9 +257,9 @@ model {
     # State process: transition model
     for(t in 1:(nyears-1)){
       S[i,t+1] ~ dbin(phi[i], N[i,t])
-      # R[i,t+1] ~ dpois(gamma[i]) # 'absolute’ recruitment = 'constant’
-      tmp[i,t] <- N[i,t] * gamma[i] # per-capita recruitment = 'autoreg’
-      R[i,t+1] ~ dpois(tmp[i,t]) # per-capita recruitment = 'autoreg’
+      # R[i,t+1] ~ dpois(gamma[i]) # 'absolute' recruitment = 'constant'
+      tmp[i,t] <- N[i,t] * gamma[i] # per-capita recruitment = 'autoreg'
+      R[i,t+1] ~ dpois(tmp[i,t]) # per-capita recruitment = 'autoreg'
       N[i,t+1] <- S[i,t+1] + R[i,t+1]
     }
 

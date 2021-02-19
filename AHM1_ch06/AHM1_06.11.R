@@ -103,7 +103,7 @@ model {
      a[i] ~ dbern(phi)
      eps.lam[i] ~ dnorm(0, tau.lam)       # Random site effects in log(abundance)
      loglam[i] <- beta0 + inprod(beta[], lamDM[i,]) + eps.lam[i] * hlam.on
-     loglam.lim[i] <- min(250, max(-250, loglam[i]))  # ‘Stabilize’ log
+     loglam.lim[i] <- min(250, max(-250, loglam[i]))  # 'Stabilize' log
      lam[i] <- exp(loglam.lim[i])
      mu.poisson[i] <- a[i] * lam[i]
      N[i] ~ dpois(mu.poisson[i])
@@ -115,7 +115,7 @@ model {
     for (j in 1:nrep){
       y[i,j] ~ dbin(p[i,j], N[i])
       p[i,j] <- 1 / (1 + exp(-lp.lim[i,j]))
-      lp.lim[i,j] <- min(250, max(-250, lp[i,j]))  # ‘Stabilize’ logit
+      lp.lim[i,j] <- min(250, max(-250, lp[i,j]))  # 'Stabilize' logit
       lp[i,j] <- alpha0[j] + alpha[1] * elev[i] + alpha[2] * elev2[i] +
         alpha[3] * date[i,j] + alpha[4] * date2[i,j] +
         alpha[5] * dur[i,j] + alpha[6] * dur2[i,j] +
@@ -426,7 +426,7 @@ model {
   for (i in 1:nsite){
     eps.lam[i] ~ dnorm(0, tau.lam[i]) # Random site effects in log(abundance)
     loglam[i] <- beta0 + inprod(beta[], lamDM[i,]) + eps.lam[i]
-    loglam.lim[i] <- min(250, max(-250, loglam[i]))  # ‘Stabilize’ log
+    loglam.lim[i] <- min(250, max(-250, loglam[i]))  # 'Stabilize' log
     mu.poisson[i] <- exp(loglam.lim[i])
     N[i] ~ dpois(mu.poisson[i])
   }
@@ -436,7 +436,7 @@ model {
     for (j in 1:nrep){
       y[i,j] ~ dbin(p[i,j], N[i])
       p[i,j] <- 1 / (1 + exp(-lp.lim[i,j]))
-      lp.lim[i,j] <- min(250, max(-250, lp[i,j]))  # ‘Stabilize’ logit
+      lp.lim[i,j] <- min(250, max(-250, lp[i,j]))  # 'Stabilize' logit
       lp[i,j] <- alpha0[j] + alpha[1] * elev[i] + alpha[2] * elev2[i] +
         alpha[3] * date[i,j] + alpha[4] * date2[i,j] +
         alpha[5] * dur[i,j] + alpha[6] * dur2[i,j] +

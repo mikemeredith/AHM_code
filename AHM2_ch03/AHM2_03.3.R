@@ -98,7 +98,7 @@ model {
   tau.lp <- pow(sigma.lp, -2)
   sigma.lp ~ dunif(0, 3)                     # sd hyperparam.
 
-  # ’Likelihood’
+  # 'Likelihood'
   for(s in 1:nspec){                         # Loop over species
     for(i in 1:n.ind){                       # Loop over individuals
       # Define latent state at first capture
@@ -242,7 +242,7 @@ model {
     p[s] ~ dunif(0, 1)
   }
 
-  # ’Likelihood’
+  # 'Likelihood'
   for(s in 1:nspec){                          # Loop over species
     for(i in 1:n.ind){                        # Loop over individuals
       # Define latent state at first capture
@@ -490,7 +490,7 @@ model {
   tau.lp <- pow(sigma.lp, -2)
   sigma.lp ~ dunif(0, 1)     # Community heterogeneity in recapture
 
-  # ’Likelihood’
+  # 'Likelihood'
   for(s in 1:nspec){                          # Loop over species
     for(i in 1:n.ind){                        # Loop over individuals
       # Define latent state at first capture

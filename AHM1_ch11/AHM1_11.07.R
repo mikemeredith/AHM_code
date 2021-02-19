@@ -276,7 +276,7 @@ model {
   n0 <- sum(w[(nspec+1):(nspec+nz)]) # Number of unseen species
   Ntotal <- sum(w[])                 # Total metacommunity size
 
-  # Vectors to save (S for ‘save’; discard posterior samples for
+  # Vectors to save (S for 'save'; discard posterior samples for
   # all minus 1 of the potential species to save disk space)
   # we do this for nz = 250 (i.e., M = 395)
   lpsiS[1:(nspec+1)] <- lpsi[1:(nspec+1)]
