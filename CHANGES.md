@@ -4,7 +4,7 @@
 
 ## 2021-02-19
 
-Removed all non-ASCII characters (mostly smart quotes) from _comments_ in BUGS/JAGS code. These did not affect running the models, but prevented reloading the output saved in `.RData` files.
+* Removed all non-ASCII characters (mostly smart quotes) from _comments_ in BUGS/JAGS code. These did not affect running the models, but prevented reloading the output saved in `.RData` files.
 
 ## 2021-02-18
 
