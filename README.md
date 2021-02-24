@@ -19,6 +19,12 @@ newfunction(foo)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
 
+## Avoiding WinBUGS
+
+WinBUGS is not essential to work through the code. In most cases, `jagsUI::jags` is a drop-in replacement for `R2WinBUGS::bugs`. JAGS does not spatial autocorrelation (CAR) models, as used in AHM2 chapters 3 and 9; for those, the `nimble` package can be used, and alternative scripts are provided.
+
+Note that the `nimble` implementation for section 9.5 does not converge, see issue #4. We hope to fix this shortly.
+
 ## Volume 1 (AHM1)
 
 The code for the first volume (AHM1), with updates up to 2017, is available as a single huge text file on the [main book web page](http://www.mbr-pwrc.usgs.gov/pubanalysis/keryroylebook/).

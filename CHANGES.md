@@ -2,6 +2,10 @@
 
 # CHANGES
 
+## 2021-02-24
+
+* Added scripts with NIMBLE code for CAR models in AHM2 sections 3.4.4, 3.4.5, 9.4.1, 9.4.3 and 09.5.
+
 ## 2021-02-19
 
 * Removed all non-ASCII characters (mostly smart quotes) from _comments_ in BUGS/JAGS code. These did not affect running the models, but prevented reloading the output saved in `.RData` files.
