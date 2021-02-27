@@ -5,16 +5,13 @@
 #
 # Chapter 9 : SPATIAL MODELS OF DISTRIBUTION AND ABUNDANCE
 # ========================================================
-# Code from proofs dated 2020-08-19
+# Code put together by Mike Meredith
+# Based on code from proofs dated 2020-08-19
 
-# Approximate execution time for this code: 10 mins
+# Approximate execution time for this code: 18 mins
 # Run time with the full number of iterations: 3.5 hrs
 
 ##### USING NIMBLE INSTEAD OF WinBUGS  #####
-##### Warning: This does not converge! #####
-
-# Code put together by Mike Meredith
-# Advice on how to fix it welcome! See Issue #4
 
 library(AHMbook)
 library(unmarked)         # Contains the Swiss landscape data set
@@ -216,23 +213,27 @@ SVC.code <- nimbleCode({
 
 
 # Initial values
-tmp <- apply(C, c(1,3), max, na.rm = TRUE) + 1
-tmp[tmp == -Inf] <- 1
+Nst <- apply(C, c(1,3), max, na.rm = TRUE) + 1
+Nst[Nst == -Inf] <- 1
 # Provide initial values too for the missing values in 'C'
 # (not essential, but avoids a bunch of ugly warnings).
 Cst <- C
 Cst[is.na(C)] <- 1
 Cst[!is.na(C)] <- NA
 
-inits <- function(){list(N = tmp, C = Cst, beta0 = 1, v.eta = abs(rnorm(1)),
-    eta = rep(0, n.block))}
+inits <- function(){list(N = Nst, C = Cst, eta = rep(0, n.block), v.eta = abs(rnorm(1)),
+    # additional starting values added to fix issues with non-converging chains:
+    p0 = runif(14, 0.1, 0.4), beta1 = runif(4, -0.5, 0.5), alpha1 = runif(3, -0.5, 0.5),
+    beta0 = runif(1, 0.1, 0.5), mean.trend = runif(1, 0, 0.2))}
 
 # Parameters monitored
-params <- c("lam0", "beta1", "mean.trend", "p0", "alpha1", "Ntotal",
-    "meanPopLevel", "trend", "v.eta", "sd.eta", "eta")
+params <- c("beta0", "mean.trend", "v.eta", "alpha1", "beta1", "p0", # <-- top-level nodes
+    "lam0", "Ntotal", "meanPopLevel", "trend", "sd.eta", "eta")
 
+# Run 2 chains in series to check for issues
+# ''''''''''''''''''''''''''''''''''''''''''
 # MCMC settings
-ni <- 600 ; nt <- 1 ; nb <- 500 ; nc <- 2  # ~~~ for testing, 6 mins
+ni <- 2000 ; nt <- 1 ; nb <- 1200 ; nc <- 2  # ~~~ for testing, 7 mins
 
 system.time(
 out <- nimbleMCMC(SVC.code, data=bdata, constants=bconst,
@@ -241,7 +242,8 @@ out <- nimbleMCMC(SVC.code, data=bdata, constants=bconst,
     samplesAsCodaMCMC=TRUE) )
 ( mco <- mcmcOutput(out) )
 View(summary(mco, n.eff=TRUE))
-diagPlot(mco, c("alpha", "beta", "mean.trend", "lam", "v"))
+# check top-level nodes
+diagPlot(mco, c("alpha", "beta", "mean.trend", "v.eta", "p0"))
 
 # Use 'foreach' to do a long run in parallel
 # ''''''''''''''''''''''''''''''''''''''''''
@@ -250,14 +252,15 @@ library(parallel)
 library(doParallel)
 
 detectCores()  # number of cores on your machine
-ncore <- 3     # <-- adjust this for your machine (3 used for testing)
+# ncore <- 7   # <-- adjust this for your task
+ncore <- 3     # ~~~ testing
 
 cl <- makeCluster(ncore)
 registerDoParallel(cl)
 
-ni <- 120000 ; nt <- 60 ; nb <- 60000  # 3.5 hrs
-# ni <- 12000 ; nt <- 6 ; nb <- 6000  # 30 mins
-ni <- 600 ; nt <- 1 ; nb <- 500   # ~~~ for testing, 6 mins
+# ni <- 120000 ; nt <- 60 ; nb <- 60000  # 3.4 hrs
+# ni <- 12000 ; nt <- 6 ; nb <- 6000  # 17 mins
+ni <- 2000 ; nt <- 1 ; nb <- 1200   # ~~~ for testing, 4.5 mins
 
 seeds <- 1:ncore
 
@@ -272,16 +275,11 @@ res <- foreach(x = seeds, .packages="nimble",
 } )
 stopCluster(cl)
 
-# How many chains completed successfully?
-length(res)
-
 # Convert to an mcmcOutput object and look at diagnostics
 mclist <- coda::mcmc.list(res)
 ( mco <- mcmcOutput(mclist) )
-diagPlot(mco, c("alpha", "beta", "mean.", "v"))  # total non-convergence!!
+diagPlot(mco, c("alpha", "beta", "mean.trend", "v.eta", "p0"))
 View(summary(mco))
-
-# stop("NIMBLE run did not converge")
 
 # ~~~~~ extra code for figure 9.13 ~~~~~~~~~~~~~
 out <- sumryList(mco)

@@ -21,9 +21,7 @@ newfunction(foo)
 
 ## Avoiding WinBUGS
 
-WinBUGS is not essential to work through the code. In most cases, `jagsUI::jags` is a drop-in replacement for `R2WinBUGS::bugs`. JAGS does not spatial autocorrelation (CAR) models, as used in AHM2 chapters 3 and 9; for those, the `nimble` package can be used, and alternative scripts are provided.
-
-Note that the `nimble` implementation for section 9.5 does not converge, see issue #4. We hope to fix this shortly.
+WinBUGS is not essential to work through the code. In most cases, `jagsUI::jags` is a drop-in replacement for `R2WinBUGS::bugs`. JAGS does not do spatial autocorrelation (CAR) models, as used in AHM2 chapters 3 and 9; for those, the `nimble` package can be used, and alternative scripts are provided.
 
 ## Volume 1 (AHM1)
 
