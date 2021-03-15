@@ -106,7 +106,7 @@ cjs8.code <- nimbleCode({
 
     # backtransform time means
     logit(mean.phi.time[t]) <- mu.lphi - beta.lphi.time[t]
-    logit(mean.p.time[t]) <- mu.lphi - beta.lp.time[t]
+    logit(mean.p.time[t]) <- mu.lp - beta.lp.time[t]
   }
 
   # Hyperpriors for hyperparams
