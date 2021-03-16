@@ -93,7 +93,7 @@ model {
 
     # backtransform time means
     mean.phi.time[t] <- 1 / (1 + exp(-mu.lphi + beta.lphi.time[t]))
-    mean.p.time[t] <- 1 / (1 + exp(-mu.lphi + beta.lp.time[t]))
+    mean.p.time[t] <- 1 / (1 + exp(-mu.lp + beta.lp.time[t]))
   }
 
   # Hyperpriors for hyperparams
