@@ -10,7 +10,7 @@
 
 ##### USING NIMBLE INSTEAD OF WinBUGS #####
 
-# Cobe put together by Mike Meredith
+# Code put together by Mike Meredith
 
 library(AHMbook)
 library(nimble)
