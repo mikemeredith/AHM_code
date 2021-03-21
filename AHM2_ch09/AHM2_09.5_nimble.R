@@ -7,9 +7,10 @@
 # ========================================================
 # Code put together by Mike Meredith
 # Based on code from proofs dated 2020-08-19
+# NIMBLE adaptation by Mike Meredith with input from Chris Paciorek
 
-# Approximate execution time for this code: 18 mins
-# Run time with the full number of iterations: 3.5 hrs
+# Approximate execution time for this script: 13 mins
+# Run time with the full number of iterations: 37 mins
 
 ##### USING NIMBLE INSTEAD OF WinBUGS  #####
 
@@ -47,25 +48,25 @@ ch$MHBquad[belongs.to] <- 1:length(belongs.to) # each ch$MHBquad has MHB quadrat
 summary(ch)
 
 # Grab elevation and forest cover covariates from Swiss landscape file
-oelev<- ch$elev[belongs.to] # 'o' means 'original' or unscaled
-oforest<- ch$forest[belongs.to]
+oelev <- ch$elev[belongs.to] # 'o' means 'original' or unscaled
+oforest <- ch$forest[belongs.to]
 
 # Standardize elevation and forest cover
-elev<- standardize(oelev)
-forest<- standardize(oforest)
+elev <- standardize(oelev)
+forest <- standardize(oforest)
 
 # Also grab counts, survey dates and survey durations
 head(counts <- as.matrix(wp[,7:48]))   # Counts
-head(dates<- as.matrix(wp[,49:90]))   # Survey dates
+head(dates <- as.matrix(wp[,49:90]))   # Survey dates
 head(durs <- as.matrix(wp[,91:132]))   # Survey durations
 
 # Put these three into 3d arrays
-nsite<- 267
-nrep<- 3
-nyear<- 14
-C<- array(counts, dim = c(nsite, nrep, nyear))
-ODATE<- array(dates, dim = c(nsite, nrep, nyear))
-ODUR<- array(durs, dim = c(nsite, nrep, nyear))
+nsite <- 267
+nrep <- 3
+nyear <- 14
+C <- array(counts, dim = c(nsite, nrep, nyear))
+ODATE <- array(dates, dim = c(nsite, nrep, nyear))
+ODUR <- array(durs, dim = c(nsite, nrep, nyear))
 
 # Standardize and mean-impute date and duration
 DATE <- standardize(ODATE)
@@ -77,8 +78,8 @@ DUR[is.na(DUR)] <- 0            # mean-impute
 
 # Round all Swiss quadrats by 5 km
 block.side <- 5000   # Length of side of block for spatial aggregation
-ch$xblock<- block.side *round(ch$x/block.side)
-ch$yblock<- block.side *round(ch$y/block.side)
+ch$xblock <- block.side * round(ch$x/block.side)
+ch$yblock <- block.side * round(ch$y/block.side)
 plot(ch$xblock, ch$yblock, pch = 0, asp = 1,
     main = "Switzerland by 5 x 5 km2 blocks, with location of the 267 MHB quads",
     frame = FALSE)
@@ -110,8 +111,8 @@ winnb <- nb2WB(neigh)  # Function to get CAR ingredients for BUGS
 # Summarize the neighborhood information needed by WinBUGS
 str(winnb)
 # List of 3
- # $ adj    : int [1:13930] 2 4 5 1 3 4 5 6 2 5 ...
- # $ weights: num [1:13930] 1 1 1 1 1 1 1 1 1 1 ...
+# $ adj     : int [1:13930] 2 4 5 1 3 4 5 6 2 5 ...
+# $ weights : num [1:13930] 1 1 1 1 1 1 1 1 1 1 ...
 # $ num     : int [1:1842] 3 5 3 5 8 5 5 8 6 4 ...
 
 # Frequency distribution of the number of neighbours
@@ -151,10 +152,13 @@ str(bconst <- list(elev = elev, forest = forest, DATE = DATE, DUR = DUR,
 # ''''''''''''''''''''''''''''''''''''''''''''''''
 # Necessary changes:
 # 1. Replace I(0,) with T(..., 0, )
-# 2. dcar_normal needs zero_mean=1 argument to mimic WinBUGS version
+# 2. dcar_normal output is not zero-centered (unlike WinBUGS version), so should
+#    not be used with an intercept: `mean.trend` removed.
+#    (`trend` retained for consistency with the text, p.558)
 # Optional improvements:
 # 1. Use logit(.) <-
 # 2. dbeta for probabilities instead of dunif
+# 3. Use ^ notation instead of pow()
 
 SVC.code <- nimbleCode({
   # Priors
@@ -172,15 +176,13 @@ SVC.code <- nimbleCode({
   beta0 ~ dnorm(0, 0.1)
   lam0 <- exp(beta0)
 
-  # Linear model for the trend, with its priors
+  # Linear model for the trend
   for(i in 1:nsite){
-    trend[i] <- mean.trend + eta[MHBblockID[i]]
+    trend[i] <- eta[MHBblockID[i]]
   }
-  mean.trend ~ dnorm(0, 1)
 
   # CAR prior distribution for spatial random effects in the trend
-  # eta[1:n.block] ~ car.normal(adj[], weights[], num[], tau)
-  eta[1:n.block] ~ dcar_normal(adj[], weights[], num[], tau, zero_mean=1)
+  eta[1:n.block] ~ dcar_normal(adj[], weights[], num[], tau)
   tau <- 1/v.eta
   sd.eta <- sqrt(v.eta)
   v.eta ~ T(dnorm(0, 0.01),0, )
@@ -192,7 +194,7 @@ SVC.code <- nimbleCode({
       N[i,t] ~ dpois(lambda[i, t])
       log(lambda[i,t]) <- min(10, max(-10, loglam.lim[i,t]))
       loglam.lim[i,t] <- beta0 + beta1[1] * elev[i] +
-          beta1[2] * pow(elev[i],2) + beta1[3] * pow(elev[i],3) +
+          beta1[2] * elev[i]^2 + beta1[3] * elev[i]^3 +
           beta1[4] * forest[i] + trend[i] * (t-7.5)
       for(j in 1:nsurvey){
         # Observation process
@@ -200,14 +202,14 @@ SVC.code <- nimbleCode({
         logit(p[i,j,t]) <- lp.lim[i,j,t]
         lp.lim[i,j,t] <- min(500, max(-500, lp[i,j,t]))
         lp[i,j,t] <- alpha0[t] + alpha1[1] * DATE[i,j,t] +
-            alpha1[2] * pow(DATE[i,j,t],2) + alpha1[3] * DUR[i,j,t]
+            alpha1[2] * DATE[i,j,t]^2 + alpha1[3] * DUR[i,j,t]
       }
     }
   }
   # Derived quantities
   for(t in 1:nyear){
     Ntotal[t] <- sum(N[,t])
-    meanPopLevel[t] <- exp(beta0 + mean.trend * (t-7.5))
+    meanPopLevel[t] <- exp(beta0 + mean(trend[1:nsite]) * (t-7.5))
   }
 } )
 
@@ -224,10 +226,10 @@ Cst[!is.na(C)] <- NA
 inits <- function(){list(N = Nst, C = Cst, eta = rep(0, n.block), v.eta = abs(rnorm(1)),
     # additional starting values added to fix issues with non-converging chains:
     p0 = runif(14, 0.1, 0.4), beta1 = runif(4, -0.5, 0.5), alpha1 = runif(3, -0.5, 0.5),
-    beta0 = runif(1, 0.1, 0.5), mean.trend = runif(1, 0, 0.2))}
+    beta0 = runif(1, 0.1, 0.5))}
 
 # Parameters monitored
-params <- c("beta0", "mean.trend", "v.eta", "alpha1", "beta1", "p0", # <-- top-level nodes
+params <- c("beta0", "v.eta", "alpha1", "beta1", "p0", # <-- top-level nodes
     "lam0", "Ntotal", "meanPopLevel", "trend", "sd.eta", "eta")
 
 # Run 2 chains in series to check for issues
@@ -243,7 +245,7 @@ out <- nimbleMCMC(SVC.code, data=bdata, constants=bconst,
 ( mco <- mcmcOutput(out) )
 View(summary(mco, n.eff=TRUE))
 # check top-level nodes
-diagPlot(mco, c("alpha", "beta", "mean.trend", "v.eta", "p0"))
+diagPlot(mco, c("alpha", "beta", "v.eta", "p0"))
 
 # Use 'foreach' to do a long run in parallel
 # ''''''''''''''''''''''''''''''''''''''''''
@@ -258,8 +260,7 @@ ncore <- 3     # ~~~ testing
 cl <- makeCluster(ncore)
 registerDoParallel(cl)
 
-# ni <- 120000 ; nt <- 60 ; nb <- 60000  # 3.4 hrs
-# ni <- 12000 ; nt <- 6 ; nb <- 6000  # 17 mins
+# ni <- 22000 ; nt <- 5 ; nb <- 2000  # 30  mins, enough with 3 chains
 ni <- 2000 ; nt <- 1 ; nb <- 1200   # ~~~ for testing, 4.5 mins
 
 seeds <- 1:ncore
@@ -284,7 +285,7 @@ View(summary(mco))
 # ~~~~~ extra code for figure 9.13 ~~~~~~~~~~~~~
 out <- sumryList(mco)
 # Look at map of trends
-block.trend <- exp(out$mean$mean.trend+out$mean$eta) # 1 is stable
+block.trend <- exp(out$mean$eta) # 1 is stable
 summary(block.trend)
 
 # Map trend at 5x5km2 scale
