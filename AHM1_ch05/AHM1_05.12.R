@@ -55,7 +55,9 @@ ni <- 3000   ;   nt <- 1   ;   nb <- 1000   ;  nc <- 3
 
 # Call JAGS from R (ART <1 min)
 library(jagsUI)
-out7 <- jags(win.data, inits, params, "squeezed_count_GLM.txt", n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
-par(mfrow = c(4,2))   ;   traceplot(out7)
+out7 <- jags(win.data, inits, params, "squeezed_count_GLM.txt",
+    n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
+op <- par(mfrow = c(4,2))   ;   traceplot(out7)
+par(op)
 print(out7, 3)
 

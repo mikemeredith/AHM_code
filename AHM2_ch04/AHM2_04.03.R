@@ -274,4 +274,5 @@ points(1:nyears, out1$mean$psi, type = 'b', col = "black", pch = 16, cex = 2)
 segments(1:nyears, out1$q2.5$psi, 1:nyears, out1$q97.5$psi, col = "black", lwd = 1)
 legend(8, 0.9, c('Truth', 'MLEs', 'Posterior means'), col=c("red", "black", "black"),
     pch = c(15, 1, 16), cex = 1.5, bty = 'n')
+par(op)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

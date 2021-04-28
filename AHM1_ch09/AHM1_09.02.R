@@ -121,6 +121,7 @@ simHDSg <- function(type = "line", nsites = 100, lambda.group = 0.75,
     plot(habitat, n, main = "Observed group counts (n) vs. habitat", frame = FALSE)
     plot(table(data[,"gs"]), main = "Observed group sizes",
         ylab = "Frequency", frame = FALSE)
+    par(op)
   }
 
   # Output

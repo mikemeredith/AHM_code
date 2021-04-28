@@ -177,7 +177,7 @@ plot_Nmix_resi <- function(fmP, fmNB, fmZIP){  # ~~~~~ this function is in AHMbo
   library(unmarked)
 
   # Plot fitted vs. observed data
-  par(mfrow = c(2,3), mar = c(4,4,2,2), cex = 1.2)
+  op <- par(mfrow = c(2,3), mar = c(4,4,2,2), cex = 1.2)
   tmp1 <- range(c(fitted(fmP), fitted(fmNB), fitted(fmZIP)), na.rm = T)
   limits1 = round(c(tmp1[1], tmp1[2]))
   tmp2 <- range(c(residuals(fmP), residuals(fmNB), residuals(fmZIP)), na.rm = T)
@@ -209,6 +209,7 @@ plot_Nmix_resi <- function(fmP, fmNB, fmZIP){  # ~~~~~ this function is in AHMbo
       frame = FALSE, xlim = limits1, ylim = limits2)
   abline(h = 0, lwd = 2)
   abline(lm(c(residuals(fmZIP)) ~ c(fitted(fmZIP))), col = "blue", lwd = 3)
+  par(op)
 }
 
 
@@ -308,7 +309,7 @@ modavgPred(cand.set = list(fm5ZIP), newdata=pNewData, parm.type = "detect",
 rlength <- seq(1, 30, 0.01)         # Vary route length from 1 to 30 kms
 newData <- data.frame(elev=0, forest=0, iLength=1/rlength)
 pred <- predictSE(fm5ZIP, parm.type="lambda", newdata=newData, c.hat = 2.47)
-par(mar = c(5,5,3,2), cex.lab = 1.5, cex.axis = 1.3)
+op <- par(mar = c(5,5,3,2), cex.lab = 1.5, cex.axis = 1.3)
 plot(rlength, pred[[1]], type = "l", lwd = 3, col = "blue", frame = FALSE,
     xlab = "Transect length (km)", ylab = "Exposed population (lambda)",
     ylim = c(0, 16), axes = FALSE)
@@ -321,7 +322,7 @@ matlines(rlength, cbind(pred[[1]]-pred[[2]], pred[[1]]+pred[[2]]),
 sat.pred <- predictSE(fm5ZIP, parm.type="lambda",
     newdata= data.frame(elev=0, forest=0, iLength=0), c.hat = 2.47)
 abline(h = sat.pred$fit, lwd = 2, lty = 2)
-
+par(op)
 
 # Inspect the numbers
 print(cbind("Route length" = rlength, "Exp. pop" = pred[[1]],

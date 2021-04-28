@@ -396,11 +396,12 @@ post.sd <- apply(phi.grid, 1, sd)     # Posterior standard deviation
 library(raster)
 mapPalette <- colorRampPalette(c("grey", "yellow", "orange", "red"))
 
-par(mfrow = c(1, 2))#, mar = c(2, 6, 2, 8), cex.lab = 2, cex.axis = 2)
+op <- par(mfrow = c(1, 2))#, mar = c(2, 6, 2, 8), cex.lab = 2, cex.axis = 2)
 # Plot posterior mean of predicted apparent survival
 r1 <- rasterFromXYZ(data.frame(x = cells$lon, y = cells$lat, z = post.mean))
-plot(r1, col = mapPalette(100), axes = FALSE, box = F)
+plot(r1, col = mapPalette(100), axes = FALSE, box = FALSE)
 # Plot uncertainty in this estimate of predicted apparent survival
 r2 <- rasterFromXYZ(data.frame(x = cells$lon, y = cells$lat, z = post.sd))
-plot(r2, col = mapPalette(100), axes = F, box = FALSE, zlim = c(0, 0.1))
+plot(r2, col = mapPalette(100), axes = FALSE, box = FALSE, zlim = c(0, 0.1))
+par(op)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

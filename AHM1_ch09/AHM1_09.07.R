@@ -343,8 +343,8 @@ library(jagsUI)
 set.seed(1) # ~~~ prevents "node incompatible..." error
 open3  <- jags (data1, inits, params, "Sollmann3.txt", n.thin=nt,
     n.chains=nc, n.burnin=nb, n.iter=ni, parallel=TRUE)
-par(mfrow = c(3,3))   ;   traceplot(open3)   ;   print(open3, 2)
-
+op <- par(mfrow = c(3,3))   ;   traceplot(open3)   ;   print(open3, 2)
+par(op)
 
 # Compare inferences in graph .... (Fig. 9-6)
 plot(apply(dat$N,2,sum),ylim=c(600,1300),xlab="Year",ylab="Population size (307 sample units)")

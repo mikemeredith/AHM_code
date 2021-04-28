@@ -16,6 +16,15 @@
   return(paste(round(time, 2), "secs"))
 }
 
+# Function to compare current plotting 'par's with a default
+.comparePars <- function(default,
+    ignore=c("usr", "xaxp", "yaxp", "mai", "pin", "plt", "cex")) {
+  default[ignore] <- NULL
+  current <- par(no.readonly = TRUE)
+  current[ignore] <- NULL
+  isTRUE(all.equal(default, current))
+}
+
 # Get a listing of all .R files
 files <- list.files(pattern = "[.][Rr]$", recursive = TRUE)
 # Keep only file names not containing "#"
@@ -57,8 +66,14 @@ for(.i in seq_along(.ListOfFilesToCheck)) {
   cat("\n\n", .ListOfFilesToCheck[.i], "\n", file = .logFile, append = TRUE)
   cat(format(Sys.time()), "\n", file = .logFile, append = TRUE)
   pdf(.pdfFile)
+  defaultpars <- par(no.readonly = TRUE)
   timing <- system.time(
     returnValue <- try(source(.ListOfFilesToCheck[.i], chdir=TRUE)) )
+  # check that par's have been restored:
+  if(!.comparePars(defaultpars)) {
+    cat("Plotting par's were not restored.\n", file = .logFile, append = TRUE)
+    plot(0)
+  }
   dev.off()
   sessionInfo <- sessionInfo()
   save.image(file = .imageFile)

@@ -282,7 +282,7 @@ phi.pred3.psd <- apply(phi.pred3, 1, sd)     # Posterior sd pred 3
 library(raster)
 
 # Here's the actual Fig. 3-16
-par(mfrow = c(1, 2))
+op <- par(mfrow = c(1, 2))
 # Plot posterior mean of predicted apparent survival (predictions 1)
 r1 <- with(willowWarbler, rasterFromXYZ(data.frame(x = cells$lon,
     y = cells$lat, z = phi.pred1.pm)))
@@ -303,4 +303,5 @@ plot(r1, col = rampYOR(100), axes = FALSE, box = FALSE)
 r2 <- with(willowWarbler, rasterFromXYZ(data.frame(x = cells$lon, y = cells$lat,
     z=phi.pred3.psd)))
 plot(r2, col = rampYOR(100), axes = FALSE, box = FALSE, zlim = c(0, 0.08))
+par(op)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

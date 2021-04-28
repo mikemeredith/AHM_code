@@ -22,7 +22,7 @@ library(jagsUI)
 library(AHMbook)
 data(UKmarbledWhite)
 str(white <- UKmarbledWhite)
-par(mfrow = c(2,3))
+op <- par(mfrow = c(2,3))
 tmp <- tapply(white$C, list(white$year, white$site), function(x) length(x))
 plot(table(c(tmp)), main = "Counts per site and year")
 plot(table(white$site), main = "Counts per site")
@@ -30,6 +30,7 @@ plot(table(white$north), main = "Counts per latitude class")
 plot(table(white$date), main = "Counts per date")
 plot(table(white$year), main = "Counts per year")
 plot(table(white$C), main = "Frequency distribution of counts")
+par(op)
 
 # Variables for use later
 year <- white$year - 1990

@@ -524,7 +524,7 @@ for(i in 1:nsim){
 # -----------
 # Visualisation of simulation results
 # Plots of estimates versus truth (all 4 params, 3 levels of heterogeneity)
-par(mfrow = c(4,3), mar = c(5,5,3,3), cex.lab = 1.4, cex.axis = 1.4)
+op <- par(mfrow = c(4,3), mar = c(5,5,3,3), cex.lab = 1.4, cex.axis = 1.4)
 plot(psi0.2, psi.hat0.2.ml, xlab = "Truth", ylab = "Occupancy",
     main = "Heterogeneity sd = 0.2", xlim = c(0,1), ylim = c(0,1),
     frame = FALSE)
@@ -580,4 +580,4 @@ plot(p2, p.hat2.ml, xlab = "Truth", ylab = "Detection",
     main = "", xlim = c(0,1), ylim = c(0,1), frame = FALSE)
 abline(0, 1, col = "red", lwd = 1)
 lines(smooth.spline(p2, p.hat2.ml), col = "blue", lwd = 2)
-
+par(op)

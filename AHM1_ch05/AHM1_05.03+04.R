@@ -20,10 +20,11 @@ attach(data)
 
 # Summarize data by taking mean at each site and plot
 Cmean <- apply(C, 1, mean)
-par(mfrow = c(1,3))
+op <- par(mfrow = c(1,3))
 hist(Cmean, 50)               # Very skewed
 plot(elev, Cmean)
 plot(forest, Cmean)
+par(op)
 
 # Package the data needed in a bundle
 win.data <- list(Cmean = Cmean, M = length(Cmean), elev = elev, forest = forest)

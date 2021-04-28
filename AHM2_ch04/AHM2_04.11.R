@@ -479,7 +479,8 @@ na <- 1000  ;  ni <- 2000  ;  nt <- 2  ;  nb <- 1000  ;  nc <- 3  # 11 mins
 # Call JAGS (ART 94 min), check convergence and summarize posteriors
 out3 <- jags(bdata, inits, params, "dynocc3.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-par(mfrow = c(2,2))   ;   traceplot(out3)
+op <- par(mfrow = c(2,2))   ;   traceplot(out3)
+par(op)
 summary(out3)   ;   jags.View(out3)   # not shown
 
 # Finally, in model 4, we use as a predictor for theta[i, t] the mean number of
@@ -657,7 +658,8 @@ na <- 1000  ;  ni <- 2000  ;  nt <- 1  ;  nb <- 1000  ;  nc <- 3  # ~~~ for test
 # Call JAGS (ART 156 min), check convergence and summarize posteriors
 out4 <- jags(bdata, inits, params, "dynocc4.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-par(mfrow = c(2,2))   ;   traceplot(out4)
+op <- par(mfrow = c(2,2))   ;   traceplot(out4)
+par(op)
 summary(out4)   ;   jags.View(out4)  # not shown
 
 

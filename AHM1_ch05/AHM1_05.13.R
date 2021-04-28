@@ -65,7 +65,8 @@ out8 <- bugs(win.data, inits, params, "RE.Poisson.txt",
 out8 <- jags(win.data, inits, params, "RE.Poisson.txt",
   # n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel=TRUE)
-par(mfrow = c(3,2))  ;  traceplot(out8, c("mu.alpha", "sd.alpha", "alpha[1:3]"))
+op <- par(mfrow = c(3,2))  ;  traceplot(out8, c("mu.alpha", "sd.alpha", "alpha[1:3]"))
+par(op)
 
 print(out8, 3)
 

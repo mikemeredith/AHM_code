@@ -2,6 +2,12 @@
 
 # CHANGES
 
+## 2021-04-28
+
+* Fixed restoration of plotting parameters after calls to `par` in multiple files, as autocheck now reports when this is not done.
+
+Tested: Windows 10, R 4.1.0-alpha, GitHub versions of `AHMbook` (0.2.2.9001), `jagsUI` (1.5.1.9101) and `unmarked` (1.0.1.9014), up-to-date CRAN versions of other packages.
+
 ## 2021-02-24 to 27
 
 * Added scripts with NIMBLE code for CAR models in AHM2 sections 3.4.4, 3.4.5, 9.4.1, 9.4.3 and 09.5.
@@ -71,7 +77,7 @@ A slew of changes to enable scripts to run reasonably quickly and without human 
 
 * `R2WinBUGS::bugs` calls now all have `debug = FALSE`, original lines with `debug = TRUE` commented out.
 * Calls to `browser()` commented out, replaced with a call to `devAskNewPage()`.
-* Plotting calls with `ask` argument get `dev.interactive()`, this means R only asks for page confirmation for screen devices.
+* Plotting calls with `ask` argument get `dev.interactive()`, this means R only asks for page confirmation for screen devices. (Testing sends plots to a .PDF file.)
 * In a few cases, calls to `jagsUI::jags` have been changed to `parallel = TRUE` to save time.
 * Numbers of iterations have been reduced for some simulations and MCMC runs that were taking several hours.
 
@@ -79,7 +85,7 @@ Tested: Windows 10, R 3.6.2, jagUI 1.5.1 patched to `ask` only for interactive d
 
 # 2019-08-09
 
-Changes to scripts so that each script can be run in a new R session. This involved inserting additional code from earlier section at the top of the script or loading saved output from previous sections.
+Changes to scripts so that each script can be run in a new R session. This involved inserting additional code from earlier sections at the top of the script or loading saved output from previous sections.
 
 In checking the scripts, I found some of the original code no longer worked and provided new code that does work. For example:
 

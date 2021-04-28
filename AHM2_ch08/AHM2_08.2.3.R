@@ -449,6 +449,7 @@ matplot(Dist.pred.orig, cbind(F.alone, F.given.bobcat, F.given.coyote),
     ylim = c(0, 0.7), main = 'Red Fox')
 legend('topright', c('alone', 'given Bobcat presence', 'given Coyote presence'),
     lwd = 3, lty = 1:3, col = 1:3, bty = 'n', cex = 1.5)
+par(op)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # ~~~ extra code for figures 8.6 and 8.7 ~~~~~~

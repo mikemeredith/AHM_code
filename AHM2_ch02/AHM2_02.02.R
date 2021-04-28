@@ -18,8 +18,8 @@ dateso <- as.matrix(peckers[,49:90])    # Survey Julian dates 2004:2017
 timeso <- as.matrix(peckers[,91:132])   # Survey durations 2004:2017
 into <- timeso/peckers[,'route.length'] # Survey intensity (min / km)
 
-# Quick visualizations of counts, survey date, duration and intensity
-par(mfrow = c(2, 2)) # plot not shown
+# Quick visualizations of counts, survey date, duration and intensityop
+op <- par(mfrow = c(2, 2)) # plot not shown
 plot(table(counts), frame = FALSE, main = 'MHB Green Woodpecker Counts',
     type = 'h', lend = 'butt', lwd = 10)
 hist(dateso, main = 'Julian Dates (start on week-end around April 15)',
@@ -27,6 +27,7 @@ hist(dateso, main = 'Julian Dates (start on week-end around April 15)',
 hist(timeso, main = 'Survey duration (min)', breaks = 50, col = 'grey')
 hist(into, main = 'Survey intensity (min / km route length)',
     breaks = 50, col = 'grey')
+par(op)
 
 # Standardize survey dates, intensity and times ([ duration)
 dates <- standardize(dateso)
