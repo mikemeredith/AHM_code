@@ -6,10 +6,9 @@
 # ========================================================
 # Code from proofs dated 2020-08-18
 
-# ~~~ run without the 2 slowest models took 45 hrs ~~~~~~~~~~~~~
+# run time for this script 3 mins
 
 library(jagsUI)
-library(unmarked)
 library(AHMbook)
 
 # 2.5 Dynamic N-mixture model of Dail-Madsen
@@ -76,9 +75,9 @@ str(bdata <- list(C = data$y, nsites = dim(data$y)[1], nsurveys = dim(data$y)[3]
 cat(file = "DM1.txt","
 model {
   # Priors
-  lambda ~ dunif(0, 100)   # Population growth rate
-  phi ~ dunif(0, 1)        # apparent survival (omega in paper/unmarked)
-  gamma ~ dunif(0, 5)      # per-capita recruitment rate
+  lambda ~ dunif(0, 100)   # Initial site-specific abundance
+  phi ~ dunif(0, 1)        # Apparent survival (omega in paper/unmarked)
+  gamma ~ dunif(0, 5)      # Per-capita recruitment rate
   p ~ dunif(0, 1)          # Detection probability
 
   # Likelihood
@@ -138,10 +137,10 @@ print(out1, 3)
 cat(file = "DM1b.txt","
 model {
   # Priors
-  lambda ~ dunif(0, 100) # Population growth rate
-  phi ~ dunif(0, 1) # apparent survival (omega in paper/unmarked)
-  gamma ~ dunif(0, 5) # per-capita recruitment rate
-  p ~ dunif(0, 1) # Detection probability
+  lambda ~ dunif(0, 100) # Initial site-specific abundance
+  phi ~ dunif(0, 1)      # Apparent survival (omega in paper/unmarked)
+  gamma ~ dunif(0, 5)    # Per-capita recruitment rate
+  p ~ dunif(0, 1)        # Detection probability
 
   # Likelihood
   for(i in 1:nsites){

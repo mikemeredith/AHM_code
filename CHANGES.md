@@ -2,6 +2,11 @@
 
 # CHANGES
 
+## 2021-05-14
+
+* Fixed incorrect description of `lambda` in comments in AHM2_02.05.1+2.R (thanks to José Jiménez).
+* Fixed run time for the same file.
+
 ## 2021-04-28
 
 * Fixed restoration of plotting parameters after calls to `par` in multiple files, as autocheck now reports when this is not done.
