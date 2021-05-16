@@ -119,7 +119,10 @@ cand.mods <- list(
     "both.t" = occuFP(detformula = ~Year-1, FPformula = ~Year-1,
         stateformula = ~Year-1, data = wv.umf, starts = stvals$both.t))
 
-(modTab <- modSelFP(cand.mods))
+# ~~~ modSelFP is now deprecated, use the 'unmarked' functions instead ~~~
+# (modTab <- modSelFP(cand.mods))
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+(modTab <- modSel(fitList(fits=cand.mods)))
 #        nPars     AIC  dAIC AICwt cuWt
 # both.t     9 1054.35  0.00  0.99 0.99
 # p10.t      7 1063.29  8.94  0.01 1.00
