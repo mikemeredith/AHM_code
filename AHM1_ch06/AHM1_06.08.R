@@ -17,7 +17,7 @@ library(jagsUI)
 # ===================
 # ~~~~~~~~~~~ specify number of cores for Nmix.gof.test ~~~~~~~~~~
 # Default is to use all-but-one available cores, but that leads to
-# a crash is other applications are using multiple cores
+# a crash if other applications are using multiple cores
 ncores <- 3
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

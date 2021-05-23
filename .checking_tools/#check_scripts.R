@@ -6,7 +6,7 @@
 # Objects with initial '.' are not removed by rm(list = ls()), so persist during
 #   running of individual scripts.
 
-# -------- preliminaries ----------------------------
+# -------- utility functions ----------------------------
 # Function to convert secs to mins/hrs
 .hms <- function(time) {
   if(time > 60*90)
@@ -24,6 +24,60 @@
   current[ignore] <- NULL
   isTRUE(all.equal(default, current))
 }
+
+# Function to compare current output with a previous .RData file
+.compareValues <- function(oldFile=.imageFile, logFile=.logFile) {
+  all.equal.function <- function(target, current, ...) {
+    return(TRUE)  # skip check for functions (esp. nimble)
+  }
+  all.equal.jagsUI <- function(target, current, ...) {
+    # if(!target$parallel || !current$parallel)  ## fixed in devel version of jagsUI
+      # stop("Can't compare jagsUI output for serial run!")
+    target$run.date <- NULL ; target$mcmc.info$elapsed.mins <- NULL
+    current$run.date <- NULL ; current$mcmc.info$elapsed.mins <- NULL
+    all.equal.list(target, current, ...)
+  }
+
+  if(file.exists(oldFile)) {
+    outputNames <- ls(.GlobalEnv)
+    oldResult <- new.env()
+    load(oldFile, envir=oldResult)
+    # check for missings in oldResult
+    missing <- !outputNames %in% names(oldResult)
+    if(sum(missing) > 0) {
+      notGot <- paste(outputNames[missing], collapse=", ")
+      cat("Old values not available for:", notGot, "\n",
+            file = logFile, append = TRUE)
+      outputNames <- outputNames[!missing]
+    }
+    same <- rep(TRUE, length(outputNames))
+    for(i in seq_along(outputNames)) {
+      this <- outputNames[i]
+      new <- get(this, envir=.GlobalEnv)
+      old <- get(this, envir=oldResult)
+      # try first with default attribute check for relevant method
+      tmp <- try(all.equal(new, old), silent=TRUE)
+      if(!isTRUE(tmp)) {
+        # try again without attribute check
+        tmp <- try(all.equal(new, old,
+            check.attributes=FALSE), silent=TRUE)
+        if(inherits(tmp, "try-error")) {
+          cat("Can't compare results for:", this, "class:", class(new), "\n",
+              file = logFile, append = TRUE)
+          next
+        }
+      }
+      same[i] <- isTRUE(tmp)
+    }
+    if(any(!same)) {
+      bad <- paste(outputNames[!same], collapse=", ")
+      cat("Value differs from previous run for:", bad, "\n", file = logFile, append = TRUE)
+    }
+  } else {
+    cat("Old results not available\n", file = logFile, append = TRUE)
+  }
+}
+# ..............................................................
 
 # Get a listing of all .R files
 files <- list.files(pattern = "[.][Rr]$", recursive = TRUE)
@@ -56,6 +110,7 @@ for(.i in seq_along(.ListOfFilesToCheck)) {
   graphics.off()
   options(stringsAsFactors = FALSE)
   RNGkind("default", "default", "default")
+  set.seed(42)  # for reproducible output when not set in the script
   while(length(search()) > .oldPackageCount)
     detach(pos=2)
   # create file names
@@ -67,20 +122,25 @@ for(.i in seq_along(.ListOfFilesToCheck)) {
   cat(format(Sys.time()), "\n", file = .logFile, append = TRUE)
   pdf(.pdfFile)
   defaultpars <- par(no.readonly = TRUE)
-  timing <- system.time(
-    returnValue <- try(source(.ListOfFilesToCheck[.i], chdir=TRUE)) )
-  # check that par's have been restored:
+
+  .timing <- system.time(
+    .returnValue <- try(source(.ListOfFilesToCheck[.i], chdir=TRUE)) )
+
+  # Compare current output with a previous .RData file:
+  .compareValues(oldFile=.imageFile, logFile=.logFile)
+  # Check that par's have been restored:
   if(!.comparePars(defaultpars)) {
     cat("Plotting par's were not restored.\n", file = .logFile, append = TRUE)
     plot(0)
   }
   dev.off()
   sessionInfo <- sessionInfo()
+  timeTaken <- .timing
   save.image(file = .imageFile)
-  if(inherits(returnValue, "try-error"))
-    cat(returnValue, file = .logFile, append = TRUE)
-  if(timing[3] > 20)
-    cat("Took", .hms(timing[3]), file = .logFile, append = TRUE)
+  if(inherits(.returnValue, "try-error"))
+    cat(.returnValue, file = .logFile, append = TRUE)
+  if(.timing[3] > 20)
+    cat("Took", .hms(.timing[3]), file = .logFile, append = TRUE)
 }
 otime <- Sys.time() - .startTime  # overall time
 

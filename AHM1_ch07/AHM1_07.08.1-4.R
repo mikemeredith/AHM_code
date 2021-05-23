@@ -11,6 +11,9 @@
 library(unmarked)
 library(AHMbook)
 
+set.seed(101) # ~~~ for reproducible output
+
+
 # 7.8 Spatially Stratified Capture-Recapture Models
 # =================================================
 
@@ -239,6 +242,6 @@ ni <- 50000   ;   nb <- 10000   ;   nt <- 2   ;   nt <- 10
 # Call JAGS from R and summarize marginal posteriors
 out <- jags(data, inits, parameters, "model.txt",
   # n.thin = nt, n.chains = nc, n.burnin = nb, n.iter = ni)
-  n.thin = nt, n.chains = nc, n.burnin = nb, n.iter = ni, parallel=TRUE)  # for testing
+  n.thin = nt, n.chains = nc, n.burnin = nb, n.iter = ni, parallel=TRUE)  # ~~~ for testing
 print(out, digits = 3)
 

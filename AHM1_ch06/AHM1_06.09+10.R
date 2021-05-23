@@ -120,7 +120,12 @@ fm5ZIP <- pcount(fm5@formula, starts = c(coef(fm5),0),
 summary(fm5ZIP)                      # AIC = 3636.058
 
 
-cbind(rbind("Poisson" = exp(coef(fm5)[1]), "NegBin" = exp(coef(fm5NB)[1]), "ZIP" = exp(coef(fm5ZIP)[1])), rbind(plogis(coef(fm5)[15:17]), plogis(coef(fm5NB)[15:17]), plogis(coef(fm5ZIP)[15:17])))
+cbind(rbind("Poisson" = exp(coef(fm5)[1]), 
+        "NegBin" = exp(coef(fm5NB)[1]), 
+        "ZIP" = exp(coef(fm5ZIP)[1])), 
+    rbind(plogis(coef(fm5)[15:17]), 
+        plogis(coef(fm5NB)[15:17]), 
+        plogis(coef(fm5ZIP)[15:17])))
 
 # 6.9.3 Model criticism and goodness of fit
 # ------------------------------------------------------------------------
@@ -129,7 +134,7 @@ library(AICcmodavg)
 # ncores <- parallel::detectCores() - 1 # the default, ok if nothing else is running
 ncores <- 3 # ~~~ for testing
 
-system.time(gof.P <- Nmix.gof.test(fm5, nsim=100, ncores=ncores))      # 18 mins with 3 cores << 65 min
+system.time(gof.P <- Nmix.gof.test(fm5, nsim=100, ncores=ncores))  # 18 mins with 3 cores << 65 min
 # ~~~~~~~~~~ changes in AICcmodavg::Nmix.gof.test wef 2.2-0 (25 February 2019) ~~~~~~~
 # Nmix.gof.test now has a 'parallel' argument with default TRUE. The fm5NB and fm5ZIP models
 #  using formula=fm5@formula will not work in parallel. With parallel=FALSE they work:

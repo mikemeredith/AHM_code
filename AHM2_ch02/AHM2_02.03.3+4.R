@@ -262,6 +262,7 @@ curve(plogis(cnb[6] + cnb[7] * standardize2match(x, dateso) +
 curve(plogis(cp[6] + cp[7] * standardize2match(x, dateso) + cp[8] *
     standardize2match(x, dateso)^2), 100, 200, lwd = 3, col = 'blue',
     add = TRUE)
+par(op)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 

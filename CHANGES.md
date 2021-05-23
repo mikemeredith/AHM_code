@@ -2,6 +2,13 @@
 
 # CHANGES
 
+## 2021-05-23
+
+* Minor corrections to several files, mostly typos.
+* The testing routine now compares the values produced with the output from a prior run. Previously it only checked for errors in execution.
+
+Tested: Windows 10, R 4.2-devel, GitHub version `jagsUI` (1.5.1.9102) and up-to-date CRAN versions of other packages, including `unmarked` (1.1.1) and `AHMbook` (0.2.3).
+
 ## 2021-05-14
 
 * Fixed incorrect description of `lambda` in comments in AHM2_02.05.1+2.R (thanks to José Jiménez).

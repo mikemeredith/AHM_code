@@ -5,8 +5,8 @@
 # ========================================================
 # Code from proofs dated 2020-08-19
 
-# Approximate execution time for this code: ?? mins
-# Run time with the full number of iterations: ?? hrs
+# Approximate execution time for this code: 12 mins
+# Run time with the full number of iterations: 4.2 hrs
 
 ##### USING NIMBLE INSTEAD OF WinBUGS #####
 
