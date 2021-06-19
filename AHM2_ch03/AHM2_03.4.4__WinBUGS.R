@@ -190,7 +190,7 @@ ncore <- 3     # <-- adjust this for your machine (3 used for testing)
 cl <- makeCluster(ncore)
 registerDoParallel(cl)
 
-ni <- 1000  ;  nt <- 1  ;  nb <- 500  ;  nc <- 1  # took 15 mins
+ni <- 1000  ;  nt <- 1  ;  nb <- 500  ;  nc <- 1  # ~~~ testing, took 15 mins
 # ni <- 30000  ;  nt <- 30  ;  nb <- 15000  ;  nc <- 1  # took 9.25 hrs
 seeds <- 1:ncore
 

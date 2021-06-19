@@ -31,8 +31,6 @@
     return(TRUE)  # skip check for functions (esp. nimble)
   }
   all.equal.jagsUI <- function(target, current, ...) {
-    # if(!target$parallel || !current$parallel)  ## fixed in devel version of jagsUI
-      # stop("Can't compare jagsUI output for serial run!")
     target$run.date <- NULL ; target$mcmc.info$elapsed.mins <- NULL
     current$run.date <- NULL ; current$mcmc.info$elapsed.mins <- NULL
     all.equal.list(target, current, ...)
@@ -121,7 +119,7 @@ for(.i in seq_along(.ListOfFilesToCheck)) {
   cat("\n\n", .ListOfFilesToCheck[.i], "\n", file = .logFile, append = TRUE)
   cat(format(Sys.time()), "\n", file = .logFile, append = TRUE)
   pdf(.pdfFile)
-  defaultpars <- par(no.readonly = TRUE)
+  .defaultpars <- par(no.readonly = TRUE)
 
   .timing <- system.time(
     .returnValue <- try(source(.ListOfFilesToCheck[.i], chdir=TRUE)) )
@@ -129,7 +127,7 @@ for(.i in seq_along(.ListOfFilesToCheck)) {
   # Compare current output with a previous .RData file:
   .compareValues(oldFile=.imageFile, logFile=.logFile)
   # Check that par's have been restored:
-  if(!.comparePars(defaultpars)) {
+  if(!.comparePars(.defaultpars)) {
     cat("Plotting par's were not restored.\n", file = .logFile, append = TRUE)
     plot(0)
   }
