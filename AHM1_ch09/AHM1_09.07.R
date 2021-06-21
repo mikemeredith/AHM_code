@@ -168,9 +168,8 @@ open1 <- jags (data1, inits, params, "Sollmann1.txt",
   n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni,
   factories="bugs::Conjugate sampler FALSE", parallel=TRUE)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-op <- par(mfrow = c(3,3))   ;   traceplot(open1)   ;   print(open1, 2)
-par(op)
-
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(open1)   ;   print(open1, 2)
 
 
 # 9.7.2.2 The reduced-dynamics model
@@ -245,9 +244,8 @@ ni <- 2200   ;   nb <- 200   ;   nt <- 1   ;   nc <- 3  # ~~~~ for testing
 open2 <- jags (data1, inits, params, "Sollmann2.txt",
   # n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni)
   n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni, parallel=TRUE)
-op <- par(mfrow = c(3,3))   ;   traceplot(open2)   ;   print(open2, 2)
-par(op)
-
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(open2)   ;   print(open2, 2)
 
 # 9.7.2.3 The Glorious Integrated HDS/Dail-Madsen Model
 # ------------------------------------------------------------------------
@@ -343,8 +341,9 @@ library(jagsUI)
 set.seed(1) # ~~~ prevents "node incompatible..." error
 open3  <- jags (data1, inits, params, "Sollmann3.txt", n.thin=nt,
     n.chains=nc, n.burnin=nb, n.iter=ni, parallel=TRUE)
-op <- par(mfrow = c(3,3))   ;   traceplot(open3)   ;   print(open3, 2)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(open3)   ;   print(open3, 2)
+
 
 # Compare inferences in graph .... (Fig. 9-6)
 plot(apply(dat$N,2,sum),ylim=c(600,1300),xlab="Year",ylab="Population size (307 sample units)")

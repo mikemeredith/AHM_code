@@ -147,8 +147,8 @@ na <- 1000 ; ni <- 6000 ; nt <- 1 ; nb <- 2000 ; nc <- 3
 # Call JAGS (ART 2 min), check convergence and summarize posteriors
 out <- jags(bdata, inits, params, "occ.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3)) ; traceplot(out)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out)
 print(out, dig = 2) # not shown
 
 # ~~~~~~~~~~ code for figure 4.7 ~~~~~~~~~

@@ -89,8 +89,8 @@ na <- 1000 ; ni <- 6000 ; nt <- 4 ; nb <- 2000 ; nc <- 3
 # Call JAGS (ART 2 min), check convergence and summarize posteriors
 out1 <- jags(bdata, inits, params, "DemoDynocc1.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2,2)) ; traceplot(out1)
-par(op)
+# par(mfrow = c(2,2))  #  ~~~ replace with 'layout' argument
+traceplot(out1, layout=c(2,2))
 print(out1, dig = 2)
 
 # ~~~~~~~~~ extra code for figure 4.35 ~~~~~~~~~~~~~~~~~~
@@ -182,8 +182,8 @@ na <- 1000 ; ni <- 12000 ; nt <- 6 ; nb <- 6000 ; nc <- 3
 # Call JAGS (ART 3 min), check convergence and summarize posteriors
 out2 <- jags(bdata, inits, params, "DemoDynocc2.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2,2)) ; traceplot(out2)
-par(op)
+# par(mfrow = c(2,2))  #  ~~~ replace with 'layout' argument
+traceplot(out2, layout=c(2,2))
 print(out2, dig = 2) # not shown
 
 # ~~~~~~~~~ extra code for figure 4.36 ~~~~~~~~~~~~~~~~~

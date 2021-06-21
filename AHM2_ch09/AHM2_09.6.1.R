@@ -164,8 +164,8 @@ na <- 1000 ; ni <- 600 ; nt <- 1 ; nb <- 300 ; nc <- 3  # ~~~ for testing, 8 min
 # Call JAGS (ART 30 min), check convergence and summarize posteriors
 out1 <- jags(bdata, inits, params, "autologistic1.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3)) ; traceplot(out1)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out1)
 print(out1, 3)
 
 # Compare estimates with truth
@@ -333,8 +333,8 @@ na <- 100 ; ni <- 600 ; nt <- 1 ; nb <- 300 ; nc <- 3  # ~~~ for testing, 6 mins
 # Call JAGS (ART 48 min), check convergence and summarize posteriors
 out2 <- jags(bdata, inits, params, "autologistic2.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3)) ; traceplot(out2)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out2)
 print(out2$summary[1:14, c(1:4,7)], 2)
 #                      mean     sd   2.5%    25%  97.5%
 # psi1.int            0.062 0.0202  0.027  0.047  0.106

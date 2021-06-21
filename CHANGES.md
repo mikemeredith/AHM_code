@@ -2,6 +2,14 @@
 
 # CHANGES
 
+## 2021-06-21
+
+* Changes to calls to `jagsUI::traceplot` to accommodate the new version (1.5.2).
+
+`traceplot` and `densityplot` now plot multiple nodes in the same window, so calling `par(mfrow=...)` before calling the plotting function is no longer necessary or effective. The default with > 4 nodes to plot is a 3 x 3 layout. Other layouts can be specified with the `layout` argument.
+
+Tested: Windows 10, R 4.2-devel, and up-to-date CRAN versions of other packages, including`jagsUI` (1.5.2).
+
 ## 2021-05-23
 
 * Minor corrections to several files, mostly typos.

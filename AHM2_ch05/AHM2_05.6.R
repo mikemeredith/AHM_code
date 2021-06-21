@@ -150,8 +150,8 @@ na <- 1000 ; ni <- 2000 ; nt <- 1 ; nb <- 1000 ; nc <- 3  # ~~~~ for testing, 5 
 # Call JAGS (ART 61 min), check convergence and summarize posteriors
 out3 <- jags(bdata, inits, params, "DCM3.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3)) ; traceplot(out3)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out3)
 jags.View(out3) ; print(out3$summary[1:24, c(1:3,5,7:10)], 2) # not shown
 
 
@@ -250,8 +250,8 @@ params <- c("effect.phi.comm", "effect.gamma.comm", "effect.phi.spec",
 # Call JAGS (ART 69 min), check convergence and summarize posteriors
 out4 <- jags(bdata, inits, params, "DCM4.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3)) ; traceplot(out4)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out4)
 jags.View(out4) ; print(out4$summary[1:24, c(1:3,5,7:10)], 2) # not shown
 
 # ~~~~~~~ extra code for figure 5.4 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -457,8 +457,8 @@ na <- 1000 ; ni <- 5000 ; nt <- 2 ; nb <- 2500 ; nc <- 3  # ~~~ for testing, 6 m
 # Call JAGS (ART 70 min), check convergence and summarize posteriors
 out5 <- jags(bdata, inits, params, "DCM5.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3)) ; traceplot(out5)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out5)
 jags.View(out5) ; print(out5, 2) # not shown
 
 

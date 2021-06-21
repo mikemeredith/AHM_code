@@ -168,8 +168,8 @@ na <- 1000 ; ni <- 500 ; nt <- 25 ; nb <- 250 ; nc <- 3 # ~~~ for testing, 9 min
 # Call JAGS from R, check convergence and summarize posteriors
 out2A <- jags(bdata, inits, params, "DCM2A.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3))   ;   traceplot(out2A)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out2A)
 summary(out2A, 3)
 jags.View(out2A)
 
@@ -268,8 +268,8 @@ model {
 # Call JAGS from R, check convergence and summarize posteriors
 out2B <- jags(bdata, inits, params, "DCM2B.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3))   ;   traceplot(out2B)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out2B)
 # print(out2B, 3)
 summary(out2B)
 jags.View(out2B)

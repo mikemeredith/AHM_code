@@ -199,9 +199,9 @@ na <- 1000 ; ni <- 2500 ; nt <- 1 ; nb <- 1500 ; nc <- 3 # ~~~ for testing, 90 m
 out1 <- jags(bdata, inits, params, "JSDMocc.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 summary(out1)
-op <- par(mfrow = c(3,3)) ; traceplot(out1) # All estimands
-par(mfrow = c(3,3)) ; traceplot(out1, 'lv.coef') # Only lv coefficients
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out1) # All estimands
+traceplot(out1, 'lv.coef') # Only lv coefficients
 which(out1$summary[,8] > 1.1)
 # out1X <- update(out1, n.iter = 50000) # Can update additional 50k, 15 hrs
 out1X <- update(out1, n.iter = 500) # Can update additional 50k  # ~~~ for testing, 15 mins

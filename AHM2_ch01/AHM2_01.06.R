@@ -93,8 +93,8 @@ na <- 10000 ; ni <- 6e5 ; nt <- 100 ; nb <- 5e5 ; nc <- 2  # ~~~ for testing, 32
 # Call JAGS (ART 505 min), check convergence and summarize posteriors
 out6 <- jags(bdata, inits, params, "model6.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(4,4)) ; traceplot(out6) # all params
-par(op)
+# par(mfrow = c(4,4))  #  ~~~ replace with 'layout' argument
+traceplot(out6, layout=c(4,4)) # all params
 summary(out6) ; jags.View(out6) ; print(out6$summary[1:320,-c(4:6)], 3)
 
 # Check how many and which parameters have failed to converge

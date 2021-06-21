@@ -316,8 +316,8 @@ na <- 1000 ; ni <- 1500 ; nt <- 1 ; nb <- 1000 ; nc <- 3  # ~~~ for testing, 5 m
 # Call JAGS (ART 386 min), check convergence and summarize posteriors
 out6 <- jags(bdata, inits, params, "DCM6.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3)) ; traceplot(out6)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out6)
 jags.View(out6) ; print(out6, 2) # not shown
 
 # ~~~~~~~~~ extra code for figure 5.9 ~~~~~~~~~~~~~~~~

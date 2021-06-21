@@ -119,8 +119,8 @@ na <- 2000 ; ni <- 2000 ; nt <- 1 ; nb <- 1000 ; nc <- 3  # ~~~ testing
 out11 <- jags(bdata, inits, params, model = "spatialDMmodel.txt",
     n.adapt = na, n.chains = nc, n.burnin = nb, n.iter = ni, n.thin = nt,
     parallel = TRUE)
-op <- par(mfrow = c(2,2)) ; traceplot(out11)
-par(op)
+# par(mfrow = c(2,2))  #  ~~~ replace with 'layout' argument
+traceplot(out11, layout=c(2,2))
 print(out11)
 #          mean    sd  2.5%   50% 97.5% overlap0 f  Rhat n.eff
 # lambda0 4.738 0.463 3.878 4.716 5.671    FALSE 1 1.000  3000

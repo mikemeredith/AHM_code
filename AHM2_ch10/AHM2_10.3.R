@@ -98,8 +98,8 @@ na <- 1000 ; ni <- 3000 ; nt <- 2 ; nb <- 1000 ; nc <- 3
 # Call JAGS (ART 0.3 min), gauge convergence and summarize posteriors
 out1 <- jags(bdata, inits, params, "model1.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2,2)) ; traceplot(out1)
-par(op)
+# par(mfrow = c(2,2))  # ~~~ replaced with 'layout' argument
+traceplot(out1, layout=c(2,2))
 print(out1, 2) # not shown
 
 
@@ -172,8 +172,8 @@ na <- 1000 ; ni <- 3000 ; nt <- 2 ; nb <- 1000 ; nc <- 3
 # Call JAGS (ART 1.6 min), gauge convergence and summarize posteriors
 out2 <- jags(bdata, inits, params, "model2.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2,2)) ; traceplot(out2)
-par(op)
+# par(mfrow = c(2,2))  # ~~~ replaced with 'layout' argument
+traceplot(out2, layout=c(2,2))
 print(out2, 2) # not shown
 
 # ~~~  code to produce the first table ~~~

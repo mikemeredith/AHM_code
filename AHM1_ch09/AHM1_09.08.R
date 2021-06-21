@@ -86,8 +86,8 @@ params <- c("sigma", "N", "psi")
 out1 <- jags (data, inits, params, "model1.txt", n.thin=nthin,
    # n.chains=nc, n.burnin=nb,n.iter=ni, parallel = FALSE)
    n.chains=nc, n.burnin=nb,n.iter=ni, parallel = TRUE)  # ~~~~~ for autotesting
-op <- par(mfrow = c(2,2))   ;   traceplot(out1)
-par(op)
+# par(mfrow = c(2,2))  #  ~~~ replace with 'layout' argument
+traceplot(out1, layout=c(2,2))
 print(out1, 2)
 
 # 9.8.2 The line transect case (no code)
@@ -239,9 +239,9 @@ params <- c("sigma", "N", "psi", "beta", "D")
 # Run JAGS, check convergence and summarize posteriors
 out2 <- jags (data, inits, params, "spatialDS.txt", n.thin=nthin,
    n.chains=nc, n.burnin=nb, n.iter=ni, parallel = TRUE)
-op <- par(mfrow = c(2,3))   ;   traceplot(out2)
+# par(mfrow = c(2,3))  #  ~~~ replace with 'layout' argument
+traceplot(out2, layout=c(2,3))
 print(out2, 2)
-par(op)
 
 # Add pixel in order to make a density map
 params <- c("sigma", "N", "psi", "beta", "D", "pixel")
@@ -437,8 +437,8 @@ ni <- 1200   ;   nb <- 200   ;   nthin <- 1   ;   nc <- 3  # ~~~ for testing
 # Call JAGS, check convergence and summarize the results
 out3 <- jags(data, inits, params, "spatialHDS.txt", n.thin=nthin,
     n.chains=nc, n.burnin=nb, n.iter=ni, parallel = TRUE)
-op <- par(mfrow = c(2,3))   ;   traceplot(out3)
-par(op)
+# par(mfrow = c(2,3))  #  ~~~ replace with 'layout' argument
+traceplot(out3, layout=c(2,3))
 print(out3, 3)
 
 Ntrue <- tmp$N

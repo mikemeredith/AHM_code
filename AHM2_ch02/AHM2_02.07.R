@@ -438,8 +438,8 @@ na <- 1000 ; ni <- 10000 ; nb <- 5000 ; nt <- 5 ; nc <- 3
 # Call JAGS (ART 0.2 min), gauge convergence, summarize posteriors
 out7 <- jags(bdata, inits, params, "CR_TE.txt", n.adapt = na, n.iter = ni,
     n.burnin = nb, n.thin = nt, n.chains = nc, parallel = TRUE)
-op <- par(mfrow = c(3, 3)) ; traceplot(out7)
-par(op)
+# par(mfrow = c(3, 3))  # ~~~ no longer needed
+traceplot(out7)
 print(out7, 3)
 #             mean     sd   2.5%    50%   97.5% overlap0     f  Rhat n.eff
 # beta0     -0.797  0.429 -1.637 -0.797   0.047     TRUE 0.966 1.003   849

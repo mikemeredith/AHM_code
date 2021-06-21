@@ -88,8 +88,8 @@ na <- 1000  ; ni <- 15000  ;  nt <- 1  ;  nb <- 5000  ;  nc <- 3  # ~~~~ for tes
 # Call JAGS (ART 88 min), check convergence and summarize posteriors
 out5 <- jags(bdata, inits, params, "DM3.txt", n.adapt = na, n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 
-op <- par(mfrow = c(2, 3))  ;  traceplot(out5)
-par(op)
+# par(mfrow = c(2, 3))  #  ~~~ replace with 'layout' argument
+traceplot(out5, layout=c(2,3))
 print(out5, 3)
               # mean      sd      2.5%       50%     97.5% overlap0 f  Rhat n.eff
 # lambda       0.599   0.068     0.472     0.597     0.740    FALSE 1 1.001  3482
@@ -181,8 +181,8 @@ set.seed(299, kind = "Mersenne-Twister")
 # Call JAGS (ART 83 min), check convergence and summarize posteriors
 out6 <- jags(bdata, inits, params, "DM4.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2,3)) ; traceplot(out6)
-par(op)
+# par(mfrow = c(2,3))  #  ~~~ replace with 'layout' argument
+traceplot(out6, layout=c(2,3))
 print(out6, digits=2)
 #             mean   sd  2.5%   50% 97.5% overlap0    f Rhat n.eff
 # alpha.lam   0.92 0.44  0.04  0.92  1.75    FALSE 0.98 1.00  1120

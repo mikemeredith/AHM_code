@@ -246,8 +246,8 @@ na <- 1000 ; ni <- 25000 ; nt <- 10 ; nb <- 5000 ; nc <- 3
 library(jagsUI)
 out1 <- jags(bdata, inits, params, "dynocc.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3)) ; traceplot(out1)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out1)
 print(out1, 3) # not shown
 
 # ~~~~~~~ code for the table ~~~~~~~~~~~~~~~~~~

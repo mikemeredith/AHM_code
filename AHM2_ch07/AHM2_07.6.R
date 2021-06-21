@@ -88,8 +88,8 @@ na <- 1000 ; ni <- 2000 ; nt <- 1 ; nb <- 1000 ; nc <- 3
 # Call JAGS (tiny ART), gauge convergence and summarize posteriors
 out1 <- jags(bdata, inits, params, "modelA.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2, 3)) ; traceplot(out1)
-par(op)
+# par(mfrow = c(2, 3))  # ~~~ replaced with 'layout' argument
+traceplot(out1, layout=c(2,3))
 print(out1, 3)
 #      mean    sd  2.5%   50% 97.5% overlap0 f  Rhat n.eff
 # psi 0.706 0.044 0.616 0.706 0.789    FALSE 1 1.001  1662
@@ -156,8 +156,8 @@ na <- 5000 ; ni <- 33000 ; nt <- 2 ; nb <- 3000 ; nc <- 3
 # Call JAGS (ART 2 min), gauge convergence and summarize posteriors
 out2 <- jags(bdata, inits, params, "modelB.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2, 3)) ; traceplot(out2)
-par(op)
+# par(mfrow = c(2, 3))  # ~~~ replaced with 'layout' argument
+traceplot(out2, layout=c(2,3))
 print(out2, 3)
 #      mean    sd  2.5%   50% 97.5% overlap0 f Rhat n.eff
 # psi 0.706 0.045 0.614 0.707 0.790    FALSE 1    1 38245
@@ -294,8 +294,8 @@ na <- 1000 ; ni <- 2000 ; nt <- 1 ; nb <- 1000 ; nc <- 3
 # Call JAGS (ART 1 min), gauge convergence and summarize posteriors
 out3 <- jags(bdata, inits, params, "modelC.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2, 3)) ; traceplot(out3)
-par(op)
+# par(mfrow = c(2, 3))  # ~~~ replaced with 'layout' argument
+traceplot(out3, layout=c(2,3))
 print(out3, 3)
 #          mean    sd    2.5%     50%   97.5% overlap0 f  Rhat n.eff
 # psi     0.704 0.045   0.612   0.705   0.788    FALSE 1 1.003   570

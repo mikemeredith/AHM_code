@@ -159,8 +159,8 @@ na <- 1000 ; nc <- 3 ; ni <- 2000 ; nb <- 1000 ; nt <- 1  # ~~~ for testing, 1 m
 # Call JAGS (ART 13 min), gauge convergence and summarize posteriors
 out1 <- jags(bdata, inits, params, "model1.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3, 3)) ; traceplot(out1)
-par(op)
+# par(mfrow = c(3, 3))  # ~~~ no longer needed
+traceplot(out1)
 print(out1$summary[1:10,], 3) # not shown
 
 # ~~~~ extra code for figure 10.4 ~~~~~~~~~~~~~~~~
@@ -275,8 +275,8 @@ na <- 1000 ; nc <- 3 ; ni <- 5000 ; nb <- 1000 ; nt <- 4  # ~~~~ for testing, 2 
 # Call JAGS (ART 22 min), gauge convergence and summarize posteriors
 out2 <- jags(bdata, inits, params, "model2.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3, 3)) ; traceplot(out2)
-par(op)
+# par(mfrow = c(3, 3))  # ~~~ no longer needed
+traceplot(out2)
 jags.View(out2) # not shown
 
 # Comparison of truth and estimates from simple model and IM

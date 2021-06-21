@@ -75,8 +75,8 @@ out6 <- bugs(win.data, inits, params, "Bernoulli_GLM.txt",
 
 out6J <- jags(win.data, inits, params, "Bernoulli_GLM.txt",
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
-op <- par(mfrow = c(4,2))    ;    traceplot(out6J, c("alpha[1:4]", "beta[1:4]"))
-par(op)
+# par(mfrow = c(4,2))  # ~~~ replaced with 'layout' argument
+traceplot(out6J, c("alpha[1:4]", "beta[1:4]"), layout=c(4,2))
 print(out6, 2)
 
 # Compare with MLEs

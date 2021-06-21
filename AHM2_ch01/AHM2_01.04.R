@@ -65,8 +65,8 @@ library(jagsUI)
 out1 <- jags(bdata, inits, params, "model1.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 
-op <- par(mfrow = c(3,3)) ; traceplot(out1)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out1)
 jags.View(out1) ; print(out1, 2) # Two formats for posterior summaries
 
 # ~~~~~ save output for use in subsequent sections

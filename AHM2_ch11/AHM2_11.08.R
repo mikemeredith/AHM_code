@@ -115,8 +115,8 @@ na <- 1000 ; ni <- 12000 ; nb <- 2000 ; nt <- 5 ; nc <- 3
 # Run JAGS (ART 6 min), check convergence and summarize posteriors
 out7 <- jags(bdata, inits, params, "TEDSmodel.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3)) ; traceplot(out7)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out7)
 print(out7, digits = 2)
 #          mean     sd   2.5%    50%   97.5% overlap0 f  Rhat n.eff
 # sigma   2.782  0.436  2.198  2.702   3.838    FALSE 1 1.011  1562
@@ -279,8 +279,8 @@ na <- 1000 ; ni <- 300 ; nb <- 100 ; nt <- 1 ; nc <- 3  # ~~~~ for testing, 26 m
 # Run JAGS (ART 83 min), check convergence and summarize posteriors
 out8 <- jags(bdata, inits, params, "TEDS.txt", n.chains = nc, n.thin = nt,
     n.iter = ni, n.burnin = nb, n.adapt = na, parallel = TRUE)
-op <- par(mfrow = c(3,3)) ; traceplot(out8)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out8)
 print(out8, 3)
 #          mean    sd   2.5%    50%  97.5% overlap0    f Rhat n.eff
 # sigma  152.52 14.49 129.79 150.74 186.38    FALSE 1.00 1.00  3239

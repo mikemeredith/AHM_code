@@ -125,7 +125,7 @@ set.seed(1)
 outRD <- jags(data, inits, params, "tempemig4d.txt",
   # n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni, parallel = FALSE)
   n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni, parallel = TRUE)  # ~~~~ for faster testing
-op <- par(mfrow = c(3,3))   ;   traceplot(outRD)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(outRD)
 summary(outRD)
 

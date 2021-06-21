@@ -88,7 +88,8 @@ na <- 1000 ; ni <- 15000 ; nt <- 10 ; nb <- 5000 ; nc <- 3
 # Run JAGS (ART 22 mins), check convergence and summarize posteriors
 out2 <- jags(bdata, inits, params, "Nmix2.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3, 3)) ; traceplot(out2) ; par(op)
+# par(mfrow = c(3, 3))  # ~~~ no longer needed
+traceplot(out2)
 print(out2, digits = 2) # shown partially only
 #           mean   sd  2.5%   50% 97.5% overlap0    f Rhat n.eff
 # [...output truncated...]

@@ -215,8 +215,8 @@ na <- 1000 ; ni <- 2000 ; nt <- 2 ; nb <- 1000 ; nc <- 3
 # Call JAGS, check convergence and summarize posteriors
 out1 <- jags(bdata, inits, params, "static1.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3, 3)) ; traceplot(out1)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out1)
 print(out1, 3)
 #             mean    sd  2.5%   50% 97.5% overlap0 f  Rhat n.eff
 # psi        0.866 0.053 0.762 0.866 0.966    FALSE 1 1.001  1500
@@ -334,8 +334,8 @@ na <- 1000 ; ni <- 2000 ; nt <- 2 ; nb <- 1000 ; nc <- 3
 # Call JAGS, check convergence and summarize posteriors
 out2 <- jags(bdata, inits, params, "static2.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3, 3)) ; traceplot(out2)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out2)
 print(out2, 3) # not shown
 
 true.sumZ <- array(NA, dim = c(3, 5), dimnames = list(c('unocc',
@@ -455,8 +455,8 @@ na <- 1000 ; ni <- 2000 ; nt <- 2 ; nb <- 1000 ; nc <- 3
 # Call JAGS, check convergence and summarize posteriors
 out3 <- jags(bdata, inits, params, "dynamic1.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3, 3)) ; traceplot(out3)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out3)
 print(out3, 3) # not shown
 
 # ~~~~~ extra code for figures 6.1 and 6.2 ~~~~~~~~~~~~~~~~~~~~~~

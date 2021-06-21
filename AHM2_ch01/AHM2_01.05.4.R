@@ -82,7 +82,8 @@ na <- 10000 ; ni <- 25000 ; nt <- 20 ; nb <- 5000 ; nc <- 3  # ~~~ for testing, 
 # Call JAGS (ART 251 min), check convergence and summarize posteriors
 out5 <- jags(bdata, inits, params, "model5.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-par(mfrow = c(3,2)) ; traceplot(out5) ; par(mfrow = c(1,1))
+# par(mfrow = c(3,2))  # ~~~ replaced with 'layout' argument
+traceplot(out5, layout=c(3,2))
 summary(out5) ; jags.View(out5) ; print(out5, 3)
 #      mean    sd  2.5%   50% 97.5% overlap0 f  Rhat n.eff
 # rho 0.945 0.026 0.892 0.947 0.987    FALSE 1 1.032    71

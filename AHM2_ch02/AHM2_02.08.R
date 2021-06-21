@@ -146,8 +146,8 @@ na <- 5000 ; ni <- 100000 ; nb <- 50000 ; nt <- 50 ; nc <- 3
 # Run JAGS (ART 6 min), look at convergence and summarize posteriors
 out8 <- jags (bdata, inits, params, "mnDM.txt", n.adapt = na, n.iter=ni,
     n.burnin=nb, n.thin=nt, n.chains=nc, parallel=TRUE)
-op <- par(mfrow = c(3, 3)) ; traceplot(out8)
-par(op)
+# par(mfrow = c(3, 3))  # ~~~ no longer needed
+traceplot(out8)
 print(out8, 3)
 #           mean    sd   2.5%    50%  97.5% overlap0     f  Rhat n.eff
 # beta0   -1.122 0.415 -1.929 -1.112 -0.314    FALSE 0.998 1.001  2834

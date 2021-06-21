@@ -101,8 +101,8 @@ na <- 5000  ;  ni <- 200000  ;  nt <- 10   ;  nb <- 110000  ;  nc <- 3  # 20 min
 # Call JAGS from R, check convergence and summarize marginal posteriors
 out8 <- jags(bdata, inits, params, "model8.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2, 2))    ;    traceplot(out8)
-par(op)
+# par(mfrow = c(2, 2))  #  ~~~ replace with 'layout' argument
+traceplot(out8, layout=c(2,2))
 print(out8, 3)
 
 
@@ -169,8 +169,8 @@ na <- 5000  ;  ni <- 40000  ;  nt <- 10   ;  nb <- 20000  ;  nc <- 3  # 5 mins
 # Call JAGS from R, check convergence and summarize marginal posteriors
 out9 <- jags(bdata, inits, params, "model9.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2, 2))    ;    traceplot(out9)
-par(op)
+# par(mfrow = c(2, 2))  #  ~~~ replace with 'layout' argument
+traceplot(out9, layout=c(2,2))
 print(out9, 3)
 
 
@@ -257,8 +257,8 @@ na <- 5000  ;  ni <- 40000  ;  nt <- 10   ;  nb <- 20000  ;  nc <- 3  # 5.5 mins
 # Call JAGS from R, check convergence and summarize marginal posteriors
 out10a <- jags(bdata, inits, params, "model10a.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2, 2))    ;    traceplot(out10a)
-par(op)
+# par(mfrow = c(2, 2))  #  ~~~ replace with 'layout' argument
+traceplot(out10a, layout=c(2,2))
 print(out10a, 3)
 
 
@@ -345,8 +345,8 @@ na <- 1000  ;  ni <- 100000  ;  nt <- 50   ;  nb <- 50000  ;  nc <- 3  # 20 mins
 # Call JAGS from R, check convergence and summarize marginal posteriors
 out10b <- jags(bdata, inits, params, "model10b.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2, 2))    ;    traceplot(out10b)
-par(op)
+# par(mfrow = c(2, 2))  #  ~~~ replace with 'layout' argument
+traceplot(out10b, layout=c(2,2))
 print(out10b, 3)
 
 # Model 10c: Generalized Markov model with site-by-year-level
@@ -432,8 +432,8 @@ na <- 1000  ;  ni <- 10^6  ;  nt <- 500   ;  nb <- 5*10^5  ;  nc <- 3
 # Call JAGS from R, check convergence and summarize marginal posteriors
 out10c <- jags(bdata, inits, params, "model10c.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2, 2))    ;    traceplot(out10c)
-par(op)
+# par(mfrow = c(2, 2))  #  ~~~ replace with 'layout' argument
+traceplot(out10c, layout=c(2,2))
 print(out10a, 3)
 
 
@@ -571,8 +571,8 @@ na <- 1000  ;  ni <- 15000  ;  nt <- 5  ;  nb <- 10000  ;  nc <- 3     # Test, 7
 # Call JAGS from R, check convergence and summarize marginal posteriors
 out12 <- jags(bdata, inits, params, "model12.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2, 2))    ;    traceplot(out12)
-par(op)
+# par(mfrow = c(2, 2))  #  ~~~ replace with 'layout' argument
+traceplot(out12, layout=c(2,2))
 print(out12$summary[1:100,], 3)
 
 # ~~~ save ouput for future use ~~~~

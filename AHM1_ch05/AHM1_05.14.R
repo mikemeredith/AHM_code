@@ -78,9 +78,9 @@ ni <- 30000 ; nt <- 25 ; nb <- 5000 ; nc <- 3                 # MCMC settings
 # Call JAGS from R (ART 2.5 min)
 out9 <- jags(win.data, inits, params, "RE.Bernoulli.txt",
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
-op <- par(mfrow = c(2,2))
-traceplot(out9, c("mu.alpha0", "sd.alpha0", "alpha[1:3]", "mu.alpha4", "sd.alpha4"))
-par(op)
+# par(mfrow = c(2,2))  #  ~~~ replace with 'layout' argument
+traceplot(out9, c("mu.alpha0", "sd.alpha0", "alpha[1:3]", "mu.alpha4", "sd.alpha4"),
+    layout=c(2,2))
 print(out9, 3)
 
 yvec <- as.vector(y)            # Vector of M*J counts

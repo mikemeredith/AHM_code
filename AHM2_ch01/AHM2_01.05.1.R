@@ -75,8 +75,8 @@ na <- 1000 ; ni <- 15000 ; nt <- 10 ; nb <- 5000 ; nc <- 3
 out2 <- jags(bdata, inits, params, "model2.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 
-op <- par(mfrow = c(3, 2)) ; traceplot(out2)
-par(op)
+# par(mfrow = c(3, 2))  #  ~~~ replace with 'layout' argument
+traceplot(out2, layout=c(3,2))
 summary(out2) ; jags.View(out2) ; print(out2, 3)
 #           mean    sd   2.5%    50%  97.5% overlap0     f  Rhat n.eff
 # mu      -0.434 0.157 -0.749 -0.431 -0.130    FALSE 0.997 1.023    92

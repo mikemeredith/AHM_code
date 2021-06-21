@@ -78,8 +78,8 @@ out5 <- bugs(win.data, inits, params, "Poisson_GLM.txt",
 
 system.time(out5J <- jags(win.data, inits, params, "Poisson_GLM.txt",
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb))
-op <- par(mfrow = c(4,2))    ;    traceplot(out5J, c("alpha[1:4]", "beta[1:4]"))
-par(op)
+# par(mfrow = c(4,2))  # ~~~ replaced with layout argument
+traceplot(out5J, c("alpha[1:4]", "beta[1:4]"), layout=c(4,2))
 print(out5J, 3)
 
 op <- par(mfrow = c(1, 3), mar = c(5,5,3,2), cex = 1.3, cex.lab = 1.5, cex.axis = 1.5)

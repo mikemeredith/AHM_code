@@ -169,8 +169,8 @@ na <- 5000 ; ni <- 10000 ; nt <- 8 ; nb <- 2000 ; nc <- 3 # ~~~ for testing
 # Call JAGS (ART 400 min), check convergence and summarize posteriors
 out <- jags(bdata, inits, params, "PhenoOcc.txt", n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3)) ; traceplot(out)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out)
 print(out, dig = 2)
 
 # ~~~~~~~~~ code for figure 4.37 ~~~~~~~~~~~~~~~~

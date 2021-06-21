@@ -170,7 +170,8 @@ print(annual.averages, 2)
 # Compute range size and CI for every year
 # ----------------------------------------
 rs <- apply(all.pred[,1:nyears], 2, sum)
-print(cbind('Range size (km2)' = rs),0)   # not shown
+# print(cbind('Range size (km2)' = rs), 0)  # ~~~ digits=0 is invalid
+round(cbind('Range size (km2)' = rs), 0)   # not shown
 
 # Calculate bootstrap CIs for range size
 # Prepare covariates and constants

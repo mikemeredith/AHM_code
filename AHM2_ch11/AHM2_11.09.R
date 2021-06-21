@@ -199,8 +199,8 @@ na <- 500 ; nt <- 1 ; nc <- 3 ; nb <- 50 ; ni <- 300  # ~~~ for testing, 10 mins
 # Run JAGS (ART 74 min), assess convergence and summarize posteriors
 wiggly.Thaz.2reps <- jags(bdata, inits, params, "wiggly1.txt", n.adapt = na,
     n.thin = nt, n.chains = nc, n.burnin = nb, n.iter = ni, parallel = TRUE)
-op <- par(mfrow = c(2, 3)) ; traceplot(wiggly.Thaz.2reps)
-par(op)
+# par(mfrow = c(2, 3))  # ~~~ replaced with 'layout' argument
+traceplot(wiggly.Thaz.2reps, layout=c(2,3))
 print(wiggly.Thaz.2reps, 3)
 #              mean   sd  2.5%    50%  97.5% overlap0    f Rhat n.eff
 # alpha0       0.87 1.12 -0.88   0.71   3.41     TRUE 0.77 1.04    83
@@ -257,8 +257,8 @@ na <- 500 ; nt <- 1 ; nc <- 5 ; nb <- 500 ; ni <- 3500
 # Run JAGS (ART 11 min), assess convergence and summarize posteriors
 wiggly.closeD.2reps <- jags(bdata, inits, params, "wiggly2.txt", n.adapt = na,
     n.thin = nt, n.chains = nc, n.burnin = nb, n.iter = ni, parallel = TRUE)
-op <- par(mfrow = c(2, 3)) ; traceplot(wiggly.closeD.2reps)
-par(op)
+# par(mfrow = c(2, 3))  # ~~~ replaced with 'layout' argument
+traceplot(wiggly.closeD.2reps, layout=c(2,3))
 print(wiggly.closeD.2reps, 3)
 #              mean    sd  2.5%    50%  97.5% overlap0 f Rhat n.eff
 # p0           0.98  0.02  0.93   0.99   1.00    FALSE 1 1.00  7379
@@ -388,8 +388,8 @@ na <- 500 ; nt <- 1 ; nc <- 5 ; nb <- 500 ; ni <- 1500
 # Run JAGS (ART 2 min), assess convergence and summarize posteriors
 wiggly.MRDS <- jags(bdata, inits, params, "wiggly3.txt", n.adapt = na,
     n.thin = nt, n.chains = nc, n.burnin = nb, n.iter = ni, parallel = TRUE)
-op <- par(mfrow = c(2, 3)) ; traceplot(wiggly.MRDS)
-par(op)
+# par(mfrow = c(2, 3))  # ~~~ replaced with 'layout' argument
+traceplot(wiggly.MRDS, layout=c(2,3))
 print(wiggly.MRDS, 3)
 #         mean    sd  2.5%    50%  97.5% overlap0 f Rhat n.eff
 # p0      0.99  0.01  0.95   0.99   1.00    FALSE 1 1.01   753
@@ -448,8 +448,8 @@ na <- 500 ; nt <- 1 ; nc <- 5 ; nb <- 500 ; ni <- 3000  # 20 mins
 wiggly.Thaz.1rep <- jags(bdata, inits, params, "wiggly4.txt",
     n.adapt = na, n.thin = nt, n.chains = nc, n.burnin = nb, n.iter = ni,
     parallel = TRUE)
-op <- par(mfrow = c(2, 3)) ; traceplot(wiggly.Thaz.1rep)
-par(op)
+# par(mfrow = c(2, 3))  # ~~~ replaced with 'layout' argument
+traceplot(wiggly.Thaz.1rep, layout=c(2,3))
 print(wiggly.Thaz.1rep, 2)
 #          mean    sd   2.5%    50%  97.5% overlap0    f Rhat n.eff
 # alpha0  -0.61  1.00  -2.47  -0.65   1.49     TRUE 0.74 1.01   490

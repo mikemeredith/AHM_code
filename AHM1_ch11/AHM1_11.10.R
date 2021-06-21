@@ -187,10 +187,9 @@ ni <- 6000   ;   nt <- 3   ;   nb <- 3000   ;   nc <- 3 # ~~~~~ use for testing
 out11 <- jags(win.data, inits, params, "model11.txt", n.chains = nc,
   # n.thin = nt, n.iter = ni, n.burnin = nb, parallel = FALSE)
   n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3))
+# par(mfrow = c(3,3))# ~~~ no longer needed
 traceplot(out11, c("mu.beta0", "sd.beta0", "mu.beta", "sd.beta", "mu.alpha0",
     "sd.alpha0", "mu.alpha", "sd.alpha") )
-par(op)
 print(out11, 2)
 # ~~~~~ suggest saving for use later ~~~~~~~~~~~~~
 save(out11, file="AHM1_11.10_out11.RData")

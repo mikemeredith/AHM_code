@@ -131,8 +131,8 @@ params <- c("sigma", "N", "psi", "beta1", "D", "alpha0")
 out5 <- jags (data, inits, params, "spatialDSmulti.txt", n.adapt = na,
     n.thin = nt, n.chains = nc, n.burnin = nb, n.iter = ni, parallel = TRUE,
     factories = "base::Finite sampler FALSE")
-op <- par(mfrow = c(3,2)) ; traceplot(out5)
-par(op)
+# par(mfrow = c(3,2))  # ~~~ replaced with 'layout' argument
+traceplot(out5, layout=c(3,2))
 print(out5, 3)
 #          mean    sd   2.5%    50%  97.5% overlap0 f Rhat n.eff
 # sigma    0.25  0.01   0.23   0.25   0.27    FALSE 1 1.01   505

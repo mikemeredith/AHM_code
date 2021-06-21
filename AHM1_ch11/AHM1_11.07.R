@@ -132,8 +132,8 @@ ni <- 2200   ;   nt <- 2   ;   nb <- 200   ;   nc <- 3  # ~~~ for testing
 # Call JAGS from R (ART 62 min), check convergence and summarize posteriors
 out9 <- jags(win.data, inits, params, "model9.txt", n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2,2)) ; traceplot(out9, c('mu.lpsi', 'sd.lpsi', 'mu.lp', 'sd.lp'))
-par(op)
+# par(mfrow = c(2,2))  #  ~~~ replace with 'layout' argument
+traceplot(out9, c('mu.lpsi', 'sd.lpsi', 'mu.lp', 'sd.lp'), layout=c(2,2))
 print(out9, dig = 3)
 # ~~~~~ suggest saving for use later ~~~~~~~~~~~~~
 save(out9, file="AHM1_11.07_out9.RData")
@@ -314,12 +314,12 @@ ni <- 1500   ;   nt <- 1   ;   nb <- 500   ;   nc <- 3  # ~~~~~ use for testing
 # Run JAGS, check convergence and summarize posteriors
 out101 <- jags(win.data, inits, params1, "model10.txt", n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2, 2))
-traceplot(out101, c(c("omega", "mu.lpsi", "sd.lpsi", "mu.betalpsi1",
+# par(mfrow = c(2, 2))  #  ~~~ replace with 'layout' argument
+traceplot(out101, c("omega", "mu.lpsi", "sd.lpsi", "mu.betalpsi1",
     "sd.betalpsi1", "mu.betalpsi2", "sd.betalpsi2", "mu.betalpsi3",
     "sd.betalpsi3", "mu.lp", "sd.lp", "mu.betalp1", "sd.betalp1",
-    "mu.betalp2", "sd.betalp2", "mu.betalp3", "sd.betalp3", "Ntotal")) )
-par(op)
+    "mu.betalp2", "sd.betalp2", "mu.betalp3", "sd.betalp3", "Ntotal"), layout=c(2,2) )
+
 # ~~~~~ save for use in sections 11.8 and 11.9 ~~~~~~~~~~~~~
 out10 <- out101
 save(out10, file="AHM1_11.07_out10.RData")
@@ -482,7 +482,7 @@ cri <- apply(all10, 2, function(x) quantile(x, prob = c(0.025, 0.975))) # CRIs
 
 # Effects of date (linear and quadratic) and of duration on detection - figure 11.20
 op <- par(mfrow = c(1,3), cex.lab = 1.3, cex.axis = 1.3) # Can put all three in one
-# op <- par(mfrow = c(1,3), cex.lab = 1.3, cex.axis = 1.3)
+# op <- par(mfrow = c(1,2), cex.lab = 1.3, cex.axis = 1.3)
 # Date linear (Fig. 11 – 20 left)
 plot(pm[1:145], 1:145, xlim = c(-1.5, 1.5), xlab = "Parameter estimate",
     ylab = "Species number", main = "Effect of date (linear) on detection", pch = 16)
@@ -535,7 +535,7 @@ plot(pm[646:790], 1:145, xlim = c(-8, 8), xlab = "Parameter estimate",
 abline(v = 0, lwd = 2, col = "black")
 segments(cri[1, 646:790], 1:145, cri[2, 646:790], 1:145, col = "grey", lwd = 1)
 sig4 <- (cri[1, 646:790] * cri[2, 646:790]) > 0
-segments(cri[1, 646:790][sig4 == 1], (1:145)[sig4 == 1], cri[2, 646:790][sig4 == 1], 
+segments(cri[1, 646:790][sig4 == 1], (1:145)[sig4 == 1], cri[2, 646:790][sig4 == 1],
     (1:145)[sig4 == 1], col = "blue", lwd = 2)
 # abline(v = out101$summary[3,1], lwd = 3, col = "red")
 # abline(v = out101$summary[3,c(3,7)], lwd = 3, col = "red", lty = 2)

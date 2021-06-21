@@ -128,8 +128,8 @@ na <- 5000 ; ni <- 120000 ; nt <- 10 ; nb <- 20000 ; nc <- 3
 # Call JAGS (ART 1 min), check convergence and summarize posteriors
 out1 <- jags(bdata, inits, params, "cjs1.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2,3)) ; traceplot(out1)
-par(op)
+# par(mfrow = c(2,3))  #  ~~~ replace with 'layout' argument
+traceplot(out1, layout=c(2,3))
 print(out1, 3)
 #           mean    sd  2.5%   50% 97.5% overlap0 f Rhat n.eff
 # phi      0.618 0.062 0.501 0.616 0.745    FALSE 1    1  4897
@@ -199,8 +199,8 @@ na <- 1000 ; ni <- 20000 ; nt <- 5 ; nb <- 10000 ; nc <- 3
 # Call JAGS (ART 2 min), check convergence and summarize posteriors
 out2 <- jags(bdata, inits, params, "cjs2.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2,3)) ; traceplot(out2)
-par(op)
+# par(mfrow = c(2,3))  #  ~~~ replace with 'layout' argument
+traceplot(out2, layout=c(2,3))
 print(out2, 3) # not shown
 
 print(cbind(truth=c(data$phi, data$p), out2$summary[1:10, c(1,3,7)]), 2)

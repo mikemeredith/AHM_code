@@ -161,8 +161,8 @@ na <- 1000  ;  ni <- 500  ;  nb <- 100  ;  nt <- 1  ;  nc <- 3 # ~~~ for testing
 # Call JAGS from R, check convergence and summarize posteriors
 out1 <- jags(bdata, inits, params, "occmodel1.txt", n.adapt = na,
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3))  ;  traceplot(out1)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out1)
 print(out1, dig = 2)
 
 # Model 2: Static model with years as blocks (treated as random effects)
@@ -230,8 +230,8 @@ na <- 1000  ;  ni <- 500  ;  nb <- 100  ;  nt <- 1  ;  nc <- 3 # ~~~ for testing
 # Call JAGS from R, check convergence and summarize posteriors
 out2 <- jags(bdata, inits, params, "occmodel2.txt", n.adapt = na,
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3))  ;  traceplot(out2)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out2)
 print(out2, dig = 2)
 
 # Model 3: Static model with a linear trend and random yearly deviations
@@ -307,7 +307,8 @@ na <- 1000  ;  ni <- 500  ;  nb <- 100  ;  nt <- 1  ;  nc <- 3  # ~~~ for testin
 # Call JAGS from R, check convergence and summarize posteriors
 out3 <- jags(bdata, inits, params, "occmodel3.txt", n.adapt = na,
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3))  ;  traceplot(out3) ; par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out3)
 print(out3, dig = 2)
 
 # Model 4: Static model with a quad. trend and random yearly deviations
@@ -386,8 +387,8 @@ na <- 1000  ;  ni <- 500  ;  nb <- 100  ;  nt <- 1  ;  nc <- 3  # ~~~ for testin
 # Call JAGS from R, check convergence and summarize posteriors
 out4 <- jags(bdata, inits, params, "occmodel4.txt", n.adapt = na,
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3))  ;  traceplot(out4)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out4)
 print(out4, dig = 2)
 
 # Model 5: Dynamic model with fixed effects of year in phi, gamma, and p
@@ -445,8 +446,8 @@ na <- 1000  ;  ni <- 2500   ;   nb <- 500   ;    nt <- 2   ;   nc <- 3  # ~~~ fo
 # Call JAGS from R, check convergence and summarize posteriors
 out5 <- jags(bdata, inits, params, "occmodel5.txt", n.adapt = na,
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3))  ;  traceplot(out5)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out5)
 print(out5, dig = 3)
 
 # Model 6: Dynamic model with random effects of year in phi, gamma, and p
@@ -526,8 +527,8 @@ na <- 5000  ;  ni <- 5000  ;  nb <- 2500  ;   nt <- 2  ;  nc <- 3  # ~~~~ for te
 # Call JAGS from R, check convergence and summarize posteriors
 out6 <- jags(bdata, inits, params, "occmodel6.txt", n.adapt = na,
   n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3))  ;  traceplot(out6)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out6)
 print(out6, dig = 2)
 # ~~~~~~~~~~ end of extra code ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -620,8 +621,8 @@ na <- 5000 ; ni <- 500 ; nb <- 250 ; nt <- 1 ; nc <- 3  # ~~~ testing, 50 mins
 # Call JAGS (ART 832 min), check convergence and summarize posteriors
 out7 <- jags(bdata, inits, params, "occmodel7.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = T)
-op <- par(mfrow = c(3,3)) ; traceplot(out7)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out7)
 print(out7, dig = 2)
 
 # ~~~~ save output for use later ~~~~~~~~~~~~~~~~~

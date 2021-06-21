@@ -192,8 +192,8 @@ na <- 1000 ; ni <- 2000 ; nt <- 1 ; nb <- 1000 ; nc <- 3  # ~~~ testing, 6 mins
 # Call JAGS (ART 43 min), check convergence and summarize posteriors
 out1 <- jags(bdata, inits, params, "dynocc1.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3)) ; traceplot(out1)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out1)
 summary(out1) ; jags.View(out1) # not shown
 
 # Model 2 : With PS
@@ -337,8 +337,8 @@ na <- 1000 ; ni <- 3000 ; nt <- 1 ; nb <- 1500 ; nc <- 3 # ~~~ for testing, 8 mi
 # Call JAGS (ART 18 h), check convergence and summarize posteriors
 out2 <- jags(bdata, inits, params, "dynocc2.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2,2)) ; traceplot(out2)
-par(op)
+# par(mfrow = c(2,2))  #  ~~~ replace with 'layout' argument
+traceplot(out2, layout=c(2,2))
 summary(out2) ; jags.View(out2) # not shown
 
 
@@ -479,8 +479,8 @@ na <- 1000  ;  ni <- 2000  ;  nt <- 2  ;  nb <- 1000  ;  nc <- 3  # 11 mins
 # Call JAGS (ART 94 min), check convergence and summarize posteriors
 out3 <- jags(bdata, inits, params, "dynocc3.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2,2))   ;   traceplot(out3)
-par(op)
+# par(mfrow = c(2,2))  #  ~~~ replace with 'layout' argument
+traceplot(out3, layout=c(2,2))
 summary(out3)   ;   jags.View(out3)   # not shown
 
 # Finally, in model 4, we use as a predictor for theta[i, t] the mean number of
@@ -658,8 +658,8 @@ na <- 1000  ;  ni <- 2000  ;  nt <- 1  ;  nb <- 1000  ;  nc <- 3  # ~~~ for test
 # Call JAGS (ART 156 min), check convergence and summarize posteriors
 out4 <- jags(bdata, inits, params, "dynocc4.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2,2))   ;   traceplot(out4)
-par(op)
+# par(mfrow = c(2,2))  #  ~~~ replace with 'layout' argument
+traceplot(out4, layout=c(2,2))
 summary(out4)   ;   jags.View(out4)  # not shown
 
 

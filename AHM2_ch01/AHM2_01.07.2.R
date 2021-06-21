@@ -139,7 +139,8 @@ na <- 5000 ; ni <- 1e5 ; nt <- 50 ; nb <- 5e4 ; nc <- 3  # ~~~~~ for testing, 40
 # Call JAGS (ART 491 min), check convergence and summarize posteriors
 out10d <- jags(bdata, inits, params, "model10d.txt", n.adapt = na, n.chains = nc,
   n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-par(mfrow = c(2,2)) ; traceplot(out10d) ; par(mfrow = c(1,1))
+# par(mfrow = c(2,2))  # ~~~ replaced with 'layout' argument
+traceplot(out10d, layout=c(2,2))
 summary(out10d) ; jags.View(out10d) ; print(out10d$summary[1:100,-c(4:6)], 2)
 
 # ~~~ Save output for use in subsequent sections ~~~
@@ -244,8 +245,8 @@ na <- 5000 ; ni <- 100000 ; nt <- 50 ; nb <- 50000 ; nc <- 3
 # Call JAGS (ART 47 min), check convergence and summarize posteriors
 out11 <- jags(bdata, inits, params, "model11.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2,2)) ; traceplot(out11)
-par(op)
+# par(mfrow = c(2,2))  #  ~~~ replace with 'layout' argument
+traceplot(out11, layout=c(2,2))
 summary(out11) ; jags.View(out11) ; print(out11$summary[1:100,-c(4:6)], 2)
 
 # ~~~ Save output for use in subsequent sections ~~~

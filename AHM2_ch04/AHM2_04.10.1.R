@@ -86,8 +86,8 @@ na <- 1000  ;  ni <- 6000  ;  nb <- 4000  ;  nt <- 2  ;  nc <- 3 # 5 mins
 # Call JAGS from R (ART 25 min)
 out0 <- jags(bdata, inits, params, "dynocc.txt",
     n.adapt = na, n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(4,4))   ;   traceplot(out0)
-par(op)
+# par(mfrow = c(4,4))  # ~~~ replace with 'layout' argument
+traceplot(out0, layout=c(4,4))
 print(out0, 2)
 # ~~~~~~~~~~~~~~~~~~~~~~ end of extra code ~~~~~~~~~~~~~~~~~~~
 
@@ -167,8 +167,8 @@ na <- 5000 ; ni <- 10000 ; nb <- 2000 ; nt <- 8 ; nc <- 3  # ~~~~ testing, 15 mi
 # Call JAGS (ART 163 min), check convergence and summarize posteriors
 out <- jags(bdata, inits, params, "dynoccH.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(4,4)) ; traceplot(out)
-par(op)
+# par(mfrow = c(4,4))  # ~~~ replace with 'layout' argument
+traceplot(out, layout=c(4,4))
 print(out, 2) # not shown
 
 save(out0, out,  file="AHM2_10.1_output.RData")

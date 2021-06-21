@@ -133,8 +133,8 @@ na <- 1000 ; ni <- 500 ; nt <- 1 ; nb <- 300 ; nc <- 3  # ~~~~ for testing, 3 mi
 # Call JAGS (ART 8 min), assess convergence and summarize posteriors
 out1 <- jags(bdata, inits, params, "ipp.txt", n.adapt = na, n.thin = nt,
     n.chains = nc, n.burnin = nb, n.iter = ni, parallel = TRUE)
-op <- par(mfrow = c(2,2)) ; traceplot(out1)
-par(op)
+# par(mfrow = c(2,2))  # ~~~ replaced with 'layout' argument
+traceplot(out1, layout=c(2,2))
 print(out1, 3)
 #          mean     sd    2.5%     50%   97.5% overlap0 f  Rhat n.eff
 # beta0   4.144  0.069   4.006   4.146   4.276    FALSE 1 1.009   256
@@ -202,8 +202,8 @@ na <- 5000 ; ni <- 2000 ; nt <- 1 ; nb <- 1000 ; nc <- 3  # ~~~ for testing, 30 
 # Call JAGS (ART 892 min), assess convergence and summarize posteriors
 out2 <- jags(bdata, inits, params, "thinned.ipp.txt", n.adapt = na, n.thin = nt,
     n.chains = nc, n.burnin = nb, n.iter = ni, parallel = TRUE)
-op <- par(mfrow = c(2,2)) ; traceplot(out2)
-par(op)
+# par(mfrow = c(2,2))  # ~~~ replaced with 'layout' argument
+traceplot(out2, layout=c(2,2))
 print(out2, 3)
 #              mean         sd    2.5%      50%      97.5% overlap0    f  Rhat n.eff
 # mean.p      0.154      0.147   0.000    0.110      0.482    FALSE 1.00 1.023    93
@@ -320,8 +320,8 @@ na <- 1000 ; ni <- 5000 ; nt <- 4 ; nb <- 1000 ; nc <- 3  # ~~~~ for testing, 27
 # Call JAGS (ART 282 min), assess convergence and summarize posteriors
 out3 <- jags(bdata, inits, params, "JointPPPNmix.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2,2)) ; traceplot(out3)
-par(op)
+# par(mfrow = c(2,2))  # ~~~ replaced with 'layout' argument
+traceplot(out3, layout=c(2,2))
 print(out3, 2)
 #           mean    sd    2.5%     50%   97.5% overlap0    f Rhat n.eff
 # alpha0   -1.86  0.11   -2.07   -1.86   -1.64    FALSE 1.00    1  1113

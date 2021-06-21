@@ -141,8 +141,8 @@ params1 <- c("sigma", "Ntot", "beta0", "Fit", "Fitnew")
 # Run JAGS (ART < 1min), check convergence and summarize
 out0 <- jags (bdata, inits, params1, "M0.txt", n.thin = nt,
     n.chains = nc, n.burnin = nb, n.iter = ni, parallel = TRUE )
-op <- par(mfrow = c(2,3)) ; traceplot(out0)
-par(op)
+# par(mfrow = c(2,3))  # ~~~ replaced with 'layout' argument
+traceplot(out0, layout=c(2,3))
 print(out0, 3)
 #           mean     sd    2.5%     50%   97.5% overlap0     f  Rhat n.eff
 # sigma    0.645  0.031   0.589   0.644   0.711    FALSE 1.000 1.003   804
@@ -213,8 +213,8 @@ params1 <- c("sigma", "Ntot", "beta0", "beta1", "Fit", "Fitnew" )
 # Run JAGS (ART < 1min), check convergence and summarize
 out1 <- jags (bdata, inits, params1, "M1.txt", n.thin = nt, n.chains = nc,
     n.burnin = nb, n.iter = ni, n.adapt = na, parallel = TRUE )
-op <- par(mfrow = c(3,3)) ; traceplot(out1)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer necessary
+traceplot(out1)
 print(out1, 3)
 #           mean     sd    2.5%     50%   97.5% overlap0 f  Rhat n.eff
 # sigma    0.667  0.033   0.607   0.665   0.737    FALSE 1 1.001  2270
@@ -352,8 +352,8 @@ na <- 5000 ; ni <- 22000 ; nb <- 2000 ; nt <- 10 ; nc <- 3
 # Call JAGS (ART 11 min), assess convergence and summarize posteriors
 outdsm1 <- jags (bdata, inits, params1, "DSM1.txt", n.thin = nt, n.chains = nc,
     n.burnin = nb, n.iter = ni, n.adapt = na, parallel = TRUE )
-op <- par(mfrow = c(3,3)) ; traceplot(outdsm1)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer necessary
+traceplot(outdsm1)
 print(outdsm1, 3)
 #            mean     sd    2.5%     50%   97.5% overlap0     f  Rhat n.eff
 # sigma     0.707  0.050   0.614   0.705   0.814    FALSE 1.000 1.010   323

@@ -119,8 +119,8 @@ na <- 1000 ; ni <- 25000 ; nt <- 4 ; nb <- 5000 ; nc <- 3
 out1 <- jags(bdata, inits, params, "DM1.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
 
-op <- par(mfrow = c(2, 3)) ; traceplot(out1)
-par(op)
+# par(mfrow = c(2, 3))  #  ~~~ replace with 'layout' argument
+traceplot(out1, layout=c(2,3))
 print(out1, 3)
 
 # Per-capita recruitment parameterisation
@@ -167,8 +167,8 @@ model {
 # Call JAGS (ART 1.3 min), check convergence and summarize posteriors
 out1b <- jags(bdata, inits, params, "DM1b.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2, 3)) ; traceplot(out1b)
-par(op)
+# par(mfrow = c(2, 3))  #  ~~~ replace with 'layout' argument
+traceplot(out1b, layout=c(2,3))
 print(out1b, 2)
 
 # Absolute parameterisation

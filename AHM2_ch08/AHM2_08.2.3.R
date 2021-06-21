@@ -314,8 +314,8 @@ na <- 1000 ; nc <- 3 ; ni <- 5000 ; nb <- 3000 ; nt <- 2  # ~~~ for testing, 40 
 # Call JAGS (ART 335 min), check convergence and summarize posteriors
 out1 <- jags(bdata, inits, params, 'static_categorical.txt', n.chains = nc,
     n.adapt = na, n.burnin = nb, n.iter = ni, n.thin = nt, parallel = TRUE)
-op <- par(mfrow = c(3,3)) ; traceplot(out1)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out1)
 which(out1$summary[,8] > 1.1)
 print(out1$summary[1:24, -c(4:6)], 3)
 #              mean     sd     2.5%   97.5% Rhat n.eff overlap0     f

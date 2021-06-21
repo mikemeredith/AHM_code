@@ -210,8 +210,8 @@ na <- 500 ; nc <- 3 ; ni <- 3000 ; nb <- 1000 ; nt <- 2  # ~~~ for testing, 2.2 
 # Call JAGS (ART 39 min), assess convergence and summarize posteriors
 out1 <- jags(bdata, inits, params, "staticWaddle.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3)) ; traceplot(out1)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out1)
 which(out1$summary[,8] > 1.1)
 print(out1, 2)
 #               mean    sd   2.5%    50%  97.5% overlap0    f Rhat n.eff
@@ -455,8 +455,8 @@ na <- 500 ; ni <- 1000 ; nt <- 1 ; nb <- 500 ; nc <- 3  # ~~~ for testing, 110 m
 # Call JAGS (ART 323 min), check convergence and summarize posteriors
 out2 <- jags(bdata, inits, params, "dynamicWaddle.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3)) ; traceplot(out2) ; par(mfrow = c(1,1))
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out2)
 which(out2$summary[,8] > 1.1)
 print(out2$summary[, -c(4:6, 10:11)], 2)
 #                        mean      sd      2.5%    97.5% Rhat n.eff

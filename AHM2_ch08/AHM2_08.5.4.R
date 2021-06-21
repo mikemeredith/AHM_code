@@ -188,11 +188,10 @@ na <- 100 ; ni <- 1500 ; nt <- 1 ; nb <- 1000 ; nc <- 3  # ~~~ for testing, 21 m
 # Call JAGS (ART 36 h), check convergence and summarize posteriors
 out2X <- jags(bdata, inits, params, "JSDMnmix.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par("mfrow")
-par(mfrow = c(4,4)) ; traceplot(out2X) # All params
-par(mfrow = c(4,4)) ; traceplot(out2X,'lv.coef') # Only LV coefficients
-par(mfrow = c(1,1)) ; traceplot(out2X, 'deviance') # Only the deviance
-par(op)
+# par(mfrow = c(4,4))  # ~~~ replaced with 'layout' argument
+traceplot(out2X, layout=c(4,4)) # All params
+traceplot(out2X,'lv.coef', layout=c(4,4)) # Only LV coefficients
+traceplot(out2X, 'deviance') # Only the deviance
 which(out2X$summary[,8] > 1.1)
 
 

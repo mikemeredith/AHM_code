@@ -131,8 +131,8 @@ params <- c("sigma", "N", "psi", "D", "alpha0")
 # Run JAGS (ART 95 min), check convergence and summarize posteriors
 out2a <- jags (data_haz, inits, params, "MRDS.txt", n.thin = nt,
     n.chains = nc, n.burnin = nb, n.iter = ni, n.adapt = na, parallel = TRUE)
-op <- par(mfrow=c(3,2)) ; traceplot(out2a )
-par(op)
+# par(mfrow = c(3,2))  # ~~~ replaced with 'layout' argument
+traceplot(out2a , layout=c(3,2))
 print(out2a, 2)
 #          mean    sd   2.5%    50%  97.5% overlap0 f Rhat n.eff
 # sigma    0.20  0.01   0.18   0.19   0.21    FALSE 1 1.00   762

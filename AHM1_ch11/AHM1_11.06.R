@@ -87,8 +87,8 @@ ni <- 2500   ;   nt <- 2   ;   nb <- 500   ;   nc <- 3
 # Call JAGS from R (ART 2.1 min)
 out5 <- jags(win.data, inits, params, "model5.txt", n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(4,4))   ;   traceplot(out5)   ;   print(out5, dig = 3)
-par(op)
+# par(mfrow = c(4,4))  #  ~~~ replace with 'layout' argument
+traceplot(out5, layout=c(4,4))   ;   print(out5, dig = 3)
 
 # Compare observed and estimated site species richness
 op <- par(cex = 1.3)
@@ -200,8 +200,8 @@ ni <- 2000   ;   nt <- 2   ;   nb <- 500   ;   nc <- 3  # ~~~~ for testing
 # Call JAGS from R (ART 12 min), check traceplots and summarize posteriors
 out6 <- jags(win.data, inits, params, "model6.txt", n.chains = nc, n.thin = nt,
     n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3))   ;   traceplot(out6, c('mu.eta', 'probs', 'Sigma', 'rho'))
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out6, c('mu.eta', 'probs', 'Sigma', 'rho'))
 print(out6, 3)
 
 # Graphically compare some estimates between fixed- and random-effects model
@@ -311,8 +311,8 @@ ni <- 600   ;   nt <- 1   ;   nb <- 200   ;   nc <- 3  # ~~~~~ for testing
 # Call JAGS from R (ART 6 min), look at convergence and summarize posteriors
 out7 <- jags(win.data, inits, params, "model7.txt", n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3))   ;   traceplot(out7)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out7)
 print(out7, dig = 3)
 
 
@@ -395,10 +395,9 @@ ni <- 1200   ;   nt <- 1   ;   nb <- 200   ;   nc <- 3  # ~~~~ for testing
 # Call JAGS from R (ART 12 min), look at convergence and summarize posteriors
 out8 <- jags(win.data, inits, params, "model8.txt", n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3))
+# par(mfrow = c(3,3))  # ~~~ no longer needed
 traceplot(out8, c('delta0.lpsi', 'delta1.lpsi', 'delta0.lp', 'delta1.lp',
     'phi0.lpsi', 'phi1.lpsi', 'phi0.lp', 'phi1.lp'))
-par(op)
 print(out8, dig = 3)
 
 # ~~~~~ suggest saving for use later ~~~~~~~~~~~~~

@@ -107,10 +107,9 @@ out1J <- jags(win.data, inits, params, parallel = TRUE,
     n.thin = nt, n.iter = ni, n.burnin = nb)
 
 
-op <- par(mfrow = c(3,2))
-traceplot(out1J, param = c('alpha1', 'alpha2', 'resi[c(1,3, 5:6)]')) # Subset
+# par(mfrow = c(3,2))  # ~~~ replaced with 'layout' argument
+traceplot(out1J, param = c('alpha1', 'alpha2', 'resi[c(1,3, 5:6)]'), layout=c(3,2)) # Subset
 # traceplot(out1J)                  # All params
-par(op)
 
 # Overview of object created by jags()
 names(out1J)

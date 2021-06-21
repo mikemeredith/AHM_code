@@ -219,8 +219,8 @@ na <- 1000  ;  ni <- 2000   ;   nt <- 1   ;   nb <- 1000   ;   nc <- 3  # ~~~ fo
 # Call JAGS from R, check convergence and summarize posteriors
 out4 <- jags(bdata, inits, params, "staticMS1.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3, 3))   ;   traceplot(out4)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out4)
 summary(out4)  ;  jags.View(out4)
 
 # The PS-variant of the same model
@@ -421,8 +421,8 @@ na <- 1000  ;  ni <- 6000   ;   nt <- 2   ;   nb <- 4000   ;   nc <- 3  # ~~~~ t
 # Call JAGS from R, check convergence and summarize posteriors
 out5 <- jags(bdata, inits, params, "staticMS2.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3, 3))   ;   traceplot(out5)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out5)
 summary(out5)  ;   jags.View(out5)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

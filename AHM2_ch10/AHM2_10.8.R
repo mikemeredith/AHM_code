@@ -156,8 +156,8 @@ na <- 1000 ; ni <- 3000; nt <- 2 ; nb <- 1000 ; nc <- 3  # ~~~ for testing, 3 mi
 # Call JAGS (ART 15 min), assess convergence and summarize posteriors
 out1 <- jags(bdata, inits, params, "SCR0.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2, 3)) ; traceplot(out1)
-par(op)
+# par(mfrow = c(2, 3))  # ~~~ replaced with 'layout' argument
+traceplot(out1, layout=c(2,3))
 print(out1, 3)
 #         mean     sd   2.5%    50%  97.5% overlap0 f  Rhat n.eff
 # psi    0.423  0.096  0.252  0.415  0.627    FALSE 1 1.002   818
@@ -229,8 +229,8 @@ na <- 1000 ; ni <- 2000; nt <- 3 ; nb <- 500 ; nc <- 3  # ~~~ for testing, 5 min
 # Call JAGS (ART 49 min), assess convergence and summarize posteriors
 out2 <- jags(bdata, inits, params, "CRmodel.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2, 3)) ; traceplot(out2)
-par(op)
+# par(mfrow = c(2, 3))  # ~~~ replaced with 'layout' argument
+traceplot(out2, layout=c(2,3))
 print(out2, 3)
 #         mean     sd   2.5%    50%   97.5% overlap0 f  Rhat n.eff
 # psi    0.622  0.236  0.113  0.643   0.979    FALSE 1 1.003   985
@@ -342,8 +342,8 @@ na <- 1000 ; ni <- 1000; nt <- 1 ; nb <- 500 ; nc <- 3  # ~~~ for testing, 6 min
 # Call JAGS (ART 36 min), assess convergence and summarize posteriors
 out3 <- jags(bdata, inits, params, "IM_SCR.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2, 3)) ; traceplot(out3)
-par(op)
+# par(mfrow = c(2, 3))  # ~~~ replaced with 'layout' argument
+traceplot(out3, layout=c(2,3))
 print(out3, 3)
 #         mean     sd   2.5%    50%  97.5% overlap0 f  Rhat n.eff
 # psi    0.394  0.081  0.250  0.392  0.563    FALSE 1 1.001  1181
@@ -495,8 +495,8 @@ na <- 1000 ; ni <- 1200; nt <- 1 ; nb <- 200 ; nc <- 3  # ~~~ for testing
 # Call JAGS (ART 63 min), assess convergence and summarize posteriors
 out4 <- jags(bdata, inits, params, "SCRocc.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2, 3)) ; traceplot(out4)
-par(op)
+# par(mfrow = c(2, 3))  # ~~~ replaced with 'layout' argument
+traceplot(out4, layout=c(2,3))
 print(out4, 3)
 #           mean     sd   2.5%    50%  97.5% overlap0 f  Rhat n.eff
 # psi      0.406  0.077  0.270  0.402  0.571    FALSE 1 1.000 15000

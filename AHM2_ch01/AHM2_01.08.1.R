@@ -111,8 +111,8 @@ na <- 1000 ; ni <- 10000 ; nt <- 5 ; nb <- 5000 ; nc <- 3
 # Call JAGS (ART 3 min), assess convergence and summarize posteriors
 out12 <- jags(bugs.data, inits, params, "modelPH.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3)) ; traceplot(out12, c("expn1", "n1", "gamma", "sigma"))
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out12, c("expn1", "n1", "gamma", "sigma"))
 summary(out12) ; jags.View(out12) ; print(out12, dig = 3)
 
 # ~~~~~~~~~~ extra code for figure 1.16 ~~~~~~~~~~~~

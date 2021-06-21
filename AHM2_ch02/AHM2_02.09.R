@@ -145,8 +145,8 @@ na <- 1000 ; ni <- 60000 ; nb <- 10000 ; nt <- 5 ; nc <- 3  # ~~~ for testing
 set.seed(127) # Cheating: use this seed to get good initial values.
 (out9 <- jags(bdata, inits, params, "frogs.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE))
-op <- par(mfrow = c(2,2)) ; traceplot(out9)
-par(op)
+# par(mfrow = c(2,2))  #  ~~~ replace with 'layout' argument
+traceplot(out9, layout=c(2,2))
 print(out9, dig = 2)
 #               mean    sd   2.5%    50%  97.5% overlap0    f Rhat  n.eff
 # alpha.lamN    1.16  0.06   1.04   1.16   1.27    FALSE 1.00 1.00  39674
@@ -280,8 +280,8 @@ na <- 1000 ; ni <- 100000 ; nb <-50000 ; nt <- 2 ; nc <- 3
 # Call JAGS (ART 7 min), check convergence and summarize posteriors
 out10 <- jags(bdata, inits, params, "ZipkinModel.txt", n.adapt = na, n.thin = nt,
     n.chains = nc, n.burnin = nb, n.iter = ni, parallel = TRUE)
-op <- par(mfrow = c(3,3)) ; traceplot(out10)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out10)
 print(out10, dig = 3)
 #               mean     sd   2.5%    50%   97.5% overlap0 f  Rhat n.eff
 # lambda[1]    1.961  1.545  0.098  1.629   5.908    FALSE 1 1.009   683

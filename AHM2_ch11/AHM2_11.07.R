@@ -78,8 +78,8 @@ params <- c("sigma", "Ntot", "beta0", "beta1", "D")
 # Run JAGS (ART < 1 min), check convergence and summarize posteriors
 out6 <- jags(bdata, inits, params, "spatialDSpixel.txt", n.adapt = na,
     n.thin = nt, n.chains = nc, n.burnin = nb, n.iter = ni, parallel = TRUE )
-op <- par(mfrow = c(2,3)) ; traceplot(out6)
-par(op)
+# par(mfrow = c(2, 3))  # ~~~ replaced with 'layout' argument
+traceplot(out6, layout=c(2,3))
 print(out6, 3)
 #          mean     sd    2.5%     50%   97.5%  Rhat n.eff
 # sigma   0.265  0.035   0.215   0.260   0.348 1.009   457

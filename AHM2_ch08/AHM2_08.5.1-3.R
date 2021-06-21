@@ -144,8 +144,8 @@ na <- 500 ; nc <- 3 ; ni <- 3000 ; nb <- 1000 ; nt <- 2  # ~~~ for testing, 3 mi
 # Call JAGS (ART 400 min), assess convergence and summarize posteriors
 out1 <- jags(bdata, inits, params, "Nmix1.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3)) ; traceplot(out1)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out1)
 which(out1$summary[,8] > 1.1)
 print(out1, 2)
 
@@ -276,8 +276,8 @@ na <- 500 ; nc <- 3 ; ni <- 10000 ; nb <- 5000 ; nt <- 5  # ~~~ for testing, 3 m
 # Call JAGS (ART 40 min), assess convergence and summarize posteriors
 out2 <- jags(bdata, inits, params, "Nmix2.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3)) ; traceplot(out2)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out2)
 which(out2$summary[,8] > 1.1)
 print(out2, 2)
 #               mean   sd  2.5%   50% 97.5% overlap0    f Rhat n.eff
@@ -398,8 +398,8 @@ na <- 500 ; nc <- 3 ; ni <- 1000 ; nb <- 500 ; nt <- 1  # ~~~ for testing
 # Call JAGS (ART 509 min), assess convergence and summarize posteriors
 out3 <- jags(bdata, inits, params, "Nmix3.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3)) ; traceplot(out3)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out3)
 which(out3$summary[,8] > 1.1)
 print(out3$summary[,-(4:6)], 3)
 #                    mean     sd     2.5%  97.5% Rhat n.eff overlap0     f

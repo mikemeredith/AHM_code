@@ -106,8 +106,9 @@ out3 <- jags(bdata, inits, params2, "spatialDS.txt", n.thin = nt,
     n.chains = nc, n.burnin = nb, n.iter = ni, parallel = TRUE,
     factories = "base::Finite sampler FALSE")
 round(out3$summary[params1, ], 2) # Just main structural parameters
-op <- par(mfrow = c(3,2)) ; traceplot(out3, params1)
-par(op)
+# par(mfrow = c(3,2))  # ~~~ replaced with 'layout' argument
+traceplot(out3, params1, layout=c(3,2))
+
 #          mean    sd   2.5%    25%    50%    75%  97.5% Rhat n.eff overlap0 f
 # sigma    0.25  0.02   0.22   0.23   0.24   0.26   0.28 1.00  4295        0 1
 # N      236.32 74.53 154.00 185.00 213.00 262.00 444.00 1.03   156        0 1
@@ -227,8 +228,8 @@ params <- c("sigma", "N", "psi", "beta1", "D")
 # Run JAGS (ART < 1 min), check convergence and summarize posteriors
 out1perp <- jags (data_perp, inits, params, "spatialDSfast_perp.txt",
     n.thin = nt, n.chains = nc, n.burnin = nb, n.iter = ni, parallel = TRUE)
-op <- par(mfrow = c(3,2)) ; traceplot(out1perp)
-par(op)
+# par(mfrow = c(3,2))  # ~~~ replaced with 'layout' argument
+traceplot(out1perp, layout=c(3,2))
 print(out1perp, 3)
 #          mean     sd    2.5%     50%   97.5% overlap0 f  Rhat n.eff
 # sigma   0.244  0.025   0.203   0.241   0.300    FALSE 1 1.002  2438
@@ -332,8 +333,8 @@ params <- c("sigma", "N", "psi", "beta1", "D", "alpha0")
 # Run JAGS (ART 342 min) and summarize. Note: factories setting not required.
 out1haz <- jags (data_haz, inits, params, "spatialDSfast_haz.txt",
     n.thin = nt, n.chains = nc, n.burnin = nb, n.iter = ni, parallel = TRUE)
-op <- par(mfrow = c(3,2)) ; traceplot(out1haz)
-par(op)
+# par(mfrow = c(3,2))  # ~~~ replaced with 'layout' argument
+traceplot(out1haz, layout=c(3,2))
 print(out1haz, 3)
 #           mean     sd    2.5%     50%   97.5% overlap0 f  Rhat n.eff
 # sigma    0.256  0.017   0.226   0.255   0.292    FALSE 1 1.000 20000

@@ -455,8 +455,8 @@ ni <- 12000   ;   nb <- 2000   ;   nt <- 2   ;   nc <- 3
 library("jagsUI")
 wag1 <- jags(data, inits, params, "wagtail.txt", n.thin=nt,
     n.chains=nc, n.burnin=nb, n.iter=ni, parallel = TRUE)
-op <- par(mfrow = c(3,3))    ;   traceplot(wag1)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(wag1)
 summary(wag1)
 
 exp(-2.06)

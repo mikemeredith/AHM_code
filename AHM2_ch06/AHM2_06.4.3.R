@@ -352,8 +352,8 @@ na <- 1000 ; ni <- 6000 ; nt <- 2 ; nb <- 4000 ; nc <- 3  # ~~~ for testing, 2 h
 # Call JAGS (ART 22 h), check convergence and summarize posteriors
 odms2 <- jags(bdata, inits, params, "dynMS2.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3, 3)) ; traceplot(odms2)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(odms2)
 summary(odms2) ; jags.View(odms2) # not shown
 
 # ~~~ save output to use in next subsection ~~~

@@ -132,8 +132,8 @@ na <- 1000 ; ni <- 2000 ; nt <- 1 ; nb <- 1000 ; nc <- 3
 # Call JAGS (ART 4 min), assess convergence and summarize posteriors
 out5 <- jags(bdata, inits, params, "occufp3.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2, 3)) ; traceplot(out5)
-par(op)
+# par(mfrow = c(2, 3))  # ~~~ replaced with 'layout' argument
+traceplot(out5, layout=c(2,3))
 print(out5, dig = 3)
 #          mean    sd   2.5%    50%  97.5% overlap0 f  Rhat n.eff
 # psi     0.634 0.034  0.567  0.635  0.697    FALSE 1 1.001  1081
@@ -252,8 +252,8 @@ na <- 1000 ; ni <- 5000; nt <- 1 ; nb <- 1000 ; nc <- 3
 # Call JAGS (ART < 1 min), assess convergence and summarize posteriors
 out6 <- jags(bdata, inits, params, "occufp4.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(2,3)) ; traceplot(out6)
-par(op)
+# par(mfrow = c(2, 3))  # ~~~ replaced with 'layout' argument
+traceplot(out6, layout=c(2,3))
 print(out6, 3)
 #            mean    sd   2.5%    50%  97.5% overlap0 f  Rhat n.eff
 # psi       0.346 0.058  0.240  0.343  0.464    FALSE 1 1.003   710

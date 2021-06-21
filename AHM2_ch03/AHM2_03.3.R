@@ -133,8 +133,8 @@ na <- 1000 ; ni <- 1000 ; nt <- 1 ; nb <- 500 ; nc <- 3  # ~~~ testing
 # Call JAGS (ART 12 min), check convergence and summarize posteriors
 out3 <- jags(bdata, inits, params, "cjs3.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3)) ; traceplot(out3)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out3)
 print(out3, 3)
 #              mean    sd   2.5%    50%  97.5% overlap0     f  Rhat n.eff
 # mean.phi    0.486 0.023  0.439  0.486  0.530    FALSE 1.000 1.001  1401
@@ -275,8 +275,8 @@ na <- 1000 ; ni <- 2000 ; nt <- 1 ; nb <- 1000 ; nc <- 3   # ~~~ testing
 # Call JAGS (ART 3 min), check convergence and summarize posteriors
 out4f <- jags(bdata, inits, params, "cjs4f.txt", n.adapt = na,
     n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3, 3)) ; traceplot(out4f)
-par(op)
+# par(mfrow = c(3, 3))  # ~~~ no longer needed
+traceplot(out4f)
 print(out4f, 3) # not shown
 
 # Next, we fit the random-effects CJS model.
@@ -295,8 +295,8 @@ na <- 1000 ; ni <- 2000 ; nt <- 1 ; nb <- 1000 ; nc <- 3  # ~~~ testing
 # Call JAGS (ART 3 min), check convergence and summarize posteriors
 out4r <- jags(bdata, inits, params, "cjs3.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3, 3)) ; traceplot(out4r)
-par(op)
+# par(mfrow = c(3, 3))  # ~~~ no longer needed
+traceplot(out4r)
 print(out4r, 3) # not shown
 
 (avge.perc.error.fixed <- mean(100*abs(phi-out4f$mean$phi) / phi))
@@ -525,8 +525,8 @@ na <- 5000 ; ni <- 2000 ; nt <- 1 ; nb <- 1000 ; nc <- 3  # ~~~ testing
 # Call JAGS (ART 14 min), check convergence and summarize posteriors
 out5 <- jags(bdata, inits, params, "cjs5.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3, 3)) ; traceplot(out5)
-par(op)
+# par(mfrow = c(3, 3))  # ~~~ no longer needed
+traceplot(out5)
 print(out5, 2)
 #                mean   sd  2.5%   50% 97.5% overlap0    f Rhat n.eff
 # mean.phi[1]    0.66 0.03  0.60  0.66  0.72    FALSE 1.00 1.00  1029

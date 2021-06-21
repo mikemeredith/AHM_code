@@ -132,8 +132,8 @@ na <- 100 ; ni <- 400 ; nt <- 1 ; nb <- 200 ; nc <- 3  # ~~~ for testing
 # Call JAGS (ART 485 min), check convergence and summarize posteriors
 out3 <- jags(bdata, inits, params, "chandler.txt", n.adapt = na, n.chains = nc,
     n.thin = nt, n.iter = ni, n.burnin = nb, parallel = TRUE)
-op <- par(mfrow = c(3,3)) ; traceplot(out3)
-par(op)
+# par(mfrow = c(3,3))  # ~~~ no longer needed
+traceplot(out3)
 print(out3$summary[1:13, c(1:3,7)], 3)
 #                       mean     sd    2.5%  97.5%
 # psi1.int            0.1189 0.0367  0.0543  0.199

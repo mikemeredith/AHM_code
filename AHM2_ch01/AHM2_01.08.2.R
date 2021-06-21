@@ -198,8 +198,8 @@ out13 <- jags(bdata, inits, params, "modelPH.txt", n.adapt = na, n.chains = nc,
 summary(out13) ; jags.View(out13)
 
 # Convergence check
-op <- par(mfrow = c(3,3), mar = c(3,3,3,2)) ; traceplot(out13) # All params
-par(op)
+# par(mfrow = c(3,3), mar = c(3,3,3,2))  # ~~~ no longer needed
+traceplot(out13) # All params
 
 # Posterior summary only for parameters with Rhat > 1.1
 print(out13$summary[which(out13$summary[,8] > 1.1), -c(4:6)], 3)
