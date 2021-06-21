@@ -148,7 +148,16 @@ cat("\n\n#############################################\n")
 cat("Completed", format(Sys.time()), file = .logFile, append = TRUE)
 cat("\nOverall time taken", round(otime, 2), attr(otime, "units"), "\n")
 cat("\nSessionInfo:\n\n")
-print(sessionInfo())
+sess <- sessionInfo()
+sess$otherPkgs <- NULL
+sess$loadedOnly <- NULL
+print(sess)
+cat("\nPackages used:\n")
+lns <- loadedNamespaces()
+lns <- sort(lns[!(lns %in% sess$basePkgs)])
+vers <- lapply(lns, packageVersion)
+names(vers) <- lns
+print(cbind(version=vers))
 sink(NULL)
 
 # Display info in the Console (important if running multiple instances of R)
