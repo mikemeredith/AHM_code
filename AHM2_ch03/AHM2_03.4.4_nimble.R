@@ -80,7 +80,7 @@ str(bconst <- list(R = R, n.site = nsite, n.occ = nyear,
 # 2. Remove I(-12,12) as not compatible (or necessary)
 # 3. dcar_normal needs zero_mean=1 argument to mimic WinBUGS version
 # Optional improvements:
-# 1. Use logit(.) <- 
+# 1. Use logit(.) <-
 # 2. sd instead of tau in dnorm
 # 3. dbeta for probabilities instead of dunif
 
@@ -104,9 +104,9 @@ cjs8.code <- nimbleCode({
     beta.lphi.time[t] ~ dnorm(0, sd = sd.lphi.time)
     beta.lp.time[t] ~ dnorm(0, sd = sd.lp.time)
 
-    # backtransform time means
-    logit(mean.phi.time[t]) <- mu.lphi - beta.lphi.time[t]
-    logit(mean.p.time[t]) <- mu.lp - beta.lp.time[t]
+    # backtransform time means (see Errata dated 2021-06-23)
+    logit(mean.phi.time[t]) <- mu.lphi + beta.lphi.time[t]
+    logit(mean.p.time[t]) <- mu.lp + beta.lp.time[t]
   }
 
   # Hyperpriors for hyperparams

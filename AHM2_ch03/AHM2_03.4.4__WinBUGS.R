@@ -91,9 +91,9 @@ model {
     beta.lphi.time[t] ~ dnorm(0, tau.lphi.time) I(-12, 12)
     beta.lp.time[t] ~ dnorm(0, tau.lp.time) I(-12, 12)
 
-    # backtransform time means
-    mean.phi.time[t] <- 1 / (1 + exp(-mu.lphi + beta.lphi.time[t]))
-    mean.p.time[t] <- 1 / (1 + exp(-mu.lp + beta.lp.time[t]))
+    # backtransform time means (see Errata dated 2021-06-23)
+    mean.phi.time[t] <- 1 / (1 + exp(-(mu.lphi + beta.lphi.time[t])))
+    mean.p.time[t] <- 1 / (1 + exp(-(mu.lp + beta.lp.time[t])))
   }
 
   # Hyperpriors for hyperparams
