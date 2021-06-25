@@ -4,7 +4,7 @@
 
 ## 2021-06-25
 
-* Incorporate [errata] (https://sites.google.com/site/appliedhierarchicalmodeling/errata) into code for sections AHM2 3.4.4 and 3.4.5.
+* Incorporate [errata](https://sites.google.com/site/appliedhierarchicalmodeling/errata) into code for sections AHM2 3.4.4 and 3.4.5.
 
 ## 2021-06-21
 
