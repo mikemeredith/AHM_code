@@ -344,6 +344,12 @@ print(out1$summary[1:24, -c(4:6)], 3)
 # mean.pC    0.1172 0.0108  0.09730  0.1399 1.01   356        0 1.000
 # mean.pF    0.1674 0.0242  0.12489  0.2176 1.01   281        0 1.000
 
+# ~~~ The plots in the book do not show CRIs. ~~~
+# ~~~ For alternative code with CRIs, see file AHM2_08.2.3_CRIplots.R ~~~
+# ~~~ save the workspace so far ~~~
+save(list=ls(), file="AHM2_08.2.3.Rdata")
+
+
 # Grab posterior means of parameters
 (tmp <- out1$mean[1:6])
 
