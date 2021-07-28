@@ -9,6 +9,8 @@
 # -------- utility functions ----------------------------
 # Function to convert secs to mins/hrs
 .hms <- function(time) {
+  if(time > 60*60*36)
+    return(paste(round(time/3600/24, 2), "days"))
   if(time > 60*90)
     return(paste(round(time/3600, 2), "hrs"))
   if(time > 90)
