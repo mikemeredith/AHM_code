@@ -157,7 +157,7 @@ ni <- 2200   ;   nb <- 200   ;   nt <- 1   ;   nc <- 3  # ~~~~~ for testing
 
 # ~~~~~~ jagsUI now has a factories argument ~~~~~~~~~~~~~~~~~~~~~
 # Setting factories manually with rjags::set.factory before calling
-# jags will not work on current versions.
+# jagsUI::jags will not work on current versions.
 ## JAGS setting b/c otherwise JAGS cannot build a sampler, rec. by M. Plummer
 #set.factory("bugs::Conjugate", FALSE, type="sampler")
 
