@@ -86,11 +86,8 @@ str(data1<-list(nsites=nsites, chap=as.vector(covs[,"chaparral"])[dat$cell],
    elev=as.vector(covs[,"elevation"])[dat$cell], T=nyrs, nD=nD, midpt=midpt,
    B=B, delta=delta, y=y, dclass=dclass, site=site, nind=sum(y)) )
 
-
-
 # 9.7.2 Fitting a slurry of open population models
 # ------------------------------------------------------------------------
-
 
 # 9.7.2.1 The independence model
 # ------------------------------------------------------------------------
@@ -129,8 +126,15 @@ model{
       log(lambda[s,t]) <- beta0 + beta1*chap[s] + beta2*chap2[s] +
           beta3*elev[s] + beta4*(t - t/2)  # Note trend parameter here
       y[s,t] ~ dbin(pcap[s], N[s,t])
+      # ~~~ Original Negative Binomial formulation ~~~~~~~~~~~~
       N[s,t] ~ dnegbin(prob[s,t], r)
       prob[s,t] <- r/(r+lambda[s,t])
+      # ~~~ Alternative Poisson-gamma formulation ~~~~~~~~~~~~~
+      # N[s,t] ~ dpois(lamx[s,t])
+      # lamx[s,t] ~ dgamma(r, r/lambda[s,t])
+      # This is mathematically equivalent but implemented differently in JAGS:
+      #   no need to disable Conjugate samplers.
+      # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     } # End loop over years
   } # End loop over sites
 
@@ -150,26 +154,35 @@ model{
 Nst <- y+1  # this is for trend model
 inits <- function(){list(N=Nst, beta0=runif(1), beta1=runif(1), beta2=runif(1),
    beta3=runif(1), beta4=runif(1), alpha0=runif(1,3,5), alpha1=runif(1), r = 1)}
+
 params <-c('beta0', 'beta1', 'beta2', 'beta3', 'beta4', 'alpha0', 'alpha1',
     'Ntot', 'D', 'r')
+
 # ni <- 22000   ;   nb <- 2000   ;   nt <- 1   ;   nc <- 3
 ni <- 2200   ;   nb <- 200   ;   nt <- 1   ;   nc <- 3  # ~~~~~ for testing
 
-# ~~~~~~ jagsUI now has a factories argument ~~~~~~~~~~~~~~~~~~~~~
-# Setting factories manually with rjags::set.factory before calling
-# jagsUI::jags will not work on current versions.
-## JAGS setting b/c otherwise JAGS cannot build a sampler, rec. by M. Plummer
-#set.factory("bugs::Conjugate", FALSE, type="sampler")
-
 ## Execute JAGS, look at convergence and summarize the results
-# open1 <- jags (data1, inits, params, "Sollmann1.txt", n.thin=nt, n.chains=nc,
-   # n.burnin=nb, n.iter=ni)
+
+# ~~~~~~ jagsUI now has a factories argument ~~~~~~~~~~~~~~~~~~~~~
+## JAGS setting b/c otherwise JAGS cannot build a sampler, rec. by M. Plummer
+# set.factory("bugs::Conjugate", FALSE, type="sampler")  # ~~~ no longer works
+
+# Setting factories with rjags::set.factory before calling
+#   jagsUI::jags does not work on current versions.
+# Use the 'factories' argument to jagsUI::jags instead.
+
+# USE THIS with the original Negative Binomial formulation:
 open1 <- jags (data1, inits, params, "Sollmann1.txt",
   n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni,
   factories="bugs::Conjugate sampler FALSE", parallel=TRUE)
+
+# USE THIS with the Poisson-gamma formulation:
+# open1 <- jags (data1, inits, params, "Sollmann1.txt", n.thin=nt, n.chains=nc,
+   # n.burnin=nb, n.iter=ni, parallel=TRUE)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # par(mfrow = c(3,3))  # ~~~ no longer needed
-traceplot(open1)   ;   print(open1, 2)
+traceplot(open1)
+print(open1, 2)
 
 
 # 9.7.2.2 The reduced-dynamics model
@@ -235,8 +248,10 @@ model{
 Nst <- y+1 # this is for trend model
 inits <- function(){list(N=Nst, beta0=runif(1), beta1=runif(1), beta2=runif(1),
    beta3=runif(1), alpha0=runif(1,3,5), alpha1=runif(1), theta=runif(1,0.6,0.99))}
+
 params <- c('beta0', 'beta1', 'beta2', 'beta3', 'alpha0', 'alpha1', 'theta',
    'rout', 'Ntot', 'D', 'r')
+
 # ni <- 22000   ;   nb <- 2000   ;   nt <- 1   ;   nc <- 3
 ni <- 2200   ;   nb <- 200   ;   nt <- 1   ;   nc <- 3  # ~~~~ for testing
 
@@ -245,7 +260,8 @@ open2 <- jags (data1, inits, params, "Sollmann2.txt",
   # n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni)
   n.thin=nt, n.chains=nc, n.burnin=nb, n.iter=ni, parallel=TRUE)
 # par(mfrow = c(3,3))  # ~~~ no longer needed
-traceplot(open2)   ;   print(open2, 2)
+traceplot(open2)
+print(open2, 2)
 
 # 9.7.2.3 The Glorious Integrated HDS/Dail-Madsen Model
 # ------------------------------------------------------------------------
@@ -331,8 +347,10 @@ for(s in 1:nsites){
 inits <-function(){list(N=yin, beta0=runif(1), beta1=runif(1), beta2=runif(1),
    beta3=runif(1), alpha0=runif(1,3,5), alpha1=runif(1), phi=0.6, gamma=0.3,
    R=Rin, S=Sin) }
+
 params <- c('beta0', 'beta1', 'beta2', 'beta3', 'alpha0', 'alpha1', 'phi',
    'gamma', 'Ntot', 'D', 'r')
+
 # ni <- 152000   ;   nb <- 2000   ;   nt <- 10   ;   nc <- 3
 ni <- 15200   ;   nb <- 200   ;   nt <- 1   ;   nc <- 3  # ~~~~~ for testing
 
@@ -342,7 +360,8 @@ set.seed(1) # ~~~ prevents "node incompatible..." error
 open3  <- jags (data1, inits, params, "Sollmann3.txt", n.thin=nt,
     n.chains=nc, n.burnin=nb, n.iter=ni, parallel=TRUE)
 # par(mfrow = c(3,3))  # ~~~ no longer needed
-traceplot(open3)   ;   print(open3, 2)
+traceplot(open3)
+print(open3, 2)
 
 
 # Compare inferences in graph .... (Fig. 9-6)
@@ -350,9 +369,9 @@ plot(apply(dat$N,2,sum),ylim=c(600,1300),xlab="Year",ylab="Population size (307 
 lines(apply(open1$sims.list$Ntot,2,mean), lty=1, col="blue", lwd=2)
 lines(apply(open2$sims.list$Ntot,2,mean), lty=1, col="red", lwd=2)
 lines(apply(open3$sims.list$Ntot,2,mean), lty=1, col="green", lwd=2)
-open1.95cri<- apply(open1$sims.list$N,2,function(x) quantile(x, c(0.025,0.975)))
-open2.95cri<- apply(open2$sims.list$N,2,function(x) quantile(x, c(0.025,0.975)))
-open3.95cri<- apply(open3$sims.list$N,2,function(x) quantile(x, c(0.025,0.975)))
+open1.95cri <- apply(open1$sims.list$N,2,function(x) quantile(x, c(0.025,0.975)))
+open2.95cri <- apply(open2$sims.list$N,2,function(x) quantile(x, c(0.025,0.975)))
+open3.95cri <- apply(open3$sims.list$N,2,function(x) quantile(x, c(0.025,0.975)))
 legend(1,750,legend=c("Independence","Reduced dynamics","Full dynamics"), lty=1, col=c("blue","red","green"))
 
 matlines(1:6, t(open1.95cri), type="l", lty=2, lwd=2, col="blue")
@@ -364,7 +383,4 @@ parms <- c(betaFall, dparm)
 round(post <- cbind(parms, Independent=open1$summary[c(1:4,6,7),1],
        Partial=open2$summary[1:6,1], Full=open3$summary[1:6,1]), 3)
 
-
-
 # 9.7.2.4 Summary remarks on modelling populations over time (no code)
-
