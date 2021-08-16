@@ -3,11 +3,14 @@
 #   and its subdirectories.
 # Files checked, errors, and times > 20 secs are listed in "#check_<date>.log".
 
+# Finally check the log file for ERRORs, WARNINGs, NOTES and report at end of run
+# (added 2021-08-15)
+
 # Objects with initial '.' are not removed by rm(list = ls()), so persist during
 #   running of individual scripts.
 
 # -------- utility functions ----------------------------
-# Function to convert secs to mins/hrs
+# Function to convert secs to mins/hrs/days
 .hms <- function(time) {
   if(time > 60*60*36)
     return(paste(round(time/3600/24, 2), "days"))
@@ -33,8 +36,11 @@
     return(TRUE)  # skip check for functions (esp. nimble)
   }
   all.equal.jagsUI <- function(target, current, ...) {
-    target$run.date <- NULL ; target$mcmc.info$elapsed.mins <- NULL
-    current$run.date <- NULL ; current$mcmc.info$elapsed.mins <- NULL
+    target$run.date <- NULL ; current$run.date <- NULL
+    target$mcmc.info$elapsed.mins <- NULL ; current$mcmc.info$elapsed.mins <- NULL
+    # Checking model text will show a mismatch even for tiny changes, eg in
+    #   comments or white space
+    target$model <- NULL ; current$model <- NULL
     all.equal.list(target, current, ...)
   }
 
@@ -62,7 +68,7 @@
         tmp <- try(all.equal(new, old,
             check.attributes=FALSE), silent=TRUE)
         if(inherits(tmp, "try-error")) {
-          cat("Can't compare results for:", this, "class:", class(new), "\n",
+          cat("NOTE: Can't compare results for:", this, "class:", class(new), "\n",
               file = logFile, append = TRUE)
           next
         }
@@ -71,10 +77,10 @@
     }
     if(any(!same)) {
       bad <- paste(outputNames[!same], collapse=", ")
-      cat("Value differs from previous run for:", bad, "\n", file = logFile, append = TRUE)
+      cat("WARNING: Value differs from previous run for:", bad, "\n", file = logFile, append = TRUE)
     }
   } else {
-    cat("Old results not available\n", file = logFile, append = TRUE)
+    cat("NOTE: Old results not available\n", file = logFile, append = TRUE)
   }
 }
 # ..............................................................
@@ -89,6 +95,7 @@ length(.ListOfFilesToCheck)
 # length(.ListOfFilesToCheck)
 
 # Attach rgdal before doing package count (does not unload properly)
+options("rgdal_show_exportToProj4_warnings"="none")
 library(rgdal)
 .oldPackageCount <- length(search())
 .oldWD <- getwd()
@@ -118,7 +125,9 @@ for(.i in seq_along(.ListOfFilesToCheck)) {
   .pdfFile <- paste0(.fileStem, "#.pdf")
   .imageFile <- paste0(.fileStem, "#.Rdata")
   # run the script
-  cat("\n\n", .ListOfFilesToCheck[.i], "\n", file = .logFile, append = TRUE)
+  # cat("\n\n", .ListOfFilesToCheck[.i], "\n", file = .logFile, append = TRUE)
+  cat("\n\n", .ListOfFilesToCheck[.i], "\nmodified", format(file.mtime(.ListOfFilesToCheck[.i])), "\n",
+      file = .logFile, append = TRUE)
   cat(format(Sys.time()), "\n", file = .logFile, append = TRUE)
   pdf(.pdfFile)
   .defaultpars <- par(no.readonly = TRUE)
@@ -130,31 +139,48 @@ for(.i in seq_along(.ListOfFilesToCheck)) {
   .compareValues(oldFile=.imageFile, logFile=.logFile)
   # Check that par's have been restored:
   if(!.comparePars(.defaultpars)) {
-    cat("Plotting par's were not restored.\n", file = .logFile, append = TRUE)
+    cat("NOTE: Plotting par's were not restored.\n", file = .logFile, append = TRUE)
     plot(0)
   }
   dev.off()
   sessionInfo <- sessionInfo()
   timeTaken <- .timing
+  if(inherits(.returnValue, "try-error")) {
+    cat("ERROR: ", .returnValue, file = .logFile, append = TRUE)
+    .imageFile <- paste0(.fileStem, "_bad#.Rdata")
+  }
   save.image(file = .imageFile)
-  if(inherits(.returnValue, "try-error"))
-    cat(.returnValue, file = .logFile, append = TRUE)
   if(.timing[3] > 20)
     cat("Took", .hms(.timing[3]), file = .logFile, append = TRUE)
 }
 otime <- Sys.time() - .startTime  # overall time
+
+# Check the log file for ERRORs, WARNINGs, NOTES
+tmp <- readLines(.logFile)
+nERROR <- sum(grepl("^ERROR", tmp))
+nWARNING <- sum(grepl("^WARNING", tmp))
+nNOTE <- sum(grepl("^NOTE", tmp))
+issues <- nERROR > 0 || nWARNING > 0 || nNOTE > 0
+if(issues)
+  headsup <- paste("There were", nERROR, "ERRORs,", nWARNING, "WARNINGs,",
+      nNOTE, "NOTEs.")
+
 
 # Add overall time and sessionInfo to the end of the log file.
 sink(.logFile, append=TRUE)
 cat("\n\n#############################################\n")
 cat("Completed", format(Sys.time()), file = .logFile, append = TRUE)
 cat("\nOverall time taken", round(otime, 2), attr(otime, "units"), "\n")
+
+if(issues)
+  cat("\n", headsup, "\n", sep="", file = .logFile, append = TRUE)
+
 cat("\nSessionInfo:\n\n")
 sess <- sessionInfo()
 sess$otherPkgs <- NULL
 sess$loadedOnly <- NULL
 print(sess)
-cat("\nPackages used:\n")
+cat("\nPackages used:\n")  # in alphabetical order
 lns <- loadedNamespaces()
 lns <- sort(lns[!(lns %in% sess$basePkgs)])
 vers <- lapply(lns, packageVersion)
@@ -164,8 +190,12 @@ sink(NULL)
 
 # Display info in the Console (important if running multiple instances of R)
 cat("\n\n##############################################\n")
-cat("Checks completed for .R files in\n")
+cat("Checks completed for .R files in\n    ")
 cat(getwd(), "\n")
-cat("at", format(Sys.time()), "\n")
+cat("at", format(Sys.time()),
+    " Overall time taken", round(otime, 2), attr(otime, "units"), "\n")
+
+if(issues)
+  cat("\n", headsup, "\n", sep="")
 cat("For details see", dQuote(.logFile), "\n")
 cat("##############################################\n\n")
