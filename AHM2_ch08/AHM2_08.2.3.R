@@ -163,7 +163,7 @@ model{
     lsv[i, 8] <- exp( psiBCF[i] ) #--------------------------| BCF
     for(j in 1:nsurveys){
       # Detection matrix (OS = observed state, TS = true state)
-      # rdm = rho detection matrix. Each row sums to 1
+      # rdm = rho detection matrix.
       # OS along rows, TS along columns
       # True state = U
       rdm[i, j, 1, 1] <- 1 #----------------------------------| OS = U

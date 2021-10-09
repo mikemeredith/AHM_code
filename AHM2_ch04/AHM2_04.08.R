@@ -191,18 +191,18 @@ cat(file = "dynocc.gof.txt","
     Etm[2,2,t] <- sum(nonext.exp[,t])
   }
 
-  # Compute Chi-square discrepancy
+  # Compute Chi-square discrepancy ~~~ see Errata 2021-10-09
   for(t in 1:(nyear-1)){
     # ... for observed data
-    x2Open[1,1,t] <- pow((tm[1,1,t] - Etm[1,1,t]), 2) / (tm[1,1,t]+e)
-    x2Open[1,2,t] <- pow((tm[1,2,t] - Etm[1,2,t]), 2) / (tm[1,2,t]+e)
-    x2Open[2,1,t] <- pow((tm[2,1,t] - Etm[2,1,t]), 2) / (tm[2,1,t]+e)
-    x2Open[2,2,t] <- pow((tm[2,2,t] - Etm[2,2,t]), 2) / (tm[2,2,t]+e)
+    x2Open[1,1,t] <- pow((tm[1,1,t] - Etm[1,1,t]), 2) / (Etm[1,1,t]+e)
+    x2Open[1,2,t] <- pow((tm[1,2,t] - Etm[1,2,t]), 2) / (Etm[1,2,t]+e)
+    x2Open[2,1,t] <- pow((tm[2,1,t] - Etm[2,1,t]), 2) / (Etm[2,1,t]+e)
+    x2Open[2,2,t] <- pow((tm[2,2,t] - Etm[2,2,t]), 2) / (Etm[2,2,t]+e)
     # ... for replicated data
-    x2repOpen[1,1,t] <- pow((tmrep[1,1,t]-Etm[1,1,t]),2)/(tmrep[1,1,t]+e)
-    x2repOpen[1,2,t] <- pow((tmrep[1,2,t]-Etm[1,2,t]),2)/(tmrep[1,2,t]+e)
-    x2repOpen[2,1,t] <- pow((tmrep[2,1,t]-Etm[2,1,t]),2)/(tmrep[2,1,t]+e)
-    x2repOpen[2,2,t] <- pow((tmrep[2,2,t]-Etm[2,2,t]),2)/(tmrep[2,2,t]+e)
+    x2repOpen[1,1,t] <- pow((tmrep[1,1,t]-Etm[1,1,t]),2)/(Etm[1,1,t]+e)
+    x2repOpen[1,2,t] <- pow((tmrep[1,2,t]-Etm[1,2,t]),2)/(Etm[1,2,t]+e)
+    x2repOpen[2,1,t] <- pow((tmrep[2,1,t]-Etm[2,1,t]),2)/(Etm[2,1,t]+e)
+    x2repOpen[2,2,t] <- pow((tmrep[2,2,t]-Etm[2,2,t]),2)/(Etm[2,2,t]+e)
   }
 
   # Add up overall test statistic and compute fit stat ratio (open part)
