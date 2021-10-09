@@ -6,13 +6,8 @@
 # Chapter 2. What are hierarchical models and how do we analyze them?
 # =========================================================================
 
-# ~~~~~~~ This requires results from section 2.4 ~~~~~~~~~~~~~~~~~~~~
-source("AHM1_02.4.R")
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 # 2.8 Assessment of model fit
 # ===========================
-
 
 # 2.8.1 Parametric bootstrapping example
 # ------------------------------------------------------------------------
@@ -73,6 +68,10 @@ fitstat <- function(y, Ey){
   sum((sqrt(y) - sqrt(Ey)))
 }
 # Compute it for the observed data
+# ~~~ 3 lines of code added to ensure we are using output from sim.data(), see Errata 2021-10-09
+y <- data$y
+J <- data$J
+vegHt <- data$vegHt
 T.obs <- fitstat(y, J*plogis(mles[1] + mles[2]*vegHt)*plogis(mles[3]))
 
 # Get bootstrap distribution of fit statistic
