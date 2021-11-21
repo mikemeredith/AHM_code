@@ -43,6 +43,9 @@
     target$model <- NULL ; current$model <- NULL
     all.equal.list(target, current, ...)
   }
+  all.equal.cluster <- function(target, current, ...) {
+    return(TRUE)  # skip check for clusters
+  }
 
   if(file.exists(oldFile)) {
     outputNames <- ls(.GlobalEnv)
