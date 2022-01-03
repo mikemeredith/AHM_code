@@ -15,18 +15,7 @@ If there is an appropriately-named `#.RData` file in the folder from a previous 
 
 ## Installing and updating packages
 
-Before running the scripts, you may want to check that the necessary packages are installed. I suggest first running `update.packages(ask='graphics',checkBuilt=TRUE)` to ensure everything is up to date, including dependencies. You can then install any extra packages needed with:
-```
-needed <- c("AHMbook", "unmarked", "AICcmodavg", "sp", "rgdal", "plotrix", "raster",
-  "lme4", "R2WinBUGS", "R2OpenBUGS", "jagsUI", "denstrip", "rjags", "coda",
-  "devtools", "corrplot", "berryFunctions", "fields", "nimble", "mcmcOutput",
-  "foreach", "doParallel", "wiqid")
-got <- rownames(installed.packages())
-
-( notgot <- needed[!needed %in% got] )
-
-install.packages(notgot)
-```
+Before running the scripts, you may want to check that the necessary packages are installed. See the "install_packages.R" script.
 
 If you want to install latest devel/patched versions of packages from Github, use or adapt the following code:
 ```

@@ -9,9 +9,9 @@ update.packages(ask='graphics',checkBuilt=TRUE)
 # to ensure everything is up to date, including dependencies.
 
 needed <- c("AHMbook", "unmarked", "AICcmodavg", "sp", "rgdal", "plotrix", "raster",
-  "lme4", "R2WinBUGS", "R2OpenBUGS", "jagsUI", "denstrip", "rjags", "coda", "devtools",
-  "mcmcOutput", "wiqid", "spdep", "foreach", "doParallel", "abind", "corrplot", "fields",
-  "berryFunctions", "nimble")
+  "lme4", "R2WinBUGS", "R2OpenBUGS", "jagsUI", "denstrip", "rjags", "coda",
+  "devtools", "corrplot", "berryFunctions", "fields", "nimble", "mcmcOutput",
+  "foreach", "doParallel", "wiqid")
 got <- rownames(installed.packages())
 
 ( notgot <- needed[!needed %in% got] )
@@ -25,5 +25,8 @@ install.packages(notgot, dependencies=TRUE)
 # For example:
 # remotes::install_github("mikemeredith/AHMbook")
 # packageVersion("AHMbook")
-# news(package="AHMbook")
+# remotes::install_github("rbchan/unmarked")
+# packageVersion("unmarked")
+# remotes::install_github("kenkellner/jagsUI")
+# packageVersion("jagsUI")
 
