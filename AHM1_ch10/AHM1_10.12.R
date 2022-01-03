@@ -182,7 +182,7 @@ hist(data$ttd, breaks = 40, col = "grey",
     xlab = "Time to first detection (min)", main = "")
 plot(table(out2$sims.list$n.occ)/length(out2$sims.list$n.occ),
     xlab = "Number of occupied sites", ylab = "Density", frame = FALSE)
-plot(minutes, p.pred1, xlab = "Minutes after 6.00 hours (i.e., 7.00 – 19.00h)",
+plot(minutes, p.pred1, xlab = "Minutes after 6.00 hours (i.e., 7.00 - 19.00h)",
     ylab = "Detection prob.", ylim = c(0.6, 1), type = "l", col = "blue",
     lwd = 3, frame = FALSE)
 plot(duration, p.pred2, xlab = "Survey duration (min)",

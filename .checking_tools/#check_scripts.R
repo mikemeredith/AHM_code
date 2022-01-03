@@ -189,6 +189,7 @@ lns <- sort(lns[!(lns %in% sess$basePkgs)])
 vers <- lapply(lns, packageVersion)
 names(vers) <- lns
 print(cbind(version=vers))
+cat("\n")
 sink(NULL)
 
 # Display info in the Console (important if running multiple instances of R)

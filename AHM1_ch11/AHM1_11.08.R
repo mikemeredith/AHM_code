@@ -73,7 +73,7 @@ for(k in 1:nsamp){
 # Get posterior means, standard deviations and 95% CRI
 # Jaccard index for sites, compared to reference site 1
 pm <- apply(Jsite, 1, mean, na.rm = TRUE)  # Post. mean of Jsite wrt. site 1
-psd <- apply(Jsite, 1, sd, na.rm = TRUE)   # Post. mean of Jsite wrt. site 1
+psd <- apply(Jsite, 1, sd, na.rm = TRUE)   # Post. SD of Jsite wrt. site 1
 cri <- apply(Jsite, 1, function(x) quantile(x, prob = c(0.025, 0.975), na.rm = TRUE)) # CRI
 cbind('post. mean' = pm, 'post. sd' = psd, '2.5%' = cri[1,], '97.5%' = cri[2,])
 

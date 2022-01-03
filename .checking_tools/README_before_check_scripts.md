@@ -19,7 +19,8 @@ Before running the scripts, you may want to check that the necessary packages ar
 ```
 needed <- c("AHMbook", "unmarked", "AICcmodavg", "sp", "rgdal", "plotrix", "raster",
   "lme4", "R2WinBUGS", "R2OpenBUGS", "jagsUI", "denstrip", "rjags", "coda",
-  "devtools", "corrplot", "berryFunctions", "fields", "nimble", "mcmcOutput")
+  "devtools", "corrplot", "berryFunctions", "fields", "nimble", "mcmcOutput",
+  "foreach", "doParallel", "wiqid")
 got <- rownames(installed.packages())
 
 ( notgot <- needed[!needed %in% got] )

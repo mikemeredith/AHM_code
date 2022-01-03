@@ -11,7 +11,7 @@ update.packages(ask='graphics',checkBuilt=TRUE)
 needed <- c("AHMbook", "unmarked", "AICcmodavg", "sp", "rgdal", "plotrix", "raster",
   "lme4", "R2WinBUGS", "R2OpenBUGS", "jagsUI", "denstrip", "rjags", "coda", "devtools",
   "mcmcOutput", "wiqid", "spdep", "foreach", "doParallel", "abind", "corrplot", "fields",
-  "berryFunctions")
+  "berryFunctions", "nimble")
 got <- rownames(installed.packages())
 
 ( notgot <- needed[!needed %in% got] )
@@ -23,7 +23,7 @@ install.packages(notgot, dependencies=TRUE)
 # If you want to try out devel versions of packages from GitHub, install these
 #  AFTER 'update.packages' as that will "downdate" to the latest CRAN version.
 # For example:
-# devtools::install_github("mikemeredith/AHMbook")
+# remotes::install_github("mikemeredith/AHMbook")
 # packageVersion("AHMbook")
 # news(package="AHMbook")
 
