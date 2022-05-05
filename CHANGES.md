@@ -2,6 +2,12 @@
 
 # CHANGES
 
+## 2022-05-04
+
+* Removed all calls to `library(rgdal)` as none were necessary. The `rgdal` package will be retired before the end of 2023; see [here](https://r-spatial.org//r/2022/04/12/evolution.html).
+
+Tested: Windows 10, R 4.3-devel, `jagsUI` (1.5.2), and up-to-date CRAN versions of other packages.
+
 ## 2021-07-12
 
 * Add script to plot the figures in AHM2 section 8.2.3 (Figs 8.4 to 8.7) with credible intervals.

@@ -8,10 +8,10 @@
 update.packages(ask='graphics',checkBuilt=TRUE)
 # to ensure everything is up to date, including dependencies.
 
-needed <- c("AHMbook", "unmarked", "AICcmodavg", "sp", "rgdal", "plotrix", "raster",
-  "lme4", "R2WinBUGS", "R2OpenBUGS", "jagsUI", "denstrip", "rjags", "coda",
-  "devtools", "corrplot", "berryFunctions", "fields", "nimble", "mcmcOutput",
-  "foreach", "doParallel", "wiqid")
+needed <- c("AHMbook", "AICcmodavg", "berryFunctions", "coda", "corrplot", "denstrip",
+    "devtools", "doParallel", "fields", "foreach", "jagsUI", "lme4", "mcmcOutput",
+    "nimble", "plotrix", "R2OpenBUGS", "R2WinBUGS", "raster", "rjags",
+    "sp", "unmarked", "wiqid")  # package 'rgdal' is no longer needed
 got <- rownames(installed.packages())
 
 ( notgot <- needed[!needed %in% got] )
@@ -26,6 +26,7 @@ install.packages(notgot, dependencies=TRUE)
 # remotes::install_github("mikemeredith/AHMbook")
 # packageVersion("AHMbook")
 # remotes::install_github("rbchan/unmarked")
+# remotes::install_github("kenkellner/unmarked")
 # packageVersion("unmarked")
 # remotes::install_github("kenkellner/jagsUI")
 # packageVersion("jagsUI")

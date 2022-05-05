@@ -14,15 +14,17 @@ library(AHMbook)
 # ==============================================================
 
 library(AHMbook)
-? simExpCorrRF
+? simExpCorrRF  # ~~~~ see the note on 'RandomFields' vs 'fields'
+
 str(dat <- simExpCorrRF(variance = 1, theta = 1, size = 50, seed = 1))
 
 str(tmp <- simExpCorrRF(theta = 0.0001, size = 200))
 str(tmp <- simExpCorrRF(theta = 1, size = 200))
 str(tmp <- simExpCorrRF(theta = 5, size = 200))
 str(tmp <- simExpCorrRF(theta = 10, size = 200))
-str(tmp <- simExpCorrRF(theta = 100, size = 200))
-str(tmp <- simExpCorrRF(theta = 10000, size = 200)) # cool patterns !
+# ~~~~ These are too big to work with package 'fields' ~~~~
+try(str(tmp <- simExpCorrRF(theta = 100, size = 200)))
+try(str(tmp <- simExpCorrRF(theta = 10000, size = 200))) # cool patterns !
 
 data(BerneseOberland)
 head(bo <- BerneseOberland)
@@ -41,7 +43,7 @@ par(op)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Create Gaussian random field
-set.seed(10) # Fig. 9.2
+set.seed(10) # Fig. 9.2 ~~~~ provided 'RandomFields' is used
 s <- simExpCorrRF(theta = 10, size = 50)
 
 # Choose sample sizes: 2500 sites and 3 surveys

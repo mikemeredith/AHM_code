@@ -97,9 +97,9 @@ length(.ListOfFilesToCheck)
 # .ListOfFilesToCheck <- edit(.ListOfFilesToCheck)  # Edit the list if you wish
 # length(.ListOfFilesToCheck)
 
-# Attach rgdal before doing package count (does not unload properly)
-options("rgdal_show_exportToProj4_warnings"="none")
-library(rgdal)
+# Attach rgdal before doing package count (does not unload properly) ## only if rgdal is needed!
+# options("rgdal_show_exportToProj4_warnings"="none")
+# library(rgdal)
 .oldPackageCount <- length(search())
 .oldWD <- getwd()
 # .ow <- options(warn=1)
