@@ -100,9 +100,11 @@ length(.ListOfFilesToCheck)
 # Attach rgdal before doing package count (does not unload properly) ## only if rgdal is needed!
 # options("rgdal_show_exportToProj4_warnings"="none")
 # library(rgdal)
-.oldPackageCount <- length(search())
-.oldWD <- getwd()
-# .ow <- options(warn=1)
+
+# The old method of removing additional packages with package count no longer works as
+# org:r-lib is inserted between  "Autoloads" and "package:base"
+# Instead we check to see if the last item attached is the same:
+( .lastPackage <- search()[2] )
 
 # Set up log file
 .logFile <- paste0("#check_", format(Sys.time(), "%Y-%m-%d_%H%M"), ".log")
@@ -121,7 +123,7 @@ for(.i in seq_along(.ListOfFilesToCheck)) {
   options(stringsAsFactors = FALSE)
   RNGkind("default", "default", "default")
   set.seed(42)  # for reproducible output when not set in the script
-  while(length(search()) > .oldPackageCount)
+  while(search()[2] != .lastPackage)
     detach(pos=2)
   # create file names
   .fileStem <- substr(.ListOfFilesToCheck[.i], 1, nchar(.ListOfFilesToCheck[.i]) - 2)
