@@ -100,7 +100,7 @@ for(i in 1:nkm2){
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 library(raster)
-library(rgdal)
+# library(rgdal)  # ~~~~ not necessary ~~~~
 op <- par(mfrow = c(1,2), mar = c(2,2,3,5))
 # Posterior mean map
 r1 <- rasterFromXYZ(data.frame(x = ch$x, y = ch$y, z = pmSR))

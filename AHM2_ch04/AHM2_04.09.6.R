@@ -14,7 +14,7 @@
 library(unmarked)
 library(sp)
 library(raster)
-library(rgdal)
+# library(rgdal)  # ~~~~ not necessary ~~~~
 
 # ~~~ load crossbill data from 4.9.1 ~~~~~~~~~~
 source("AHM2_04.09.1_Crossbills.R")
@@ -275,7 +275,7 @@ map.fn <- function(data = all.pred, elev.limit = 2250){
   # devAskNewPage(ask = TRUE)
 
   # Load packages
-  require(sp)   ;   require(raster)   ;   require(rgdal)
+  require(sp)   ;   require(raster) # require(rgdal) # ~~~~ not necessary ~~~~
 
   # Define custom color palette
   mapPalette <- colorRampPalette(c("grey", "yellow", "orange", "red"))

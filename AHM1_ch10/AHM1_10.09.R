@@ -222,7 +222,7 @@ predCH <- predict(fm20, type="state", newdata=newData)
 
 # Prepare Swiss coordinates and produce map
 library(raster)
-library(rgdal)
+# library(rgdal)  # ~~~~ not necessary ~~~~
 
 # Define new data frame with coordinates and outcome to be plotted
 PARAM <- data.frame(x = CH$x, y = CH$y, z = predCH$Predicted)

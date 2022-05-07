@@ -241,7 +241,7 @@ lamPred[lamPred > 100] <- 100
 
 # Produce map of posterior mean of lambda
 library(raster)
-library(rgdal)
+# library(rgdal)  # ~~~~ not necessary ~~~~
 r <- rasterFromXYZ(data.frame(x = CH$x, y = CH$y, z = meanlam))
 elevation <- rasterFromXYZ(cbind(CH$x, CH$y,CH$elevation))
 elevation[elevation > 2250] <- NA

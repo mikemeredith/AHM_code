@@ -267,7 +267,7 @@ pred[round(rlength,2)==9.4,]/as.numeric(sat.pred[1])
 # 7.9.5 Spatial prediction
 # ------------------------------------------------------------------------
 library(raster)
-library(rgdal)
+# library(rgdal)  # ~~~~ not necessary ~~~~
 
 # Swiss landscape data and shape files
 data(Switzerland)         # Load Swiss landscape data from unmarked

@@ -491,7 +491,7 @@ predCH[1][predCH[1] > 60] <- 60 # Censor freak predicions (not req'd here)
 
 # Prepare Swiss coordinates and produce map
 library(raster)
-library(rgdal)
+# library(rgdal)  # ~~~~ not necessary
 
 # Define a new dataframe with coordinates and outcome to be plotted
 PARAM1 <- data.frame(x = CH$x, y = CH$y, z = predCH[,1])
