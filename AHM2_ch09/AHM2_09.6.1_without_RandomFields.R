@@ -7,8 +7,13 @@
 # ========================================================
 # Code from proofs dated 2020-08-19
 
-if(!requireNamespace("RandomFields"))
-  stop("Package 'RandomFields' is not available.")
+# The code below is modified to run without the RandomFields package; if
+#   RandomFields is available, it will be used by AHMbook, and the results should
+#   be the same.
+# When RandomFields is not available, the 'fields' package is used instead, and
+#   the results will be different.
+if(requireNamespace("RandomFields"))
+  stop("Package 'RandomFields' IS available; this script is not needed.")
 
 # Approximate execution time for this code: 16 mins
 # Run time with the full number of iterations: 1.5 hrs
@@ -26,8 +31,15 @@ library(jagsUI)
 # 9.6.1.1 Data simulation under the autologistic dynocc model
 # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
+# The code below is modified to run without the RandomFields package; if
+#   RandomFields is available, it will be used by AHMbook, and the results should
+#   be the same.
+# When RandomFields is not available, the 'fields' package is used instead, and
+#   the results will be different.
+
 library(AHMbook)
-str(dat <- simDynoccSpatial(
+# This call to simDynoccSpatial will fail if the 'RandomFields' package is not available
+try(str(dat <- simDynoccSpatial(
     side = 10, nyears = 10, nsurveys = 3,               # sample sizes
     mean.psi1 = 0.4, beta.Xpsi1 = 0,                    # linear model psi1
     range.phi = c(0.8, 0.8), beta.Xphi = 0,             # ... phi
@@ -36,33 +48,37 @@ str(dat <- simDynoccSpatial(
     theta.XAC = 5000, beta.XAC = c(0, 0, 0, 0),         # SAC effects 1
     beta.Xautolog = c(0, 0),                            # SAC effects 2
     trend.sd.site = c(0, 0), trend.sd.survey = c(0, 0), # Heterogeneity p
-    seed.XAC = NA, seed = NULL, ask.plot = TRUE) )
+    seed.XAC = NA, seed = NULL, ask.plot = TRUE) ) )
 
 # Take function output and fit a non-spatial dynocc model in unmarked
 library(unmarked)
 # Example 1: model with 1 covariate in each main parameter
-str( dat <- simDynoccSpatial(beta.Xpsi = 1, beta.Xphi = 1, beta.Xgamma = 1,
-    beta.Xp = 1) )
-summary(dat$umf)
-summary(fm0 <- colext(~1, ~1, ~1, ~1, dat$umf))              # constant model
-summary(fm1 <- colext(~Xpsi1, ~Xgamma, ~Xphi, ~Xp, dat$umf)) # data-generating model
+try(str( dat <- simDynoccSpatial(beta.Xpsi = 1, beta.Xphi = 1, beta.Xgamma = 1,
+    beta.Xp = 1) ) )
+# summary(dat$umf)
+# summary(fm0 <- colext(~1, ~1, ~1, ~1, dat$umf))              # constant model
+# summary(fm1 <- colext(~Xpsi1, ~Xgamma, ~Xphi, ~Xp, dat$umf)) # data-generating model
 
 # Example 2: Generate data with autocovariate effects
-str( dat <- simDynoccSpatial(mean.psi1 = 0.1, beta.Xautolog = c(3, 3),
-    range.p = c(0.1, 0.1), ask.plot = FALSE, seed.XAC = 1, seed = 1))
-summary(dat$umf)
-summary(fm1 <- colext(~1, ~Xautoobs, ~Xautoobs, ~1, dat$umf)) # 'naive' autologistic
-summary(fm2 <- colext(~1, ~Xauto, ~Xauto, ~1, dat$umf)) # 'true' autologistic
-confint(fm1, type = 'col') ; confint(fm1, type = 'ext') # CIs
-confint(fm2, type = 'col') ; confint(fm2, type = 'ext')
+try(str( dat <- simDynoccSpatial(mean.psi1 = 0.1, beta.Xautolog = c(3, 3),
+    range.p = c(0.1, 0.1), ask.plot = FALSE, seed.XAC = 1, seed = 1)) )
+# summary(dat$umf)
+# summary(fm1 <- colext(~1, ~Xautoobs, ~Xautoobs, ~1, dat$umf)) # 'naive' autologistic
+# summary(fm2 <- colext(~1, ~Xauto, ~Xauto, ~1, dat$umf)) # 'true' autologistic
+# confint(fm1, type = 'col') ; confint(fm1, type = 'ext') # CIs
+# confint(fm2, type = 'col') ; confint(fm2, type = 'ext')
 
 # 9.6.1.2 fitting the simplest autologistic dynocc model to simulated data
 # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-str(dat <- simDynoccSpatial(side = 30, nyears = 10, nsurveys = 3,
-    mean.psi1 = 0.1, range.phi = c(0.5, 0.5), range.gamma = c(0.2, 0.2),
-    range.p = c(0.4, 0.4), beta.Xautolog = c(1, 1), seed.XAC = 1,
-    seed = 24, ask.plot = TRUE) )
+# This fails without 'RandomFields':
+# str(dat <- simDynoccSpatial(side = 30, nyears = 10, nsurveys = 3,
+    # mean.psi1 = 0.1, range.phi = c(0.5, 0.5), range.gamma = c(0.2, 0.2),
+    # range.p = c(0.4, 0.4), beta.Xautolog = c(1, 1), seed.XAC = 1,
+    # seed = 24, ask.plot = TRUE) )
 
+# Use the precooked simulated data
+data(simDynoccSpatialData)
+dat <- simDynoccSpatialData
 library(unmarked)
 summary(dat$umf)
 fm <- colext(~1, ~Xauto, ~Xauto, ~1, dat$umf)

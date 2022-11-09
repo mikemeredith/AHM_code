@@ -5,10 +5,14 @@
 #
 # Chapter 9 : SPATIAL MODELS OF DISTRIBUTION AND ABUNDANCE
 # ========================================================
-# Code from proofs dated 2020-08-19
 
-if(!requireNamespace("RandomFields"))
-  stop("Package 'RandomFields' is not available.")
+# The code below is modified to run without the RandomFields package; if
+#   RandomFields is available, it will be used by AHMbook, and the results should
+#   be the same.
+# When RandomFields is not available, the 'fields' package is used instead, and
+#   the results will be different.
+if(requireNamespace("RandomFields"))
+  stop("Package 'RandomFields' IS available; this script is not needed.")
 
 library(AHMbook)
 
@@ -23,8 +27,8 @@ str(tmp <- simExpCorrRF(theta = 0.0001, size = 200))
 str(tmp <- simExpCorrRF(theta = 1, size = 200))
 str(tmp <- simExpCorrRF(theta = 5, size = 200))
 str(tmp <- simExpCorrRF(theta = 10, size = 200))
-str(tmp <- simExpCorrRF(theta = 100, size = 200))
-str(tmp <- simExpCorrRF(theta = 10000, size = 200)) # cool patterns !
+try(str(tmp <- simExpCorrRF(theta = 100, size = 200))) # fails
+try(str(tmp <- simExpCorrRF(theta = 10000, size = 200))) # fails
 
 data(BerneseOberland)
 head(bo <- BerneseOberland)

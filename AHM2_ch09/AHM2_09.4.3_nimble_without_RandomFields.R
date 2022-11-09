@@ -3,10 +3,14 @@
 #
 # Chapter 9 : SPATIAL MODELS OF DISTRIBUTION AND ABUNDANCE
 # ========================================================
-# Code from proofs dated 2020-08-19
 
-if(!requireNamespace("RandomFields"))
-  stop("Package 'RandomFields' is not available.")
+# The code below is modified to run without the RandomFields package; if
+#   RandomFields is available, it will be used by AHMbook, and the results should
+#   be the same.
+# When RandomFields is not available, the 'fields' package is used instead, and
+#   the results will be different.
+if(requireNamespace("RandomFields"))
+  stop("Package 'RandomFields' IS available; this script is not needed.")
 
 # Approximate execution time for this code: 25 mins
 # Run time with the full number of iterations: 1.8 hr
@@ -54,8 +58,7 @@ str(bconst <- list(nsites = dim(dat$y)[1], nrep = dim(dat$y)[2],
 # $ num    : int [1:2500] 3 5 5 5 5 5 5 5 5 5 ...
 # $ elev   : num [1:2500] 1.06 1.836 1.763 1.305 0.268 ...
 # $ forest : num [1:2500] 1.146 -0.363 -0.363 0.208 0.493 ...
-# $ wind   : num [1:2500, 1:3] 1.2703 -0.8881 -0.0708 -0.5315 -1.4702 ...
-
+# $ wind   : num [1:2500, 1:3] -0.0527 -0.1891 -0.8577 -0.4419 -0.2503 ...
 
 # Specify model in NIMBLE dialect of BUGS language
 # ''''''''''''''''''''''''''''''''''''''''''''''''
@@ -180,7 +183,7 @@ diagPlot(mco4, c("alpha", "beta", "mean", "nocc", "v"))
 View(summary(mco4))
 summary(mco4[c("mean.psi", "beta0", "beta[1]", "beta[2]", "mean.p", "alpha0", "alpha[1]", "alpha[2]")],
     n.eff=TRUE)
-save(mco4, file="AHM2_09.4.3_nimble_mco4.RData")
+save(mco4, file="AHM2_09.4.3_nimble_mco4_without_RandomFields.RData")
 
 truth <- c(mean.psi = dat$mean.psi, beta0 = dat$beta0, beta1 = dat$beta[1],
     beta2 = dat$beta[2], mean.p = dat$mean.p, alpha0 = dat$alpha0,

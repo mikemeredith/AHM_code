@@ -5,10 +5,14 @@
 #
 # Chapter 9 : SPATIAL MODELS OF DISTRIBUTION AND ABUNDANCE
 # ========================================================
-# Code from proofs dated 2020-08-19
 
-if(!requireNamespace("RandomFields"))
-  stop("Package 'RandomFields' is not available.")
+# The code below is modified to run without the RandomFields package; if
+#   RandomFields is available, it will be used by AHMbook, and the results should
+#   be the same.
+# When RandomFields is not available, the 'fields' package is used instead, and
+#   the results will be different.
+if(requireNamespace("RandomFields"))
+  stop("Package 'RandomFields' IS available; this script is not needed.")
 
 # Approximate execution time for this code: 13 mins
 
@@ -96,7 +100,7 @@ out1 <- bugs(bdata, inits, params, "Nmix.txt", n.chains = nc, n.thin = nt,
     n.iter = ni, n.burnin = nb, debug = FALSE, bugs.directory = bugs.dir)
 print(out1, dig = 2)
 # save result for comparison with other models
-save(out1, file="AHM2_09.3_out1.RData")
+save(out1, file="AHM2_09.3_out1_without_RandomFields.RData")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Inference for Bugs model at "Nmix.txt", fit using WinBUGS,

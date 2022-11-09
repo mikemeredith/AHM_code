@@ -2,7 +2,14 @@
 
 # CHANGES
 
-## 2022-05-04
+## 2022-11-09
+
+* In AHM2 chapter 9 sections 1 to 4 and chapter 10 section 2, new scripts are provided which do not require the `RandomFields` package. On Windows, the old `RandomFields` package (version 3.3.14) still works and can be downloaded from [here](https://cran.r-project.org/src/contrib/Archive/RandomFields/). Do not try to use this on a Linux system.
+
+
+Tested: Windows 10, R 4.2.2, `jagsUI` (1.5.2.9002) and `unmarked` (1.2.5.9004), and up-to-date CRAN versions of other packages.
+
+# 2022-05-04
 
 * Removed all calls to `library(rgdal)` as none were necessary. The `rgdal` package will be retired before the end of 2023; see [here](https://r-spatial.org//r/2022/04/12/evolution.html).
 

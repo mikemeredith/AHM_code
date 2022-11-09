@@ -5,6 +5,9 @@
 # ========================================================
 # Code from proofs dated 2020-08-19
 
+if(!requireNamespace("RandomFields"))
+  stop("Package 'RandomFields' is not available.")
+
 # Approximate execution time for this code: 12 mins
 # Run time with the full number of iterations: 4.2 hrs
 

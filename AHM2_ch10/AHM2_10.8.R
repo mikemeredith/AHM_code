@@ -490,7 +490,7 @@ params <- c('psi', 'lam0', 'lam0occ', 'sigma', 'N')
 
 # MCMC settings
 # na <- 1000 ; ni <- 12000; nt <- 2 ; nb <- 2000 ; nc <- 3
-na <- 1000 ; ni <- 1200; nt <- 1 ; nb <- 200 ; nc <- 3  # ~~~ for testing
+na <- 1000 ; ni <- 1200; nt <- 1 ; nb <- 200 ; nc <- 3  # ~~~ for testing, 16 mins
 
 # Call JAGS (ART 63 min), assess convergence and summarize posteriors
 out4 <- jags(bdata, inits, params, "SCRocc.txt", n.adapt = na, n.chains = nc,

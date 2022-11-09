@@ -7,8 +7,13 @@
 # =========================================================
 # Code from proofs dated 2020-08-19
 
-if(!requireNamespace("RandomFields"))
-  stop("Package 'RandomFields' is not available.")
+# The code below is modified to run without the RandomFields package; if
+#   RandomFields is available, it will be used by AHMbook, and the results should
+#   be the same.
+# When RandomFields is not available, the 'fields' package is used instead, and
+#   the results will be different.
+if(requireNamespace("RandomFields"))
+  stop("Package 'RandomFields' IS available; this script is not needed.")
 
 library(AHMbook)
 # library(unmarked)
@@ -21,30 +26,30 @@ library(AHMbook)
 str(dat <- simPPe(lscape.size = 150, buffer.width = 25, variance.X = 1,
     theta.X = 10, M = 250, beta = 1, quads.along.side = 6))
 
-# Produce Fig. 10.2
+# Produce Fig. 10.2 - this fails without RandomFields
 set.seed(117, sample.kind="Rounding")
-str(dat <- simPPe(lscape.size = 200, buffer.width = 25, variance.X = 1,
-    theta.X = 70, M = 200, beta = 1, quads.along.side = 6))
+try(str(dat <- simPPe(lscape.size = 200, buffer.width = 25, variance.X = 1,
+    theta.X = 70, M = 200, beta = 1, quads.along.side = 6)))
 
 # Smaller study area, fewer individuals (M)
-str(dat <- simPPe(lscape.size = 24, buffer.width = 2, variance.X = 1,
-    theta.X = 10, M = 50, beta = 1, quads.along.side = 6))
+try(str(dat <- simPPe(lscape.size = 24, buffer.width = 2, variance.X = 1,
+    theta.X = 10, M = 50, beta = 1, quads.along.side = 6)) )
 
 # Stronger habitat heterogeneity (variance.X): more aggregation
-str(dat <- simPPe(lscape.size = 24, buffer.width = 2, variance.X = 10,
-    theta.X = 10, M = 50, beta = 1, quads.along.side = 6))
+try(str(dat <- simPPe(lscape.size = 24, buffer.width = 2, variance.X = 10,
+    theta.X = 10, M = 50, beta = 1, quads.along.side = 6)))
 
 # Longer habitat gradient (theta.X)
-str(dat <- simPPe(lscape.size = 24, buffer.width = 2, variance.X = 1,
-    theta.X = 250, M = 250, beta = 1, quads.along.side = 6))
+try(str(dat <- simPPe(lscape.size = 24, buffer.width = 2, variance.X = 1,
+    theta.X = 250, M = 250, beta = 1, quads.along.side = 6)))
 
 # No habitat variability (variance.X): homogeneous point process
-str(dat <- simPPe(lscape.size = 24, buffer.width = 2, variance.X = 0,
-    theta.X = 10, M = 100, beta = 1, quads.along.side = 6))
+try(str(dat <- simPPe(lscape.size = 24, buffer.width = 2, variance.X = 0,
+    theta.X = 10, M = 100, beta = 1, quads.along.side = 6)))
 
 # No habitat preference (beta): homogeneous point process
-str(dat <- simPPe(lscape.size = 24, buffer.width = 2, variance.X = 1,
-    theta.X = 10, M = 100, beta = 0, quads.along.side = 6))
+try(str(dat <- simPPe(lscape.size = 24, buffer.width = 2, variance.X = 1,
+    theta.X = 10, M = 100, beta = 0, quads.along.side = 6)))
 
 # Habitat heterogeneity at very small scale (theta.X) -> (almost)
 # homogeneous point process (in spite of strong habitat preference)

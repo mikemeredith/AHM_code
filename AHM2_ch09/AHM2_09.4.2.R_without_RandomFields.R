@@ -5,10 +5,14 @@
 #
 # Chapter 9 : SPATIAL MODELS OF DISTRIBUTION AND ABUNDANCE
 # ========================================================
-# Code from proofs dated 2020-08-19
 
-if(!requireNamespace("RandomFields"))
-  stop("Package 'RandomFields' is not available.")
+# The code below is modified to run without the RandomFields package; if
+#   RandomFields is available, it will be used by AHMbook, and the results should
+#   be the same.
+# When RandomFields is not available, the 'fields' package is used instead, and
+#   the results will be different.
+if(requireNamespace("RandomFields"))
+  stop("Package 'RandomFields' IS available; this script is not needed.")
 
 # Approximate execution time for this code: 7 mins
 # Run time with the full number of iterations: 30 mins
@@ -148,8 +152,8 @@ options(scipen = 10)
 print(out3$summary[1:18, -c(4:6, 8:11)], dig = 3) # not shown
 
 # ~~~ extra code to do the table ~~~~~~~
-load("AHM2_09.3_out1.RData")
-load("AHM2_09.4.1_out2.RData")
+load("AHM2_09.3_out1_without_RandomFields.RData")
+load("AHM2_09.4.1_out2_without_RandomFields.RData")
 truth <- with(dat, c(alpha0 = alpha0, alpha1 = alpha[1], alpha2 = alpha[2], beta0 = beta0,
     beta1 = beta[1], beta2 = beta[2], Ntotal = sum(N)))
 Bayes.est.Nmix0 <- rbind(out1$summary[c('alpha0', 'alpha[1]', 'alpha[2]',
@@ -162,13 +166,13 @@ print(cbind(truth, Bayes.est.Nmix0, Bayes.est.CAR, Bayes.est.spline), 2)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Truth, nonspatial model, spatial Nmix with CAR, spatial Nmix with GAM
 #        truth    mean      sd      mean      sd    mean      sd
-# alpha0     0    0.31   0.073    0.0041   0.102    0.10   0.091
-# alpha1    -1   -0.90   0.067   -0.9065   0.088   -0.91   0.072
-# alpha2    -1   -1.14   0.060   -0.9531   0.066   -1.01   0.063
-# beta0      2    1.29   0.052    1.2630   0.109    1.32   0.092
-# beta1      2    2.45   0.102    1.9796   0.164    1.92   0.127
-# beta2     -2   -1.80   0.086   -1.9704   0.136   -2.01   0.106
-# Ntotal  7192 5863.50 238.104 7235.9227 649.527 6790.76 381.564
+# alpha0     0    0.21   0.072    0.045   0.087    0.13   0.083
+# alpha1    -1   -0.99   0.056   -0.921   0.072   -0.90   0.063
+# alpha2    -1   -1.18   0.053   -1.065   0.058   -1.12   0.053
+# beta0      2    1.81   0.046    1.523   0.088    1.39   0.095
+# beta1      2    2.06   0.080    1.979   0.159    1.89   0.130
+# beta2     -2   -1.92   0.079   -1.870   0.126   -1.73   0.106
+# Ntotal  9504 8035.78 311.441 8272.814 511.584 7819.17 346.527
 
 # ~~~~ extra code for figures 9.8, 9.9 and 9.10 ~~~~~~~~
 # Fig. 9.8
